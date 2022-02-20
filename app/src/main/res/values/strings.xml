@@ -13,11 +13,11 @@
     <string name="manga">Manga</string>
     <string name="browse_manga">Browse Manga</string>
     <string name="info">Info</string>
-    <string name="watch">Mirar</string>
+    <string name="watch">Ver</string>
     <string name="read">Leer</string>
 
-    <string name="anime_list">Lista de Anime</string>
-    <string name="manga_list">lista de manga</string>
+    <string name="anime_list">Lista Anime</string>
+    <string name="manga_list">lista manga</string>
 
     <string name="sad">X(</string>
     <string name="oh">:o</string>
@@ -34,8 +34,8 @@
     <string name="updated">Actualizado recientemente</string>
     <string name="trending_anime">Anime en tendencia</string>
     <string name="popular_anime">Animes Populares</string>
-    <string name="trending_manga">Manga de tendencia</string>
-    <string name="trending_novel">Novela de tendencias</string>
+    <string name="trending_manga">Manga en tendencia</string>
+    <string name="trending_novel">Novela en tendencias</string>
     <string name="popular_manga">Manga Popular</string>
 
     <string name="username">Nombre de usuario</string>
@@ -88,12 +88,12 @@
     <string name="genres">Generos</string>
     <string name="description">Sipnosis</string>
     <string name="characters">Personajes</string>
-    <string name="relations">Relacionadks</string>
+    <string name="relations">Relacionados</string>
 
     <string name="roles">Roles</string>
     <string name="details">Detalles</string>
 
-    <string name="play_yt">Play on Youtube</string>
+    <string name="play_yt">Ver en Youtube</string>
     <string name="eps">Episodios</string>
     <string name="ep">Episodio</string>
     <string name="chaps">Capitulos</string>
