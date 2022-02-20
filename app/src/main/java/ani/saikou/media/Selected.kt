@@ -10,5 +10,5 @@ data class Selected(
     var stream:String? = null,
     var quality: Int=0,
 //    var positions: MutableMap<String,Long>?=null,
-    var chip:Int = 1,
+    var chip:Int = 0,
 ):Serializable

@@ -25,7 +25,6 @@ class FPlayer(private val getSize:Boolean): Extractor() {
             runBlocking {
                 jsonResponse.jsonObject["data"]!!.jsonArray.forEach {
                     a.add(async {
-                        println("it")
                         tempQuality.add(
                             Episode.Quality(
                                 it.jsonObject["file"].toString().trim('"'),

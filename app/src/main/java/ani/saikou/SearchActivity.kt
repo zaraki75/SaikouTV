@@ -1,6 +1,5 @@
 package ani.saikou
 
-import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePaddingRelative
 import androidx.core.widget.NestedScrollView
+import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -40,6 +40,8 @@ class SearchActivity : AppCompatActivity() {
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initActivity(this)
+
+        val imm: InputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
 
         var grid = loadData<Boolean>("searchGrid")?:false
         (if (grid) binding.searchResultGrid else binding.searchResultList).alpha = 1f
@@ -105,6 +107,10 @@ class SearchActivity : AppCompatActivity() {
                                 binding.searchRecyclerView.requestDisallowInterceptTouchEvent(true)
                                 window.statusBarColor = ContextCompat.getColor(this@SearchActivity, R.color.status)
                             }
+                            if(v.canScrollVertically(-1)){
+                                binding.searchBarText.clearFocus()
+                                imm.hideSoftInputFromWindow(binding.searchBarText.windowToken, 0)
+                            }
                             super.onScrolled(v, dx, dy)
                         }
                     })
@@ -121,13 +127,12 @@ class SearchActivity : AppCompatActivity() {
         }
         binding.searchBarText.requestFocusFromTouch()
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
-        val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
         fun searchTitle(){
             binding.searchRecyclerView.adapter=null
             binding.searchProgress.visibility = View.VISIBLE
             binding.searchRecyclerView.visibility = View.GONE
-            binding.searchBarText.clearFocus()
-            imm.hideSoftInputFromWindow(binding.searchBarText.windowToken, 0)
+
             val search = if (binding.searchBarText.text.toString()!="") binding.searchBarText.text.toString() else null
             val genre = if (binding.searchGenre.text.toString()!="") arrayListOf(binding.searchGenre.text.toString()) else null
             val sortBy = if (binding.searchSortBy.text.toString()!="") Anilist.sortBy[binding.searchSortBy.text.toString()] else null
@@ -137,10 +142,16 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
+        binding.searchBarText.doOnTextChanged { _, _, _, _ ->
+            searchTitle()
+        }
+
         binding.searchBarText.setOnEditorActionListener { _, actionId, _ ->
             return@setOnEditorActionListener when (actionId) {
                 EditorInfo.IME_ACTION_SEARCH -> {
                     searchTitle()
+                    binding.searchBarText.clearFocus()
+                    imm.hideSoftInputFromWindow(binding.searchBarText.windowToken, 0)
                     true
                 }
                 else -> false

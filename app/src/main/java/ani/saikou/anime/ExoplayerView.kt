@@ -165,7 +165,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             orientationListener?.enable()
         }
 
-        playerView.subtitleView?.setStyle(CaptionStyleCompat(Color.WHITE,Color.TRANSPARENT,Color.TRANSPARENT,EDGE_TYPE_OUTLINE,Color.BLACK,
+        playerView.subtitleView?.setStyle(CaptionStyleCompat(Color.WHITE,Color.TRANSPARENT,Color.TRANSPARENT,EDGE_TYPE_OUTLINE,Color.DKGRAY,
             ResourcesCompat.getFont(this, R.font.poppins_bold)))
         playerView.subtitleView?.setFixedTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
 
@@ -218,7 +218,8 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
         //+85 Button
         playerView.findViewById<View>(R.id.exo_skip).setOnClickListener {
-            exoPlayer.seekTo(exoPlayer.currentPosition + 85000)
+            if(isInitialized)
+                exoPlayer.seekTo(exoPlayer.currentPosition + 85000)
         }
 
         //Player UI Visibility Handler
@@ -281,7 +282,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         val fastRewindCard = playerView.findViewById<View>(R.id.exo_fast_rewind)
         val fastRewindDetector = GestureDetector(this, object : DoubleClickListener() {
             override fun onDoubleClick(event: MotionEvent?) {
-                if(!locked) {
+                if(!locked && isInitialized) {
                     exoPlayer.seekTo(exoPlayer.currentPosition - 10000)
                     viewDoubleTapped(fastRewindCard,event,playerView.findViewById(R.id.exo_fast_rewind_anim))
                 }
@@ -331,7 +332,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         val fastForwardCard = playerView.findViewById<View>(R.id.exo_fast_forward)
         val fastForwardDetector = GestureDetector(this, object : DoubleClickListener() {
             override fun onDoubleClick(event: MotionEvent?) {
-                if(!locked) {
+                if(!locked && isInitialized) {
                     exoPlayer.seekTo(exoPlayer.currentPosition + 10000)
                     viewDoubleTapped(fastForwardCard,event,playerView.findViewById(R.id.exo_fast_forward_anim))
                 }
@@ -467,12 +468,14 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         val speedDialog = AlertDialog.Builder(this,R.style.DialogTheme).setTitle("Speed")
         exoSpeed.setOnClickListener{
             speedDialog.setSingleChoiceItems(speedsName,curSpeed) { dialog, i ->
-                speed = speeds[i]
-                curSpeed = i
-                playbackParameters = PlaybackParameters(speed)
-                exoPlayer.playbackParameters = playbackParameters
-                dialog.dismiss()
-                hideSystemBars()
+                if(isInitialized) {
+                    speed = speeds[i]
+                    curSpeed = i
+                    playbackParameters = PlaybackParameters(speed)
+                    exoPlayer.playbackParameters = playbackParameters
+                    dialog.dismiss()
+                    hideSystemBars()
+                }
             }.show()
         }
         speedDialog.setOnCancelListener { hideSystemBars() }

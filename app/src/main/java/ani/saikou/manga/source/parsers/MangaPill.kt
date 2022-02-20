@@ -26,9 +26,13 @@ class MangaPill(override val name: String="mangapill.com") :MangaParser() {
 
     override fun getLinkChapters(link:String):MutableMap<String,MangaChapter>{
         val responseArray = mutableMapOf<String, MangaChapter>()
+        try {
         Jsoup.connect(link).get().select("#chapters > div > a").reversed().forEach{
             val chap = it.text().replace("Chapter ","")
             responseArray[chap] = MangaChapter(chap,link=it.attr("abs:href"))
+        }
+        }catch (e:Exception){
+            toastString(e.toString())
         }
         return responseArray
     }

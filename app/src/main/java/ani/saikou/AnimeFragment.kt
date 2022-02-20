@@ -110,6 +110,10 @@ class AnimeFragment : Fragment() {
             )
         }
 
+        binding.animeSearchBar.setEndIconOnClickListener{
+            binding.animeSearchBarText.performClick()
+        }
+
         loadImage("https://bit.ly/31bsIHq",binding.animeGenreImage)
         loadImage( "https://bit.ly/2ZGfcuG",binding.animeTopScoreImage)
 

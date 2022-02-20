@@ -29,7 +29,10 @@ import ani.saikou.databinding.ActivityMediaBinding
 import ani.saikou.manga.MangaSourceFragment
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedListener {
@@ -79,6 +82,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
 
         var media: Media = intent.getSerializableExtra("media") as Media
         media.selected = model.loadSelected(media.id)
+        println(media.selected)
         loadImage(media.cover,binding.mediaCoverImage)
         binding.mediaCoverImage.setOnClickListener{ openImage(media.cover) }
         loadImage(media.banner?:media.cover,binding.mediaBanner)
@@ -149,11 +153,11 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         tabLayout.visibility = View.VISIBLE
 
         tabLayout.setOnItemSelectedListener { item ->
-            val sel = loadData<Selected>(media.id.toString())?:media.selected!!
             selectFromID(item.itemId)
             viewPager.setCurrentItem(selected,false)
+            val sel = model.loadSelected(media.id)
             sel.window = selected
-            saveData(media.id.toString(),sel)
+            model.saveSelected(media.id,sel,this)
             true
         }
 
@@ -163,15 +167,15 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
 
         if(model.continueMedia==null) model.continueMedia = media.cameFromContinue
         if(media.cameFromContinue) selected = 1
-        scope.launch {
-            withContext(Dispatchers.IO){ model.loadMedia(media) }
+        scope.launch(Dispatchers.IO) {
+            model.loadMedia(media)
         }
 
         val live = Refresh.activity.getOrPut(this.hashCode()){ MutableLiveData(false) }
         live.observe(this){
             if(it){
-                scope.launch {
-                    withContext(Dispatchers.IO){ model.loadMedia(media) }
+                scope.launch(Dispatchers.IO) {
+                    model.loadMedia(media)
                     live.postValue(false)
                 }
             }

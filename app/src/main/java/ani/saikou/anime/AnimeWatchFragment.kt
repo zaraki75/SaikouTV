@@ -133,8 +133,10 @@ open class AnimeWatchFragment : Fragment() {
     fun onSourceChange(i:Int):LiveData<String>{
         media.anime?.episodes = null
         reload()
-        media.selected!!.source = i
-        model.saveSelected(media.id, media.selected!!, requireActivity())
+        val selected = model.loadSelected(media.id)
+        selected.source = i
+        model.saveSelected(media.id, selected, requireActivity())
+        media.selected = selected
         lifecycleScope.launch(Dispatchers.IO) { model.loadEpisodes(media, i) }
         return sources[i]!!.live
     }
@@ -142,6 +144,7 @@ open class AnimeWatchFragment : Fragment() {
     fun onIconPressed(viewType:Int,reverse:Boolean){
         media.selected!!.recyclerStyle = viewType
         media.selected!!.recyclerReversed = reverse
+        model.saveSelected(media.id, media.selected!!, requireActivity())
         reload()
     }
 
@@ -150,6 +153,7 @@ open class AnimeWatchFragment : Fragment() {
         start = s
         end = e
         chipAdapter?.selected = i
+        model.saveSelected(media.id, media.selected!!, requireActivity())
         reload()
     }
 
@@ -159,7 +163,7 @@ open class AnimeWatchFragment : Fragment() {
     }
 
     private fun reload(){
-        val selected = media.selected!!
+        val selected = model.loadSelected(media.id)
         model.saveSelected(media.id,selected,requireActivity())
         val recyclerViewState = binding.animeSourceRecycler.layoutManager?.onSaveInstanceState()
         val adapters: ArrayList<RecyclerView.Adapter<out RecyclerView.ViewHolder>> = arrayListOf(AnimeWatchAdapter(media,this,chipAdapter,sources))

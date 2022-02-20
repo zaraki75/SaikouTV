@@ -1,5 +1,6 @@
 package ani.saikou
 
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
@@ -272,14 +273,16 @@ class ZoomOutPageTransformer(private val bottom:Boolean=false) : ViewPager2.Page
         if (position == 0.0f) {
             var cy = 0
             if (bottom) cy = view.height
+            setAnimation(view.context,view,300, floatArrayOf(1.3f,1f,1.3f,1f))
+            ObjectAnimator.ofFloat(view,"alpha",0f,1.0f).setDuration(200).start()
             ViewAnimationUtils.createCircularReveal(view, view.width / 2, cy, 0f, max(view.height, view.width)*1.5f).setDuration(400).start()
         }
     }
 }
 
-fun setAnimation(context: Context,viewToAnimate: View) {
-    val anim = ScaleAnimation(0.0f, 1.0f, 0.0f, 1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
-    anim.duration = 150
+fun setAnimation(context: Context,viewToAnimate: View, duration:Long=150,list: FloatArray= floatArrayOf(0.0f, 1.0f, 0.0f, 1.0f)) {
+    val anim = ScaleAnimation(list[0], list[1], list[2], list[3], Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
+    anim.duration = duration
     anim.setInterpolator(context,R.anim.over_shoot)
     viewToAnimate.startAnimation(anim)
 }

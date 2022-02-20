@@ -185,7 +185,7 @@ class HomeFragment : Fragment() {
             binding.homeRecommendedEmpty
         )
 
-        val live = Refresh.activity.getOrPut(1) { MutableLiveData(true) }
+        val live = Refresh.activity.getOrPut(1) { MutableLiveData(false) }
         live.observe(viewLifecycleOwner) {
             if (it) {
                 scope.launch {

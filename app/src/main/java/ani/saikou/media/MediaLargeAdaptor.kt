@@ -1,7 +1,6 @@
 package ani.saikou.media
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +10,7 @@ import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.core.view.ViewCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import ani.saikou.R
@@ -20,7 +20,7 @@ import ani.saikou.setAnimation
 import java.io.Serializable
 
 class MediaLargeAdaptor(
-    private val mediaList: ArrayList<Media>, val activity: Activity,private val viewPager: ViewPager2?=null
+    private val mediaList: ArrayList<Media>, val activity: FragmentActivity, private val viewPager: ViewPager2?=null
     ) : RecyclerView.Adapter<MediaLargeAdaptor.MediaViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
@@ -67,6 +67,11 @@ class MediaLargeAdaptor(
                         Pair.create(binding.itemCompactImage,ViewCompat.getTransitionName(binding.itemCompactImage)!!)
                     ).toBundle()
                 )
+            }
+            itemView.setOnLongClickListener {
+                val media = mediaList[bindingAdapterPosition]
+                MediaListDialogSmallFragment.newInstance(media).show(activity.supportFragmentManager, "list")
+                true
             }
         }
     }

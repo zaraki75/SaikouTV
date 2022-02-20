@@ -29,7 +29,7 @@ class SourceSearchDialogFragment : BottomSheetDialogFragment(){
 
     private var _binding: BottomSheetSourceSearchBinding? = null
     private val binding get() = _binding!!
-    lateinit var model : MediaDetailsViewModel
+   val model : MediaDetailsViewModel by activityViewModels()
     private var searched = false
     var anime = true
     var i : Int?=null
@@ -45,12 +45,8 @@ class SourceSearchDialogFragment : BottomSheetDialogFragment(){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.mediaListContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin += navBarHeight }
 
-        val m : MediaDetailsViewModel by activityViewModels()
         val scope = viewLifecycleOwner.lifecycleScope
-
         val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        model = m
-
         model.getMedia().observe(viewLifecycleOwner) {
             media = it
             if (media != null) {

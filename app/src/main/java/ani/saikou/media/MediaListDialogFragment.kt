@@ -182,7 +182,7 @@ class MediaListDialogFragment : BottomSheetDialogFragment(){
                         }
                         Refresh.all()
                         toastString("List Updated")
-                        dismiss()
+                        dismissAllowingStateLoss()
                     }
                 }
 
@@ -193,7 +193,7 @@ class MediaListDialogFragment : BottomSheetDialogFragment(){
                             withContext(Dispatchers.IO){ Anilist.mutation.deleteList(id) }
                             Refresh.all()
                             toastString("Deleted from List")
-                            dismiss()
+                            dismissAllowingStateLoss()
                         }
                     }else{
                         toastString("No List ID found, reloading...")

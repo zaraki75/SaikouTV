@@ -1,5 +1,6 @@
 package ani.saikou.anime.source.parsers
 
+import android.net.Uri
 import ani.saikou.*
 import ani.saikou.anime.Episode
 import ani.saikou.anime.source.AnimeParser
@@ -20,7 +21,7 @@ class Zoro(override val name: String = "Zoro") : AnimeParser() {
     private val host = "https://zoro.to"
 
     private fun directLinkify(name: String,url: String): Episode.StreamLinks? {
-        val domain = Regex("""(?<=^http[s]?://).+?(?=/)""").find(url)!!.value
+        val domain = Uri.parse(url).host?:""
         val extractor : Extractor?=when {
             "rapid" in domain -> RapidCloud()
             "sb" in domain -> StreamSB()

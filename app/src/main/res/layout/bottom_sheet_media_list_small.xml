@@ -33,26 +33,15 @@
                 android:id="@+id/mediaTitle"
                 android:layout_width="0dp"
                 android:layout_height="54dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
                 android:layout_weight="1"
                 android:fontFamily="@font/poppins"
-                android:gravity="center"
+                android:gravity="center_vertical"
                 android:text="@string/list_editor"
-                android:textAlignment="center"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/mediaListSave"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:fontFamily="@font/poppins_bold"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:padding="8dp"
-                android:text="@string/save"
-                android:textSize="16sp"
-                app:cornerRadius="16dp" />
         </LinearLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -113,6 +102,7 @@
                     android:layout_weight="1"
                     android:fontFamily="@font/poppins_bold"
                     android:inputType="number"
+                    android:maxLength="4"
                     android:padding="8dp"
                     android:textColor="?android:attr/textColorSecondary"
                     android:textSize="14sp"
@@ -126,11 +116,11 @@
 
             <Button
                 android:id="@+id/mediaListIncrement"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:layout_marginTop="-2dp"
                 android:elevation="0dp"
-
                 android:fontFamily="@font/poppins_bold"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
@@ -175,6 +165,20 @@
                 tools:ignore="LabelFor,TextContrastCheck" />
 
         </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/mediaListSave"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="24dp"
+            android:fontFamily="@font/poppins_bold"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:padding="8dp"
+            android:text="@string/save"
+            android:textSize="16sp"
+            app:cornerRadius="16dp" />
 
 
     </LinearLayout>

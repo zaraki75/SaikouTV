@@ -29,10 +29,17 @@ class MediaDetailsViewModel:ViewModel() {
     }
 
     var continueMedia:Boolean? = null
+    var loading=false
 
     private val media: MutableLiveData<Media> = MutableLiveData<Media>(null)
     fun getMedia(): LiveData<Media> = media
-    fun loadMedia(m:Media) { if (m.shareLink==null) media.postValue(Anilist.query.mediaDetails(m)) }
+    fun loadMedia(m:Media) {
+        if(!loading) {
+            loading = true
+            media.postValue(Anilist.query.mediaDetails(m))
+        }
+        loading=false
+    }
     fun setMedia(m:Media) = media.postValue(m)
 
     val sources = MutableLiveData<ArrayList<Source>?>(null)
@@ -51,7 +58,7 @@ class MediaDetailsViewModel:ViewModel() {
     private val epsLoaded = mutableMapOf<Int,MutableMap<String,Episode>>()
     fun getEpisodes() : LiveData<MutableMap<Int,MutableMap<String,Episode>>> = episodes
     fun loadEpisodes(media: Media,i:Int){
-        logger("Loading Episodes : $epsLoaded")
+//        logger("Loading Episodes : $epsLoaded")
         if(!epsLoaded.containsKey(i)) {
             epsLoaded[i] = watchSources?.get(i)!!.getEpisodes(media)
         }

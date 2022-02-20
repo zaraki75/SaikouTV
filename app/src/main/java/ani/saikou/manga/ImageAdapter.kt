@@ -45,6 +45,8 @@ private val referer:String?=null
                 .downloader(OkHttp3Downloader(client))
                 .build()
                 .load(arr[position])
+                .resize(1080,0)
+                .onlyScaleDown()
                 .into(binding.imgProgImage, object : Callback {
                     override fun onSuccess() { binding.imgProgProgress.visibility = View.GONE }
                     override fun onError(e: Exception) {}

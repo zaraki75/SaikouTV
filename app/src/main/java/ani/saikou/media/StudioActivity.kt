@@ -21,7 +21,7 @@ class StudioActivity : AppCompatActivity() {
     private lateinit var binding: ActivityStudioBinding
     private val scope = lifecycleScope
     private val model: OtherDetailsViewModel by viewModels()
-    private lateinit var studio: Studio
+    private var studio: Studio? = null
     private var loaded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,8 +36,8 @@ class StudioActivity : AppCompatActivity() {
         binding.studioRecycler.updatePadding(bottom = 64f.px + navBarHeight)
         binding.studioTitle.isSelected = true
 
-        studio = intent.getSerializableExtra("studio") as Studio
-        binding.studioTitle.text = studio.name
+        studio = intent.getSerializableExtra("studio") as Studio?
+        binding.studioTitle.text = studio?.name
 
         binding.studioClose.setOnClickListener{
             onBackPressed()
@@ -49,7 +49,7 @@ class StudioActivity : AppCompatActivity() {
                 loaded = true
                 binding.studioProgressBar.visibility = View.GONE
                 binding.studioRecycler.visibility = View.VISIBLE
-                binding.studioRecycler.adapter = MediasWithTitleAdapter(studio.yearMedia!!, this)
+                binding.studioRecycler.adapter = MediasWithTitleAdapter(studio?.yearMedia!!, this)
                 binding.studioRecycler.layoutManager = LinearLayoutManager(this)
             }
         }
@@ -57,7 +57,8 @@ class StudioActivity : AppCompatActivity() {
         live.observe(this) {
             if (it) {
                 scope.launch {
-                    withContext(Dispatchers.IO){ model.loadStudio(studio) }
+                    if(studio!=null)
+                        withContext(Dispatchers.IO){ model.loadStudio(studio!!) }
                     live.postValue(false)
                 }
             }

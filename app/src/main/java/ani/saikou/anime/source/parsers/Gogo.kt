@@ -11,6 +11,7 @@ import ani.saikou.loadData
 import ani.saikou.logger
 import ani.saikou.media.Media
 import ani.saikou.media.Source
+import ani.saikou.others.MalSyncBackup
 import ani.saikou.saveData
 import ani.saikou.toastString
 import kotlinx.coroutines.Dispatchers
@@ -98,21 +99,26 @@ class Gogo(private val dub:Boolean=false, override val name: String = "gogoanime
         try{
         var slug:Source? = loadData("go-go${if(dub) "dub" else ""}_${media.id}")
         if (slug==null) {
-            var it = (media.nameMAL ?: media.nameRomaji) + if (dub) " (Dub)" else ""
-            live.postValue("Searching for $it")
-            logger("Gogo : Searching for $it")
-            var search = search(it)
-            if (search.isNotEmpty()) {
-                slug = search[0]
-                saveSource(slug,media.id,false)
-            } else{
-                it = media.nameRomaji+ if (dub) " (Dub)" else ""
-                search = search(it)
+            slug = MalSyncBackup[media.id,"Gogoanime",dub]
+            if(slug!=null)
+                saveSource(slug, media.id, false)
+            else{
+                var it = (media.nameMAL ?: media.nameRomaji) + if (dub) " (Dub)" else ""
                 live.postValue("Searching for $it")
                 logger("Gogo : Searching for $it")
+                var search = search(it)
                 if (search.isNotEmpty()) {
                     slug = search[0]
-                    saveSource(slug,media.id,false)
+                    saveSource(slug, media.id, false)
+                } else {
+                    it = media.nameRomaji + if (dub) " (Dub)" else ""
+                    search = search(it)
+                    live.postValue("Searching for $it")
+                    logger("Gogo : Searching for $it")
+                    if (search.isNotEmpty()) {
+                        slug = search[0]
+                        saveSource(slug, media.id, false)
+                    }
                 }
             }
         }

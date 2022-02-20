@@ -100,6 +100,7 @@ class MangaFragment : Fragment() {
         }
 
         binding.mangaSearchBar.hint = "MANGA"
+
         binding.mangaSearchBarText.setOnClickListener{
             ContextCompat.startActivity(
                 requireActivity(),
@@ -110,6 +111,9 @@ class MangaFragment : Fragment() {
             )
         }
 
+        binding.mangaSearchBar.setEndIconOnClickListener{
+            binding.mangaSearchBarText.performClick()
+        }
         loadImage("https://bit.ly/31bsIHq",binding.mangaGenreImage)
         loadImage( "https://bit.ly/2ZGfcuG",binding.mangaTopScoreImage)
 

@@ -68,5 +68,5 @@ class AnilistSearch : ViewModel(){
     fun getSearch(): LiveData<SearchResults?> = search
     fun loadSearch(type:String,search_val:String?=null,genres:ArrayList<String>?=null,tags:ArrayList<String>?=null,sort:String="SEARCH_MATCH",adult:Boolean=false) = search.postValue(Anilist.query.search(type, search=search_val, sort=sort, genres = genres, tags = tags, isAdult = adult))
 
-    fun loadNextPage(r:SearchResults) = Anilist.query.search(r.type,r.page+1,r.perPage,r.search,r.sort,r.genres)
+    fun loadNextPage(r:SearchResults) = Anilist.query.search(r.type,r.page+1,r.perPage,r.search,r.sort,r.genres,r.tags,r.format,r.isAdult)
 }

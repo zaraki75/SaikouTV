@@ -25,10 +25,10 @@ import java.text.DecimalFormat
 class SelectorDialogFragment : BottomSheetDialogFragment(){
     private var _binding: BottomSheetSelectorBinding? = null
     private val binding get() = _binding!!
-    private lateinit var model : MediaDetailsViewModel
+    val model : MediaDetailsViewModel by activityViewModels()
     private lateinit var scope: CoroutineScope
     private var media: Media? = null
-    private lateinit var episode: Episode
+    private var episode: Episode? = null
     private var makeDefault = false
     private var selected:String?=null
     private var launch:Boolean?=null
@@ -60,82 +60,81 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val mo : MediaDetailsViewModel by activityViewModels()
         scope = viewLifecycleOwner.lifecycleScope
-        model = mo
-
         model.getMedia().observe(viewLifecycleOwner) { m ->
             media = m
             if (media != null) {
-                episode = media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!
-                if (selected != null) {
-                    binding.selectorListContainer.visibility = View.GONE
-                    binding.selectorAutoListContainer.visibility = View.VISIBLE
-                    binding.selectorAutoText.text = selected
-                    binding.selectorCancel.setOnClickListener {
-                        media!!.selected!!.stream = null
-                        model.saveSelected(media!!.id, media!!.selected!!, requireActivity())
-                        dismiss()
-                    }
-                    fun fail() {
-                        toastString("Couldn't auto select the server, Please try again!")
-                        binding.selectorCancel.performClick()
-                    }
+                episode = media?.anime?.episodes?.get(media?.anime?.selectedEpisode)
+                if(episode!=null){
+                    if (selected != null) {
+                        binding.selectorListContainer.visibility = View.GONE
+                        binding.selectorAutoListContainer.visibility = View.VISIBLE
+                        binding.selectorAutoText.text = selected
+                        binding.selectorCancel.setOnClickListener {
+                            media!!.selected!!.stream = null
+                            model.saveSelected(media!!.id, media!!.selected!!, requireActivity())
+                            dismiss()
+                        }
+                        fun fail() {
+                            toastString("Couldn't auto select the server, Please try again!")
+                            binding.selectorCancel.performClick()
+                        }
 
-                    fun load() {
-                        if (episode.streamLinks.containsKey(selected)) {
-                            if (episode.streamLinks[selected]!!.quality.size >= media!!.selected!!.quality) {
-                                media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedStream =
-                                    selected
-                                media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedQuality =
-                                    media!!.selected!!.quality
-                                dismiss()
-                                startExoplayer(media!!)
+                        fun load() {
+                            if (episode?.streamLinks?.containsKey(selected) == true) {
+                                if (episode!!.streamLinks[selected]!!.quality.size >= media!!.selected!!.quality) {
+                                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedStream =
+                                        selected
+                                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedQuality =
+                                        media!!.selected!!.quality
+                                    dismiss()
+                                    startExoplayer(media!!)
+                                } else fail()
                             } else fail()
-                        } else fail()
-                    }
-                    if (episode.streamLinks.isEmpty()) {
-                        model.getEpisode().observe(this) {
-                            if (it != null) {
-                                episode = it
-                                load()
+                        }
+                        if (episode?.streamLinks?.isEmpty() == true) {
+                            model.getEpisode().observe(this) {
+                                if (it != null) {
+                                    episode = it
+                                    load()
+                                }
                             }
-                        }
-                        scope.launch {
-                            if (withContext(Dispatchers.IO){ !model.loadEpisodeStream(episode, media!!.selected!!) }) fail()
-                        }
-                    } else load()
-                } else {
-                    binding.selectorRecyclerView.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin += navBarHeight }
-                    binding.selectorRecyclerView.adapter = null
-                    binding.selectorProgressBar.visibility = View.VISIBLE
+                            scope.launch {
+                                if (withContext(Dispatchers.IO){ !model.loadEpisodeStream(episode!!, media!!.selected!!) }) fail()
+                            }
+                        } else load()
+                    } else {
+                        binding.selectorRecyclerView.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin += navBarHeight }
+                        binding.selectorRecyclerView.adapter = null
+                        binding.selectorProgressBar.visibility = View.VISIBLE
 
-                    binding.selectorMakeDefault.setOnClickListener {
-                        onCheckboxClicked(it)
-                    }
-                    fun load() {
-                        binding.selectorProgressBar.visibility = View.GONE
-                        media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!] = episode
-                        binding.selectorRecyclerView.layoutManager = LinearLayoutManager(
-                            requireActivity(),
-                            LinearLayoutManager.VERTICAL,
-                            false
-                        )
-                        binding.selectorRecyclerView.adapter = StreamAdapter()
-                    }
-                    if (episode.streamLinks.size <= 1) {
-                        model.getEpisode().observe(this) {
-                            if (it != null) {
-                                episode = it
-                                load()
-                            }
+                        binding.selectorMakeDefault.setOnClickListener {
+                            onCheckboxClicked(it)
                         }
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                model.loadEpisodeStreams(episode, media!!.selected!!.source)
-                            }
+                        fun load() {
+                            binding.selectorProgressBar.visibility = View.GONE
+                            media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!] = episode!!
+                            binding.selectorRecyclerView.layoutManager = LinearLayoutManager(
+                                requireActivity(),
+                                LinearLayoutManager.VERTICAL,
+                                false
+                            )
+                            binding.selectorRecyclerView.adapter = StreamAdapter()
                         }
-                    } else load()
+                        if (episode!!.streamLinks.size <= 1) {
+                            model.getEpisode().observe(this) {
+                                if (it != null) {
+                                    episode = it
+                                    load()
+                                }
+                            }
+                            scope.launch {
+                                withContext(Dispatchers.IO) {
+                                    model.loadEpisodeStreams(episode!!, media!!.selected!!.source)
+                                }
+                            }
+                        } else load()
+                    }
                 }
             }
         }
@@ -157,7 +156,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
     }
 
     private inner class StreamAdapter : RecyclerView.Adapter<StreamAdapter.StreamViewHolder>() {
-        val links = episode.streamLinks
+        val links = episode!!.streamLinks
         val keys = links.keys.toList()
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StreamViewHolder = StreamViewHolder(ItemStreamBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         override fun onBindViewHolder(holder: StreamViewHolder, position: Int) {
@@ -173,7 +172,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
     }
 
     private inner class QualityAdapter(private val stream:String) : RecyclerView.Adapter<QualityAdapter.UrlViewHolder>() {
-        val urls = episode.streamLinks[stream]!!.quality
+        val urls = episode!!.streamLinks[stream]!!.quality
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UrlViewHolder {
             return UrlViewHolder(ItemUrlBinding.inflate(LayoutInflater.from(parent.context), parent, false))
