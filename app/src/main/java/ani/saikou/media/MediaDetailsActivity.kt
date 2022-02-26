@@ -89,7 +89,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         media.selected = model.loadSelected(media.id)
 
         loadImage(media.cover,binding.mediaCoverImage)
-        binding.mediaCoverImage.setOnClickListener{ openImage(media.cover) }
+        binding.mediaCoverImage.setOnClickListener{ openLinkInBrowser(media.cover) }
         loadImage(media.banner?:media.cover,binding.mediaBanner)
 //        binding.mediaBanner.setOnClickListener{ openImage(media.banner?:media.cover) }
 //        loadImage(media.banner?:media.cover,binding.mediaBannerStatus)
@@ -155,8 +155,16 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
             if (it != null) {
                 media = it
                 if (it.notify) binding.mediaNotify.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_round_share_24))
-                val notifyButton = PopImageButton(scope, this, binding.mediaNotify, it, R.drawable.ic_round_share_24, R.drawable.ic_round_share_24, R.color.nav_tab, R.color.violet_400, false)
-                binding.mediaNotify.setOnClickListener { notifyButton.clicked() }
+                binding.mediaNotify.setOnClickListener {
+                    val i = Intent(Intent.ACTION_SEND)
+                    i.type = "text/plain"
+                    i.putExtra(Intent.EXTRA_TEXT, media.shareLink)
+                    startActivity(Intent.createChooser(i, media.userPreferredName))
+                }
+                binding.mediaNotify.setOnLongClickListener {
+                    openLinkInBrowser(media.shareLink)
+                    true
+                }
                 progress()
             }
         }
@@ -297,14 +305,6 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
                         media.isFav = !media.isFav
                         clicked = media.isFav
                         scope.launch(Dispatchers.IO) { Anilist.mutation.toggleFav(media.anime!=null,media.id) }
-                    }
-                    else {
-                        media.notify = !media.notify
-                        clicked = media.notify
-                        val i = Intent(Intent.ACTION_SEND)
-                        i.type = "text/plain"
-                        i.putExtra(Intent.EXTRA_TEXT, media.shareLink)
-                        startActivity(Intent.createChooser(i, media.userPreferredName))
                     }
                 }
                 else clicked = !clicked

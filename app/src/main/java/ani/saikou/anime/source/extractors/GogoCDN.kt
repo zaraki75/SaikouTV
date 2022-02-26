@@ -49,7 +49,8 @@ class GogoCDN(private val getSize:Boolean): Extractor() {
                     a.add(async {
                         val label = it.jsonObject["label"].toString().lowercase().trim('"')
                         val fileURL = it.jsonObject["file"].toString().trim('"')
-                        if (label != "auto") {
+                        println(label)
+                        if (label != "auto p") {
                             list.add(
                                 Episode.Quality(
                                     fileURL,
@@ -58,6 +59,15 @@ class GogoCDN(private val getSize:Boolean): Extractor() {
                                         fileURL,
                                         mutableMapOf("referer" to url)
                                     ) else null
+                                )
+                            )
+                        }
+                        else{
+                            list.add(
+                                Episode.Quality(
+                                    fileURL,
+                                    "Multi Quality",
+                                    null
                                 )
                             )
                         }

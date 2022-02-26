@@ -16,6 +16,8 @@ import ani.saikou.saveData
 
 class SearchAdapter(private val activity: SearchActivity): RecyclerView.Adapter<SearchAdapter.SearchHeaderViewHolder>() {
     private val itemViewType = 6969
+    lateinit var search:Runnable
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchHeaderViewHolder {
         val binding = ItemSearchHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return SearchHeaderViewHolder(binding)
@@ -50,7 +52,7 @@ class SearchAdapter(private val activity: SearchActivity): RecyclerView.Adapter<
         binding.searchGenre.setAdapter(ArrayAdapter(binding.root.context, R.layout.item_dropdown,(Anilist.genres?: mapOf()).keys.toTypedArray()))
         binding.searchSortBy.setText(activity.sortBy)
         binding.searchSortBy.setAdapter(ArrayAdapter(binding.root.context, R.layout.item_dropdown, Anilist.sortBy.keys.toTypedArray()))
-        binding.searchSortBy.setText(activity.tag)
+        binding.searchTag.setText(activity.tag)
         binding.searchTag.setAdapter(ArrayAdapter(binding.root.context, R.layout.item_dropdown, Anilist.tags?: arrayListOf()))
 
         fun searchTitle(){
@@ -58,7 +60,7 @@ class SearchAdapter(private val activity: SearchActivity): RecyclerView.Adapter<
             val genre = if (binding.searchGenre.text.toString()!="") binding.searchGenre.text.toString() else null
             val sortBy = if (binding.searchSortBy.text.toString()!="") Anilist.sortBy[binding.searchSortBy.text.toString()] else null
             val tag = if (binding.searchTag.text.toString()!="") binding.searchTag.text.toString() else null
-            activity.search(true,search,genre,tag,sortBy,adult,listOnly)
+            activity.search(search,genre,tag,sortBy,adult,listOnly)
         }
 
         binding.searchBarText.doOnTextChanged { _, _, _, _ ->
@@ -130,6 +132,8 @@ class SearchAdapter(private val activity: SearchActivity): RecyclerView.Adapter<
             listOnly=b
             searchTitle()
         }
+
+        search = Runnable { searchTitle() }
     }
 
     override fun getItemCount(): Int = 1

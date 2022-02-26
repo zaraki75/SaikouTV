@@ -496,7 +496,7 @@ fun View.circularReveal(x: Int, y: Int,time:Long) {
     ViewAnimationUtils.createCircularReveal(this, x, y, 0f, max(height, width).toFloat()).setDuration(time).start()
 }
 
-fun openImage(link:String?){
+fun openLinkInBrowser(link:String?){
     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
     currActivity()?.startActivity(intent)
 }

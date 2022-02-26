@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.core.view.ViewCompat
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.core.view.updatePaddingRelative
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
@@ -23,8 +24,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.widget.CompositePageTransformer
-import androidx.viewpager2.widget.MarginPageTransformer
 import androidx.viewpager2.widget.ViewPager2
 import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistMangaViewModel
@@ -34,7 +33,6 @@ import ani.saikou.media.SearchActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -58,8 +56,9 @@ class MangaFragment : Fragment() {
         val scope = viewLifecycleOwner.lifecycleScope
 
 
-        binding.mangaContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> { topMargin = statusBarHeight }
-
+        binding.mangaTrendingViewPager.updateLayoutParams<ViewGroup.MarginLayoutParams> { height += statusBarHeight }
+        binding.mangaTitleContainer.updatePadding(top = statusBarHeight)
+        
         binding.mangaScroll.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, _, _, _, _ ->
             if(!v.canScrollVertically(1)) {
                 binding.mangaPopularRecyclerView.requestDisallowInterceptTouchEvent(false)
@@ -135,13 +134,7 @@ class MangaFragment : Fragment() {
                 binding.mangaTrendingViewPager.offscreenPageLimit = 3
                 binding.mangaTrendingViewPager.getChildAt(0).overScrollMode =
                     RecyclerView.OVER_SCROLL_NEVER
-
-                val a = CompositePageTransformer()
-                a.addTransformer(MarginPageTransformer(8f.px))
-                a.addTransformer { page, position ->
-                    page.scaleY = 0.85f + (1 - abs(position)) * 0.15f
-                }
-                binding.mangaTrendingViewPager.setPageTransformer(a)
+                binding.mangaTrendingViewPager.setPageTransformer(DepthPageTransformer())
                 trendHandler = Handler(Looper.getMainLooper())
                 trendRun = Runnable {
                     if (_binding != null) binding.mangaTrendingViewPager.currentItem =

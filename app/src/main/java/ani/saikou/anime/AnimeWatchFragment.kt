@@ -2,6 +2,7 @@ package ani.saikou.anime
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -244,8 +245,16 @@ open class AnimeWatchFragment : Fragment() {
         super.onDestroy()
     }
 
+    var state: Parcelable?=null
     override fun onResume() {
-        binding.mediaInfoProgressBar.visibility = progress
         super.onResume()
+        binding.mediaInfoProgressBar.visibility = progress
+        binding.animeSourceRecycler.layoutManager?.onRestoreInstanceState(state)
     }
+
+    override fun onPause() {
+        super.onPause()
+        state = binding.animeSourceRecycler.layoutManager?.onSaveInstanceState()
+    }
+
 }

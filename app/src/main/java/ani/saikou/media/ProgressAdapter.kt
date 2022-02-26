@@ -8,13 +8,16 @@ import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.DoubleClickListener
 import ani.saikou.databinding.ItemProgressbarBinding
 import ani.saikou.toastString
 
-class ProgressAdapter(private val horizontal:Boolean=true): RecyclerView.Adapter<ProgressAdapter.ProgressViewHolder>() {
-    lateinit var bar:ProgressBar
+class ProgressAdapter(private val horizontal:Boolean=true,searched:Boolean): RecyclerView.Adapter<ProgressAdapter.ProgressViewHolder>() {
+    val ready = MutableLiveData(searched)
+    var bar:ProgressBar?=null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProgressViewHolder {
         val binding = ItemProgressbarBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ProgressViewHolder(binding)
@@ -36,6 +39,9 @@ class ProgressAdapter(private val horizontal:Boolean=true): RecyclerView.Adapter
             doubleClickDetector.onTouchEvent(event)
             v.performClick()
             true
+        }
+        if(ready.value == false) {
+            ready.postValue(true)
         }
     }
 

@@ -37,13 +37,11 @@ class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChang
 
         initActivity(this)
         screenWidth = resources.displayMetrics.widthPixels.toFloat()
-        this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_status)
+        this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg_inv)
 
         binding.characterBanner.updateLayoutParams{ height += statusBarHeight }
-        binding.characterBannerStatus.updateLayoutParams{ height += statusBarHeight }
-        binding.characterBanner.translationY = -statusBarHeight.toFloat()
         binding.characterClose.updateLayoutParams<ViewGroup.MarginLayoutParams> { topMargin += statusBarHeight }
-        binding.characterAppBar.updateLayoutParams<ViewGroup.MarginLayoutParams> { topMargin += statusBarHeight }
+        binding.characterCollapsing.minimumHeight = statusBarHeight
         binding.characterCover.updateLayoutParams<ViewGroup.MarginLayoutParams> { topMargin += statusBarHeight }
         binding.characterRecyclerView.updatePadding(bottom = 64f.px + navBarHeight)
         binding.characterTitle.isSelected = true
@@ -55,9 +53,8 @@ class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChang
         character = intent.getSerializableExtra("character") as Character
         binding.characterTitle.text = character.name
         loadImage(character.banner,binding.characterBanner)
-        loadImage(character.banner,binding.characterBannerStatus)
         loadImage(character.image,binding.characterCoverImage)
-        binding.characterCoverImage.setOnClickListener{ (openImage(character.image)) }
+        binding.characterCoverImage.setOnClickListener{ (openLinkInBrowser(character.image)) }
 //        binding.characterBanner.setOnClickListener{ openImage(character.banner) }
 
         model.getCharacter().observe(this) {
@@ -100,7 +97,6 @@ class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChang
     }
 
     override fun onResume() {
-        binding.characterBannerStatus.visibility=if (!isCollapsed) View.VISIBLE else View.GONE
         binding.characterProgress.visibility=if (!loaded) View.VISIBLE else View.GONE
         super.onResume()
     }
@@ -123,13 +119,11 @@ class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChang
 
         if (percentage >= percent && !isCollapsed) {
             isCollapsed = true
-            binding.characterBannerStatus.visibility=View.GONE
             this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg)
         }
         if (percentage <= percent && isCollapsed) {
             isCollapsed = false
-            binding.characterBannerStatus.visibility=View.VISIBLE
-            this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_status)
+            this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg_inv)
         }
     }
 }

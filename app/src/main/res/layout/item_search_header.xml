@@ -50,7 +50,7 @@
         android:orientation="horizontal">
 
         <CheckBox
-            android:id="@+id/searchAdultCheck"
+            android:id="@+id/searchList"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
@@ -62,7 +62,7 @@
             tools:ignore="TextContrastCheck,TouchTargetSizeCheck" />
 
         <CheckBox
-            android:id="@+id/searchList"
+            android:id="@+id/searchAdultCheck"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
