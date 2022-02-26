@@ -29,8 +29,8 @@ class Gogo(private val dub:Boolean=false, override val name: String = "gogoanime
     )
 
     private fun httpsIfy(text: String): String {
-        return if(text.take(2)=="//"){"https:$text"}
-        else{text}
+        return if(text.take(2)=="//") "https:$text"
+        else text
     }
 
     private fun directLinkify(name: String,url: String,getSize:Boolean=true): Episode.StreamLinks? {
@@ -52,7 +52,7 @@ class Gogo(private val dub:Boolean=false, override val name: String = "gogoanime
             val linkForVideos = mutableMapOf<String,Episode.StreamLinks?>()
             try{
             withContext(Dispatchers.Default) {
-                Jsoup.connect(episode.link!!).ignoreHttpErrors(true).get().select("div.anime_muti_link > ul > li:not(li.anime)").forEach {
+                Jsoup.connect(episode.link!!).ignoreHttpErrors(true).get().select("div.anime_muti_link > ul > li").forEach {
                     val name = it.select("a").text().replace("Choose this server", "")
                     if(name==server)
                         launch {
@@ -77,7 +77,7 @@ class Gogo(private val dub:Boolean=false, override val name: String = "gogoanime
         episode.streamLinks = runBlocking {
             val linkForVideos = mutableMapOf<String,Episode.StreamLinks?>()
             withContext(Dispatchers.Default) {
-                Jsoup.connect(episode.link!!).ignoreHttpErrors(true).get().select("div.anime_muti_link > ul > li:not(li.anime)").forEach {
+                Jsoup.connect(episode.link!!).ignoreHttpErrors(true).get().select("div.anime_muti_link > ul > li").forEach {
                     launch {
                         val directLinks = directLinkify(
                             it.select("a").text().replace("Choose this server", ""),

@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import ani.saikou.databinding.FragmentListBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaAdaptor
-import ani.saikou.media.MediaLargeAdaptor
 
 class ListFragment : Fragment() {
     private var _binding: FragmentListBinding? = null
@@ -37,7 +36,7 @@ class ListFragment : Fragment() {
 
         fun update(){
             if (grid!=null && list!=null) {
-                val adapter = if (grid!!) MediaAdaptor(list!!, requireActivity(), true) else MediaLargeAdaptor(list!!, requireActivity())
+                val adapter = MediaAdaptor(if(grid!!) 0 else 1,list!!, requireActivity(), true)
                 binding.listRecyclerView.layoutManager = GridLayoutManager(requireContext(), if (grid!!) (screenWidth / 124f).toInt() else 1)
                 binding.listRecyclerView.adapter = adapter
             }

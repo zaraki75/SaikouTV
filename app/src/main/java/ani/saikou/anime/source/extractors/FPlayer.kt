@@ -19,7 +19,10 @@ class FPlayer(private val getSize:Boolean): Extractor() {
         val apiLink = url.replace("/v/","/api/source/")
         val tempQuality = mutableListOf<Episode.Quality>()
         try{
-        val jsonResponse = Json.decodeFromString<JsonObject>(Jsoup.connect(apiLink).ignoreContentType(true).post().body().text())
+        val jsonResponse = Json.decodeFromString<JsonObject>(Jsoup.connect(apiLink).ignoreContentType(true)
+            .header("referer",url)
+            .post().body().text())
+
         if(jsonResponse["success"].toString() == "true") {
             val a = arrayListOf<Deferred<*>>()
             runBlocking {

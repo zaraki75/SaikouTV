@@ -29,7 +29,7 @@ class MediaDetailsViewModel:ViewModel() {
     }
 
     var continueMedia:Boolean? = null
-    var loading=false
+    private var loading=false
 
     private val media: MutableLiveData<Media> = MutableLiveData<Media>(null)
     fun getMedia(): LiveData<Media> = media

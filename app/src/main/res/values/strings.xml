@@ -30,7 +30,7 @@
     <string name="search_results">Resultados de busqueda</string>
     <string name="sort_by">Ordenar por</string>
     <string name="genre">Genero</string>
-    <string name="top_score">Puntuacion</string>
+     <string name="top_score">Puntuacion</string>
     <string name="updated">Actualizado recientemente</string>
     <string name="trending_anime">Anime en tendencia</string>
     <string name="popular_anime">Animes Populares</string>
@@ -115,5 +115,6 @@
     <string name="make_default">Make Default</string>
     <string name="filler">Filler</string>
     <string name="adult">Adult</string>
+    <string name="list_only">List Only</string>
     <string name="tag">Tag</string>
 </resources>

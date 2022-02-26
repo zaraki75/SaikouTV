@@ -15,7 +15,7 @@ class MediaGridAdapter(private val medias: ArrayList<Media>, private val activit
 
     override fun onBindViewHolder(holder: MediaGridViewHolder, position: Int) {
         val binding = holder.binding
-        binding.root.adapter = MediaAdaptor(medias,activity,true)
+        binding.root.adapter = MediaAdaptor(0,medias,activity,true)
         binding.root.layoutManager = GridLayoutManager(activity,medias.size)
     }
 
