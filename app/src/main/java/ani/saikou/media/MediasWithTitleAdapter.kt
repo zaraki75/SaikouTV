@@ -18,7 +18,7 @@ class MediasWithTitleAdapter(private val medias: MutableMap<String,ArrayList<Med
     override fun onBindViewHolder(holder: MediaGridViewHolder, position: Int) {
         val binding = holder.binding
         binding.itemTitle.text = keys[position]
-        binding.itemRecyclerView.adapter = MediaAdaptor(medias[keys[position]]!!,activity)
+        binding.itemRecyclerView.adapter = MediaAdaptor(0,medias[keys[position]]!!,activity)
         binding.itemRecyclerView.layoutManager = LinearLayoutManager(activity,RecyclerView.HORIZONTAL,false)
     }
 

@@ -30,7 +30,7 @@ import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistMangaViewModel
 import ani.saikou.databinding.FragmentMangaBinding
 import ani.saikou.media.MediaAdaptor
-import ani.saikou.media.MediaLargeAdaptor
+import ani.saikou.media.SearchActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -131,7 +131,7 @@ class MangaFragment : Fragment() {
             if (it != null) {
                 binding.mangaTrendingProgressBar.visibility = View.GONE
                 binding.mangaTrendingViewPager.adapter =
-                    MediaLargeAdaptor(it, requireActivity(), binding.mangaTrendingViewPager)
+                    MediaAdaptor(2,it, requireActivity(),viewPager = binding.mangaTrendingViewPager)
                 binding.mangaTrendingViewPager.offscreenPageLimit = 3
                 binding.mangaTrendingViewPager.getChildAt(0).overScrollMode =
                     RecyclerView.OVER_SCROLL_NEVER
@@ -162,7 +162,7 @@ class MangaFragment : Fragment() {
         model.getTrendingNovel().observe(viewLifecycleOwner) {
             if (it != null) {
                 binding.mangaNovelProgressBar.visibility = View.GONE
-                binding.mangaNovelRecyclerView.adapter = MediaAdaptor(it, requireActivity())
+                binding.mangaNovelRecyclerView.adapter = MediaAdaptor(0,it, requireActivity())
                 binding.mangaNovelRecyclerView.layoutManager =
                     LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
                 binding.mangaNovelRecyclerView.visibility = View.VISIBLE
@@ -171,7 +171,7 @@ class MangaFragment : Fragment() {
 
         model.getPopular().observe(viewLifecycleOwner) {
             if (it != null) {
-                val adapter = MediaLargeAdaptor(it.results, requireActivity())
+                val adapter = MediaAdaptor(1,it.results, requireActivity())
                 var loading = false
                 binding.mangaPopularRecyclerView.adapter = adapter
                 binding.mangaPopularRecyclerView.layoutManager =

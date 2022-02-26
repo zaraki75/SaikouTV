@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.core.view.ViewCompat
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.core.view.updatePaddingRelative
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
@@ -23,18 +24,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.widget.CompositePageTransformer
-import androidx.viewpager2.widget.MarginPageTransformer
 import androidx.viewpager2.widget.ViewPager2
 import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistAnimeViewModel
 import ani.saikou.databinding.FragmentAnimeBinding
 import ani.saikou.media.MediaAdaptor
-import ani.saikou.media.MediaLargeAdaptor
+import ani.saikou.media.SearchActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -52,13 +50,12 @@ class AnimeFragment : Fragment() {
 
     override fun onDestroyView() { super.onDestroyView();_binding = null }
 
-
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val scope = viewLifecycleOwner.lifecycleScope
-        binding.animeContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> { topMargin = statusBarHeight }
+        binding.animeTrendingViewPager.updateLayoutParams { height += statusBarHeight }
+        binding.animeTitleContainer.updatePadding(top = statusBarHeight)
 
         binding.animeScroll.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, _, _, _, _ ->
             if(!v.canScrollVertically(1)) {
@@ -131,17 +128,11 @@ class AnimeFragment : Fragment() {
             if (it != null) {
                 binding.animeTrendingProgressBar.visibility = View.GONE
                 binding.animeTrendingViewPager.adapter =
-                    MediaLargeAdaptor(it, requireActivity(), binding.animeTrendingViewPager)
+                    MediaAdaptor(2,it, requireActivity(),viewPager = binding.animeTrendingViewPager)
                 binding.animeTrendingViewPager.offscreenPageLimit = 3
                 binding.animeTrendingViewPager.getChildAt(0).overScrollMode =
                     RecyclerView.OVER_SCROLL_NEVER
-
-                val a = CompositePageTransformer()
-                a.addTransformer(MarginPageTransformer(8f.px))
-                a.addTransformer { page, position ->
-                    page.scaleY = 0.85f + (1 - abs(position)) * 0.15f
-                }
-                binding.animeTrendingViewPager.setPageTransformer(a)
+                binding.animeTrendingViewPager.setPageTransformer(DepthPageTransformer())
                 trendHandler = Handler(Looper.getMainLooper())
                 trendRun = Runnable {
                     if (_binding != null) binding.animeTrendingViewPager.currentItem =
@@ -162,16 +153,15 @@ class AnimeFragment : Fragment() {
         model.getUpdated().observe(viewLifecycleOwner) {
             if (it != null) {
                 binding.animeUpdatedProgressBar.visibility = View.GONE
-                binding.animeUpdatedRecyclerView.adapter = MediaAdaptor(it, requireActivity())
-                binding.animeUpdatedRecyclerView.layoutManager =
-                    LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+                binding.animeUpdatedRecyclerView.adapter = MediaAdaptor(0,it, requireActivity())
+                binding.animeUpdatedRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
                 binding.animeUpdatedRecyclerView.visibility = View.VISIBLE
             }
         }
 
         model.getPopular().observe(viewLifecycleOwner) {
             if (it != null) {
-                val adapter = MediaLargeAdaptor(it.results, requireActivity())
+                val adapter = MediaAdaptor(1,it.results, requireActivity())
                 var loading = false
                 binding.animePopularRecyclerView.adapter = adapter
                 binding.animePopularRecyclerView.layoutManager =

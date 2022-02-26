@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
-import ani.saikou.SearchActivity
 import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.ItemGenreBinding
 import ani.saikou.loadImage

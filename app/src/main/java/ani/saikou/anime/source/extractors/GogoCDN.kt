@@ -3,8 +3,8 @@ package ani.saikou.anime.source.extractors
 import android.util.Base64
 import ani.saikou.anime.Episode
 import ani.saikou.anime.source.Extractor
+import ani.saikou.findBetween
 import ani.saikou.getSize
-import ani.saikou.toastString
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -22,12 +22,13 @@ import javax.crypto.spec.SecretKeySpec
 class GogoCDN(private val getSize:Boolean): Extractor() {
     override fun getStreamLinks(name: String, url: String): Episode.StreamLinks {
         val list = arrayListOf<Episode.Quality>()
-        try {
+//        try {
             val response = Jsoup.connect(url)
                 .ignoreContentType(true)
                 .ignoreHttpErrors(true)
                 .get()
 
+        if(url.contains("streaming.php")) {
             val encrypted = response.select("script[data-name='crypto']").attr("data-value")
             val iv = response.select("script[data-name='ts']").attr("data-value").toByteArray()
 
@@ -45,7 +46,7 @@ class GogoCDN(private val getSize:Boolean): Extractor() {
             val a = arrayListOf<Deferred<*>>()
             runBlocking {
                 Json.decodeFromString<JsonObject>(jsonResponse).jsonObject["source"]!!.jsonArray.forEach {
-                    a.add(async{
+                    a.add(async {
                         val label = it.jsonObject["label"].toString().lowercase().trim('"')
                         val fileURL = it.jsonObject["file"].toString().trim('"')
                         if (label != "auto") {
@@ -55,7 +56,7 @@ class GogoCDN(private val getSize:Boolean): Extractor() {
                                     label.replace(" ", ""),
                                     if (getSize) getSize(
                                         fileURL,
-                                        mutableMapOf("referer" to "https://gogoanime.pe")
+                                        mutableMapOf("referer" to url)
                                     ) else null
                                 )
                             )
@@ -64,10 +65,23 @@ class GogoCDN(private val getSize:Boolean): Extractor() {
                 }
                 a.awaitAll()
             }
-        }catch (e:Exception){
-            toastString(e.toString())
         }
-        return Episode.StreamLinks(name, list, mutableMapOf("referer" to "https://gogoplay1.com/"))
+        else if (url.contains("embedplus")){
+            val fileURL = response.toString().findBetween("sources:[{file: '","',")
+            if(fileURL!=null) {
+                list.add(
+                    Episode.Quality(
+                        fileURL,
+                        "Multi Quality",
+                        null
+                    )
+                )
+            }
+        }
+//        }catch (e:Exception){
+//            toastString(e.toString())
+//        }
+        return Episode.StreamLinks(name, list, mutableMapOf("referer" to url))
     }
 
     private fun cryptoHandler(string:String,iv:ByteArray,secretKeyString:ByteArray,encrypt:Boolean=true) : String {

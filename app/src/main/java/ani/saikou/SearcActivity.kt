@@ -22,12 +22,11 @@ import ani.saikou.anilist.AnilistSearch
 import ani.saikou.anilist.SearchResults
 import ani.saikou.databinding.ActivitySearchBinding
 import ani.saikou.media.MediaAdaptor
-import ani.saikou.media.MediaLargeAdaptor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class SearchActivity : AppCompatActivity() {
+class SearcActivity : AppCompatActivity() {
     private lateinit var binding : ActivitySearchBinding
     private val scope = lifecycleScope
     private var screenWidth:Float = 0f
@@ -73,15 +72,22 @@ class SearchActivity : AppCompatActivity() {
         binding.searchTag.setAdapter(ArrayAdapter(this, R.layout.item_dropdown,Anilist.tags?: arrayListOf()))
 
         fun recycler(){
-            if (search!=null) {
-                val adapter = if(grid) MediaAdaptor(search!!.results, this, true) else MediaLargeAdaptor(search!!.results,this)
+            if(search!=null) {
+                val adapter = MediaAdaptor(
+                    if(grid) 0 else 1,
+                    search!!.results,
+                    this,
+                    true
+                )
                 var loading = false
                 binding.searchRecyclerView.adapter = adapter
-                binding.searchRecyclerView.layoutManager = GridLayoutManager(this, if (grid) (screenWidth / 124f).toInt() else 1)
+                binding.searchRecyclerView.layoutManager =
+                    GridLayoutManager(this, if (grid) (screenWidth / 124f).toInt() else 1)
                 binding.searchProgress.visibility = View.GONE
                 binding.searchRecyclerView.visibility = View.VISIBLE
                 if (search!!.hasNextPage) {
-                    binding.searchRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                    binding.searchRecyclerView.addOnScrollListener(object :
+                        RecyclerView.OnScrollListener() {
                         override fun onScrolled(v: RecyclerView, dx: Int, dy: Int) {
                             if (!v.canScrollVertically(1)) {
                                 if (search!!.hasNextPage && !loading) {
@@ -89,8 +95,10 @@ class SearchActivity : AppCompatActivity() {
                                     scope.launch {
                                         if (!loading) {
                                             loading = true
-                                            val get = withContext(Dispatchers.IO){ model.loadNextPage(search!!) }
-                                            if(get!=null) {
+                                            val get = withContext(Dispatchers.IO) {
+                                                model.loadNextPage(search!!)
+                                            }
+                                            if (get != null) {
                                                 val a = search!!.results.size
                                                 search!!.results.addAll(get.results)
                                                 adapter.notifyItemRangeInserted(a, get.results.size)
@@ -103,11 +111,11 @@ class SearchActivity : AppCompatActivity() {
                                     }
                                 } else binding.searchProgress.visibility = View.GONE
                             }
-                            if (!v.canScrollVertically(-1)){
-                                binding.searchRecyclerView.requestDisallowInterceptTouchEvent(true)
-                                window.statusBarColor = ContextCompat.getColor(this@SearchActivity, R.color.status)
+                            if (!v.canScrollVertically(-1)) {
+                                window.statusBarColor =
+                                    ContextCompat.getColor(this@SearcActivity, R.color.status)
                             }
-                            if(v.canScrollVertically(-1)){
+                            if (v.canScrollVertically(-1)) {
                                 binding.searchBarText.clearFocus()
                                 imm.hideSoftInputFromWindow(binding.searchBarText.windowToken, 0)
                             }
@@ -122,8 +130,9 @@ class SearchActivity : AppCompatActivity() {
         binding.searchBar.hint = type
 
         model.getSearch().observe(this){
-            search=it
-            recycler()
+            if(it!=null)
+                search = it
+                recycler()
         }
         binding.searchBarText.requestFocusFromTouch()
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)

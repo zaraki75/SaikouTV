@@ -110,7 +110,7 @@ class MediaInfoFragment : Fragment() {
                     }
                 }
                 binding.mediaInfoRelationRecyclerView.adapter =
-                    MediaAdaptor(media.relations!!, requireActivity())
+                    MediaAdaptor(0,media.relations!!, requireActivity())
                 binding.mediaInfoRelationRecyclerView.layoutManager =
                     LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
@@ -125,7 +125,7 @@ class MediaInfoFragment : Fragment() {
                     LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
                 binding.mediaInfoRecommendedRecyclerView.adapter =
-                    MediaAdaptor(media.recommendations!!, requireActivity())
+                    MediaAdaptor(0,media.recommendations!!, requireActivity())
                 binding.mediaInfoRecommendedRecyclerView.layoutManager =
                     LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
