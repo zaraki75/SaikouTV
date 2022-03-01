@@ -52,8 +52,8 @@ class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChang
         }
         character = intent.getSerializableExtra("character") as Character
         binding.characterTitle.text = character.name
-        loadImage(character.banner,binding.characterBanner)
-        loadImage(character.image,binding.characterCoverImage)
+        binding.characterBanner.loadImage(character.banner)
+        binding.characterCoverImage.loadImage(character.image)
         binding.characterCoverImage.setOnClickListener{ (openLinkInBrowser(character.image)) }
 //        binding.characterBanner.setOnClickListener{ openImage(character.banner) }
 

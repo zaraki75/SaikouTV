@@ -25,19 +25,24 @@
         tools:ignore="AllowBackup">
         <activity
             android:name=".media.SearchActivity"
-            android:exported="false" />
+            android:launchMode = "singleTask"
+            android:exported="true" />
         <activity
             android:name=".media.StudioActivity"
-            android:exported="false" />
+            android:launchMode = "singleTask"
+            android:exported="true" />
         <activity
             android:name=".user.ListActivity"
-            android:exported="false" />
+            android:launchMode = "singleTask"
+            android:exported="true" />
         <activity
             android:name=".manga.MangaReaderActivity"
+            android:launchMode = "singleTask"
             android:configChanges="orientation|screenSize|layoutDirection"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".GenreActivity"
+            android:launchMode = "singleTask"
             android:exported="true" />
 
         <activity
@@ -45,18 +50,22 @@
             android:exported="true" />
         <activity
             android:name=".media.CharacterDetailsActivity"
+            android:launchMode = "singleTask"
             android:exported="true" />
         <activity
             android:name=".NoInternet"
+            android:launchMode = "singleTask"
             android:exported="true" />
         <activity
             android:name=".anime.ExoplayerView"
+            android:launchMode = "singleTask"
             android:configChanges="orientation|screenSize|layoutDirection"
             android:exported="true"
             android:keepScreenOn="true"
             android:theme="@style/Theme.Saikou.Exoplayer" />
         <activity
             android:name=".anilist.Login"
+            android:launchMode = "singleTask"
             android:configChanges="orientation|screenSize|layoutDirection"
             android:exported="true">
             <intent-filter android:label="Anilist Login for Saikou">
@@ -72,6 +81,7 @@
         </activity>
         <activity
             android:name=".anilist.UrlMedia"
+            android:launchMode = "singleTask"
             android:configChanges="orientation|screenSize|layoutDirection"
             android:exported="true">
             <intent-filter android:label="Read on Saikou">
@@ -101,6 +111,7 @@
         </activity>
         <activity
             android:name=".MainActivity"
+            android:launchMode = "singleTask"
             android:configChanges="orientation|screenSize|layoutDirection"
             android:exported="true">
             <intent-filter>

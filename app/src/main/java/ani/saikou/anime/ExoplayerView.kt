@@ -7,6 +7,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.Animatable
 import android.hardware.SensorManager
@@ -36,6 +37,7 @@ import ani.saikou.anime.source.HSources
 import ani.saikou.databinding.ActivityExoplayerBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
+import com.bumptech.glide.Glide
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
@@ -43,7 +45,7 @@ import com.google.android.exoplayer2.trackselection.MappingTrackSelector
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.CaptionStyleCompat
 import com.google.android.exoplayer2.ui.CaptionStyleCompat.EDGE_TYPE_OUTLINE
-import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.google.android.exoplayer2.ui.TrackSelectionDialogBuilder
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
@@ -58,6 +60,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.min
 import kotlin.math.roundToInt
 
+
 class ExoplayerView : AppCompatActivity(), Player.Listener {
     private lateinit var binding : ActivityExoplayerBinding
     private lateinit var exoPlayer: ExoPlayer
@@ -66,7 +69,8 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     private lateinit var playbackParameters: PlaybackParameters
     private lateinit var mediaItem : MediaItem
 
-    private lateinit var playerView: PlayerView
+    private lateinit var playerView: StyledPlayerView
+    private lateinit var exoPlay: ImageButton
     private lateinit var exoSource: ImageButton
     private lateinit var exoRotate: ImageButton
     private lateinit var exoQuality: ImageButton
@@ -105,18 +109,43 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
     @SuppressLint("ClickableViewAccessibility")
 
+    var notchHeight:Int=0
+
     override fun onAttachedToWindow() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val displayCutout =window.decorView.rootWindowInsets.displayCutout
             if (displayCutout != null) {
                 if (displayCutout.boundingRects.size>0) {
-                    val notchHeight = min(displayCutout.boundingRects[0].width(),displayCutout.boundingRects[0].height())
-                    exoBrightnessCont.updateLayoutParams<ViewGroup.MarginLayoutParams> { marginEnd +=notchHeight }
-                    exoVolumeCont.updateLayoutParams<ViewGroup.MarginLayoutParams> { marginStart +=notchHeight }
+                    notchHeight = min(displayCutout.boundingRects[0].width(),displayCutout.boundingRects[0].height())
+                    checkNotch()
                 }
             }
         }
         super.onAttachedToWindow()
+    }
+
+    private fun checkNotch(){
+        if(notchHeight!=0) {
+            val orientation = resources.configuration.orientation
+            playerView.findViewById<View>(R.id.exo_controller_margin).updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                        marginStart = notchHeight
+                        marginEnd = notchHeight
+                        topMargin = 0
+                    } else {
+                        topMargin = notchHeight
+                        marginStart = 0
+                        marginEnd = 0
+                    }
+                }
+            playerView.findViewById<View>(R.id.exo_buffering).translationY = (if (orientation == Configuration.ORIENTATION_LANDSCAPE) 0 else (notchHeight+8f.px)).dp
+            exoBrightnessCont.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                marginEnd = if (orientation == Configuration.ORIENTATION_LANDSCAPE) notchHeight else 0
+            }
+            exoVolumeCont.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                marginStart = if (orientation == Configuration.ORIENTATION_LANDSCAPE) notchHeight else 0
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -130,6 +159,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
         playerView = findViewById(R.id.player_view)
         exoQuality = playerView.findViewById(R.id.exo_quality)
+        exoPlay = playerView.findViewById(R.id.exo_play)
         exoSource = playerView.findViewById(R.id.exo_source)
         exoRotate = playerView.findViewById(R.id.exo_rotate)
         exoSpeed = playerView.findViewById(R.id.exo_playback_speed)
@@ -179,6 +209,21 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         //BackButton
         playerView.findViewById<ImageButton>(R.id.exo_back).setOnClickListener{
             onBackPressed()
+        }
+
+        //Play Pause
+
+        exoPlay.setOnClickListener {
+            if (isInitialized) isPlayerPlaying = exoPlayer.isPlaying
+            (exoPlay.drawable as Animatable?)?.start()
+            if(isPlayerPlaying) {
+                Glide.with(this).load(R.drawable.anim_play_to_pause).into(exoPlay)
+                exoPlayer.pause()
+            }
+            else {
+                Glide.with(this).load(R.drawable.anim_pause_to_play).into(exoPlay)
+                exoPlayer.play()
+            }
         }
 
         //SliderLock
@@ -247,9 +292,10 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             }
         }
         fun handleController(){
-            if(playerView.isControllerVisible){
+            if(playerView.isControllerFullyVisible){
                 playerView.hideController()
             }else{
+                checkNotch()
                 playerView.showController()
                 ObjectAnimator.ofFloat(playerView.findViewById(R.id.exo_controller),"alpha",0f,1f).setDuration(200).start()
             }
@@ -651,7 +697,9 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        playerView.keepScreenOn = isPlaying
+        isPlayerPlaying=isPlaying
+        (exoPlay.drawable as Animatable?)?.start()
+        Glide.with(this).load(if(isPlaying) R.drawable.anim_play_to_pause else R.drawable.anim_pause_to_play).into(exoPlay)
     }
 
     @SuppressLint("SetTextI18n")
@@ -675,10 +723,21 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
     }
 
+    override fun onPlayerError(error: PlaybackException) {
+        when (error.errorCode) {
+            PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS -> {
+                toastString("Source Exception : ${error.message}")
+                if(isInitialized) exoSource.performClick()
+            }
+            else -> toastString("Player Error ${error.errorCode} (${error.errorCodeName}) : ${error.message}")
+        }
+    }
+
     override fun onPlaybackStateChanged(playbackState: Int) {
         if (playbackState == ExoPlayer.STATE_READY && episodeLength==0f) {
             episodeLength = exoPlayer.duration.toFloat()
         }
+        playerView.keepScreenOn = !(playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED)
         super.onPlaybackStateChanged(playbackState)
     }
 

@@ -15,14 +15,14 @@ import ani.saikou.*
 import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistSearch
 import ani.saikou.anilist.SearchResults
-import ani.saikou.databinding.ActivitySearch2Binding
+import ani.saikou.databinding.ActivitySearchBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
 
 class SearchActivity : AppCompatActivity() {
-    private lateinit var binding: ActivitySearch2Binding
+    private lateinit var binding: ActivitySearchBinding
     private val scope = lifecycleScope
     val model: AnilistSearch by viewModels()
 
@@ -41,11 +41,9 @@ class SearchActivity : AppCompatActivity() {
     var adult = false
     var listOnly = false
 
-//    private lateinit var searchResults:SearchResults
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivitySearch2Binding.inflate(layoutInflater)
+        binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initActivity(this)
         screenWidth = resources.displayMetrics.run { widthPixels / density }
@@ -60,10 +58,16 @@ class SearchActivity : AppCompatActivity() {
         sortBy = intent.getStringExtra("sortBy")
         style = loadData<Int>("searchStyle") ?: 0
         adult = if (Anilist.adult) intent.getBooleanExtra("hentai", false) else false
+        listOnly = intent.getBooleanExtra("listOnly",false)
 
+        val notSet = model.notSet
         if(model.notSet) {
-            model.notSet = true
-            model.searchResults = SearchResults(type, false, results = arrayListOf(), hasNextPage = false)
+            model.notSet = false
+            model.searchResults = SearchResults(type,
+                isAdult = false,
+                onList = false,
+                results = arrayListOf(),
+                hasNextPage = false)
         }
 
         progressAdapter = ProgressAdapter(searched = model.searched)
@@ -108,6 +112,7 @@ class SearchActivity : AppCompatActivity() {
         model.getSearch().observe(this) {
             if (it != null) {
                 model.searchResults.apply {
+                    onList = it.onList
                     isAdult = it.isAdult
                     perPage = it.perPage
                     search = it.search
@@ -129,13 +134,19 @@ class SearchActivity : AppCompatActivity() {
                     progressAdapter.bar?.visibility = View.GONE
             }
         }
-        if (genre != null || sortBy != null || adult || listOnly)
-            progressAdapter.ready.observe(this) {
-                if (it == true && !model.searched) {
-                    model.searched = true
-                    headerAdaptor.search.run()
+
+        progressAdapter.ready.observe(this) {
+            if(it == true) {
+                if (genre != null || sortBy != null || adult) {
+                    if (!model.searched) {
+                        model.searched = true
+                        headerAdaptor.search.run()
+                    }
                 }
+                else if (notSet)
+                    headerAdaptor.requestFocus.run()
             }
+        }
     }
 
     private var searchTimer = Timer()
@@ -144,7 +155,7 @@ class SearchActivity : AppCompatActivity() {
         search: String? = null,
         genre: String? = null,
         tag: String? = null,
-        sortBy: String? = null,
+        sort: String? = null,
         adult: Boolean = false,
         listOnly: Boolean = false
     ) {
@@ -154,6 +165,7 @@ class SearchActivity : AppCompatActivity() {
         progressAdapter.bar?.visibility = View.VISIBLE
 
         this.genre = genre
+        this.sortBy = sort
         this.searchText = search
         this.adult = adult
         this.tag = tag
@@ -170,7 +182,7 @@ class SearchActivity : AppCompatActivity() {
                         search,
                         if (genre != null) arrayListOf(genre) else null,
                         if (tag != null) arrayListOf(tag) else null,
-                        sortBy,
+                        sort,
                         adult,
                         listOnly
                     )

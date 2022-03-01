@@ -13,7 +13,7 @@ import ani.saikou.loadData
 import ani.saikou.media.Media
 import ani.saikou.setAnimation
 import ani.saikou.updateAnilistProgress
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 
 fun handleProgress(cont:LinearLayout,bar:View,empty:View,mediaId:Int,ep:String){
     val curr = loadData<Long>("${mediaId}_${ep}")
@@ -59,7 +59,7 @@ class EpisodeAdapter(
                 val binding = holder.binding
                 setAnimation(fragment.requireContext(),holder.binding.root)
                 val ep = arr[position]
-                Picasso.get().load(ep.thumb?:media.cover).resize(400,0).into(binding.itemEpisodeImage)
+                Glide.with(binding.itemEpisodeImage).load(ep.thumb?:media.cover).override(400,0).into(binding.itemEpisodeImage)
                 binding.itemEpisodeNumber.text = ep.number
                 if(ep.filler){
                     binding.itemEpisodeFiller.visibility = View.VISIBLE
@@ -95,8 +95,7 @@ class EpisodeAdapter(
                 val binding = holder.binding
                 setAnimation(fragment.requireContext(), binding.itemEpisodeCont)
                 val ep = arr[position]
-                Picasso.get().load(ep.thumb ?: media.cover).resize(400, 0)
-                    .into(binding.itemEpisodeImage)
+                Glide.with(binding.itemEpisodeImage).load(ep.thumb?:media.cover).override(400,0).into(binding.itemEpisodeImage)
                 binding.itemEpisodeNumber.text = ep.number
                 binding.itemEpisodeTitle.text = ep.title ?: media.name
                 if (ep.filler) {

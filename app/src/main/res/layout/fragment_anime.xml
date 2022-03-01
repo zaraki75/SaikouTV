@@ -69,7 +69,7 @@
                             tools:ignore="LabelFor,TextContrastCheck" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <androidx.cardview.widget.CardView
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="52dp"
                         android:layout_height="match_parent"
                         android:layout_marginTop="4dp"
@@ -84,7 +84,7 @@
                             app:srcCompat="@drawable/ic_round_person_24"
                             tools:ignore="ContentDescription,ImageContrastCheck" />
 
-                    </androidx.cardview.widget.CardView>
+                    </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
 

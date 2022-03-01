@@ -7,7 +7,7 @@ import ani.saikou.media.Source
 
 abstract class AnimeParser {
     abstract val name : String
-    var referer : String?=null
+    var headers : MutableMap<String,String>?=null
     val live: MutableLiveData<String> = MutableLiveData()
     abstract fun getStream(episode: Episode,server:String):Episode
     abstract fun getStreams(episode: Episode):Episode

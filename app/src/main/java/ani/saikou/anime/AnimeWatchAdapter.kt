@@ -11,15 +11,12 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.recyclerview.widget.RecyclerView
-import ani.saikou.R
+import ani.saikou.*
 import ani.saikou.anime.source.Sources
 import ani.saikou.databinding.ItemAnimeWatchBinding
 import ani.saikou.databinding.ItemChipBinding
-import ani.saikou.loadData
-import ani.saikou.loadImage
 import ani.saikou.media.Media
 import ani.saikou.media.SourceSearchDialogFragment
-import ani.saikou.px
 import com.google.android.material.chip.Chip
 
 class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWatchFragment,private val sources: Sources): RecyclerView.Adapter<AnimeWatchAdapter.ViewHolder>() {
@@ -39,12 +36,16 @@ class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWat
         //Timer
         if (media.anime?.nextAiringEpisodeTime != null && (media.anime.nextAiringEpisodeTime!! - System.currentTimeMillis() / 1000) <= 86400 * 7.toLong()) {
             binding.mediaCountdownContainer.visibility = View.VISIBLE
+            binding.mediaCountdownText.text = "Episode ${media.anime.nextAiringEpisode!!+1} will be released in"
             object : CountDownTimer((media.anime.nextAiringEpisodeTime!! + 10000) * 1000 - System.currentTimeMillis(), 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     val a = millisUntilFinished / 1000
-                    binding.mediaCountdown.text = "Next Episode will be released in \n ${a / 86400} days ${a % 86400 / 3600} hrs ${a % 86400 % 3600 / 60} mins ${a % 86400 % 3600 % 60} secs"
+                    _binding?.mediaCountdown?.text = "${a / 86400} days ${a % 86400 / 3600} hrs ${a % 86400 % 3600 / 60} mins ${a % 86400 % 3600 % 60} secs"
                 }
-                override fun onFinish() { binding.mediaCountdownContainer.visibility = View.GONE }
+                override fun onFinish() {
+                    _binding?.mediaCountdownContainer?.visibility = View.GONE
+                    toastString("Congrats Vro")
+                }
             }.start()
         }
 
@@ -166,7 +167,7 @@ class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWat
                         }
                     }
                     val ep = media.anime.episodes!![continueEp]!!
-                    loadImage(ep.thumb?:media.banner?:media.cover,binding.itemEpisodeImage)
+                    binding.itemEpisodeImage.loadImage(ep.thumb?:media.banner?:media.cover)
                     if(ep.filler) binding.itemEpisodeFillerView.visibility = View.VISIBLE
                     binding.animeSourceContinueText.text = "Continue : Episode ${ep.number}${if(ep.filler) " - Filler" else ""}${if(ep.title!=null) "\n${ep.title}" else ""}"
                     binding.animeSourceContinue.setOnClickListener {

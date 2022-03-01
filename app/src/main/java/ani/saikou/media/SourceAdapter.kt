@@ -14,7 +14,7 @@ abstract class SourceAdapter(
     private val sources: ArrayList<Source>,
     private val dialogFragment: SourceSearchDialogFragment,
     private val scope:CoroutineScope,
-    private val referer:String?
+    private val headers:MutableMap<String,String>?
 ): RecyclerView.Adapter<SourceAdapter.SourceViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SourceViewHolder {
         val binding = ItemCharacterBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -25,7 +25,7 @@ abstract class SourceAdapter(
     override fun onBindViewHolder(holder: SourceViewHolder, position: Int) {
         val binding = holder.binding
         val character = sources[position]
-        loadImage(character.cover,binding.itemCompactImage,referer)
+        binding.itemCompactImage.loadImage(character.cover,200,headers)
         binding.itemCompactTitle.isSelected = true
         binding.itemCompactTitle.text = character.name
     }

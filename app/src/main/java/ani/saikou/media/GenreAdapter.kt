@@ -28,7 +28,7 @@ class GenreAdapter(
         val binding = holder.binding
         val genre = genres[position]
         binding.genreTitle.text = genre
-        loadImage(Anilist.genres?.get(genre),binding.genreImage)
+        binding.genreImage.loadImage(Anilist.genres?.get(genre))
     }
 
     override fun getItemCount(): Int = genres.size

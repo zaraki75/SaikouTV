@@ -7,6 +7,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.util.TypedValue
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -51,7 +53,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
     var anime = true
     private var adult = false
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMediaBinding.inflate(layoutInflater)
@@ -88,11 +90,20 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         var media: Media = intent.getSerializableExtra("media") as Media
         media.selected = model.loadSelected(media.id)
 
-        loadImage(media.cover,binding.mediaCoverImage)
-        binding.mediaCoverImage.setOnClickListener{ openLinkInBrowser(media.cover) }
-        loadImage(media.banner?:media.cover,binding.mediaBanner)
-//        binding.mediaBanner.setOnClickListener{ openImage(media.banner?:media.cover) }
-//        loadImage(media.banner?:media.cover,binding.mediaBannerStatus)
+        binding.mediaCoverImage.loadImage(media.cover)
+        binding.mediaCoverImage.setOnLongClickListener{ openLinkInBrowser(media.cover);true }
+        binding.mediaBanner.loadImage(media.banner?:media.cover,400)
+        val gestureDetector = GestureDetector(this,object: DoubleClickListener() {
+            override fun onDoubleClick(event: MotionEvent?) {
+                binding.mediaBanner.restart()
+                binding.mediaBanner.performClick()
+            }
+            override fun onLongPress(e: MotionEvent?) {
+                openLinkInBrowser(media.banner?:media.cover)
+                binding.mediaBanner.performClick()
+            }
+        })
+        binding.mediaBanner.setOnTouchListener { _, motionEvent -> gestureDetector.onTouchEvent(motionEvent);true }
         binding.mediaTitle.text = media.userPreferredName
         binding.mediaTitleCollapse.text = media.userPreferredName
         binding.mediaStatus.text = media.status?:""
@@ -143,8 +154,10 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
             }
             total()
             binding.mediaAddToList.setOnClickListener{
-                if (Anilist.userid!=null)
-                    MediaListDialogFragment().show(supportFragmentManager, "dialog")
+                if (Anilist.userid!=null) {
+                    if (supportFragmentManager.findFragmentByTag("dialog") == null)
+                        MediaListDialogFragment().show(supportFragmentManager, "dialog")
+                }
                 else toastString("Please Login with Anilist!")
             }
         }
@@ -164,6 +177,9 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
                 binding.mediaNotify.setOnLongClickListener {
                     openLinkInBrowser(media.shareLink)
                     true
+                }
+                binding.mediaCover.setOnClickListener {
+                    openLinkInBrowser(media.shareLink)
                 }
                 progress()
             }
@@ -304,7 +320,10 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
                     if (fav_or_not) {
                         media.isFav = !media.isFav
                         clicked = media.isFav
-                        scope.launch(Dispatchers.IO) { Anilist.mutation.toggleFav(media.anime!=null,media.id) }
+                        scope.launch(Dispatchers.IO) {
+                            Anilist.mutation.toggleFav(media.anime!=null,media.id)
+                            Refresh.all()
+                        }
                     }
                 }
                 else clicked = !clicked

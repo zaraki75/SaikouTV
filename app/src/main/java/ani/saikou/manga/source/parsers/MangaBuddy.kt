@@ -9,7 +9,7 @@ import org.jsoup.Jsoup
 
 class MangaBuddy(override val name: String="mangabuddy.com") : MangaParser() {
      init {
-         referer = "https://mangabuddy.com/"
+         headers = mutableMapOf("referer" to "https://mangabuddy.com/")
      }
     override fun getLinkChapters(link:String):MutableMap<String,MangaChapter>{
         val arr = mutableMapOf<String, MangaChapter>()
@@ -47,7 +47,7 @@ class MangaBuddy(override val name: String="mangabuddy.com") : MangaParser() {
                 val link = "https:$cdn$it"
                 chapter.images!!.add(link)
             }
-            chapter.referer = "https://mangabuddy.com/"
+            chapter.headers = mutableMapOf("referer" to "https://mangabuddy.com/")
         }catch (e:Exception){
             toastString(e.toString())
         }

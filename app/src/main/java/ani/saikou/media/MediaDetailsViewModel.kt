@@ -96,17 +96,19 @@ class MediaDetailsViewModel:ViewModel() {
 
     val epChanged = MutableLiveData(true)
     fun onEpisodeClick(media: Media, i:String,manager:FragmentManager,launch:Boolean=true,cancellable:Boolean=true){
-        if (media.anime?.episodes?.get(i)!=null)
-            media.anime.selectedEpisode = i
-        else {
-            logger("Couldn't find episode : $i")
-            return
+        if(manager.findFragmentByTag("dialog")==null) {
+            if (media.anime?.episodes?.get(i)!=null)
+                media.anime.selectedEpisode = i
+            else {
+                logger("Couldn't find episode : $i")
+                return
+            }
+            media.selected = this.loadSelected(media.id)
+            if (media.selected!!.stream != null)
+                SelectorDialogFragment.newInstance(media.selected!!.stream, launch, cancellable).show(manager, "dialog")
+            else
+                SelectorDialogFragment.newInstance(la = launch, ca = cancellable).show(manager, "dialog")
         }
-        media.selected = this.loadSelected(media.id)
-        if(media.selected!!.stream!=null)
-            SelectorDialogFragment.newInstance(media.selected!!.stream,launch,cancellable).show(manager,"dialog")
-        else
-            SelectorDialogFragment.newInstance(la=launch,ca=cancellable).show(manager,"dialog")
     }
 
     private val mangaChapters: MutableLiveData<MutableMap<Int,MutableMap<String,MangaChapter>>> = MutableLiveData<MutableMap<Int,MutableMap<String,MangaChapter>>>(null)

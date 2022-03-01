@@ -35,7 +35,7 @@ class SourceSearchDialogFragment : BottomSheetDialogFragment(){
     var i : Int?=null
     var id : Int?=null
     var media : Media? = null
-    var referer: String?=null
+    var headers:MutableMap<String,String>?=null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = BottomSheetSourceSearchBinding.inflate(inflater, container, false)
@@ -59,7 +59,7 @@ class SourceSearchDialogFragment : BottomSheetDialogFragment(){
                 i = media!!.selected!!.source
                 if (media!!.anime != null) {
                     val source = (if(!media!!.isAdult) AnimeSources else HSources)[i!!]!!
-                    referer = source.referer
+                    headers = source.headers
                     binding.searchSourceTitle.text = source.name
                     binding.searchBarText.setText(media!!.getMangaName())
                     fun search() {
@@ -84,7 +84,7 @@ class SourceSearchDialogFragment : BottomSheetDialogFragment(){
                 } else if (media!!.manga != null) {
                     anime = false
                     val source = MangaSources[i!!]!!
-                    referer = source.referer
+                    headers = source.headers
                     binding.searchSourceTitle.text = source.name
                     binding.searchBarText.setText(media!!.getMangaName())
                     fun search() {
@@ -112,8 +112,8 @@ class SourceSearchDialogFragment : BottomSheetDialogFragment(){
                         binding.searchRecyclerView.visibility = View.VISIBLE
                         binding.searchProgress.visibility = View.GONE
                         binding.searchRecyclerView.adapter =
-                            if (anime) AnimeSourceAdapter(j, model, i!!, media!!.id, this, scope, referer)
-                            else MangaSourceAdapter(j, model, i!!, media!!.id, this, scope, referer)
+                            if (anime) AnimeSourceAdapter(j, model, i!!, media!!.id, this, scope, headers)
+                            else MangaSourceAdapter(j, model, i!!, media!!.id, this, scope, headers)
                         binding.searchRecyclerView.layoutManager = GridLayoutManager(requireActivity(), clamp(requireActivity().resources.displayMetrics.widthPixels / 124f.px, 1, 4))
                     }
                 }

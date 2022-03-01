@@ -94,7 +94,7 @@ class MangaFragment : Fragment() {
             Refresh.activity[this.hashCode()]!!.postValue(true)
         }
         if(Anilist.avatar!=null){
-            loadImage(Anilist.avatar,binding.mangaUserAvatar)
+            binding.mangaUserAvatar.loadImage(Anilist.avatar)
             binding.mangaUserAvatar.scaleType = ImageView.ScaleType.FIT_CENTER
         }
 
@@ -113,8 +113,8 @@ class MangaFragment : Fragment() {
         binding.mangaSearchBar.setEndIconOnClickListener{
             binding.mangaSearchBarText.performClick()
         }
-        loadImage("https://bit.ly/31bsIHq",binding.mangaGenreImage)
-        loadImage( "https://bit.ly/2ZGfcuG",binding.mangaTopScoreImage)
+        binding.mangaGenreImage.loadImage("https://bit.ly/31bsIHq")
+        binding.mangaTopScoreImage.loadImage( "https://bit.ly/2ZGfcuG")
 
         binding.mangaGenre.setOnClickListener {
             ContextCompat.startActivity(
@@ -134,7 +134,7 @@ class MangaFragment : Fragment() {
                 binding.mangaTrendingViewPager.offscreenPageLimit = 3
                 binding.mangaTrendingViewPager.getChildAt(0).overScrollMode =
                     RecyclerView.OVER_SCROLL_NEVER
-                binding.mangaTrendingViewPager.setPageTransformer(DepthPageTransformer())
+                binding.mangaTrendingViewPager.setPageTransformer(MediaPageTransformer())
                 trendHandler = Handler(Looper.getMainLooper())
                 trendRun = Runnable {
                     if (_binding != null) binding.mangaTrendingViewPager.currentItem =

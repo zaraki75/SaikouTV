@@ -71,7 +71,7 @@
                             tools:ignore="LabelFor,TextContrastCheck" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <androidx.cardview.widget.CardView
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="52dp"
                         android:layout_height="match_parent"
                         android:layout_marginTop="4dp"
@@ -86,7 +86,7 @@
                             app:srcCompat="@drawable/ic_round_person_24"
                             tools:ignore="ContentDescription,ImageContrastCheck" />
 
-                    </androidx.cardview.widget.CardView>
+                    </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
 
@@ -107,7 +107,7 @@
                 android:layout_marginEnd="16dp"
                 android:orientation="horizontal">
 
-                <androidx.cardview.widget.CardView
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/mangaGenre"
                     android:layout_width="0dp"
                     android:layout_height="72dp"
@@ -151,9 +151,9 @@
                             android:layout_gravity="center"
                             android:background="?attr/colorPrimary" />
                     </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                </com.google.android.material.card.MaterialCardView>
 
-                <androidx.cardview.widget.CardView
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/mangaTopScore"
                     android:layout_width="0dp"
                     android:layout_height="72dp"
@@ -198,7 +198,7 @@
                             android:background="?attr/colorPrimary" />
                     </LinearLayout>
 
-                </androidx.cardview.widget.CardView>
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
 

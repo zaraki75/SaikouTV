@@ -42,17 +42,17 @@ import ani.saikou.anilist.Anilist
 import ani.saikou.anime.Episode
 import ani.saikou.media.Media
 import ani.saikou.media.Source
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.squareup.picasso.OkHttp3Downloader
-import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import nl.joery.animatedbottombar.AnimatedBottomBar
-import okhttp3.Cache
-import okhttp3.OkHttpClient
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.*
@@ -61,6 +61,7 @@ import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
+
 
 const val STATE_RESUME_WINDOW = "resumeWindow"
 const val STATE_RESUME_POSITION = "resumePosition"
@@ -184,7 +185,7 @@ fun isOnline(context: Context): Boolean {
 
 fun startMainActivity(activity: Activity){
     activity.finishAffinity()
-    activity.startActivity(Intent(activity, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK))
+    activity.startActivity(Intent(activity, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK))
 }
 
 data class FuzzyDate(
@@ -372,29 +373,34 @@ fun String.findBetween(a:String,b:String):String?{
     return if(end!=-1) this.subSequence(start,end).removePrefix(a).removeSuffix(b).toString() else null
 }
 
-fun loadImage(url:String?,imageView: ImageView,referer:String?=null){
-    if(referer==null) Picasso.get().load(url).into(imageView)
-    else {
-        val a = currActivity()
-        if (a!=null && !a.isDestroyed) {
-            val client = OkHttpClient.Builder()
-                .cache(Cache(
-                    File(a.cacheDir, "http_cache"),
-                    50L * 1024L * 1024L
-                ))
-                .addInterceptor { chain ->
-                    val newRequest = chain.request().newBuilder()
-                        .addHeader("referer", referer)
-                        .build()
-                    chain.proceed(newRequest)
-                }
-                .build()
-
-            Picasso.Builder(a)
-                .downloader(OkHttp3Downloader(client))
-                .build().load(url).into(imageView)
-        }
+fun ImageView.loadImage(url:String?,size:Int=0,headers: MutableMap<String, String>?=null){
+    if(url!=null || url!="") {
+        val glideUrl = GlideUrl(url){ headers?: mutableMapOf() }
+        Glide.with(this).load(glideUrl).diskCacheStrategy(DiskCacheStrategy.ALL).transition(withCrossFade()).override(size).into(this)
     }
+}
+
+class SafeClickListener(
+    private var defaultInterval: Int = 1000,
+    private val onSafeCLick: (View) -> Unit
+) : View.OnClickListener {
+
+    private var lastTimeClicked: Long = 0
+
+    override fun onClick(v: View) {
+        if (SystemClock.elapsedRealtime() - lastTimeClicked < defaultInterval) {
+            return
+        }
+        lastTimeClicked = SystemClock.elapsedRealtime()
+        onSafeCLick(v)
+    }
+}
+
+fun View.setSafeOnClickListener(onSafeClick: (View) -> Unit) {
+    val safeClickListener = SafeClickListener {
+        onSafeClick(it)
+    }
+    setOnClickListener(safeClickListener)
 }
 
 fun getSize(url: String,headers:MutableMap<String,String>?=null):Double?{
@@ -455,6 +461,11 @@ abstract class DoubleClickListener : GestureDetector.SimpleOnGestureListener() {
         return super.onSingleTapUp(e)
     }
 
+    override fun onLongPress(e: MotionEvent?) {
+        onLongPress(e)
+        super.onLongPress(e)
+    }
+
     override fun onDoubleTap(e: MotionEvent?): Boolean {
         processDoubleClickEvent(e)
         return super.onDoubleTap(e)
@@ -487,9 +498,9 @@ abstract class DoubleClickListener : GestureDetector.SimpleOnGestureListener() {
         onDoubleClick(e) //Do what ever u want on Double Click
     }
 
-    abstract fun onSingleClick(event: MotionEvent?)
+    open fun onSingleClick(event: MotionEvent?) {}
     abstract fun onDoubleClick(event: MotionEvent?)
-    abstract fun onScrollYClick(y:Float)
+    open fun onScrollYClick(y:Float) {}
 }
 
 fun View.circularReveal(x: Int, y: Int,time:Long) {
@@ -549,29 +560,20 @@ fun updateAnilistProgress(id:Int,number:String){
     }
 }
 
-class DepthPageTransformer : ViewPager2.PageTransformer {
-
-    override fun transformPage(view: View, position: Float) {
-        view.apply {
-            val pageWidth = width
-            when {
-                position < -1 -> { // [-Infinity,-1)
-                    alpha = 0f
-                }
-                position <= 0 -> { // [-1,0]
-                    alpha = 1f
-                    translationZ = position
-                    translationX = pageWidth * -(position/2)
-                }
-                position <= 1 -> { // [0,1]
-                    alpha = 1f
-                    translationZ = 1f
-                    translationX = 0f
-                }
-                else -> { // (1,+Infinity]
-                    alpha = 0f
-                }
-            }
+class MediaPageTransformer : ViewPager2.PageTransformer {
+    private fun parallax(view:View, position: Float, speed:Float){
+        if (position > -1 && position < 1) {
+            val width = view.width.toFloat()
+            view.translationX = -(position * width * speed)
         }
     }
+
+    override fun transformPage(view: View, position: Float) {
+
+        val bannerContainer = view.findViewById<View>(R.id.itemCompactBanner)
+        parallax(bannerContainer,position,0.8f)
+        val titleContainer = view.findViewById<View>(R.id.itemCompactTitleContainer)
+        parallax(titleContainer,position,0.5f)
+    }
 }
+

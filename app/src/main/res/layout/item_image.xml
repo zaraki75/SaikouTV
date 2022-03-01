@@ -13,7 +13,7 @@
         android:adjustViewBounds="true"
         android:background="@color/bg"
         android:focusable="false"
-        android:minHeight="100dp"
+        android:minHeight="400dp"
         android:scaleType="fitCenter"
         tools:ignore="ContentDescription,ImageContrastCheck" />
 

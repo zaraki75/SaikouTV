@@ -109,7 +109,7 @@
 
                 </FrameLayout>
 
-                <androidx.cardview.widget.CardView
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
@@ -124,7 +124,7 @@
                         app:srcCompat="@drawable/ic_round_person_24"
                         tools:ignore="ContentDescription,ImageContrastCheck" />
 
-                </androidx.cardview.widget.CardView>
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
 
@@ -135,7 +135,7 @@
                 android:layout_marginEnd="16dp"
                 android:orientation="horizontal">
 
-                <androidx.cardview.widget.CardView
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/homeAnimeList"
                     android:layout_width="0dp"
                     android:layout_height="72dp"
@@ -179,9 +179,9 @@
                             android:layout_gravity="center"
                             android:background="?attr/colorPrimary" />
                     </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                </com.google.android.material.card.MaterialCardView>
 
-                <androidx.cardview.widget.CardView
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/homeMangaList"
                     android:layout_width="0dp"
                     android:layout_height="72dp"
@@ -226,7 +226,7 @@
                             android:background="?attr/colorPrimary" />
                     </LinearLayout>
 
-                </androidx.cardview.widget.CardView>
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
 

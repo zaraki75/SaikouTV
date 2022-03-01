@@ -36,19 +36,26 @@ import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.min
 
+
 class AnimeFragment : Fragment() {
     private var _binding: FragmentAnimeBinding? = null
     private val binding get() = _binding!!
-    private var trendHandler :Handler?=null
-    private lateinit var trendRun : Runnable
+    private var trendHandler: Handler? = null
+    private lateinit var trendRun: Runnable
     val model: AnilistAnimeViewModel by activityViewModels()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentAnimeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onDestroyView() { super.onDestroyView();_binding = null }
+    override fun onDestroyView() {
+        super.onDestroyView();_binding = null
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -58,81 +65,105 @@ class AnimeFragment : Fragment() {
         binding.animeTitleContainer.updatePadding(top = statusBarHeight)
 
         binding.animeScroll.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, _, _, _, _ ->
-            if(!v.canScrollVertically(1)) {
+            if (!v.canScrollVertically(1)) {
                 binding.animePopularRecyclerView.requestDisallowInterceptTouchEvent(false)
-                activity?.window?.statusBarColor = ContextCompat.getColor(requireContext(), R.color.bg)
-                ObjectAnimator.ofFloat(bottomBar,"scaleX",0f).setDuration(200).start()
-                ObjectAnimator.ofFloat(bottomBar,"scaleY",0f).setDuration(200).start()
+                activity?.window?.statusBarColor =
+                    ContextCompat.getColor(requireContext(), R.color.bg)
+                ObjectAnimator.ofFloat(bottomBar, "scaleX", 0f).setDuration(200).start()
+                ObjectAnimator.ofFloat(bottomBar, "scaleY", 0f).setDuration(200).start()
             }
-            if(!v.canScrollVertically(-1)){
+            if (!v.canScrollVertically(-1)) {
                 binding.animePopularRecyclerView.requestDisallowInterceptTouchEvent(true)
-                activity?.window?.statusBarColor = ContextCompat.getColor(requireContext(), R.color.status)
-                ObjectAnimator.ofFloat(bottomBar,"scaleX",1f).setDuration(200).start()
-                ObjectAnimator.ofFloat(bottomBar,"scaleY",1f).setDuration(200).start()
+                activity?.window?.statusBarColor =
+                    ContextCompat.getColor(requireContext(), R.color.status)
+                ObjectAnimator.ofFloat(bottomBar, "scaleX", 1f).setDuration(200).start()
+                ObjectAnimator.ofFloat(bottomBar, "scaleY", 1f).setDuration(200).start()
             }
         })
 
-        binding.animePopularRecyclerView.updateLayoutParams{ height=resources.displayMetrics.heightPixels+navBarHeight-80f.px }
+        binding.animePopularRecyclerView.updateLayoutParams {
+            height = resources.displayMetrics.heightPixels + navBarHeight - 80f.px
+        }
         binding.animePopularProgress.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin += navBarHeight }
-        binding.animePopularRecyclerView.updatePaddingRelative(bottom = navBarHeight+80f.px)
+        binding.animePopularRecyclerView.updatePaddingRelative(bottom = navBarHeight + 80f.px)
         var height = statusBarHeight
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val displayCutout = activity?.window?.decorView?.rootWindowInsets?.displayCutout
             if (displayCutout != null) {
-                if (displayCutout.boundingRects.size>0) {
-                    height = max(statusBarHeight,
-                        min(displayCutout.boundingRects[0].width(),displayCutout.boundingRects[0].height())
+                if (displayCutout.boundingRects.size > 0) {
+                    height = max(
+                        statusBarHeight,
+                        min(
+                            displayCutout.boundingRects[0].width(),
+                            displayCutout.boundingRects[0].height()
+                        )
                     )
                 }
             }
         }
-        binding.animeRefresh.setSlingshotDistance(height+128)
-        binding.animeRefresh.setProgressViewEndTarget(false, height+128)
+        binding.animeRefresh.setSlingshotDistance(height + 128)
+        binding.animeRefresh.setProgressViewEndTarget(false, height + 128)
         binding.animeRefresh.setOnRefreshListener {
             Refresh.activity[this.hashCode()]!!.postValue(true)
         }
-        if(Anilist.avatar!=null){
-            loadImage(Anilist.avatar,binding.animeUserAvatar)
+        if (Anilist.avatar != null) {
+            binding.animeUserAvatar.loadImage(Anilist.avatar)
             binding.animeUserAvatar.scaleType = ImageView.ScaleType.FIT_CENTER
         }
 
         binding.animeSearchBar.hint = "ANIME"
-        binding.animeSearchBarText.setOnClickListener{
+        binding.animeSearchBarText.setOnClickListener {
             ContextCompat.startActivity(
                 requireActivity(),
-                Intent(requireActivity(), SearchActivity::class.java).putExtra("type","ANIME"),
-                ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(),
-                    Pair.create(binding.animeSearchBar, ViewCompat.getTransitionName(binding.animeSearchBar)!!),
+                Intent(requireActivity(), SearchActivity::class.java).putExtra("type", "ANIME"),
+                ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    requireActivity(),
+                    Pair.create(
+                        binding.animeSearchBar,
+                        ViewCompat.getTransitionName(binding.animeSearchBar)!!
+                    ),
                 ).toBundle()
             )
         }
 
-        binding.animeSearchBar.setEndIconOnClickListener{
+        binding.animeSearchBar.setEndIconOnClickListener {
             binding.animeSearchBarText.performClick()
         }
 
-        loadImage("https://bit.ly/31bsIHq",binding.animeGenreImage)
-        loadImage( "https://bit.ly/2ZGfcuG",binding.animeTopScoreImage)
+        binding.animeGenreImage.loadImage("https://bit.ly/31bsIHq")
+        binding.animeTopScoreImage.loadImage("https://bit.ly/2ZGfcuG")
 
         binding.animeGenre.setOnClickListener {
             ContextCompat.startActivity(
-                requireActivity(), Intent(requireActivity(), GenreActivity::class.java).putExtra("type","ANIME"),null)
+                requireActivity(),
+                Intent(requireActivity(), GenreActivity::class.java).putExtra("type", "ANIME"),
+                null
+            )
         }
 
         binding.animeTopScore.setOnClickListener {
             ContextCompat.startActivity(
-                requireActivity(), Intent(requireActivity(), SearchActivity::class.java).putExtra("type","ANIME").putExtra("sortBy","Score"),null)
+                requireActivity(),
+                Intent(requireActivity(), SearchActivity::class.java).putExtra("type", "ANIME")
+                    .putExtra("sortBy", "Score"),
+                null
+            )
         }
 
         model.getTrending().observe(viewLifecycleOwner) {
             if (it != null) {
                 binding.animeTrendingProgressBar.visibility = View.GONE
                 binding.animeTrendingViewPager.adapter =
-                    MediaAdaptor(2,it, requireActivity(),viewPager = binding.animeTrendingViewPager)
+                    MediaAdaptor(
+                        2,
+                        it,
+                        requireActivity(),
+                        viewPager = binding.animeTrendingViewPager
+                    )
                 binding.animeTrendingViewPager.offscreenPageLimit = 3
                 binding.animeTrendingViewPager.getChildAt(0).overScrollMode =
                     RecyclerView.OVER_SCROLL_NEVER
-                binding.animeTrendingViewPager.setPageTransformer(DepthPageTransformer())
+                binding.animeTrendingViewPager.setPageTransformer(MediaPageTransformer())
                 trendHandler = Handler(Looper.getMainLooper())
                 trendRun = Runnable {
                     if (_binding != null) binding.animeTrendingViewPager.currentItem =
@@ -153,15 +184,16 @@ class AnimeFragment : Fragment() {
         model.getUpdated().observe(viewLifecycleOwner) {
             if (it != null) {
                 binding.animeUpdatedProgressBar.visibility = View.GONE
-                binding.animeUpdatedRecyclerView.adapter = MediaAdaptor(0,it, requireActivity())
-                binding.animeUpdatedRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+                binding.animeUpdatedRecyclerView.adapter = MediaAdaptor(0, it, requireActivity())
+                binding.animeUpdatedRecyclerView.layoutManager =
+                    LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
                 binding.animeUpdatedRecyclerView.visibility = View.VISIBLE
             }
         }
 
         model.getPopular().observe(viewLifecycleOwner) {
             if (it != null) {
-                val adapter = MediaAdaptor(1,it.results, requireActivity())
+                val adapter = MediaAdaptor(1, it.results, requireActivity())
                 var loading = false
                 binding.animePopularRecyclerView.adapter = adapter
                 binding.animePopularRecyclerView.layoutManager =
@@ -177,7 +209,8 @@ class AnimeFragment : Fragment() {
                                         binding.animePopularProgress.visibility = View.VISIBLE
                                         scope.launch {
                                             loading = true
-                                            val get = withContext(Dispatchers.IO){ model.loadNextPage(it) }
+                                            val get =
+                                                withContext(Dispatchers.IO) { model.loadNextPage(it) }
                                             if (get != null) {
                                                 val a = it.results.size
                                                 it.results.addAll(get.results)
@@ -215,7 +248,7 @@ class AnimeFragment : Fragment() {
         live.observe(viewLifecycleOwner) {
             if (it) {
                 scope.launch {
-                    withContext(Dispatchers.IO){
+                    withContext(Dispatchers.IO) {
                         model.loaded = true
                         model.loadTrending()
                         model.loadUpdated()
@@ -235,8 +268,8 @@ class AnimeFragment : Fragment() {
     }
 
     override fun onResume() {
-        if(!model.loaded) Refresh.activity[this.hashCode()]!!.postValue(true)
+        if (!model.loaded) Refresh.activity[this.hashCode()]!!.postValue(true)
         super.onResume()
-        trendHandler?.postDelayed(trendRun,4000)
+        trendHandler?.postDelayed(trendRun, 4000)
     }
 }

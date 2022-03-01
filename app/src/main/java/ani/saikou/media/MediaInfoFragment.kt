@@ -19,6 +19,7 @@ import ani.saikou.R
 import ani.saikou.databinding.FragmentMediaInfoBinding
 import ani.saikou.navBarHeight
 import ani.saikou.px
+import ani.saikou.toastString
 import java.io.Serializable
 
 @SuppressLint("SetTextI18n")
@@ -131,21 +132,17 @@ class MediaInfoFragment : Fragment() {
 
                 if (media.anime?.nextAiringEpisodeTime != null && (media.anime.nextAiringEpisodeTime!! - System.currentTimeMillis() / 1000) <= 86400 * 7.toLong()) {
                     binding.mediaCountdownContainer.visibility = View.VISIBLE
-                    timer = object : CountDownTimer(
-                        (media.anime.nextAiringEpisodeTime!! + 10000) * 1000 - System.currentTimeMillis(),
-                        1000
-                    ) {
+                    binding.mediaCountdownText.text = "Episode ${media.anime.nextAiringEpisode!!+1} will be released in"
+                    object : CountDownTimer((media.anime.nextAiringEpisodeTime!! + 10000) * 1000 - System.currentTimeMillis(), 1000) {
                         override fun onTick(millisUntilFinished: Long) {
                             val a = millisUntilFinished / 1000
-                            _binding?.mediaCountdown?.text =
-                                "Next Episode will be released in \n ${a / 86400} days ${a % 86400 / 3600} hrs ${a % 86400 % 3600 / 60} mins ${a % 86400 % 3600 % 60} secs"
+                            _binding?.mediaCountdown?.text = "${a / 86400} days ${a % 86400 / 3600} hrs ${a % 86400 % 3600 / 60} mins ${a % 86400 % 3600 % 60} secs"
                         }
-
-                        override fun onFinish() {
+                        override fun onFinish() { 
                             _binding?.mediaCountdownContainer?.visibility = View.GONE
+                            toastString("Congrats Vro")
                         }
-                    }
-                    timer?.start()
+                    }.start()
                 }
             }
         }

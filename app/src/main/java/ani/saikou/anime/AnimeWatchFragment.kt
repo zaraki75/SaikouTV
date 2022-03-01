@@ -27,6 +27,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 open class AnimeWatchFragment : Fragment() {
@@ -66,9 +67,7 @@ open class AnimeWatchFragment : Fragment() {
         screenWidth = resources.displayMetrics.widthPixels.dp
 
         var maxGridSize = (screenWidth / 100f).roundToInt()
-        maxGridSize += (maxGridSize%2)
-
-        println("max grid size = ${(maxGridSize.toFloat()).roundToInt()}")
+        maxGridSize = max(4,maxGridSize-(maxGridSize%2))
 
         val gridLayoutManager = GridLayoutManager(requireContext(), maxGridSize)
 

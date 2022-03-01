@@ -32,7 +32,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clickable="false"
-                android:src="@drawable/linear_gradient"
+                android:src="@drawable/linear_gradient_bg"
                 tools:ignore="ContentDescription" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>

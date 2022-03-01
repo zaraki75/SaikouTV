@@ -17,6 +17,7 @@ import ani.saikou.saveData
 class SearchAdapter(private val activity: SearchActivity): RecyclerView.Adapter<SearchAdapter.SearchHeaderViewHolder>() {
     private val itemViewType = 6969
     lateinit var search:Runnable
+    lateinit var requestFocus:Runnable
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchHeaderViewHolder {
         val binding = ItemSearchHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -58,7 +59,7 @@ class SearchAdapter(private val activity: SearchActivity): RecyclerView.Adapter<
         fun searchTitle(){
             val search = if (binding.searchBarText.text.toString()!="") binding.searchBarText.text.toString() else null
             val genre = if (binding.searchGenre.text.toString()!="") binding.searchGenre.text.toString() else null
-            val sortBy = if (binding.searchSortBy.text.toString()!="") Anilist.sortBy[binding.searchSortBy.text.toString()] else null
+            val sortBy = if (binding.searchSortBy.text.toString()!="") binding.searchSortBy.text.toString() else null
             val tag = if (binding.searchTag.text.toString()!="") binding.searchTag.text.toString() else null
             activity.search(search,genre,tag,sortBy,adult,listOnly)
         }
@@ -134,7 +135,9 @@ class SearchAdapter(private val activity: SearchActivity): RecyclerView.Adapter<
         }
 
         search = Runnable { searchTitle() }
+        requestFocus = Runnable { binding.searchBarText.requestFocus() }
     }
+
 
     override fun getItemCount(): Int = 1
 

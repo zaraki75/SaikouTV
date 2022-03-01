@@ -1,22 +1,25 @@
 package ani.saikou.manga
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import ani.saikou.currActivity
 import ani.saikou.databinding.ItemImageBinding
-import com.squareup.picasso.Callback
-import com.squareup.picasso.OkHttp3Downloader
-import com.squareup.picasso.Picasso
-import okhttp3.Cache
-import okhttp3.OkHttpClient
-import java.io.File
+import ani.saikou.setAnimation
+import ani.saikou.toastString
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 
 class ImageAdapter(
 private val arr: ArrayList<String>,
-private val referer:String?=null
+private val headers:MutableMap<String,String>?=null
 ): RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
@@ -27,31 +30,22 @@ private val referer:String?=null
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val binding = holder.binding
-        val a = currActivity()
-        if (a!=null && !a.isDestroyed) {
-            val client = OkHttpClient.Builder()
-                .cache(Cache(
-                    File(a.cacheDir, "http_cache"),
-                    50L * 1024L * 1024L
-                ))
-                .addInterceptor { chain ->
-                    val newRequest = chain.request().newBuilder()
-                        .addHeader("referer", referer?:"")
-                        .build()
-                    chain.proceed(newRequest)
+        setAnimation(binding.root.context,binding.root)
+        Glide.with(binding.imgProgImage)
+            .load(GlideUrl(arr[position]){headers?: mutableMapOf()})
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .listener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
+                    toastString(e.toString())
+                    return false
                 }
-                .build()
-            Picasso.Builder(a)
-                .downloader(OkHttp3Downloader(client))
-                .build()
-                .load(arr[position])
-                .resize(1080,0)
-                .onlyScaleDown()
-                .into(binding.imgProgImage, object : Callback {
-                    override fun onSuccess() { binding.imgProgProgress.visibility = View.GONE }
-                    override fun onError(e: Exception) {}
-                })
-        }
+
+                override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+                    binding.imgProgProgress.visibility= View.GONE
+                    return false
+                }
+            })
+            .into(binding.imgProgImage)
     }
 
     override fun getItemCount(): Int = arr.size

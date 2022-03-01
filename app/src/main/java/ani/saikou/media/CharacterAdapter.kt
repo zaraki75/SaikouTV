@@ -30,7 +30,7 @@ class CharacterAdapter(
         setAnimation(activity,holder.binding.root)
         val character = characterList[position]
         binding.itemCompactRelation.text = character.role+"  "
-        loadImage(character.image,binding.itemCompactImage)
+        binding.itemCompactImage.loadImage(character.image)
         binding.itemCompactTitle.text = character.name
     }
 

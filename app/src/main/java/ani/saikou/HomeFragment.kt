@@ -50,7 +50,7 @@ class HomeFragment : Fragment() {
                 binding.homeUserName.text = Anilist.username
                 binding.homeUserEpisodesWatched.text = Anilist.episodesWatched.toString()
                 binding.homeUserChaptersRead.text = Anilist.chapterRead.toString()
-                loadImage(Anilist.avatar,binding.homeUserAvatar)
+                binding.homeUserAvatar.loadImage(Anilist.avatar)
                 binding.homeUserAvatar.scaleType = ImageView.ScaleType.FIT_CENTER
                 binding.homeUserDataProgressBar.visibility = View.GONE
                 binding.homeUserDataContainer.visibility = View.VISIBLE
@@ -120,8 +120,8 @@ class HomeFragment : Fragment() {
         //List Images
         model.getListImages().observe(viewLifecycleOwner) {
             if (it.isNotEmpty()) {
-                loadImage(it[0] ?: "https://bit.ly/31bsIHq", binding.homeAnimeListImage)
-                loadImage(it[1] ?: "https://bit.ly/2ZGfcuG", binding.homeMangaListImage)
+                binding.homeAnimeListImage.loadImage(it[0] ?: "https://bit.ly/31bsIHq")
+                binding.homeMangaListImage.loadImage(it[1] ?: "https://bit.ly/2ZGfcuG")
             }
         }
 

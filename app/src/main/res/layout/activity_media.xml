@@ -9,7 +9,7 @@
         android:id="@+id/mediaAppBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/nav_bg">
+        android:background="@color/bg">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/mediaCollapsing"
@@ -32,7 +32,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clickable="false"
-                android:src="@drawable/linear_gradient"
+                android:src="@drawable/linear_gradient_bg"
+                tools:ignore="ContentDescription" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:clickable="false"
+                android:scaleY="-1"
+                android:src="@drawable/linear_gradient_bg"
                 tools:ignore="ContentDescription" />
 
             <LinearLayout
@@ -133,14 +141,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center_vertical"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginEnd="64dp"
+                    android:background="@color/nav_bg"
                     android:ellipsize="marquee"
                     android:focusable="true"
                     android:focusableInTouchMode="true"
                     android:fontFamily="@font/poppins_bold"
                     android:gravity="center_vertical"
                     android:marqueeRepeatLimit="marquee_forever"
+                    android:paddingStart="32dp"
+                    android:paddingEnd="64dp"
                     android:scrollHorizontally="true"
                     android:singleLine="true"
                     android:text="@string/slogan"
@@ -194,11 +203,6 @@
                         tools:ignore="ContentDescription,ImageContrastCheck" />
 
                 </LinearLayout>
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="4dp"
-                    android:background="?attr/colorPrimary"
-                    android:layout_gravity="bottom"/>
             </FrameLayout>
 
         </LinearLayout>
