@@ -232,7 +232,8 @@ open class AnimeWatchFragment : Fragment() {
                 media.anime!!.episodes!!.values.toList()
                     .slice(start..(end ?: (media.anime!!.episodes!!.size - 1)))
             )
-            arr = if (reverse) arr.reversed() as ArrayList<Episode> else arr
+            if (reverse)
+                arr = (arr.reversed() as? ArrayList<Episode>)?:arr
         }
         episodeAdapter.arr = arr
         episodeAdapter.updateType(style)

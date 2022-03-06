@@ -8,6 +8,8 @@ import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebChromeClient
+import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import androidx.core.view.updateLayoutParams
@@ -15,12 +17,14 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import ani.saikou.R
+import ani.saikou.*
 import ani.saikou.databinding.FragmentMediaInfoBinding
-import ani.saikou.navBarHeight
-import ani.saikou.px
-import ani.saikou.toastString
+import ani.saikou.databinding.ItemChipBinding
+import io.noties.markwon.Markwon
+import io.noties.markwon.SoftBreakAddsNewLinePlugin
 import java.io.Serializable
+import java.net.URLEncoder
+
 
 @SuppressLint("SetTextI18n")
 class MediaInfoFragment : Fragment() {
@@ -39,6 +43,7 @@ class MediaInfoFragment : Fragment() {
         super.onDestroyView();_binding = null
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val screenWidth = resources.displayMetrics.run { widthPixels / density }
         binding.mediaInfoProgressBar.visibility = if (!loaded) View.VISIBLE else View.GONE
@@ -46,16 +51,15 @@ class MediaInfoFragment : Fragment() {
         binding.mediaInfoContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin += 128f.px + navBarHeight }
 
         val model : MediaDetailsViewModel by activityViewModels()
-        model.getMedia().observe(viewLifecycleOwner) {
-            val media = it
+        model.getMedia().observe(viewLifecycleOwner) { media ->
             if (media != null) {
                 loaded = true
                 binding.mediaInfoProgressBar.visibility = View.GONE
                 binding.mediaInfoContainer.visibility = View.VISIBLE
-                binding.mediaInfoName.text = media.getMainName()
+                binding.mediaInfoName.text = "\t\t\t" + media.getMainName()
                 if (media.name != "null")
                     binding.mediaInfoNameRomajiContainer.visibility = View.VISIBLE
-                binding.mediaInfoNameRomaji.text = media.nameRomaji
+                binding.mediaInfoNameRomaji.text = "\t\t\t" + media.nameRomaji
                 binding.mediaInfoMeanScore.text =
                     if (media.meanScore != null) (media.meanScore / 10.0).toString() else "??"
                 binding.mediaInfoStatus.text = media.status
@@ -90,11 +94,48 @@ class MediaInfoFragment : Fragment() {
                     binding.mediaInfoTotal.text =
                         if (media.anime.nextAiringEpisode != null) (media.anime.nextAiringEpisode.toString() + " | " + (media.anime.totalEpisodes
                             ?: "~").toString()) else (media.anime.totalEpisodes ?: "~").toString()
-                } else if (media.manga != null) {
+                    val markWon = Markwon.builder(requireContext()).usePlugin(SoftBreakAddsNewLinePlugin.create()).build()
+
+                    fun makeLink(a:String):String{
+                        val first = a.indexOf('"').let{ if(it!=-1) it else return a}+1
+                        val end = a.indexOf('"',first).let{ if(it!=-1) it else return a}
+                        val name = a.subSequence(first,end).toString()
+                        return "${a.subSequence(0,first)}[$name](https://www.youtube.com/results?search_query=${URLEncoder.encode(name, "utf-8")})${a.subSequence(end,a.length)}"
+                    }
+
+                    if(media.anime.op.isNotEmpty()){
+                        binding.mediaInfoOpening.visibility = View.VISIBLE
+                        binding.mediaInfoOpeningText.visibility = View.VISIBLE
+                        var desc =  ""
+                        media.anime.op.forEach{
+                            desc+="\n"
+                            desc+=makeLink(it)
+                        }
+                        desc = desc.removePrefix("\n")
+
+                        markWon.setMarkdown(binding.mediaInfoOpening,desc)
+                    }
+
+
+                    if(media.anime.ed.isNotEmpty()){
+                        binding.mediaInfoEnding.visibility = View.VISIBLE
+                        binding.mediaInfoEndingText.visibility = View.VISIBLE
+                        var desc =  ""
+                        media.anime.ed.forEach{
+                            desc+="\n"
+                            desc+=makeLink(it)
+                        }
+                        desc = desc.removePrefix("\n")
+
+                        markWon.setMarkdown(binding.mediaInfoEnding,desc)
+                    }
+                }
+                else if (media.manga != null) {
                     type = "MANGA"
                     binding.mediaInfoTotalTitle.setText(R.string.total_chaps)
                     binding.mediaInfoTotal.text = (media.manga.totalChapters ?: "~").toString()
                 }
+
                 val desc = HtmlCompat.fromHtml(
                     (media.description ?: "null").replace("\\n", "<br>").replace("\\\"", "\""),
                     HtmlCompat.FROM_HTML_MODE_LEGACY
@@ -110,40 +151,125 @@ class MediaInfoFragment : Fragment() {
                             .setDuration(400).start()
                     }
                 }
-                binding.mediaInfoRelationRecyclerView.adapter =
-                    MediaAdaptor(0,media.relations!!, requireActivity())
-                binding.mediaInfoRelationRecyclerView.layoutManager =
-                    LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-
-                binding.mediaInfoGenresRecyclerView.adapter =
-                    GenreAdapter(media.genres!!, type, requireActivity())
-                binding.mediaInfoGenresRecyclerView.layoutManager =
-                    GridLayoutManager(requireContext(), (screenWidth / 156f).toInt())
-
-                binding.mediaInfoCharacterRecyclerView.adapter =
-                    CharacterAdapter(media.characters!!, requireActivity())
-                binding.mediaInfoCharacterRecyclerView.layoutManager =
-                    LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-
-                binding.mediaInfoRecommendedRecyclerView.adapter =
-                    MediaAdaptor(0,media.recommendations!!, requireActivity())
-                binding.mediaInfoRecommendedRecyclerView.layoutManager =
-                    LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-
-                if (media.anime?.nextAiringEpisodeTime != null && (media.anime.nextAiringEpisodeTime!! - System.currentTimeMillis() / 1000) <= 86400 * 7.toLong()) {
-                    binding.mediaCountdownContainer.visibility = View.VISIBLE
-                    binding.mediaCountdownText.text = "Episode ${media.anime.nextAiringEpisode!!+1} will be released in"
-                    object : CountDownTimer((media.anime.nextAiringEpisodeTime!! + 10000) * 1000 - System.currentTimeMillis(), 1000) {
-                        override fun onTick(millisUntilFinished: Long) {
-                            val a = millisUntilFinished / 1000
-                            _binding?.mediaCountdown?.text = "${a / 86400} days ${a % 86400 / 3600} hrs ${a % 86400 % 3600 / 60} mins ${a % 86400 % 3600 % 60} secs"
+                if(!media.relations.isNullOrEmpty()) {
+                    binding.mediaInfoRelationText.visibility = View.VISIBLE
+                    binding.mediaInfoRelationRecyclerView.visibility = View.VISIBLE
+                    binding.mediaInfoRelationRecyclerView.adapter =
+                        MediaAdaptor(0, media.relations!!, requireActivity())
+                    binding.mediaInfoRelationRecyclerView.layoutManager =
+                        LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+                    if(media.sequel!=null){
+                        binding.mediaInfoQuelContainer.visibility=View.VISIBLE
+                        binding.mediaInfoSequel.visibility=View.VISIBLE
+                        binding.mediaInfoSequelImage.loadImage(media.sequel!!.banner?:media.sequel!!.cover)
+                        binding.mediaInfoSequel.setSafeOnClickListener {
+                            ContextCompat.startActivity(
+                                requireContext(),
+                                Intent(requireContext(), MediaDetailsActivity::class.java).putExtra(
+                                    "media",
+                                    media.sequel as Serializable
+                                ),null
+                            )
                         }
-                        override fun onFinish() { 
-                            _binding?.mediaCountdownContainer?.visibility = View.GONE
-                            toastString("Congrats Vro")
+                    }
+                    if(media.prequel!=null){
+                        binding.mediaInfoQuelContainer.visibility=View.VISIBLE
+                        binding.mediaInfoPrequel.visibility=View.VISIBLE
+                        binding.mediaInfoPrequelImage.loadImage(media.prequel!!.banner?:media.prequel!!.cover)
+                        binding.mediaInfoPrequel.setSafeOnClickListener {
+                            ContextCompat.startActivity(
+                                requireContext(),
+                                Intent(requireContext(), MediaDetailsActivity::class.java).putExtra(
+                                    "media",
+                                    media.prequel as Serializable
+                                ),null
+                            )
                         }
-                    }.start()
+                    }
                 }
+                if(media.genres.isNotEmpty()) {
+                    binding.mediaInfoGenresText.visibility=View.VISIBLE
+                    binding.mediaInfoGenresRecyclerView.visibility=View.VISIBLE
+                    binding.mediaInfoGenresRecyclerView.adapter =
+                        GenreAdapter(media.genres, type, requireActivity())
+                    binding.mediaInfoGenresRecyclerView.layoutManager =
+                        GridLayoutManager(requireContext(), (screenWidth / 156f).toInt())
+                }
+                if(!media.characters.isNullOrEmpty()) {
+                    binding.mediaInfoCharacterText.visibility = View.VISIBLE
+                    binding.mediaInfoCharacterRecyclerView.visibility = View.VISIBLE
+                    binding.mediaInfoCharacterRecyclerView.adapter = CharacterAdapter(media.characters!!, requireActivity())
+                    binding.mediaInfoCharacterRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+                }
+                if(!media.recommendations.isNullOrEmpty()) {
+                    binding.mediaInfoRecommendedText.visibility = View.VISIBLE
+                    binding.mediaInfoRecommendedRecyclerView.visibility = View.VISIBLE
+                    binding.mediaInfoRecommendedRecyclerView.adapter = MediaAdaptor(0, media.recommendations!!, requireActivity())
+                    binding.mediaInfoRecommendedRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+                }
+
+                if(media.tags.isNotEmpty()){
+                    binding.mediaInfoTags.visibility = View.VISIBLE
+                    binding.mediaInfoTagsText.visibility = View.VISIBLE
+                    for (position in media.tags.indices) {
+                        val chip = ItemChipBinding.inflate(LayoutInflater.from(context), binding.mediaInfoTags, false).root
+                        chip.text = media.tags[position]
+                        chip.setOnLongClickListener { copyToClipboard(media.tags[position]);true }
+                        binding.mediaInfoTags.addView(chip)
+                    }
+                }
+
+                if(media.synonyms.isNotEmpty()){
+                    binding.mediaInfoSynonyms.visibility = View.VISIBLE
+                    binding.mediaInfoSynonymsText.visibility = View.VISIBLE
+                    for (position in media.synonyms.indices) {
+                        val chip = ItemChipBinding.inflate(LayoutInflater.from(context), binding.mediaInfoSynonyms, false).root
+                        chip.text = media.synonyms[position]
+                        chip.setOnLongClickListener { copyToClipboard(media.synonyms[position]);true }
+                        binding.mediaInfoSynonyms.addView(chip)
+                    }
+                }
+
+                @Suppress("DEPRECATION")
+                class MyChrome : WebChromeClient() {
+                    private var mCustomView: View? = null
+                    private var mCustomViewCallback: CustomViewCallback? = null
+                    private var mOriginalSystemUiVisibility = 0
+
+                    override fun onHideCustomView() {
+                        (requireActivity().window.decorView as FrameLayout).removeView(mCustomView)
+                        mCustomView = null
+                        requireActivity().window.decorView.systemUiVisibility = mOriginalSystemUiVisibility
+                        mCustomViewCallback!!.onCustomViewHidden()
+                        mCustomViewCallback = null
+                    }
+
+                    override fun onShowCustomView(paramView: View, paramCustomViewCallback: CustomViewCallback) {
+                        if (mCustomView != null) {
+                            onHideCustomView()
+                            return
+                        }
+                        mCustomView = paramView
+                        mOriginalSystemUiVisibility = requireActivity().window.decorView.systemUiVisibility
+                        mCustomViewCallback = paramCustomViewCallback
+                        (requireActivity().window.decorView as FrameLayout).addView(mCustomView, FrameLayout.LayoutParams(-1, -1))
+                        requireActivity().window.decorView.systemUiVisibility = 3846 or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    }
+                }
+
+                if(media.trailer!=null){
+                    binding.mediaInfoTrailerText.visibility = View.VISIBLE
+                    binding.mediaInfoTrailerContainer.visibility = View.VISIBLE
+                    binding.mediaInfoTrailer.apply {
+                        visibility = View.VISIBLE
+                        settings.javaScriptEnabled = true
+                        isSoundEffectsEnabled = true
+                        webChromeClient = MyChrome()
+                        loadUrl(media.trailer!!)
+                    }
+                }
+
+                countDown(media,binding.mediaInfoContainer)
             }
         }
         super.onViewCreated(view, null)

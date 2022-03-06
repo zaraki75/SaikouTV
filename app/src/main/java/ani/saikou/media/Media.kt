@@ -18,6 +18,7 @@ data class Media(
     val cover: String?=null,
     val banner: String?=null,
     var relation: String? =null,
+    var popularity: Int?=null,
 
     var isAdult: Boolean,
     var isFav: Boolean = false,
@@ -39,12 +40,17 @@ data class Media(
     var source:String? = null,
     var countryOfOrigin:String?=null,
     val meanScore: Int? = null,
-    var genres:ArrayList<String>?=null,
+    var genres:ArrayList<String> = arrayListOf(),
+    var tags:ArrayList<String> = arrayListOf(),
     var description: String? = null,
+    var synonyms:ArrayList<String> = arrayListOf(),
+    var trailer:String?=null,
     var startDate: FuzzyDate?=null,
     var endDate: FuzzyDate?=null,
 
     var characters:ArrayList<Character>?=null,
+    var prequel:Media?=null,
+    var sequel:Media?=null,
     var relations: ArrayList<Media>?=null,
     var recommendations: ArrayList<Media>?=null,
 

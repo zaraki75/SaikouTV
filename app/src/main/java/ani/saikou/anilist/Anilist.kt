@@ -20,7 +20,7 @@ object Anilist {
     var tags:ArrayList<String>?=null
     var sortBy = mapOf(
         Pair("Score","SCORE_DESC"),
-        Pair("Popularity","POPULARITY_DESC"),
+        Pair("Popular","POPULARITY_DESC"),
         Pair("Trending","TRENDING_DESC"),
         Pair("A-Z","TITLE_ENGLISH"),
         Pair("Z-A","TITLE_ENGLISH_DESC"),

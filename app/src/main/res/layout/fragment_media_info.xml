@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -32,92 +33,14 @@
             android:visibility="gone"
             tools:visibility="visible">
 
-            <LinearLayout
-                android:id="@+id/mediaCountdownContainer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="-16dp"
-                android:orientation="vertical"
-                android:padding="8dp"
-                android:visibility="gone"
-                tools:visibility="visible">
-
-                <TextView
-                    android:id="@+id/mediaCountdownText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:alpha="0.58"
-                    android:fontFamily="@font/poppins_bold"
-                    android:textAlignment="center"
-                    android:textAllCaps="true"
-                    tools:text="Episode 2 will be released in" />
-
-                <TextView
-                    android:id="@+id/mediaCountdown"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:fontFamily="@font/poppins_bold"
-                    android:textAllCaps="true"
-                    android:textSize="16sp"
-                    tools:text="00:00:00" />
-
-            </LinearLayout>
-
             <TableLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:paddingStart="32dp"
-                android:paddingTop="32dp"
+                android:paddingTop="16dp"
                 android:paddingEnd="32dp"
                 android:paddingBottom="16dp">
-
-                <LinearLayout
-                    android:id="@+id/mediaInfoNameContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.58"
-                        android:text="@string/name"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaInfoName"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textAlignment="textEnd" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/mediaInfoNameRomajiContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.58"
-                        android:text="@string/name_romaji"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaInfoNameRomaji"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textAlignment="textEnd" />
-                </LinearLayout>
 
                 <TableRow
                     android:layout_width="match_parent"
@@ -352,9 +275,55 @@
                         android:fontFamily="@font/poppins_bold"
                         android:textAlignment="textEnd" />
                 </TableRow>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="16dp"/>
+                <LinearLayout
+                    android:id="@+id/mediaInfoNameRomajiContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.58"
+                        android:text="@string/name_romaji"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/mediaInfoNameRomaji"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:breakStrategy="balanced"
+                        android:fontFamily="@font/poppins_bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/mediaInfoNameContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.58"
+                        android:text="@string/name"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/mediaInfoName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:breakStrategy="balanced"
+                        android:fontFamily="@font/poppins_bold" />
+                </LinearLayout>
             </TableLayout>
 
             <TextView
+                android:id="@+id/mediaInfoDescriptionText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
@@ -375,6 +344,93 @@
                 android:text="@string/description" />
 
             <TextView
+                android:id="@+id/mediaInfoTrailerText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="32dp"
+                android:fontFamily="@font/poppins_bold"
+                android:text="@string/trailer"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/mediaInfoTrailerContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="216dp"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="32dp"
+                    android:visibility="gone"
+                    app:cardCornerRadius="16dp"
+                    app:layout_constrainedWidth="true"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintWidth_max="384dp"
+                    tools:ignore="WebViewLayout">
+
+                    <WebView
+                        android:id="@+id/mediaInfoTrailer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+                </androidx.cardview.widget.CardView>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <TextView
+                android:id="@+id/mediaInfoOpeningText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="32dp"
+                android:fontFamily="@font/poppins_bold"
+                android:text="@string/opening"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/mediaInfoOpening"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="32dp"
+                android:fontFamily="@font/poppins_family"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/mediaInfoEndingText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="32dp"
+                android:fontFamily="@font/poppins_bold"
+                android:text="@string/ending"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+
+            <TextView
+                android:id="@+id/mediaInfoEnding"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="32dp"
+                android:fontFamily="@font/poppins_family"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/mediaInfoGenresText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
@@ -382,7 +438,8 @@
                 android:layout_marginEnd="32dp"
                 android:fontFamily="@font/poppins_bold"
                 android:text="@string/genres"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:visibility="gone" />
 
             <ani.saikou.FadingEdgeRecyclerView
                 android:id="@+id/mediaInfoGenresRecyclerView"
@@ -393,6 +450,7 @@
                 android:paddingStart="24dp"
                 android:paddingEnd="24dp"
                 android:requiresFadingEdge="horizontal"
+                android:visibility="gone"
                 tools:itemCount="4"
                 tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                 tools:listitem="@layout/item_genre"
@@ -400,7 +458,9 @@
                 tools:scrollbars="vertical"
                 tools:spanCount="2" />
 
+
             <TextView
+                android:id="@+id/mediaInfoCharacterText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
@@ -408,7 +468,8 @@
                 android:layout_marginEnd="32dp"
                 android:fontFamily="@font/poppins_bold"
                 android:text="@string/characters"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:visibility="gone" />
 
             <ani.saikou.FadingEdgeRecyclerView
                 android:id="@+id/mediaInfoCharacterRecyclerView"
@@ -419,12 +480,131 @@
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:requiresFadingEdge="horizontal"
+                android:visibility="gone"
                 tools:itemCount="4"
                 tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                 tools:listitem="@layout/item_character"
                 tools:orientation="horizontal" />
 
+            <LinearLayout
+                android:id="@+id/mediaInfoQuelContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/mediaInfoPrequel"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_margin="8dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible"
+                    app:cardCornerRadius="16dp"
+                    app:layout_constrainedWidth="true"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/animeTopScore"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintWidth_max="256dp">
+
+                    <ImageView
+                        android:id="@+id/mediaInfoPrequelImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        tools:ignore="ContentDescription"
+                        tools:src="@tools:sample/backgrounds/scenic" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:alpha="0.75"
+                        android:background="@color/bg_black" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:fontFamily="@font/poppins_bold"
+                            android:text="@string/prequel"
+                            android:textAllCaps="true"
+                            android:textColor="@color/bg_white"
+                            android:textSize="16sp" />
+
+                        <View
+                            android:layout_width="64dp"
+                            android:layout_height="2dp"
+                            android:layout_gravity="center"
+                            android:background="?attr/colorSecondary" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/mediaInfoSequel"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_margin="8dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:visibility="invisible"
+                    app:cardCornerRadius="16dp"
+                    app:layout_constrainedWidth="true"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/animeGenre"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintWidth_max="256dp">
+
+                    <ImageView
+                        android:id="@+id/mediaInfoSequelImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        tools:ignore="ContentDescription"
+                        tools:src="@tools:sample/backgrounds/scenic" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:alpha="0.75"
+                        android:background="@color/bg_black" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:fontFamily="@font/poppins_bold"
+                            android:text="@string/sequel"
+                            android:textAllCaps="true"
+                            android:textColor="@color/bg_white"
+                            android:textSize="16sp" />
+
+                        <View
+                            android:layout_width="64dp"
+                            android:layout_height="2dp"
+                            android:layout_gravity="center"
+                            android:background="?attr/colorPrimary" />
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
             <TextView
+                android:id="@+id/mediaInfoRelationText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
@@ -432,7 +612,8 @@
                 android:layout_marginEnd="32dp"
                 android:fontFamily="@font/poppins_bold"
                 android:text="@string/relations"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:visibility="gone" />
 
             <ani.saikou.FadingEdgeRecyclerView
                 android:id="@+id/mediaInfoRelationRecyclerView"
@@ -443,12 +624,14 @@
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:requiresFadingEdge="horizontal"
+                android:visibility="gone"
                 tools:itemCount="4"
                 tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                 tools:listitem="@layout/item_media_compact"
                 tools:orientation="horizontal" />
 
             <TextView
+                android:id="@+id/mediaInfoRecommendedText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
@@ -456,7 +639,8 @@
                 android:layout_marginEnd="32dp"
                 android:fontFamily="@font/poppins_bold"
                 android:text="@string/recommended"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:visibility="gone"/>
 
             <ani.saikou.FadingEdgeRecyclerView
                 android:id="@+id/mediaInfoRecommendedRecyclerView"
@@ -467,10 +651,55 @@
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:requiresFadingEdge="horizontal"
+                android:visibility="gone"
                 tools:itemCount="4"
                 tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                 tools:listitem="@layout/item_media_compact"
                 tools:orientation="horizontal" />
+
+            <TextView
+                android:id="@+id/mediaInfoSynonymsText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="32dp"
+                android:fontFamily="@font/poppins_bold"
+                android:text="@string/synonyms"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/mediaInfoSynonyms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone"
+                tools:ignore="TooManyViews" />
+
+            <TextView
+                android:id="@+id/mediaInfoTagsText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="32dp"
+                android:fontFamily="@font/poppins_bold"
+                android:text="@string/tags"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/mediaInfoTags"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone" />
+
         </LinearLayout>
     </FrameLayout>
 </androidx.core.widget.NestedScrollView>

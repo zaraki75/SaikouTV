@@ -1,5 +1,7 @@
 package ani.saikou.media
 
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,17 +9,18 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.R
 import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.ItemSearchHeaderBinding
 import ani.saikou.saveData
 
+
 class SearchAdapter(private val activity: SearchActivity): RecyclerView.Adapter<SearchAdapter.SearchHeaderViewHolder>() {
     private val itemViewType = 6969
     lateinit var search:Runnable
     lateinit var requestFocus:Runnable
+    private var textWatcher: TextWatcher?=null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchHeaderViewHolder {
         val binding = ItemSearchHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -44,7 +47,8 @@ class SearchAdapter(private val activity: SearchActivity): RecyclerView.Adapter<
         var adult = activity.adult
         var listOnly = activity.listOnly
 
-//        binding.searchBarText.setText(activity.searchText)
+        binding.searchBarText.removeTextChangedListener(textWatcher)
+        binding.searchBarText.setText(activity.searchText)
 
         binding.searchAdultCheck.isChecked = adult
         binding.searchList.isChecked = listOnly
@@ -64,9 +68,16 @@ class SearchAdapter(private val activity: SearchActivity): RecyclerView.Adapter<
             activity.search(search,genre,tag,sortBy,adult,listOnly)
         }
 
-        binding.searchBarText.doOnTextChanged { _, _, _, _ ->
-            searchTitle()
+        textWatcher = object : TextWatcher {
+            override fun afterTextChanged(s: Editable) {}
+
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                searchTitle()
+            }
         }
+        binding.searchBarText.addTextChangedListener(textWatcher)
 
         binding.searchBarText.setOnEditorActionListener { _, actionId, _ ->
             return@setOnEditorActionListener when (actionId) {

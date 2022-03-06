@@ -117,4 +117,11 @@
     <string name="adult">Adult</string>
     <string name="list_only">List Only</string>
     <string name="tag">Tag</string>
+    <string name="tags">Tags</string>
+    <string name="synonyms">Synonyms</string>
+    <string name="trailer">Trailer</string>
+    <string name="opening">Opening</string>
+    <string name="ending">Ending</string>
+    <string name="prequel">Prequel</string>
+    <string name="sequel">Sequel</string>
 </resources>

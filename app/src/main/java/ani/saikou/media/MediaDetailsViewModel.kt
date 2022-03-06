@@ -96,7 +96,7 @@ class MediaDetailsViewModel:ViewModel() {
 
     val epChanged = MutableLiveData(true)
     fun onEpisodeClick(media: Media, i:String,manager:FragmentManager,launch:Boolean=true,cancellable:Boolean=true){
-        if(manager.findFragmentByTag("dialog")==null) {
+        if(manager.findFragmentByTag("dialog")==null && !manager.isDestroyed) {
             if (media.anime?.episodes?.get(i)!=null)
                 media.anime.selectedEpisode = i
             else {

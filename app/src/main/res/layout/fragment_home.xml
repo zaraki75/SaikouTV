@@ -128,20 +128,24 @@
 
             </LinearLayout>
 
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp">
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/homeAnimeList"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="72dp"
-                    android:layout_margin="16dp"
-                    android:layout_weight="1"
-                    app:cardCornerRadius="16dp">
+                    android:layout_margin="8dp"
+                    app:cardCornerRadius="16dp"
+                    app:layout_constrainedWidth="true"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/homeMangaList"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintWidth_max="256dp">
 
                     <ImageView
                         android:id="@+id/homeAnimeListImage"
@@ -183,11 +187,17 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/homeMangaList"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="72dp"
-                    android:layout_margin="16dp"
-                    android:layout_weight="1"
-                    app:cardCornerRadius="16dp">
+                    android:layout_margin="8dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:layout_constrainedWidth="true"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/homeAnimeList"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintWidth_max="256dp">
 
                     <ImageView
                         android:id="@+id/homeMangaListImage"
@@ -228,7 +238,7 @@
 
                 </com.google.android.material.card.MaterialCardView>
 
-            </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -246,12 +256,13 @@
 
                 <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="wrap_content"
+                    android:minHeight="250dp">
 
                     <LinearLayout
                         android:id="@+id/homeWatchingEmpty"
                         android:layout_width="match_parent"
-                        android:layout_height="228dp"
+                        android:layout_height="250dp"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:visibility="gone">
@@ -319,12 +330,13 @@
 
                 <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="wrap_content"
+                    android:minHeight="250dp">
 
                     <LinearLayout
                         android:id="@+id/homeReadingEmpty"
                         android:layout_width="match_parent"
-                        android:layout_height="228dp"
+                        android:layout_height="250dp"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:visibility="gone">
@@ -391,12 +403,13 @@
 
                 <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="wrap_content"
+                    android:minHeight="250dp">
 
                     <LinearLayout
                         android:id="@+id/homeRecommendedEmpty"
                         android:layout_width="match_parent"
-                        android:layout_height="228dp"
+                        android:layout_height="250dp"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:visibility="gone"

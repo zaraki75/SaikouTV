@@ -157,7 +157,8 @@ class EpisodeAdapter(
     inner class EpisodeCompactViewHolder(val binding: ItemEpisodeCompactBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
             itemView.setOnClickListener {
-                fragment.onEpisodeClick(arr[bindingAdapterPosition].number)
+                if(bindingAdapterPosition<arr.size && bindingAdapterPosition>=0)
+                    fragment.onEpisodeClick(arr[bindingAdapterPosition].number)
             }
         }
     }
@@ -165,7 +166,8 @@ class EpisodeAdapter(
     inner class EpisodeGridViewHolder(val binding: ItemEpisodeGridBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
             itemView.setOnClickListener {
-                fragment.onEpisodeClick(arr[bindingAdapterPosition].number)
+                if(bindingAdapterPosition<arr.size && bindingAdapterPosition>=0)
+                    fragment.onEpisodeClick(arr[bindingAdapterPosition].number)
             }
         }
     }
@@ -173,7 +175,8 @@ class EpisodeAdapter(
     inner class EpisodeListViewHolder(val binding: ItemEpisodeListBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
             itemView.setOnClickListener {
-                fragment.onEpisodeClick(arr[bindingAdapterPosition].number)
+                if(bindingAdapterPosition<arr.size && bindingAdapterPosition>=0)
+                    fragment.onEpisodeClick(arr[bindingAdapterPosition].number)
             }
             binding.itemEpisodeDesc.setOnClickListener {
                 if(binding.itemEpisodeDesc.maxLines == 3)

@@ -109,9 +109,9 @@ class MediaAdaptor(
                     b.itemCompactBanner.setTransitionGenerator(RandomTransitionGenerator(20000, AccelerateDecelerateInterpolator()))
                     Glide.with(b.itemCompactBanner)
                         .load(media.banner?:media.cover)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL).override(400)
                         .apply(RequestOptions.bitmapTransform(BlurTransformation(2, 3)))
-                        .override(400).into(b.itemCompactBanner)
+                        .into(b.itemCompactBanner)
 
                     b.itemCompactOngoing.visibility = if (media.status=="RELEASING")  View.VISIBLE else View.GONE
                     b.itemCompactTitle.text = media.userPreferredName
@@ -127,8 +127,9 @@ class MediaAdaptor(
                     }
                     @SuppressLint("NotifyDataSetChanged")
                     if (position == mediaList!!.size-2 && viewPager!=null) viewPager.post {
+                        val size = mediaList.size
                         mediaList.addAll(mediaList)
-                        notifyDataSetChanged()
+                        notifyItemRangeInserted(size-1,mediaList.size)
                     }
                 }
             }
@@ -166,25 +167,29 @@ class MediaAdaptor(
     }
 
     fun clicked(position:Int,animate:View){
-        val media = mediaList?.get(position)
-        ContextCompat.startActivity(
-            activity,
-            Intent(activity, MediaDetailsActivity::class.java).putExtra(
-                "media",
-                media as Serializable
-            ),
-            ActivityOptionsCompat.makeSceneTransitionAnimation(
+        if(mediaList?.size?:0>position && position!=-1){
+            val media = mediaList?.get(position)
+            ContextCompat.startActivity(
                 activity,
-                Pair.create(animate, ViewCompat.getTransitionName(animate)!!)
-            ).toBundle()
-        )
+                Intent(activity, MediaDetailsActivity::class.java).putExtra(
+                    "media",
+                    media as Serializable
+                ),
+                ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    activity,
+                    Pair.create(animate, ViewCompat.getTransitionName(animate)!!)
+                ).toBundle()
+            )
+        }
     }
 
     fun longClicked(position:Int):Boolean{
-        val media = mediaList?.get(position)?:return false
-        if(activity.supportFragmentManager.findFragmentByTag("list") == null) {
-            MediaListDialogSmallFragment.newInstance(media).show(activity.supportFragmentManager, "list")
-            return true
+        if(mediaList?.size?:0>position && position!=-1){
+            val media = mediaList?.get(position)?:return false
+            if(activity.supportFragmentManager.findFragmentByTag("list") == null) {
+                MediaListDialogSmallFragment.newInstance(media).show(activity.supportFragmentManager, "list")
+                return true
+            }
         }
         return false
     }

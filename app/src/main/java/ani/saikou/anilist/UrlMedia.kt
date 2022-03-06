@@ -12,7 +12,7 @@ class UrlMedia: AppCompatActivity()  {
         super.onCreate(savedInstanceState)
         val data: Uri? = intent?.data
         if (data?.host!="anilist.co") loadIsMAL = true
-        if (data?.pathSegments?.get(1)!=null) loadMedia = data.pathSegments?.get(1)!!.toIntOrNull()
+        if (data?.pathSegments?.get(1)!=null) loadMedia = data.pathSegments?.get(1)?.toIntOrNull()
         startMainActivity(this)
     }
 }

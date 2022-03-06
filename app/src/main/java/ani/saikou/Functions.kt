@@ -6,6 +6,8 @@ import android.app.Activity
 import android.app.Application
 import android.app.DatePickerDialog
 import android.app.DownloadManager
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -17,10 +19,7 @@ import android.os.*
 import android.text.InputFilter
 import android.text.Spanned
 import android.util.AttributeSet
-import android.view.GestureDetector
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewAnimationUtils
+import android.view.*
 import android.view.animation.Animation
 import android.view.animation.ScaleAnimation
 import android.widget.AutoCompleteTextView
@@ -29,6 +28,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -40,12 +40,15 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import ani.saikou.anilist.Anilist
 import ani.saikou.anime.Episode
+import ani.saikou.databinding.ItemCountDownBinding
 import ani.saikou.media.Media
 import ani.saikou.media.Source
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+import com.google.android.exoplayer2.ui.DefaultTimeBar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.CoroutineScope
@@ -99,13 +102,17 @@ fun logger(e:Any?,print:Boolean=true){
 }
 
 fun saveData(fileName:String,data:Any,activity: Activity?=null){
-    val a = activity?: currActivity()
-    if (a!=null) {
-        val fos: FileOutputStream = a.openFileOutput(fileName, Context.MODE_PRIVATE)
-        val os = ObjectOutputStream(fos)
-        os.writeObject(data)
-        os.close()
-        fos.close()
+    try{
+        val a = activity?: currActivity()
+        if (a!=null) {
+            val fos: FileOutputStream = a.openFileOutput(fileName, Context.MODE_PRIVATE)
+            val os = ObjectOutputStream(fos)
+            os.writeObject(data)
+            os.close()
+            fos.close()
+        }
+    }catch (e:Exception){
+        toastString(e.toString())
     }
 }
 
@@ -251,6 +258,15 @@ fun getMalMedia(media:Media) : Media{
             val a = res.select(".title-english").text()
             media.nameMAL = if (a!="") a else res.select(".title-name").text()
             media.typeMAL = if(res.select("div.spaceit_pad > a").isNotEmpty()) res.select("div.spaceit_pad > a")[0].text() else null
+            media.anime.op = arrayListOf()
+            res.select(".opnening > table > tbody > tr").forEach {
+                media.anime.op.add(it.text())
+            }
+            media.anime.ed = arrayListOf()
+            res.select(".ending > table > tbody > tr").forEach {
+                media.anime.ed.add(it.text())
+            }
+
         }else{
             val res = Jsoup.connect("https://myanimelist.net/manga/${media.idMAL}").ignoreHttpErrors(true).get()
             val b = res.select(".title-english").text()
@@ -265,18 +281,19 @@ fun getMalMedia(media:Media) : Media{
 }
 
 fun toastString(s: String?){
-    currActivity()?.runOnUiThread { Toast.makeText(currActivity(), s, Toast.LENGTH_LONG).show() }
-    logger(s)
+    if(s!=null) {
+        currActivity()?.runOnUiThread {
+            Toast.makeText(currActivity(), s, Toast.LENGTH_LONG).show()
+        }
+        logger(s)
+    }
 }
 
-class ZoomOutPageTransformer(private val bottom:Boolean=false) : ViewPager2.PageTransformer {
+class ZoomOutPageTransformer : ViewPager2.PageTransformer {
     override fun transformPage(view: View, position: Float) {
         if (position == 0.0f) {
-            var cy = 0
-            if (bottom) cy = view.height
             setAnimation(view.context,view,300, floatArrayOf(1.3f,1f,1.3f,1f))
             ObjectAnimator.ofFloat(view,"alpha",0f,1.0f).setDuration(200).start()
-            ViewAnimationUtils.createCircularReveal(view, view.width / 2, cy, 0f, max(view.height, view.width)*1.5f).setDuration(400).start()
         }
     }
 }
@@ -375,8 +392,12 @@ fun String.findBetween(a:String,b:String):String?{
 
 fun ImageView.loadImage(url:String?,size:Int=0,headers: MutableMap<String, String>?=null){
     if(url!=null || url!="") {
-        val glideUrl = GlideUrl(url){ headers?: mutableMapOf() }
-        Glide.with(this).load(glideUrl).diskCacheStrategy(DiskCacheStrategy.ALL).transition(withCrossFade()).override(size).into(this)
+        try{
+            val glideUrl = GlideUrl(url){ headers?: mutableMapOf() }
+            Glide.with(this).load(glideUrl).diskCacheStrategy(DiskCacheStrategy.ALL).transition(withCrossFade()).override(size).into(this)
+        }catch (e:Exception){
+            logger(e.localizedMessage)
+        }
     }
 }
 
@@ -452,6 +473,24 @@ class FTActivityLifecycleCallbacks: Application.ActivityLifecycleCallbacks {
     override fun onActivityDestroyed(p0: Activity) {}
 }
 
+@SuppressLint("ViewConstructor")
+class ExtendedTimeBar(
+    context: Context,
+    attrs: AttributeSet?
+) : DefaultTimeBar(context, attrs) {
+    private var enabled = false
+    private var forceDisabled = false
+    override fun setEnabled(enabled: Boolean) {
+        this.enabled = enabled
+        super.setEnabled(!forceDisabled && this.enabled)
+    }
+
+    fun setForceDisabled(forceDisabled: Boolean) {
+        this.forceDisabled = forceDisabled
+        isEnabled = enabled
+    }
+}
+
 abstract class DoubleClickListener : GestureDetector.SimpleOnGestureListener() {
     private var timer: Timer? = null //at class level;
     private val delay:Long = 400
@@ -462,7 +501,7 @@ abstract class DoubleClickListener : GestureDetector.SimpleOnGestureListener() {
     }
 
     override fun onLongPress(e: MotionEvent?) {
-        onLongPress(e)
+        processLongClickEvent(e)
         super.onLongPress(e)
     }
 
@@ -498,9 +537,18 @@ abstract class DoubleClickListener : GestureDetector.SimpleOnGestureListener() {
         onDoubleClick(e) //Do what ever u want on Double Click
     }
 
+    private fun processLongClickEvent(e: MotionEvent?) {
+        if (timer != null) {
+            timer!!.cancel() //Cancels Running Tasks or Waiting Tasks.
+            timer!!.purge() //Frees Memory by erasing cancelled Tasks.
+        }
+        onLongClick(e) //Do what ever u want on Double Click
+    }
+
     open fun onSingleClick(event: MotionEvent?) {}
     abstract fun onDoubleClick(event: MotionEvent?)
     open fun onScrollYClick(y:Float) {}
+    open fun onLongClick(event:MotionEvent?) {}
 }
 
 fun View.circularReveal(x: Int, y: Int,time:Long) {
@@ -508,13 +556,17 @@ fun View.circularReveal(x: Int, y: Int,time:Long) {
 }
 
 fun openLinkInBrowser(link:String?){
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
-    currActivity()?.startActivity(intent)
+    try {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
+        currActivity()?.startActivity(intent)
+    }catch (e:Exception){
+        toastString(e.toString())
+    }
 }
 
 fun download(activity: Activity, episode:Episode, animeTitle:String){
     val manager = activity.getSystemService(AppCompatActivity.DOWNLOAD_SERVICE) as DownloadManager
-    val stream = episode.streamLinks[episode.selectedStream]!!
+    val stream = episode.streamLinks[episode.selectedStream]?:return
     val uri = Uri.parse(stream.quality[episode.selectedQuality].url)
     val request: DownloadManager.Request = DownloadManager.Request(uri)
     if(stream.headers!=null) {
@@ -577,3 +629,37 @@ class MediaPageTransformer : ViewPager2.PageTransformer {
     }
 }
 
+class NoGestureSubsamplingImageView(context: Context?, attr: AttributeSet?) :
+    SubsamplingScaleImageView(context, attr) {
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        return false
+    }
+}
+
+fun copyToClipboard(string: String){
+    val activity = currActivity()?:return
+    val clipboard = getSystemService(activity,ClipboardManager::class.java)
+    val clip = ClipData.newPlainText("label", string)
+    clipboard?.setPrimaryClip(clip)
+    toastString("Copied \"$string\"")
+}
+
+@SuppressLint("SetTextI18n")
+fun countDown(media: Media, view: ViewGroup){
+    if (media.anime?.nextAiringEpisode != null && media.anime.nextAiringEpisodeTime != null && (media.anime.nextAiringEpisodeTime!! - System.currentTimeMillis() / 1000) <= 86400 * 7.toLong()) {
+        val v = ItemCountDownBinding.inflate(LayoutInflater.from(view.context), view, false)
+        view.addView(v.root,0)
+        v.mediaCountdownText.text = "Episode ${media.anime.nextAiringEpisode!!+1} will be released in"
+        object : CountDownTimer((media.anime.nextAiringEpisodeTime!! + 10000) * 1000 - System.currentTimeMillis(), 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                val a = millisUntilFinished / 1000
+                v.mediaCountdown.text = "${a / 86400} days ${a % 86400 / 3600} hrs ${a % 86400 % 3600 / 60} mins ${a % 86400 % 3600 % 60} secs"
+            }
+            override fun onFinish() {
+                v.mediaCountdownContainer.visibility = View.GONE
+                toastString("Congrats Vro")
+            }
+        }.start()
+    }
+}

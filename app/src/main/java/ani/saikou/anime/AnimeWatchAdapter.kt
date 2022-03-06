@@ -3,7 +3,6 @@ package ani.saikou.anime
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
-import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,23 +33,10 @@ class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWat
         _binding = binding
 
         //Timer
-        if (media.anime?.nextAiringEpisodeTime != null && (media.anime.nextAiringEpisodeTime!! - System.currentTimeMillis() / 1000) <= 86400 * 7.toLong()) {
-            binding.mediaCountdownContainer.visibility = View.VISIBLE
-            binding.mediaCountdownText.text = "Episode ${media.anime.nextAiringEpisode!!+1} will be released in"
-            object : CountDownTimer((media.anime.nextAiringEpisodeTime!! + 10000) * 1000 - System.currentTimeMillis(), 1000) {
-                override fun onTick(millisUntilFinished: Long) {
-                    val a = millisUntilFinished / 1000
-                    _binding?.mediaCountdown?.text = "${a / 86400} days ${a % 86400 / 3600} hrs ${a % 86400 % 3600 / 60} mins ${a % 86400 % 3600 % 60} secs"
-                }
-                override fun onFinish() {
-                    _binding?.mediaCountdownContainer?.visibility = View.GONE
-                    toastString("Congrats Vro")
-                }
-            }.start()
-        }
+        countDown(media,binding.animeSourceContainer)
 
         //Youtube
-        if (media.anime?.youtube != null) {
+        if (media.anime!!.youtube != null) {
             binding.animeSourceYT.visibility = View.VISIBLE
             binding.animeSourceYT.setOnClickListener {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(media.anime.youtube))

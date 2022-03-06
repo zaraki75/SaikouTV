@@ -36,7 +36,7 @@ class Gogo(private val dub:Boolean=false, override val name: String = "gogoanime
     private fun directLinkify(name: String,url: String,getSize:Boolean=true): Episode.StreamLinks? {
         val domain = Regex("""(?<=^http[s]?://).+?(?=/)""").find(url)!!.value
         val extractor : Extractor?=when {
-            "gogo" in domain -> GogoCDN(getSize)
+            "gogo" in domain -> GogoCDN()
             "sb" in domain ->  StreamSB()
             "fplayer" in domain -> FPlayer(getSize)
             "fembed" in domain -> FPlayer(getSize)
@@ -50,10 +50,11 @@ class Gogo(private val dub:Boolean=false, override val name: String = "gogoanime
     override fun getStream(episode: Episode, server: String): Episode {
         episode.streamLinks = runBlocking {
             val linkForVideos = mutableMapOf<String,Episode.StreamLinks?>()
-            try{
+//            try{
             withContext(Dispatchers.Default) {
                 Jsoup.connect(episode.link!!).ignoreHttpErrors(true).get().select("div.anime_muti_link > ul > li").forEach {
                     val name = it.select("a").text().replace("Choose this server", "")
+                    println(name)
                     if(name==server)
                         launch {
                             val directLinks = directLinkify(
@@ -64,8 +65,8 @@ class Gogo(private val dub:Boolean=false, override val name: String = "gogoanime
                             if(directLinks != null){linkForVideos[name] = directLinks}
                         }
                 }
-            }}catch (e:Exception){
-                toastString(e.toString())
+//            }}catch (e:Exception){
+//                toastString(e.toString())
             }
             return@runBlocking (linkForVideos)
         }
@@ -73,7 +74,7 @@ class Gogo(private val dub:Boolean=false, override val name: String = "gogoanime
     }
 
     override fun getStreams(episode: Episode): Episode {
-        try {
+//        try {
         episode.streamLinks = runBlocking {
             val linkForVideos = mutableMapOf<String,Episode.StreamLinks?>()
             withContext(Dispatchers.Default) {
@@ -89,9 +90,9 @@ class Gogo(private val dub:Boolean=false, override val name: String = "gogoanime
             }
             return@runBlocking (linkForVideos)
         }
-        }catch (e:Exception){
-            toastString("$e")
-        }
+//        }catch (e:Exception){
+//            toastString("$e")
+//        }
         return episode
     }
 

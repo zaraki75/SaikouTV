@@ -114,8 +114,8 @@ class MediaListDialogFragment : BottomSheetDialogFragment(){
                     } catch (e: Exception) {
                     }
                 }
-                start.dialog.setOnDismissListener { binding.mediaListStart.setText(start.date.toString()) }
-                end.dialog.setOnDismissListener { binding.mediaListEnd.setText(end.date.toString()) }
+                start.dialog.setOnDismissListener { _binding?.mediaListStart?.setText(start.date.toString()) }
+                end.dialog.setOnDismissListener { _binding?.mediaListEnd?.setText(end.date.toString()) }
 
 
                 fun onComplete() {

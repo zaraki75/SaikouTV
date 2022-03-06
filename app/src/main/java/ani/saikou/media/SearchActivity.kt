@@ -20,7 +20,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
-
 class SearchActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySearchBinding
     private val scope = lifecycleScope
@@ -71,7 +70,6 @@ class SearchActivity : AppCompatActivity() {
         }
 
         progressAdapter = ProgressAdapter(searched = model.searched)
-        println("model : ${model.searched}")
         mediaAdaptor = MediaAdaptor(style, model.searchResults.results, this, matchParent = true)
         val headerAdaptor = SearchAdapter(this)
 

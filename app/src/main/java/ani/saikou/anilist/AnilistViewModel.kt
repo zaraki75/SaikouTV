@@ -27,6 +27,9 @@ class AnilistHomeViewModel : ViewModel() {
 }
 
 class AnilistAnimeViewModel : ViewModel() {
+    var searched = false
+    var notSet=true
+    lateinit var searchResults:SearchResults
     private val type = "ANIME"
     private val trending: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
     fun getTrending(): LiveData<ArrayList<Media>> = trending
@@ -39,12 +42,15 @@ class AnilistAnimeViewModel : ViewModel() {
     private val animePopular = MutableLiveData<SearchResults?>(null)
     fun getPopular(): LiveData<SearchResults?> = animePopular
     fun loadPopular(type:String,search_val:String?=null,genres:ArrayList<String>?=null,sort:String="Popular") = animePopular.postValue(Anilist.query.search(type, search=search_val, sort=sort, genres = genres))
-    fun loadNextPage(r:SearchResults) = Anilist.query.search(r.type,r.page+1,r.perPage,r.search,r.sort,r.genres)
+    fun loadNextPage(r:SearchResults) = animePopular.postValue(Anilist.query.search(r.type,r.page+1,r.perPage,r.search,r.sort,r.genres,r.tags,r.format,r.isAdult,r.onList))
 
     var loaded : Boolean = false
 }
 
 class AnilistMangaViewModel : ViewModel() {
+    var searched = false
+    var notSet=true
+    lateinit var searchResults:SearchResults
     private val type = "MANGA"
     private val trending: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
     fun getTrending(): LiveData<ArrayList<Media>> = trending
@@ -57,7 +63,7 @@ class AnilistMangaViewModel : ViewModel() {
     private val mangaPopular = MutableLiveData<SearchResults?>(null)
     fun getPopular(): LiveData<SearchResults?> = mangaPopular
     fun loadPopular(type:String,search_val:String?=null,genres:ArrayList<String>?=null,sort:String?="Popular") = mangaPopular.postValue(Anilist.query.search(type, search=search_val, sort=sort, genres = genres))
-    fun loadNextPage(r:SearchResults) = Anilist.query.search(r.type,r.page+1,r.perPage,r.search,r.sort,r.genres)
+    fun loadNextPage(r:SearchResults) = mangaPopular.postValue(Anilist.query.search(r.type,r.page+1,r.perPage,r.search,r.sort,r.genres,r.tags,r.format,r.isAdult,r.onList))
 
     var loaded : Boolean = false
 }

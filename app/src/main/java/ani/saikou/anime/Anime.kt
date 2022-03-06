@@ -10,6 +10,9 @@ data class Anime(
     var season: String? = null,
     var seasonYear: Int? = null,
 
+    var op:ArrayList<String> = arrayListOf(),
+    var ed:ArrayList<String> = arrayListOf(),
+
     var mainStudio:Studio?=null,
 
     var youtube: String?=null,
