@@ -25,7 +25,6 @@ import android.view.animation.ScaleAnimation
 import android.widget.AutoCompleteTextView
 import android.widget.DatePicker
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat.getSystemService
@@ -39,6 +38,7 @@ import androidx.multidex.MultiDexApplication
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import ani.saikou.anilist.Anilist
+import ani.saikou.anilist.Genre
 import ani.saikou.anime.Episode
 import ani.saikou.databinding.ItemCountDownBinding
 import ani.saikou.media.Media
@@ -51,6 +51,7 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.exoplayer2.ui.DefaultTimeBar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -286,8 +287,19 @@ fun getMalMedia(media:Media) : Media{
 
 fun toastString(s: String?){
     if(s!=null) {
-        currActivity()?.runOnUiThread {
-            Toast.makeText(currActivity(), s, Toast.LENGTH_LONG).show()
+        currActivity()?.apply{
+            runOnUiThread {
+                val snackBar = Snackbar.make(window.decorView.findViewById(android.R.id.content), s, Snackbar.LENGTH_LONG)
+                snackBar.view.translationY = -navBarHeight.dp
+                snackBar.view.setOnClickListener {
+                    snackBar.dismiss()
+                }
+                snackBar.view.setOnLongClickListener {
+                    copyToClipboard(s,false)
+                    true
+                }
+                snackBar.show()
+            }
         }
         logger(s)
     }
@@ -643,12 +655,12 @@ class NoGestureSubsamplingImageView(context: Context?, attr: AttributeSet?) :
     }
 }
 
-fun copyToClipboard(string: String){
+fun copyToClipboard(string: String,toast:Boolean=true){
     val activity = currActivity()?:return
     val clipboard = getSystemService(activity,ClipboardManager::class.java)
     val clip = ClipData.newPlainText("label", string)
     clipboard?.setPrimaryClip(clip)
-    toastString("Copied \"$string\"")
+    if(toast) toastString("Copied \"$string\"")
 }
 
 @SuppressLint("SetTextI18n")
@@ -669,3 +681,19 @@ fun countDown(media: Media, view: ViewGroup){
         }.start()
     }
 }
+
+fun MutableMap<String, Genre>.checkId(id:Int):Boolean{
+    this.forEach {
+        if (it.value.id == id){
+            return false
+        }
+    }
+    return true
+}
+
+fun MutableMap<String, Genre>.checkTime(genre:String):Boolean{
+    if(containsKey(genre))
+        return (System.currentTimeMillis()-get(genre)!!.time) >= (1000*60*60*24*7)
+    return true
+}
+

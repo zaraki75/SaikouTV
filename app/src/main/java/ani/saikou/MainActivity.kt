@@ -64,8 +64,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.root.doOnAttach {
-        initActivity(this)
-
+            initActivity(this)
             binding.navbarContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             bottomMargin = navBarHeight
         }
@@ -77,51 +76,63 @@ class MainActivity : AppCompatActivity() {
         else{
             val  model : AnilistHomeViewModel by viewModels()
             model.genres.observe(this) {
-                if (it) {
-                    val navbar = binding.navbar
-                    bottomBar = navbar
-                    navbar.visibility = View.VISIBLE
-                    binding.mainProgressBar.visibility = View.GONE
-                    val mainViewPager = binding.viewpager
-                    mainViewPager.isUserInputEnabled = false
-                    mainViewPager.adapter = ViewPagerAdapter(supportFragmentManager, lifecycle)
-                    mainViewPager.setPageTransformer(ZoomOutPageTransformer())
-                    navbar.setOnTabSelectListener(object : AnimatedBottomBar.OnTabSelectListener {
-                        override fun onTabSelected(
-                            lastIndex: Int,
-                            lastTab: AnimatedBottomBar.Tab?,
-                            newIndex: Int,
-                            newTab: AnimatedBottomBar.Tab
-                        ) {
-                            navbar.animate().translationZ(12f).setDuration(200).start()
-                            selectedOption = newIndex
-                            mainViewPager.setCurrentItem(newIndex, false)
-                        }
-                    })
-                    navbar.selectTabAt(selectedOption)
-                    mainViewPager.post { mainViewPager.setCurrentItem(selectedOption, false) }
+                if (it!=null) {
+                    if(it) {
+                        val navbar = binding.navbar
+                        bottomBar = navbar
+                        navbar.visibility = View.VISIBLE
+                        binding.mainProgressBar.visibility = View.GONE
+                        val mainViewPager = binding.viewpager
+                        mainViewPager.isUserInputEnabled = false
+                        mainViewPager.adapter = ViewPagerAdapter(supportFragmentManager, lifecycle)
+                        mainViewPager.setPageTransformer(ZoomOutPageTransformer())
+                        navbar.setOnTabSelectListener(object :
+                            AnimatedBottomBar.OnTabSelectListener {
+                            override fun onTabSelected(
+                                lastIndex: Int,
+                                lastTab: AnimatedBottomBar.Tab?,
+                                newIndex: Int,
+                                newTab: AnimatedBottomBar.Tab
+                            ) {
+                                navbar.animate().translationZ(12f).setDuration(200).start()
+                                selectedOption = newIndex
+                                mainViewPager.setCurrentItem(newIndex, false)
+                            }
+                        })
+                        navbar.selectTabAt(selectedOption)
+                        mainViewPager.post { mainViewPager.setCurrentItem(selectedOption, false) }
 
-                    if (loadMedia != null) {
-                        scope.launch {
-                            val media = withContext(Dispatchers.IO){ Anilist.query.getMedia(loadMedia!!, loadIsMAL) }
-                            if (media != null) {
-                                startActivity(
-                                    Intent(
-                                        this@MainActivity,
-                                        MediaDetailsActivity::class.java
-                                    ).putExtra("media", media as Serializable)
-                                )
-                            } else {
-                                toastString("Seems like that wasn't found on Anilist.")
+                        if (loadMedia != null) {
+                            scope.launch {
+                                val media = withContext(Dispatchers.IO) {
+                                    Anilist.query.getMedia(
+                                        loadMedia!!,
+                                        loadIsMAL
+                                    )
+                                }
+                                if (media != null) {
+                                    startActivity(
+                                        Intent(
+                                            this@MainActivity,
+                                            MediaDetailsActivity::class.java
+                                        ).putExtra("media", media as Serializable)
+                                    )
+                                } else {
+                                    toastString("Seems like that wasn't found on Anilist.")
+                                }
                             }
                         }
+                    }
+                    else {
+                        binding.mainProgressBar.visibility = View.GONE
+                        toastString("Error Loading Tags & Genres.")
                     }
                 }
             }
             //Load Data
             if (!load) {
                 Anilist.getSavedToken(this)
-                scope.launch(Dispatchers.IO) { model.genres.postValue(Anilist.query.genreCollection(this@MainActivity)) }
+                scope.launch(Dispatchers.IO) { model.genres.postValue(Anilist.query.getGenresAndTags()) }
                 load = true
             }
         }

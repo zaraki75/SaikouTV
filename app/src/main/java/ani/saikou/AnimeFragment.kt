@@ -104,6 +104,7 @@ class AnimeFragment : Fragment() {
         }
 
         binding.animePageScrollTop.setOnClickListener{
+            binding.animePageRecyclerView.scrollToPosition(2)
             binding.animePageRecyclerView.smoothScrollToPosition(0)
         }
 

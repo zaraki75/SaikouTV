@@ -16,7 +16,7 @@ object Anilist {
     var avatar : String? = null
     var episodesWatched : Int? = null
     var chapterRead : Int? = null
-    var genres:Map<String,String>?=null
+    var genres:ArrayList<String>?=null
     var tags:ArrayList<String>?=null
     var sortBy = mapOf(
         Pair("Score","SCORE_DESC"),
@@ -29,10 +29,7 @@ object Anilist {
 
     fun loginIntent(context: Context){
         val clientID = 6818
-
-        val builder = CustomTabsIntent.Builder()
-        val customTabsIntent = builder.build()
-        customTabsIntent.launchUrl(context, Uri.parse("https://anilist.co/api/v2/oauth/authorize?client_id=$clientID&response_type=token"))
+        CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse("https://anilist.co/api/v2/oauth/authorize?client_id=$clientID&response_type=token"))
     }
 
     fun getSavedToken(context: Context):Boolean{

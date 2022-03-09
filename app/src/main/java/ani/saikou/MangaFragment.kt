@@ -96,6 +96,7 @@ class MangaFragment : Fragment() {
         }
 
         binding.mangaPageScrollTop.setOnClickListener{
+            binding.mangaPageRecyclerView.scrollToPosition(2)
             binding.mangaPageRecyclerView.smoothScrollToPosition(0)
         }
 

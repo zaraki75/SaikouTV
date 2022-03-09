@@ -6,7 +6,6 @@ import ani.saikou.media.Source
 
 abstract class AnimeParser {
     abstract val name : String
-    var headers : MutableMap<String,String>?=null
     var text = ""
     var textListener: ((String)->Unit)? = null
     abstract fun getStream(episode: Episode,server:String):Episode

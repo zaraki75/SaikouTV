@@ -16,12 +16,17 @@ import androidx.core.text.HtmlCompat
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import ani.saikou.*
+import ani.saikou.anilist.GenresViewModel
 import ani.saikou.databinding.*
 import io.noties.markwon.Markwon
 import io.noties.markwon.SoftBreakAddsNewLinePlugin
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import java.io.Serializable
 import java.net.URLEncoder
 
@@ -33,6 +38,7 @@ class MediaInfoFragment : Fragment() {
     private var timer: CountDownTimer? = null
     private var loaded = false
     private var type = "ANIME"
+    private val genreModel : GenresViewModel by activityViewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentMediaInfoBinding.inflate(inflater, container, false)
@@ -45,13 +51,13 @@ class MediaInfoFragment : Fragment() {
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val model : MediaDetailsViewModel by activityViewModels()
         binding.mediaInfoProgressBar.visibility = if (!loaded) View.VISIBLE else View.GONE
         binding.mediaInfoContainer.visibility = if (loaded) View.VISIBLE else View.GONE
         binding.mediaInfoContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin += 128f.px + navBarHeight }
 
-        val model : MediaDetailsViewModel by activityViewModels()
         model.getMedia().observe(viewLifecycleOwner) { media ->
-            if (media != null) {
+            if (media != null && !loaded) {
                 loaded = true
                 binding.mediaInfoProgressBar.visibility = View.GONE
                 binding.mediaInfoContainer.visibility = View.VISIBLE
@@ -247,14 +253,32 @@ class MediaInfoFragment : Fragment() {
                 }
 
                 if (media.genres.isNotEmpty()) {
-                    val bind = ItemTitleRecyclerBinding.inflate(
+                    val bind = ActivityGenreBinding.inflate(
                         LayoutInflater.from(context),
                         parent,
                         false
                     )
-                    bind.itemTitle.setText(R.string.genres)
-                    bind.itemRecycler.adapter = GenreAdapter(media.genres, type, requireActivity())
-                    bind.itemRecycler.layoutManager = GridLayoutManager(requireContext(), (screenWidth / 156f).toInt())
+                    val adapter = GenreAdapter(type)
+                    genreModel.doneListener = {
+                        MainScope().launch {
+                            bind.mediaInfoGenresProgressBar.visibility = View.GONE
+                        }
+                    }
+                    if(genreModel.genres!=null){
+                        adapter.genres = genreModel.genres!!
+                        adapter.pos = ArrayList(genreModel.genres!!.keys)
+                        if(genreModel.done) genreModel.doneListener?.invoke()
+                    }
+                    bind.mediaInfoGenresRecyclerView.adapter = adapter
+                    bind.mediaInfoGenresRecyclerView.layoutManager = GridLayoutManager( requireActivity(), (screenWidth / 156f).toInt())
+
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        genreModel.loadGenres(media.genres){
+                            MainScope().launch {
+                                adapter.addGenre(it)
+                            }
+                        }
+                    }
                     parent.addView(bind.root)
                 }
 

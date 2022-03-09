@@ -23,7 +23,7 @@ class AnilistHomeViewModel : ViewModel() {
     fun setRecommendation() = recommendation.postValue(Anilist.query.recommendations())
 
     var loaded : Boolean = false
-    val genres : MutableLiveData<Boolean> = MutableLiveData(false)
+    val genres : MutableLiveData<Boolean?> = MutableLiveData(null)
 }
 
 class AnilistAnimeViewModel : ViewModel() {
@@ -75,7 +75,26 @@ class AnilistSearch : ViewModel(){
     private val search: MutableLiveData<SearchResults?> = MutableLiveData<SearchResults?>(null)
 
     fun getSearch(): LiveData<SearchResults?> = search
-    fun loadSearch(type:String,search_val:String?=null,genres:ArrayList<String>?=null,tags:ArrayList<String>?=null,sort:String?="",adult:Boolean=false,listOnly:Boolean=false) = search.postValue(Anilist.query.search(type, search=search_val, sort=sort, genres = genres, tags = tags, isAdult = adult, onList = listOnly))
+    fun loadSearch(type:String,search_val:String?=null,genres:ArrayList<String>?=null,tags:ArrayList<String>?=null,sort:String?="",adult:Boolean=false,listOnly:Boolean?=null) = search.postValue(Anilist.query.search(type, search=search_val, sort=sort, genres = genres, tags = tags, isAdult = adult, onList = listOnly))
 
     fun loadNextPage(r:SearchResults) = search.postValue(Anilist.query.search(r.type,r.page+1,r.perPage,r.search,r.sort,r.genres,r.tags,r.format,r.isAdult,r.onList))
+}
+
+class GenresViewModel : ViewModel(){
+    var genres : MutableMap<String,String>? = null
+    var done = false
+    var doneListener : (()->Unit)? = null
+    fun loadGenres(genre: ArrayList<String>,listener: (Pair<String,String>) -> Unit){
+        if(genres==null){
+            genres = mutableMapOf()
+            Anilist.query.getGenres(genre){
+                genres!![it.first] = it.second
+                listener.invoke(it)
+                if(genres!!.size == genre.size){
+                    done = true
+                    doneListener?.invoke()
+                }
+            }
+        }
+    }
 }

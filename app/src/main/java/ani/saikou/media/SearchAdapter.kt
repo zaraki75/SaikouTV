@@ -51,10 +51,10 @@ class SearchAdapter(private val activity: SearchActivity): RecyclerView.Adapter<
         binding.searchBarText.setText(activity.searchText)
 
         binding.searchAdultCheck.isChecked = adult
-        binding.searchList.isChecked = listOnly
+        binding.searchList.isChecked = listOnly==true
 
         binding.searchGenre.setText(activity.genre)
-        binding.searchGenre.setAdapter(ArrayAdapter(binding.root.context, R.layout.item_dropdown,(Anilist.genres?: mapOf()).keys.toTypedArray()))
+        binding.searchGenre.setAdapter(ArrayAdapter(binding.root.context, R.layout.item_dropdown,Anilist.genres!!))
         binding.searchSortBy.setText(activity.sortBy)
         binding.searchSortBy.setAdapter(ArrayAdapter(binding.root.context, R.layout.item_dropdown, Anilist.sortBy.keys.toTypedArray()))
         binding.searchTag.setText(activity.tag)
@@ -141,7 +141,7 @@ class SearchAdapter(private val activity: SearchActivity): RecyclerView.Adapter<
             binding.searchAdultCheck.visibility= View.GONE
         }
         binding.searchList.setOnCheckedChangeListener { _, b ->
-            listOnly=b
+            listOnly= if(b) true else null
             searchTitle()
         }
 

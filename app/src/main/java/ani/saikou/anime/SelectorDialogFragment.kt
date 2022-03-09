@@ -19,14 +19,17 @@ import ani.saikou.databinding.ItemStreamBinding
 import ani.saikou.databinding.ItemUrlBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.DecimalFormat
 
 class SelectorDialogFragment : BottomSheetDialogFragment(){
     private var _binding: BottomSheetSelectorBinding? = null
     private val binding get() = _binding!!
     val model : MediaDetailsViewModel by activityViewModels()
-    private lateinit var scope: CoroutineScope
+    private var scope: CoroutineScope = lifecycleScope
     private var media: Media? = null
     private var episode: Episode? = null
     private var makeDefault = false
@@ -38,7 +41,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
         arguments?.let {
             selected = it.getString("server")
             launch = it.getBoolean("launch",true)
-            isCancelable = it.getBoolean("cancellable",true)
+//            isCancelable = it.getBoolean("cancellable",true)
         }
     }
 
@@ -60,7 +63,6 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        scope = viewLifecycleOwner.lifecycleScope
         model.getMedia().observe(viewLifecycleOwner) { m ->
             media = m
             if (media != null) {
@@ -122,17 +124,15 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
                             )
                             binding.selectorRecyclerView.adapter = StreamAdapter()
                         }
-                        if (episode!!.streamLinks.isEmpty()) {
+                        if (episode!!.streamLinks.isEmpty() || !episode!!.allStreams) {
                             model.getEpisode().observe(this) {
                                 if (it != null) {
                                     episode = it
                                     load()
                                 }
                             }
-                            scope.launch {
-                                withContext(Dispatchers.IO) {
-                                    model.loadEpisodeStreams(episode!!, media!!.selected!!.source)
-                                }
+                            scope.launch(Dispatchers.IO) {
+                                model.loadEpisodeStreams(episode!!, media!!.selected!!.source)
                             }
                         } else load()
                     }
@@ -229,7 +229,6 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
     }
 
     override fun onDismiss(dialog: DialogInterface) {
-        scope.cancel()
         if(launch == false){
             @Suppress("DEPRECATION")
             activity?.window?.decorView?.systemUiVisibility = (

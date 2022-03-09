@@ -1,16 +1,13 @@
 package ani.saikou.anilist
 
-import android.app.Activity
 import ani.saikou.*
 import ani.saikou.anime.Anime
 import ani.saikou.manga.Manga
 import ani.saikou.media.Character
 import ani.saikou.media.Media
 import ani.saikou.media.Studio
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
@@ -44,7 +41,7 @@ fun executeQuery(query:String, variables:String="",force:Boolean=false,useToken:
 data class SearchResults(
     val type: String,
     var isAdult: Boolean,
-    var onList: Boolean,
+    var onList: Boolean?=null,
     var perPage:Int?=null,
     var search: String? = null,
     var sort: String? = null,
@@ -603,76 +600,22 @@ class AnilistQueries{
     }
 
 
-    suspend fun genreCollection(activity:Activity):Boolean{
-        var success = false
-        logger("GenreCollection started")
-        val genres:MutableMap<String,String>? = loadData("genres",activity)
-        var tags:ArrayList<String>? = loadData("tags",activity)
-        val time :Long?= loadData("genresTime",activity)
-        fun snack(string:String){
-            activity.runOnUiThread {
-                val snackBar = Snackbar.make(activity.window.decorView.findViewById(android.R.id.content), string, Snackbar.LENGTH_LONG)
-                snackBar.view.translationY = -navBarHeight.dp
-                snackBar.show()
-            }
-        }
-        suspend fun get(){
+    fun getGenresAndTags():Boolean{
+        var genres:ArrayList<String>? = loadData("genres_list")
+        var tags:ArrayList<String>? = loadData("tags_list")
 
-            snack("Updating Genres, Please wait...")
-            val returnMap = mutableMapOf<String,String>()
-            val query = "{GenreCollection}"
-            val ids = arrayListOf<String>()
-            try {
-                val executedQuery = executeQuery(query, force = true)!!
-                if (executedQuery["data"] != JsonNull) {
-                    executedQuery["data"]!!.jsonObject["GenreCollection"]!!.jsonArray.forEach { genre ->
-                        val genreQuery = """{ Page(perPage: 10){media(genre:${
-                            genre.toString().replace("\"", "\\\"")
-                        }, sort: TRENDING_DESC, type: ANIME, countryOfOrigin:\"JP\") {id bannerImage } } }"""
-                        delay(200)
-                        snack("Getting $genre")
-                        val response = executeQuery(genreQuery, force = true)!!["data"]!!.jsonObject["Page"]!!
-                        if (response.jsonObject["media"] != JsonNull) {
-                            run next@{
-                                response.jsonObject["media"]!!.jsonArray.forEach {
-                                    if (it.jsonObject["id"].toString() !in ids && it.jsonObject["bannerImage"] != JsonNull) {
-                                        ids.add(it.jsonObject["id"].toString())
-                                        returnMap[genre.toString().trim('"')] =
-                                            it.jsonObject["bannerImage"].toString().trim('"')
-                                        return@next
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                saveData("genres", returnMap, activity)
-                saveData("genresTime", System.currentTimeMillis(), activity)
-
-                success = true
-                Anilist.genres = returnMap
-                logger("$returnMap \nfinished")
-                snack("Genres Updated! Now Loading...")
-            }catch (e:Exception){
-                toastString(e.toString())
-            }
-        }
         if (genres==null) {
-            get()
-        }
-        else{
-            if(time!=null)
-                if ((System.currentTimeMillis()-time) < (1000*60*60*24*7)) {
-                    logger("Loaded Genres from Save.")
-                    success = true
-                    Anilist.genres = genres
-                } else get()
-            else get()
+            executeQuery("""{GenreCollection}""", force = true)?.get("data")?.apply {
+                if(this!=JsonNull){
+                    genres = arrayListOf()
+                    this.jsonObject["GenreCollection"]!!.jsonArray.forEach { genre ->
+                        genres!!.add(genre.toString().trim('"'))
+                    }
+                    saveData("genres_list",genres!!)
+                }
+            }
         }
         if (tags==null){
-            snack("Tags not Found, Loading Tags")
-            success=false
             executeQuery("""{ MediaTagCollection { name isAdult } }""", force = true)?.get("data")?.apply {
                 if(this!=JsonNull){
                     tags = arrayListOf()
@@ -680,13 +623,58 @@ class AnilistQueries{
                         if(it.jsonObject["isAdult"].toString()=="true")
                             tags!!.add(it.jsonObject["name"]!!.toString().trim('"'))
                     }
-                    saveData("tags",tags!!)
-                    success=true
+                    saveData("tags_list",tags!!)
                 }
             }
         }
-        Anilist.tags = tags
-        return success
+        return if(genres!=null && tags!=null) {
+            Anilist.genres = genres
+            Anilist.tags = tags
+            true
+        } else false
+    }
+
+    fun getGenres(genres: ArrayList<String>,listener: ((Pair<String,String>)->Unit)){
+//        val map = mutableMapOf<String,String>()
+        genres.forEach {
+            getGenreThumbnail(it).apply {
+                if(this!=null) {
+//                    map[it] = this.thumbnail
+                    listener.invoke(it to this.thumbnail)
+                }
+            }
+        }
+    }
+
+    private fun getGenreThumbnail(genre:String):Genre?{
+        val genres = loadData<MutableMap<String,Genre>>("genre_thumb")?: mutableMapOf()
+        if(genres.checkTime(genre)){
+            try {
+                println(genre)
+                val genreQuery = """{ Page(perPage: 10){media(genre:\"$genre\", sort: TRENDING_DESC, type: ANIME, countryOfOrigin:\"JP\") {id bannerImage } } }"""
+                val response = executeQuery(genreQuery, force = true)!!["data"]!!.jsonObject["Page"]!!
+                if (response.jsonObject["media"] != JsonNull) {
+                    response.jsonObject["media"]!!.jsonArray.forEach {
+                        val id = it.jsonObject["id"].toString().toInt()
+                        if (genres.checkId(id) && it.jsonObject["bannerImage"] != JsonNull) {
+                            genres[genre] = Genre(
+                                genre,
+                                id,
+                                it.jsonObject["bannerImage"].toString().trim('"'),
+                                System.currentTimeMillis()
+                            )
+                            saveData("genre_thumb",genres)
+                            return genres[genre]
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                toastString(e.toString())
+            }
+        }else{
+            return genres[genre]!!
+        }
+        return null
     }
 
     fun search(
@@ -699,7 +687,7 @@ class AnilistQueries{
         tags: ArrayList<String>? = null,
         format:String?=null,
         isAdult:Boolean=false,
-        onList: Boolean=false,
+        onList: Boolean?=null,
         id: Int?=null,
         hd:Boolean=false
     ): SearchResults? {
@@ -746,7 +734,7 @@ query (${"$"}page: Int = 1, ${"$"}id: Int, ${"$"}type: MediaType, ${"$"}isAdult:
 }
         """.replace("\n", " ").replace("""  """, "")
         val variables = """{\"type\":\"$type\",\"isAdult\":$isAdult
-            ${if (onList) """,\"onList\":$onList""" else ""}
+            ${if (onList != null) """,\"onList\":$onList""" else ""}
             ${if (page != null) """,\"page\":\"$page\"""" else ""}
             ${if (id != null) """,\"id\":\"$id\"""" else ""}
             ${if (search != null) """,\"search\":\"$search\"""" else ""}
@@ -778,7 +766,7 @@ query (${"$"}page: Int = 1, ${"$"}id: Int, ${"$"}type: MediaType, ${"$"}isAdult:
                         userProgress = if (i.jsonObject["mediaListEntry"] != JsonNull) i.jsonObject["mediaListEntry"]!!.jsonObject["progress"].toString().toInt() else null,
                         userScore = if (i.jsonObject["mediaListEntry"] != JsonNull) i.jsonObject["mediaListEntry"]!!.jsonObject["score"].toString().toInt() else 0,
                         userStatus = userStatus,
-                        relation = if(onList) userStatus else null,
+                        relation = if(onList==true) userStatus else null,
                         meanScore = if (i.jsonObject["meanScore"].toString().trim('"') != "null") i.jsonObject["meanScore"].toString().toInt() else null,
                         anime = if (i.jsonObject["type"].toString().trim('"') == "ANIME") Anime(totalEpisodes = if (i.jsonObject["episodes"] != JsonNull) i.jsonObject["episodes"].toString().toInt() else null, nextAiringEpisode = if (i.jsonObject["nextAiringEpisode"] != JsonNull) i.jsonObject["nextAiringEpisode"]!!.jsonObject["episode"].toString().toInt() - 1 else null) else null,
                         manga = if (i.jsonObject["type"].toString().trim('"') == "MANGA") Manga(totalChapters = if (i.jsonObject["chapters"] != JsonNull) i.jsonObject["chapters"].toString().toInt() else null) else null,

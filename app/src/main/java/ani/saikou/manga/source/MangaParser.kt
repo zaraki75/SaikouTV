@@ -6,7 +6,6 @@ import ani.saikou.media.Source
 
 abstract class MangaParser {
     abstract val name : String
-    var headers:MutableMap<String,String>? = null
     var text = ""
     var textListener: ((String)->Unit)? = null
     abstract fun getLinkChapters(link:String):MutableMap<String, MangaChapter>

@@ -38,7 +38,7 @@ class SearchActivity : AppCompatActivity() {
     var sortBy: String? = null
     var tag: String? = null
     var adult = false
-    var listOnly = false
+    var listOnly :Boolean?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -155,7 +155,7 @@ class SearchActivity : AppCompatActivity() {
         tag: String? = null,
         sort: String? = null,
         adult: Boolean = false,
-        listOnly: Boolean = false
+        listOnly: Boolean? = null
     ) {
         val size = model.searchResults.results.size
         model.searchResults.results.clear()

@@ -227,15 +227,12 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
 
         if(model.continueMedia==null) model.continueMedia = media.cameFromContinue
         if(media.cameFromContinue) selected = 1
-        scope.launch(Dispatchers.IO) {
-            model.loadMedia(media)
-        }
 
-        val live = Refresh.activity.getOrPut(this.hashCode()){ MutableLiveData(false) }
+        val live = Refresh.activity.getOrPut(this.hashCode()){ MutableLiveData(true) }
         live.observe(this){
             if(it){
                 scope.launch(Dispatchers.IO) {
-                    model.loadMedia(media)
+                    model.loadMedia(media,"activity")
                     live.postValue(false)
                 }
             }

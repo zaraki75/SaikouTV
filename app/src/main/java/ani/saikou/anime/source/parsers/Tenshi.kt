@@ -145,7 +145,8 @@ open class Tenshi(override val name: String="tenshi.moe") : AnimeParser() {
                         Source(
                             link = it.attr("abs:href"),
                             name = it.attr("title"),
-                            cover = it.select(".image")[0].attr("src")
+                            cover = it.select(".image")[0].attr("src"),
+                            headers = mutableMapOf("cookie" to getCookieHeaders(),"referer" to "https://$name/")
                         )
                     )
                 }

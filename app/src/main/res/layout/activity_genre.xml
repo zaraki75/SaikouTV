@@ -24,13 +24,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fadingEdge="vertical"
-        android:requiresFadingEdge="vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
+        android:requiresFadingEdge="vertical"
         tools:itemCount="49"
         tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         tools:listitem="@layout/item_genre"
         tools:orientation="vertical"
         tools:spanCount="2" />
+
+    <ProgressBar
+        android:id="@+id/mediaInfoGenresProgressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_margin="32dp" />
 
 </LinearLayout>

@@ -13,8 +13,7 @@ import kotlinx.coroutines.launch
 abstract class SourceAdapter(
     private val sources: ArrayList<Source>,
     private val dialogFragment: SourceSearchDialogFragment,
-    private val scope:CoroutineScope,
-    private val headers:MutableMap<String,String>?
+    private val scope:CoroutineScope
 ): RecyclerView.Adapter<SourceAdapter.SourceViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SourceViewHolder {
         val binding = ItemCharacterBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -25,7 +24,7 @@ abstract class SourceAdapter(
     override fun onBindViewHolder(holder: SourceViewHolder, position: Int) {
         val binding = holder.binding
         val character = sources[position]
-        binding.itemCompactImage.loadImage(character.cover,200,headers)
+        binding.itemCompactImage.loadImage(character.cover,200,character.headers)
         binding.itemCompactTitle.isSelected = true
         binding.itemCompactTitle.text = character.name
     }

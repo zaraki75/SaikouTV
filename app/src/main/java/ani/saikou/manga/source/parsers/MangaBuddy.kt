@@ -8,9 +8,7 @@ import ani.saikou.media.Source
 import org.jsoup.Jsoup
 
 class MangaBuddy(override val name: String="mangabuddy.com") : MangaParser() {
-     init {
-         headers = mutableMapOf("referer" to "https://mangabuddy.com/")
-     }
+
     override fun getLinkChapters(link:String):MutableMap<String,MangaChapter>{
         val arr = mutableMapOf<String, MangaChapter>()
         try {
@@ -81,8 +79,9 @@ class MangaBuddy(override val name: String="mangabuddy.com") : MangaParser() {
                 response.add(Source(
                     link = it.attr("href"),
                     name = it.attr("title"),
-                    cover = it.select("img").attr("data-src"))
-                )
+                    cover = it.select("img").attr("data-src"),
+                    headers = mutableMapOf("referer" to "https://mangabuddy.com/")
+                ))
             }
         }} catch(e:Exception){ toastString(e.toString()) }
         return response
