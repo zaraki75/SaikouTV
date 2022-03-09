@@ -57,17 +57,17 @@ class MangaBuddy(override val name: String="mangabuddy.com") : MangaParser() {
     override fun getChapters(media: Media): MutableMap<String, MangaChapter> {
         var source:Source? = loadData("mangabuddy_${media.id}")
         if (source==null) {
-            live.postValue("Searching : ${media.getMangaName()}")
+            setTextListener("Searching : ${media.getMangaName()}")
             val search = search(media.getMangaName())
             if (search.isNotEmpty()) {
                 logger("MangaBuddy : ${search[0]}")
                 source = search[0]
-                live.postValue("Found : ${source.name}")
+                setTextListener("Found : ${source.name}")
                 saveSource(source,media.id)
             }
         }
         else{
-            live.postValue("Selected : ${source.name}")
+            setTextListener("Selected : ${source.name}")
         }
         if (source!=null) return getLinkChapters(source.link)
         return mutableMapOf()
@@ -89,7 +89,7 @@ class MangaBuddy(override val name: String="mangabuddy.com") : MangaParser() {
     }
 
     override fun saveSource(source: Source, id: Int, selected: Boolean) {
-        live.postValue("${if(selected) "Selected" else "Found"} : ${source.name}")
+        super.saveSource(source, id, selected)
         saveData("mangabuddy_$id", source)
     }
 }

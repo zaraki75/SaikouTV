@@ -1,8 +1,6 @@
-package ani.saikou.anime
+package ani.saikou.manga
 
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,17 +8,21 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.recyclerview.widget.RecyclerView
-import ani.saikou.*
-import ani.saikou.anime.source.WatchSources
+import ani.saikou.R
+import ani.saikou.anime.handleProgress
 import ani.saikou.databinding.ItemAnimeWatchBinding
 import ani.saikou.databinding.ItemChipBinding
+import ani.saikou.loadData
+import ani.saikou.loadImage
+import ani.saikou.manga.source.MangaReadSources
 import ani.saikou.media.Media
 import ani.saikou.media.SourceSearchDialogFragment
+import ani.saikou.px
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
-class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWatchFragment,private val watchSources: WatchSources): RecyclerView.Adapter<AnimeWatchAdapter.ViewHolder>() {
+class MangaReadAdapter(private val media: Media, private val fragment: MangaReadFragment, private val mangaReadSources: MangaReadSources): RecyclerView.Adapter<MangaReadAdapter.ViewHolder>() {
 
     private var _binding: ItemAnimeWatchBinding?=null
 
@@ -34,29 +36,20 @@ class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWat
         val binding = holder.binding
         _binding = binding
 
-        //Youtube
-        if (media.anime!!.youtube != null) {
-            binding.animeSourceYT.visibility = View.VISIBLE
-            binding.animeSourceYT.setOnClickListener {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(media.anime.youtube))
-                fragment.requireContext().startActivity(intent)
-            }
-        }
-
         //Source Selection
-        binding.animeSource.setText(watchSources.names[media.selected!!.source])
-        watchSources[media.selected!!.source]!!.apply {
+        binding.animeSource.setText(mangaReadSources.names[media.selected!!.source])
+        mangaReadSources[media.selected!!.source]!!.apply {
             binding.animeSourceTitle.text = text
             textListener = { MainScope().launch { binding.animeSourceTitle.text = it } }
         }
-        binding.animeSource.setAdapter(ArrayAdapter(fragment.requireContext(), R.layout.item_dropdown, watchSources.names))
+        binding.animeSource.setAdapter(ArrayAdapter(fragment.requireContext(), R.layout.item_dropdown, mangaReadSources.names))
         binding.animeSourceTitle.isSelected = true
         binding.animeSource.setOnItemClickListener { _, _, i, _ ->
             fragment.onSourceChange(i).apply {
                 binding.animeSourceTitle.text = text
                 textListener = { MainScope().launch { binding.animeSourceTitle.text = it } }
             }
-            fragment.loadEpisodes(i)
+            fragment.loadChapters(i)
         }
 
         //Wrong Title
@@ -64,7 +57,11 @@ class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWat
             SourceSearchDialogFragment().show(fragment.requireActivity().supportFragmentManager, null)
         }
 
+        //Title
+        binding.sourceTitle.setText(R.string.chaps)
+
         //Icons
+        binding.animeSourceGrid.visibility = View.GONE
         var reversed = media.selected!!.recyclerReversed
         var style = media.selected!!.recyclerStyle
         binding.animeSourceTop.rotation = if (!reversed) 90f else -90f
@@ -75,12 +72,11 @@ class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWat
         }
         var selected = when (media.selected!!.recyclerStyle) {
             0 -> binding.animeSourceList
-            1 -> binding.animeSourceGrid
-            2 -> binding.animeSourceCompact
+            1 -> binding.animeSourceCompact
             else -> binding.animeSourceList
         }
         selected.alpha = 1f
-        fun selected(it:ImageView){
+        fun selected(it: ImageView){
             selected.alpha=0.33f
             selected = it
             selected.alpha = 1f
@@ -90,19 +86,14 @@ class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWat
             style = 0
             fragment.onIconPressed(style,reversed)
         }
-        binding.animeSourceGrid.setOnClickListener {
+        binding.animeSourceCompact.setOnClickListener {
             selected(it as ImageView)
             style = 1
             fragment.onIconPressed(style,reversed)
         }
-        binding.animeSourceCompact.setOnClickListener {
-            selected(it as ImageView)
-            style = 2
-            fragment.onIconPressed(style,reversed)
-        }
 
-        //Episode Handling
-        handleEpisodes()
+        //Chapter Handling
+        handleChapters()
     }
     //Chips
     @SuppressLint("SetTextI18n")
@@ -141,28 +132,26 @@ class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWat
     }
 
     @SuppressLint("SetTextI18n")
-    fun handleEpisodes(){
+    fun handleChapters(){
         val binding = _binding
         if(binding!=null){
-            if(media.anime?.episodes!=null) {
-                val episodes = media.anime.episodes!!.keys.toTypedArray()
+            if(media.manga?.chapters!=null) {
+                val chapters = media.manga.chapters!!.keys.toTypedArray()
                 var continueEp = loadData<String>("${media.id}_current_ep") ?:media.userProgress?.plus(1).toString()
-                if(episodes.contains(continueEp)) {
+                if( chapters.contains(continueEp)) {
                     binding.animeSourceContinue.visibility = View.VISIBLE
                     handleProgress(binding.itemEpisodeProgressCont,binding.itemEpisodeProgress,binding.itemEpisodeProgressEmpty,media.id,continueEp)
                     if((binding.itemEpisodeProgress.layoutParams as LinearLayout.LayoutParams).weight>0.8f){
-                        val  e = episodes.indexOf(continueEp)
-                        if (e != - 1 && e+1 < episodes.size) {
-                            continueEp = episodes[e + 1]
-                            handleProgress(binding.itemEpisodeProgressCont,binding.itemEpisodeProgress,binding.itemEpisodeProgressEmpty,media.id,continueEp)
+                        val  e = chapters.indexOf(continueEp)
+                        if (e != - 1 && e+1 < chapters.size) {
+                            continueEp = chapters[e + 1]
                         }
                     }
-                    val ep = media.anime.episodes!![continueEp]!!
-                    binding.itemEpisodeImage.loadImage(ep.thumb?:media.banner?:media.cover)
-                    if(ep.filler) binding.itemEpisodeFillerView.visibility = View.VISIBLE
-                    binding.animeSourceContinueText.text = "Continue : Episode ${ep.number}${if(ep.filler) " - Filler" else ""}${if(ep.title!=null) "\n${ep.title}" else ""}"
+                    val ep =  media.manga.chapters!![continueEp]!!
+                    binding.itemEpisodeImage.loadImage(media.banner?:media.cover)
+                    binding.animeSourceContinueText.text = "Continue : Chapter ${ep.number}${if(!ep.title.isNullOrEmpty()) "\n${ep.title}" else ""}"
                     binding.animeSourceContinue.setOnClickListener {
-                        fragment.onEpisodeClick(continueEp)
+                        fragment.onMangaChapterClick(continueEp)
                     }
                     if(fragment.continueEp) {
                         if((binding.itemEpisodeProgress.layoutParams as LinearLayout.LayoutParams).weight<0.8f) {
@@ -173,7 +162,7 @@ class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWat
                     }
                 }
                 binding.animeSourceProgressBar.visibility = View.GONE
-                if(media.anime.episodes!!.isNotEmpty())
+                if(media.manga.chapters!!.isNotEmpty())
                     binding.animeSourceNotFound.visibility = View.GONE
                 else
                     binding.animeSourceNotFound.visibility = View.VISIBLE
@@ -189,10 +178,5 @@ class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWat
 
     override fun getItemCount(): Int = 1
 
-    inner class ViewHolder(val binding: ItemAnimeWatchBinding) : RecyclerView.ViewHolder(binding.root){
-        init {
-            //Timer
-            countDown(media,binding.animeSourceContainer)
-        }
-    }
+    inner class ViewHolder(val binding: ItemAnimeWatchBinding) : RecyclerView.ViewHolder(binding.root)
 }

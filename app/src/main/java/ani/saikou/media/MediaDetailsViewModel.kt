@@ -8,10 +8,11 @@ import androidx.lifecycle.ViewModel
 import ani.saikou.anilist.Anilist
 import ani.saikou.anime.Episode
 import ani.saikou.anime.SelectorDialogFragment
-import ani.saikou.anime.source.Sources
+import ani.saikou.anime.source.WatchSources
 import ani.saikou.loadData
 import ani.saikou.logger
 import ani.saikou.manga.MangaChapter
+import ani.saikou.manga.source.MangaReadSources
 import ani.saikou.manga.source.MangaSources
 import ani.saikou.others.AnimeFillerList
 import ani.saikou.others.Kitsu
@@ -44,6 +45,7 @@ class MediaDetailsViewModel:ViewModel() {
 
     val sources = MutableLiveData<ArrayList<Source>?>(null)
 
+    //Anime
     private val kitsuEpisodes: MutableLiveData<MutableMap<String,Episode>> = MutableLiveData<MutableMap<String,Episode>>(null)
     fun getKitsuEpisodes() : LiveData<MutableMap<String,Episode>> = kitsuEpisodes
     fun loadKitsuEpisodes(s:Media){ if (kitsuEpisodes.value==null) kitsuEpisodes.postValue(Kitsu.getKitsuEpisodesDetails(s))}
@@ -52,35 +54,34 @@ class MediaDetailsViewModel:ViewModel() {
     fun getFillerEpisodes() : LiveData<MutableMap<String,Episode>> = fillerEpisodes
     fun loadFillerEpisodes(s:Media){ if (fillerEpisodes.value==null) fillerEpisodes.postValue(AnimeFillerList.getFillers(s.idMAL?:return))}
 
-    var watchSources:Sources?=null
+    var watchAnimeWatchSources:WatchSources?=null
 
     private val episodes: MutableLiveData<MutableMap<Int,MutableMap<String,Episode>>> = MutableLiveData<MutableMap<Int,MutableMap<String,Episode>>>(null)
     private val epsLoaded = mutableMapOf<Int,MutableMap<String,Episode>>()
     fun getEpisodes() : LiveData<MutableMap<Int,MutableMap<String,Episode>>> = episodes
     fun loadEpisodes(media: Media,i:Int){
-//        logger("Loading Episodes : $epsLoaded")
         if(!epsLoaded.containsKey(i)) {
-            epsLoaded[i] = watchSources?.get(i)!!.getEpisodes(media)
+            epsLoaded[i] = watchAnimeWatchSources?.get(i)!!.getEpisodes(media)
         }
         episodes.postValue(epsLoaded)
     }
     fun overrideEpisodes(i: Int, source: Source,id:Int){
-        watchSources?.get(i)!!.saveSource(source,id)
-        epsLoaded[i] = watchSources?.get(i)!!.getSlugEpisodes(source.link)
+        watchAnimeWatchSources?.get(i)!!.saveSource(source,id)
+        epsLoaded[i] = watchAnimeWatchSources?.get(i)!!.getSlugEpisodes(source.link)
         episodes.postValue(epsLoaded)
     }
 
     private var episode: MutableLiveData<Episode?> = MutableLiveData<Episode?>(null)
     fun getEpisode() : LiveData<Episode?> = episode
     fun loadEpisodeStreams(ep: Episode,i:Int){
-        episode.postValue(watchSources?.get(i)?.getStreams(ep)?:ep)
+        episode.postValue(watchAnimeWatchSources?.get(i)?.getStreams(ep)?:ep)
         MainScope().launch(Dispatchers.Main) {
             episode.value = null
         }
     }
     fun loadEpisodeStream(ep: Episode,selected: Selected):Boolean{
         return if(selected.stream!=null) {
-            episode.postValue(watchSources?.get(selected.source)?.getStream(ep, selected.stream!!))
+            episode.postValue(watchAnimeWatchSources?.get(selected.source)?.getStream(ep, selected.stream!!))
             MainScope().launch(Dispatchers.Main) {
                 episode.value = null
             }
@@ -110,6 +111,10 @@ class MediaDetailsViewModel:ViewModel() {
                 SelectorDialogFragment.newInstance(la = launch, ca = cancellable).show(manager, "dialog")
         }
     }
+
+
+    //Manga
+    var readMangaMangaReadSources: MangaReadSources?=null
 
     private val mangaChapters: MutableLiveData<MutableMap<Int,MutableMap<String,MangaChapter>>> = MutableLiveData<MutableMap<Int,MutableMap<String,MangaChapter>>>(null)
     private val mangaLoaded = mutableMapOf<Int,MutableMap<String,MangaChapter>>()

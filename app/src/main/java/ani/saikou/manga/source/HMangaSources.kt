@@ -2,7 +2,7 @@ package ani.saikou.manga.source
 
 import ani.saikou.manga.source.parsers.*
 
-object MangaSources : MangaReadSources() {
+object HMangaSources : MangaReadSources() {
     private val mangaParsers:MutableMap<Int,MangaParser> = mutableMapOf()
 
     override val names = arrayListOf(

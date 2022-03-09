@@ -1,50 +1,45 @@
-package ani.saikou.anime
+package ani.saikou.manga
 
-import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.math.MathUtils
+import androidx.core.math.MathUtils.clamp
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
-import ani.saikou.anime.source.AnimeParser
-import ani.saikou.anime.source.AnimeSources
-import ani.saikou.anime.source.HAnimeSources
-import ani.saikou.anime.source.WatchSources
 import ani.saikou.databinding.FragmentAnimeWatchBinding
 import ani.saikou.dp
-import ani.saikou.media.Media
-import ani.saikou.media.MediaDetailsViewModel
-import ani.saikou.navBarHeight
+import ani.saikou.manga.source.HMangaSources
+import ani.saikou.manga.source.MangaParser
+import ani.saikou.manga.source.MangaReadSources
+import ani.saikou.manga.source.MangaSources
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-open class AnimeWatchFragment : Fragment() {
-    open val watchSources: WatchSources = AnimeSources
+open class MangaReadFragment: Fragment()  {
+    open val mangaReadSources: MangaReadSources = MangaSources
     private var _binding: FragmentAnimeWatchBinding? = null
     private val binding get() = _binding!!
-    private val model: MediaDetailsViewModel by activityViewModels()
+    private val model: ani.saikou.media.MediaDetailsViewModel by activityViewModels()
 
-    private lateinit var media: Media
+    private lateinit var media: ani.saikou.media.Media
 
     private var start = 0
     private var end: Int? = null
     private var style = 0
     private var reverse = false
 
-    private lateinit var headerAdapter: AnimeWatchAdapter
-    private lateinit var episodeAdapter: EpisodeAdapter
+    private lateinit var headerAdapter: MangaReadAdapter
+    private lateinit var chapterAdapter: MangaChapterAdapter
 
     var screenWidth = 0f
     private var progress = View.VISIBLE
@@ -63,24 +58,23 @@ open class AnimeWatchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.animeSourceRecycler.updatePadding(bottom = binding.animeSourceRecycler.paddingBottom + navBarHeight)
+        binding.animeSourceRecycler.updatePadding(bottom = binding.animeSourceRecycler.paddingBottom + ani.saikou.navBarHeight)
         screenWidth = resources.displayMetrics.widthPixels.dp
 
         var maxGridSize = (screenWidth / 100f).roundToInt()
-        maxGridSize = max(4,maxGridSize-(maxGridSize%2))
+        maxGridSize = max(4, maxGridSize - (maxGridSize % 2))
 
         val gridLayoutManager = GridLayoutManager(requireContext(), maxGridSize)
 
         gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
-                val style = episodeAdapter.getItemViewType(position)
+                val style = chapterAdapter.getItemViewType(position)
 
                 return when (position) {
                     0 -> maxGridSize
                     else -> when (style) {
                         0 -> maxGridSize
-                        1 -> 2
-                        2 -> 1
+                        1 -> 1
                         else -> maxGridSize
                     }
                 }
@@ -101,19 +95,15 @@ open class AnimeWatchFragment : Fragment() {
                 binding.mediaInfoProgressBar.visibility = progress
 
                 if(!loaded) {
-                    model.watchAnimeWatchSources = if (media.isAdult) HAnimeSources else AnimeSources
+                    model.readMangaMangaReadSources = if (media.isAdult) HMangaSources else MangaSources
 
-                    headerAdapter = AnimeWatchAdapter(it, this, watchSources)
-                    episodeAdapter = EpisodeAdapter(style, media, this)
+                    headerAdapter = MangaReadAdapter(it, this, mangaReadSources)
+                    chapterAdapter = MangaChapterAdapter(style, media, this)
 
-                    binding.animeSourceRecycler.adapter = ConcatAdapter(headerAdapter, episodeAdapter)
+                    binding.animeSourceRecycler.adapter = ConcatAdapter(headerAdapter, chapterAdapter)
 
                     lifecycleScope.launch(Dispatchers.IO) {
-                        awaitAll(
-                            async { model.loadKitsuEpisodes(media) },
-                            async { model.loadFillerEpisodes(media) }
-                        )
-                        model.loadEpisodes(media, media.selected!!.source)
+                        model.loadMangaChapters(media, media.selected!!.source)
                     }
                     loaded = true
                 }
@@ -122,31 +112,15 @@ open class AnimeWatchFragment : Fragment() {
                 }
             }
         }
-        model.getEpisodes().observe(viewLifecycleOwner) { loadedEpisodes ->
-            if (loadedEpisodes != null) {
-                val episodes = loadedEpisodes[media.selected!!.source]
-                if (episodes != null) {
-                    episodes.forEach { (i, episode) ->
-                        if (media.anime?.fillerEpisodes != null) {
-                            if (media.anime!!.fillerEpisodes!!.containsKey(i)) {
-                                episode.title = media.anime!!.fillerEpisodes!![i]?.title
-                                episode.filler =
-                                    media.anime!!.fillerEpisodes!![i]?.filler ?: false
-                            }
-                        }
-                        if (media.anime?.kitsuEpisodes != null) {
-                            if (media.anime!!.kitsuEpisodes!!.containsKey(i)) {
-                                episode.desc = media.anime!!.kitsuEpisodes!![i]?.desc
-                                episode.title = media.anime!!.kitsuEpisodes!![i]?.title
-                                episode.thumb =
-                                    media.anime!!.kitsuEpisodes!![i]?.thumb ?: media.cover
-                            }
-                        }
-                    }
-                    media.anime?.episodes = episodes
+
+        model.getMangaChapters().observe(viewLifecycleOwner) { loadedChapters ->
+            if (loadedChapters != null) {
+                val chapters = loadedChapters[media.selected!!.source]
+                if (chapters != null) {
+                    media.manga?.chapters = chapters
 
                     //CHIP GROUP
-                    val total = episodes.size
+                    val total = chapters.size
                     val divisions = total.toDouble() / 10
                     start = 0
                     end = null
@@ -157,9 +131,9 @@ open class AnimeWatchFragment : Fragment() {
                     }
                     headerAdapter.clearChips()
                     if (total > limit) {
-                        val arr = media.anime!!.episodes!!.keys.toTypedArray()
+                        val arr = chapters.keys.toTypedArray()
                         val stored = ceil((total).toDouble() / limit).toInt()
-                        val position = MathUtils.clamp(media.selected!!.chip, 0, stored - 1)
+                        val position = clamp(media.selected!!.chip, 0, stored - 1)
                         val last = if (position + 1 == stored) total else (limit * (position + 1))
                         start = limit * (position)
                         end = last - 1
@@ -174,30 +148,20 @@ open class AnimeWatchFragment : Fragment() {
                 }
             }
         }
-
-        model.getKitsuEpisodes().observe(viewLifecycleOwner) { i ->
-            if(i!=null)
-                media.anime?.kitsuEpisodes = i
-        }
-
-        model.getFillerEpisodes().observe(viewLifecycleOwner) { i ->
-            if(i!=null)
-                media.anime?.fillerEpisodes = i
-        }
     }
 
-    fun onSourceChange(i: Int): AnimeParser  {
-        media.anime?.episodes = null
+    fun onSourceChange(i: Int): MangaParser {
+        media.manga?.chapters = null
         reload()
         val selected = model.loadSelected(media.id)
         selected.source = i
         model.saveSelected(media.id, selected, requireActivity())
         media.selected = selected
-        return watchSources[i]!!
+        return mangaReadSources[i]!!
     }
 
-    fun loadEpisodes(i:Int){
-        lifecycleScope.launch(Dispatchers.IO) { model.loadEpisodes(media, i) }
+    fun loadChapters(i:Int){
+        lifecycleScope.launch(Dispatchers.IO) { model.loadMangaChapters(media, i) }
     }
 
     fun onIconPressed(viewType: Int, rev: Boolean) {
@@ -217,34 +181,37 @@ open class AnimeWatchFragment : Fragment() {
         reload()
     }
 
-    fun onEpisodeClick(i: String) {
+    fun onMangaChapterClick(i: String) {
         model.continueMedia = false
-        model.onEpisodeClick(media, i, requireActivity().supportFragmentManager)
+        if (media.manga?.chapters?.get(i)!=null) {
+            media.manga?.selectedChapter = i
+            val intent = Intent(activity, MangaReaderActivity::class.java).apply { putExtra("media", media) }
+            startActivity(intent)
+        }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
+    @android.annotation.SuppressLint("NotifyDataSetChanged")
     private fun reload() {
         val selected = model.loadSelected(media.id)
         model.saveSelected(media.id, selected, requireActivity())
-        headerAdapter.handleEpisodes()
-        episodeAdapter.notifyItemRangeRemoved(0, episodeAdapter.arr.size)
-        var arr: ArrayList<Episode> = arrayListOf()
-        if (media.anime!!.episodes != null) {
-            val end = if (end != null && end!! < media.anime!!.episodes!!.size) end else null
+        headerAdapter.handleChapters()
+        chapterAdapter.notifyItemRangeRemoved(0, chapterAdapter.arr.size)
+        var arr: ArrayList<MangaChapter> = arrayListOf()
+        if (media.manga!!.chapters != null) {
+            val end = if (end != null && end!! < media.manga!!.chapters!!.size) end else null
             arr.addAll(
-                media.anime!!.episodes!!.values.toList()
-                    .slice(start..(end ?: (media.anime!!.episodes!!.size - 1)))
+                media.manga!!.chapters!!.values.toList().slice(start..(end ?: (media.manga!!.chapters!!.size - 1)))
             )
             if (reverse)
-                arr = (arr.reversed() as? ArrayList<Episode>)?:arr
+                arr = (arr.reversed() as? ArrayList<MangaChapter>)?:arr
         }
-        episodeAdapter.arr = arr
-        episodeAdapter.updateType(style)
-        episodeAdapter.notifyItemRangeInserted(0, arr.size)
+        chapterAdapter.arr = arr
+        chapterAdapter.updateType(style)
+        chapterAdapter.notifyItemRangeInserted(0, arr.size)
     }
 
     override fun onDestroy() {
-        watchSources.flushLive()
+        mangaReadSources.flushLive()
         super.onDestroy()
     }
 
@@ -259,5 +226,4 @@ open class AnimeWatchFragment : Fragment() {
         super.onPause()
         state = binding.animeSourceRecycler.layoutManager?.onSaveInstanceState()
     }
-
 }

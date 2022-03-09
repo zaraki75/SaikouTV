@@ -3,7 +3,7 @@ package ani.saikou.anime.source
 import ani.saikou.anime.source.AnimeSources.animeParsers
 import ani.saikou.anime.source.parsers.*
 
-object HSources : Sources() {
+object HAnimeSources : WatchSources() {
     override val names = arrayListOf(
         "HAHO",
         "GOGO",
@@ -35,10 +35,10 @@ object HSources : Sources() {
 
     override fun flushLive() {
         hParsers.forEach{
-            it.value.live.value=null
+            it.value.text = ""
         }
         animeParsers.forEach{
-            it.value.live.value=null
+            it.value.text = ""
         }
     }
 }

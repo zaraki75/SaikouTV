@@ -1,705 +1,360 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    app:cardBackgroundColor="@color/bg"
+    app:cardCornerRadius="0dp"
+    app:cardElevation="0dp"
     tools:context=".media.MediaInfoFragment"
     tools:ignore="SpeakableTextPresentCheck">
 
-    <FrameLayout
+    <androidx.core.widget.NestedScrollView
+
+        android:id="@+id/mediaInfoScroll"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center">
+        android:layout_height="match_parent">
 
-        <ProgressBar
-            android:id="@+id/mediaInfoProgressBar"
-            style="?android:attr/progressBarStyle"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="32dp"
-            android:layout_marginBottom="32dp"
-            android:indeterminate="true"
-            android:visibility="gone"
-            tools:visibility="gone" />
+            android:gravity="center">
 
-        <LinearLayout
-            android:id="@+id/mediaInfoContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <TableLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:paddingStart="32dp"
-                android:paddingTop="16dp"
-                android:paddingEnd="32dp"
-                android:paddingBottom="16dp">
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="24dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.58"
-                        android:text="@string/mean_score"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaInfoMeanScore"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textAlignment="textEnd"
-                        android:textColor="?attr/colorPrimary" />
-
-                    <TextView
-                        android:id="@+id/textView3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_bold"
-                        android:text="@string/score_suffix" />
-
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="24dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.58"
-                        android:text="@string/status_title"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaInfoStatus"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textAlignment="textEnd" />
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="24dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/mediaInfoTotalTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.58"
-                        android:text="@string/total_eps"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaInfoTotal"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textAlignment="textEnd" />
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/mediaInfoDurationContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="24dp"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.58"
-                        android:text="@string/ep_duration"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaInfoDuration"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textAlignment="textEnd" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_bold"
-                        android:text="@string/min"
-                        android:textAlignment="textEnd" />
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="24dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.58"
-                        android:text="@string/format"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaInfoFormat"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textAlignment="textEnd" />
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="24dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.58"
-                        android:text="@string/source"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaInfoSource"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textAlignment="textEnd" />
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/mediaInfoStudioContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="24dp"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.58"
-                        android:text="@string/main_studio"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaInfoStudio"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textAlignment="textEnd"
-                        android:textColor="?attr/colorPrimary" />
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/mediaInfoSeasonContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.58"
-                        android:text="@string/season"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaInfoSeason"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textAlignment="textEnd" />
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="24dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.58"
-                        android:text="@string/start_date"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaInfoStart"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textAlignment="textEnd" />
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="24dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.58"
-                        android:text="@string/end_date"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaInfoEnd"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textAlignment="textEnd" />
-                </TableRow>
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="16dp"/>
-                <LinearLayout
-                    android:id="@+id/mediaInfoNameRomajiContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.58"
-                        android:text="@string/name_romaji"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaInfoNameRomaji"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:breakStrategy="balanced"
-                        android:fontFamily="@font/poppins_bold" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/mediaInfoNameContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.58"
-                        android:text="@string/name"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaInfoName"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:breakStrategy="balanced"
-                        android:fontFamily="@font/poppins_bold" />
-                </LinearLayout>
-            </TableLayout>
-
-            <TextView
-                android:id="@+id/mediaInfoDescriptionText"
+            <ProgressBar
+                android:id="@+id/mediaInfoProgressBar"
+                style="?android:attr/progressBarStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
+                android:layout_marginTop="32dp"
                 android:layout_marginEnd="32dp"
-                android:fontFamily="@font/poppins_bold"
-                android:text="@string/description"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/mediaInfoDescription"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:ellipsize="end"
-                android:maxLines="5"
-                android:padding="16dp"
-                android:text="@string/description" />
-
-            <TextView
-                android:id="@+id/mediaInfoTrailerText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="32dp"
-                android:fontFamily="@font/poppins_bold"
-                android:text="@string/trailer"
-                android:textSize="16sp"
-                android:visibility="gone" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/mediaInfoTrailerContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="216dp"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="32dp"
-                    android:visibility="gone"
-                    app:cardCornerRadius="16dp"
-                    app:layout_constrainedWidth="true"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintWidth_max="384dp"
-                    tools:ignore="WebViewLayout">
-
-                    <WebView
-                        android:id="@+id/mediaInfoTrailer"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
-                </androidx.cardview.widget.CardView>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <TextView
-                android:id="@+id/mediaInfoOpeningText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="32dp"
-                android:fontFamily="@font/poppins_bold"
-                android:text="@string/opening"
-                android:textSize="16sp"
-                android:visibility="gone" />
-
-            <TextView
-                android:id="@+id/mediaInfoOpening"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="32dp"
-                android:fontFamily="@font/poppins_family"
-                android:textSize="16sp"
-                android:visibility="gone" />
-
-            <TextView
-                android:id="@+id/mediaInfoEndingText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="32dp"
-                android:fontFamily="@font/poppins_bold"
-                android:text="@string/ending"
-                android:textSize="16sp"
-                android:visibility="gone" />
-
-
-            <TextView
-                android:id="@+id/mediaInfoEnding"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="32dp"
-                android:fontFamily="@font/poppins_family"
-                android:textSize="16sp"
-                android:visibility="gone" />
-
-            <TextView
-                android:id="@+id/mediaInfoGenresText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="32dp"
-                android:fontFamily="@font/poppins_bold"
-                android:text="@string/genres"
-                android:textSize="16sp"
-                android:visibility="gone" />
-
-            <ani.saikou.FadingEdgeRecyclerView
-                android:id="@+id/mediaInfoGenresRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clipToPadding="false"
-                android:nestedScrollingEnabled="true"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
-                android:requiresFadingEdge="horizontal"
+                android:layout_marginBottom="32dp"
+                android:indeterminate="true"
                 android:visibility="gone"
-                tools:itemCount="4"
-                tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                tools:listitem="@layout/item_genre"
-                tools:orientation="vertical"
-                tools:scrollbars="vertical"
-                tools:spanCount="2" />
-
-
-            <TextView
-                android:id="@+id/mediaInfoCharacterText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="32dp"
-                android:fontFamily="@font/poppins_bold"
-                android:text="@string/characters"
-                android:textSize="16sp"
-                android:visibility="gone" />
-
-            <ani.saikou.FadingEdgeRecyclerView
-                android:id="@+id/mediaInfoCharacterRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:nestedScrollingEnabled="true"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:requiresFadingEdge="horizontal"
-                android:visibility="gone"
-                tools:itemCount="4"
-                tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                tools:listitem="@layout/item_character"
-                tools:orientation="horizontal" />
+                tools:visibility="gone" />
 
             <LinearLayout
-                android:id="@+id/mediaInfoQuelContainer"
+                android:id="@+id/mediaInfoContainer"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
-                android:orientation="horizontal"
-                android:visibility="gone">
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/mediaInfoPrequel"
-                    android:layout_width="0dp"
-                    android:layout_height="72dp"
-                    android:layout_margin="8dp"
-                    android:layout_weight="1"
-                    android:visibility="invisible"
-                    app:cardCornerRadius="16dp"
-                    app:layout_constrainedWidth="true"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/animeTopScore"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintWidth_max="256dp">
+                <TableLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingStart="32dp"
+                    android:paddingTop="16dp"
+                    android:paddingEnd="32dp"
+                    android:paddingBottom="16dp">
 
-                    <ImageView
-                        android:id="@+id/mediaInfoPrequelImage"
+                    <TableRow
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="centerCrop"
-                        tools:ignore="ContentDescription"
-                        tools:src="@tools:sample/backgrounds/scenic" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:alpha="0.75"
-                        android:background="@color/bg_black" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:orientation="vertical">
+                        android:layout_height="24dp"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_gravity="center"
+                            android:alpha="0.58"
+                            android:text="@string/mean_score"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/mediaInfoMeanScore"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
                             android:fontFamily="@font/poppins_bold"
-                            android:text="@string/prequel"
-                            android:textAllCaps="true"
-                            android:textColor="@color/bg_white"
-                            android:textSize="16sp" />
+                            android:textAlignment="textEnd"
+                            android:textColor="?attr/colorPrimary" />
 
-                        <View
-                            android:layout_width="64dp"
-                            android:layout_height="2dp"
-                            android:layout_gravity="center"
-                            android:background="?attr/colorSecondary" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                        <TextView
+                            android:id="@+id/textView3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_bold"
+                            android:text="@string/score_suffix" />
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/mediaInfoSequel"
-                    android:layout_width="0dp"
-                    android:layout_height="72dp"
-                    android:layout_margin="8dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:visibility="invisible"
-                    app:cardCornerRadius="16dp"
-                    app:layout_constrainedWidth="true"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/animeGenre"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintWidth_max="256dp">
+                    </TableRow>
 
-                    <ImageView
-                        android:id="@+id/mediaInfoSequelImage"
+                    <TableRow
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="centerCrop"
-                        tools:ignore="ContentDescription"
-                        tools:src="@tools:sample/backgrounds/scenic" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:alpha="0.75"
-                        android:background="@color/bg_black" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:orientation="vertical">
+                        android:layout_height="24dp"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:fontFamily="@font/poppins_bold"
-                            android:text="@string/sequel"
-                            android:textAllCaps="true"
-                            android:textColor="@color/bg_white"
-                            android:textSize="16sp" />
+                            android:alpha="0.58"
+                            android:text="@string/status_title"
+                            android:textStyle="bold" />
 
-                        <View
-                            android:layout_width="64dp"
-                            android:layout_height="2dp"
-                            android:layout_gravity="center"
-                            android:background="?attr/colorPrimary" />
+                        <TextView
+                            android:id="@+id/mediaInfoStatus"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/poppins_bold"
+                            android:textAlignment="textEnd" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/mediaInfoTotalTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:alpha="0.58"
+                            android:text="@string/total_eps"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/mediaInfoTotal"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/poppins_bold"
+                            android:textAlignment="textEnd" />
+                    </TableRow>
+
+                    <TableRow
+                        android:id="@+id/mediaInfoDurationContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:alpha="0.58"
+                            android:text="@string/ep_duration"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/mediaInfoDuration"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/poppins_bold"
+                            android:textAlignment="textEnd" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_bold"
+                            android:text="@string/min"
+                            android:textAlignment="textEnd" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:alpha="0.58"
+                            android:text="@string/format"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/mediaInfoFormat"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/poppins_bold"
+                            android:textAlignment="textEnd" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:alpha="0.58"
+                            android:text="@string/source"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/mediaInfoSource"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/poppins_bold"
+                            android:textAlignment="textEnd" />
+                    </TableRow>
+
+                    <TableRow
+                        android:id="@+id/mediaInfoStudioContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:alpha="0.58"
+                            android:text="@string/main_studio"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/mediaInfoStudio"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/poppins_bold"
+                            android:textAlignment="textEnd"
+                            android:textColor="?attr/colorPrimary" />
+                    </TableRow>
+
+                    <TableRow
+                        android:id="@+id/mediaInfoSeasonContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:alpha="0.58"
+                            android:text="@string/season"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/mediaInfoSeason"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/poppins_bold"
+                            android:textAlignment="textEnd" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:alpha="0.58"
+                            android:text="@string/start_date"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/mediaInfoStart"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/poppins_bold"
+                            android:textAlignment="textEnd" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:alpha="0.58"
+                            android:text="@string/end_date"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/mediaInfoEnd"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/poppins_bold"
+                            android:textAlignment="textEnd" />
+                    </TableRow>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="16dp" />
+
+                    <LinearLayout
+                        android:id="@+id/mediaInfoNameRomajiContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:alpha="0.58"
+                            android:text="@string/name_romaji"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/mediaInfoNameRomaji"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:breakStrategy="balanced"
+                            android:fontFamily="@font/poppins_bold" />
                     </LinearLayout>
 
-                </com.google.android.material.card.MaterialCardView>
+                    <LinearLayout
+                        android:id="@+id/mediaInfoNameContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:alpha="0.58"
+                            android:text="@string/name"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/mediaInfoName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:breakStrategy="balanced"
+                            android:fontFamily="@font/poppins_bold" />
+                    </LinearLayout>
+                </TableLayout>
+
+                <TextView
+                    android:id="@+id/mediaInfoDescriptionText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginEnd="32dp"
+                    android:fontFamily="@font/poppins_bold"
+                    android:text="@string/description"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/mediaInfoDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:ellipsize="end"
+                    android:maxLines="5"
+                    android:padding="16dp"
+                    android:text="@string/description" />
 
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/mediaInfoRelationText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="32dp"
-                android:fontFamily="@font/poppins_bold"
-                android:text="@string/relations"
-                android:textSize="16sp"
-                android:visibility="gone" />
-
-            <ani.saikou.FadingEdgeRecyclerView
-                android:id="@+id/mediaInfoRelationRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clipToPadding="false"
-                android:nestedScrollingEnabled="true"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:requiresFadingEdge="horizontal"
-                android:visibility="gone"
-                tools:itemCount="4"
-                tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                tools:listitem="@layout/item_media_compact"
-                tools:orientation="horizontal" />
-
-            <TextView
-                android:id="@+id/mediaInfoRecommendedText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="32dp"
-                android:fontFamily="@font/poppins_bold"
-                android:text="@string/recommended"
-                android:textSize="16sp"
-                android:visibility="gone"/>
-
-            <ani.saikou.FadingEdgeRecyclerView
-                android:id="@+id/mediaInfoRecommendedRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clipToPadding="false"
-                android:nestedScrollingEnabled="true"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:requiresFadingEdge="horizontal"
-                android:visibility="gone"
-                tools:itemCount="4"
-                tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                tools:listitem="@layout/item_media_compact"
-                tools:orientation="horizontal" />
-
-            <TextView
-                android:id="@+id/mediaInfoSynonymsText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="32dp"
-                android:fontFamily="@font/poppins_bold"
-                android:text="@string/synonyms"
-                android:textSize="16sp"
-                android:visibility="gone" />
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/mediaInfoSynonyms"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginEnd="32dp"
-                android:layout_marginBottom="8dp"
-                android:visibility="gone"
-                tools:ignore="TooManyViews" />
-
-            <TextView
-                android:id="@+id/mediaInfoTagsText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="32dp"
-                android:fontFamily="@font/poppins_bold"
-                android:text="@string/tags"
-                android:textSize="16sp"
-                android:visibility="gone" />
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/mediaInfoTags"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginStart="32dp"
-                android:layout_marginEnd="32dp"
-                android:layout_marginBottom="8dp"
-                android:visibility="gone" />
-
-        </LinearLayout>
-    </FrameLayout>
-</androidx.core.widget.NestedScrollView>
+        </FrameLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.cardview.widget.CardView>

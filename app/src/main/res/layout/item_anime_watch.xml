@@ -101,6 +101,7 @@
             android:orientation="horizontal">
 
             <TextView
+                android:id="@+id/sourceTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -226,15 +227,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:requiresFadingEdge="horizontal"
+        android:clipToPadding="false"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:scrollbars="none">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/animeSourceChipGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="28dp"
-            android:paddingEnd="28dp"
             app:singleLine="true"
             app:singleSelection="true" />
     </HorizontalScrollView>

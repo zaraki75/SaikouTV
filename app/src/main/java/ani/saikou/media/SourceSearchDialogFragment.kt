@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import ani.saikou.BottomSheetDialogFragment
 import ani.saikou.anime.source.AnimeSourceAdapter
 import ani.saikou.anime.source.AnimeSources
-import ani.saikou.anime.source.HSources
+import ani.saikou.anime.source.HAnimeSources
 import ani.saikou.databinding.BottomSheetSourceSearchBinding
 import ani.saikou.manga.source.MangaSourceAdapter
 import ani.saikou.manga.source.MangaSources
@@ -58,7 +58,7 @@ class SourceSearchDialogFragment : BottomSheetDialogFragment(){
 
                 i = media!!.selected!!.source
                 if (media!!.anime != null) {
-                    val source = (if(!media!!.isAdult) AnimeSources else HSources)[i!!]!!
+                    val source = (if(!media!!.isAdult) AnimeSources else HAnimeSources)[i!!]!!
                     headers = source.headers
                     binding.searchSourceTitle.text = source.name
                     binding.searchBarText.setText(media!!.getMangaName())

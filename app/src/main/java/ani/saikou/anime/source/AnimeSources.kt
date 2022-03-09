@@ -2,7 +2,7 @@ package ani.saikou.anime.source
 
 import ani.saikou.anime.source.parsers.*
 
-object AnimeSources : Sources() {
+object AnimeSources : WatchSources() {
     override val names = arrayListOf(
         "GOGO",
         "GOGO-DUB",
@@ -31,7 +31,7 @@ object AnimeSources : Sources() {
     }
     override fun flushLive(){
         animeParsers.forEach{
-            it.value.live.value=null
+            it.value.text = ""
         }
     }
 }
