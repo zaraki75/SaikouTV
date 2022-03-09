@@ -86,7 +86,7 @@ class Zoro(override val name: String = "Zoro") : AnimeParser() {
         var slug:Source? = loadData("zoro_${media.id}")
         if (slug==null) {
             val it = media.nameMAL?:media.name
-            live.postValue("Searching for $it")
+            setTextListener("Searching for $it")
             logger("Zoro : Searching for $it")
             val search = search("$!${media.getMainName()} | &type=${type.indexOf(media.format)}")
             if (search.isNotEmpty()) {
@@ -95,7 +95,7 @@ class Zoro(override val name: String = "Zoro") : AnimeParser() {
             }
         }
         else{
-            live.postValue("Selected : ${slug.name}")
+            setTextListener("Selected : ${slug.name}")
         }
         if (slug!=null) return getSlugEpisodes(slug.link)
         return mutableMapOf()

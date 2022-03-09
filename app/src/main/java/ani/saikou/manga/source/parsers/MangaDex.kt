@@ -20,13 +20,13 @@ class MangaDex(override val name: String="mangadex.org") :MangaParser() {
     private val host = "https://api.mangadex.org"
     private val limit = 100
     override fun getLinkChapters(link: String): MutableMap<String, MangaChapter> {
-        live.postValue("Getting Chapters...")
+        setTextListener("Getting Chapters...")
         val arr = mutableMapOf<String, MangaChapter>()
         try{
         val totalChapters = Regex("(?<=\"total\":)\\d+").find(
             Jsoup.connect("$host/manga/$link/feed?limit=0").ignoreContentType(true).get().text()
         )!!.value.toInt()
-        live.postValue("Parsing Chapters...")
+        setTextListener("Parsing Chapters...")
         (0..totalChapters step 200).reversed().forEach{ index ->
             val jsonResponse = Jsoup.connect("$host/manga/$link/feed?limit=200&order[volume]=desc&order[chapter]=desc&offset=$index").ignoreContentType(true).get().text()
             Json.decodeFromString<JsonObject>(jsonResponse)["data"]!!.jsonArray.reversed().forEach{
@@ -39,7 +39,7 @@ class MangaDex(override val name: String="mangadex.org") :MangaParser() {
             }
             var a = (index.toFloat() / totalChapters * 100)
             try { a = a.roundToInt().toFloat() }catch (e:Exception){}
-            live.postValue("Chapter Parsing : ${100-a}%...")
+            setTextListener("Chapter Parsing : ${100-a}%...")
         }}catch (e:Exception){
             toastString(e.toString())
         }
@@ -64,7 +64,7 @@ class MangaDex(override val name: String="mangadex.org") :MangaParser() {
     override fun getChapters(media: Media): MutableMap<String, MangaChapter> {
         var source:Source? = loadData("mangadex_${media.id}")
         if (source==null) {
-            live.postValue("Searching : ${media.getMangaName()}")
+            setTextListener("Searching : ${media.getMangaName()}")
             val search = search(media.getMangaName())
             if (search.isNotEmpty()) {
                 logger("MangaDex : ${search[0]}")
@@ -73,11 +73,11 @@ class MangaDex(override val name: String="mangadex.org") :MangaParser() {
             }
         }
         else{
-            live.postValue("Selected : ${source.name}")
+            setTextListener("Selected : ${source.name}")
         }
         if (source!=null) {
             val s = getLinkChapters(source.link)
-            live.postValue("Loaded : ${source.name}")
+            setTextListener("Loaded : ${source.name}")
             return s
         }
         return mutableMapOf()
@@ -100,7 +100,7 @@ class MangaDex(override val name: String="mangadex.org") :MangaParser() {
     }
 
     override fun saveSource(source: Source, id: Int, selected: Boolean) {
-        live.postValue("${if(selected) "Selected" else "Found"} : ${source.name}")
+        super.saveSource(source, id, selected)
         saveData("mangadex_$id", source)
     }
 }

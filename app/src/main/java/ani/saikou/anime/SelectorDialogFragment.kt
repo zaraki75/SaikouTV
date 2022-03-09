@@ -103,8 +103,9 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
                                 if (withContext(Dispatchers.IO){ !model.loadEpisodeStream(episode!!, media!!.selected!!) }) fail()
                             }
                         } else load()
-                    } else {
-                        binding.selectorRecyclerView.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin += navBarHeight }
+                    }
+                    else {
+                        binding.selectorRecyclerView.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin = navBarHeight }
                         binding.selectorRecyclerView.adapter = null
                         binding.selectorProgressBar.visibility = View.VISIBLE
 
@@ -121,7 +122,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
                             )
                             binding.selectorRecyclerView.adapter = StreamAdapter()
                         }
-                        if (episode!!.streamLinks.size <= 1) {
+                        if (episode!!.streamLinks.isEmpty()) {
                             model.getEpisode().observe(this) {
                                 if (it != null) {
                                     episode = it

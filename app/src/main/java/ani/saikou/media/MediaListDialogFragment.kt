@@ -169,16 +169,17 @@ class MediaListDialogFragment : BottomSheetDialogFragment(){
                 binding.mediaListSave.setOnClickListener {
                     scope.launch {
                         withContext(Dispatchers.IO){
-                            Anilist.mutation.editList(
-                                media!!.id,
-                                if (_binding?.mediaListProgress?.text.toString() != "") _binding?.mediaListProgress?.text.toString()
-                                    .toInt() else null,
-                                if (_binding?.mediaListScore?.text.toString() != "") (_binding?.mediaListScore?.text.toString()
-                                    .toDouble() * 10).toInt() else null,
-                                if (_binding?.mediaListStatus?.text.toString() != "") _binding?.mediaListStatus?.text.toString() else null,
-                                if (start.date.year != null) start.date.getEpoch() else null,
-                                if (end.date.year != null) end.date.getEpoch() else null,
-                            )
+                            if(media!=null)
+                                Anilist.mutation.editList(
+                                    media!!.id,
+                                    if (_binding?.mediaListProgress?.text.toString() != "") _binding?.mediaListProgress?.text.toString()
+                                        .toInt() else null,
+                                    if (_binding?.mediaListScore?.text.toString() != "") (_binding?.mediaListScore?.text.toString()
+                                        .toDouble() * 10).toInt() else null,
+                                    if (_binding?.mediaListStatus?.text.toString() != "") _binding?.mediaListStatus?.text.toString() else null,
+                                    if (start.date.year != null) start.date.getEpoch() else null,
+                                    if (end.date.year != null) end.date.getEpoch() else null,
+                                )
                         }
                         Refresh.all()
                         toastString("List Updated")

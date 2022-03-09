@@ -40,7 +40,7 @@ class MangaPill(override val name: String="mangapill.com") :MangaParser() {
     override fun getChapters(media: Media): MutableMap<String, MangaChapter> {
         var source:Source? = loadData("mangapill_${media.id}")
         if (source==null) {
-            live.postValue("Searching : ${media.getMangaName()}")
+            setTextListener("Searching : ${media.getMangaName()}")
             val search = search(media.getMangaName())
             if (search.isNotEmpty()) {
                 logger("MangaPill : ${search[0]}")
@@ -56,7 +56,7 @@ class MangaPill(override val name: String="mangapill.com") :MangaParser() {
             }
         }
         else{
-            live.postValue("Selected : ${source.name}")
+            setTextListener("Selected : ${source.name}")
         }
         if (source!=null) return getLinkChapters(source.link)
         return mutableMapOf()
@@ -80,7 +80,7 @@ class MangaPill(override val name: String="mangapill.com") :MangaParser() {
     }
 
     override fun saveSource(source: Source, id: Int, selected: Boolean) {
-        live.postValue("${if(selected) "Selected" else "Found"} : ${source.name}")
+        super.saveSource(source, id, selected)
         saveData("mangapill_$id", source)
     }
 }

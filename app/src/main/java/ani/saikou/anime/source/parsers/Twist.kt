@@ -89,7 +89,7 @@ class Twist(override val name: String="twist.moe") :AnimeParser() {
     override fun getEpisodes(media: Media): MutableMap<String, Episode> {
         val load : Source? = loadData("twist_${media.id}")
         if (load!=null) {
-            live.postValue("Selected : ${load.name}")
+            setTextListener("Selected : ${load.name}")
             return getSlugEpisodes(load.link)
         }
         try{
@@ -98,11 +98,11 @@ class Twist(override val name: String="twist.moe") :AnimeParser() {
             val slug = Regex(""""mal_id": ${media.idMAL},(.|\n)+?"slug": "(.+?)"""").find(animeJson)?.destructured?.component2()
             logger("Twist : Loaded : $slug")
             return if (slug!=null) {
-                live.postValue("Selected : ${media.userPreferredName}")
+                setTextListener("Selected : ${media.userPreferredName}")
                 getSlugEpisodes(slug)
             }else{
                 val result = search(media.nameRomaji)[0]
-                live.postValue("Found : ${result.name}")
+                setTextListener("Found : ${result.name}")
                 saveSource(result,media.id,false)
                 getSlugEpisodes(result.link)
             }

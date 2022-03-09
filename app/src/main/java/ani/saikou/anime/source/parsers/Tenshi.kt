@@ -112,7 +112,7 @@ open class Tenshi(override val name: String="tenshi.moe") : AnimeParser() {
             var slug:Source? = loadData("tenshi_${media.id}")
             if (slug==null) {
                 fun s(it:String):Boolean{
-                    live.postValue("Searching for $it")
+                    setTextListener("Searching for $it")
                     logger("Tenshi : Searching for $it")
                     val search = search(it)
                     if (search.isNotEmpty()) {
@@ -126,7 +126,7 @@ open class Tenshi(override val name: String="tenshi.moe") : AnimeParser() {
                     s(media.nameRomaji)
             }
             else {
-                live.postValue("Selected : ${slug!!.name}")
+                setTextListener("Selected : ${slug!!.name}")
             }
             if (slug!=null) return getSlugEpisodes(slug!!.link)
         }catch (e:Exception){

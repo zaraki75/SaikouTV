@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
@@ -126,18 +125,12 @@ class HomeFragment : Fragment() {
         }
 
         //Function For Recycler Views
-        fun initRecyclerView(mode: Int, recyclerView: RecyclerView, progress: View, empty: View,emptyButton:Button?=null) {
-            lateinit var modelFunc: LiveData<ArrayList<Media>>
-            when (mode) {
-                0 -> modelFunc = model.getAnimeContinue()
-                1 -> modelFunc = model.getMangaContinue()
-                2 -> modelFunc = model.getRecommendation()
-            }
+        fun initRecyclerView(mode: LiveData<ArrayList<Media>>, recyclerView: RecyclerView, progress: View, empty: View) {
             progress.visibility = View.VISIBLE
             recyclerView.visibility = View.GONE
             empty.visibility = View.GONE
 
-            modelFunc.observe(viewLifecycleOwner) {
+            mode.observe(viewLifecycleOwner) {
                 recyclerView.visibility = View.GONE
                 empty.visibility = View.GONE
                 if (it != null) {
@@ -151,12 +144,6 @@ class HomeFragment : Fragment() {
                         recyclerView.visibility = View.VISIBLE
                     } else {
                         empty.visibility = View.VISIBLE
-                        emptyButton?.setOnClickListener {
-                            when (mode) {
-                                0 -> bottomBar.selectTabAt(0)
-                                1 -> bottomBar.selectTabAt(2)
-                            }
-                        }
                     }
                     progress.visibility = View.GONE
                 }
@@ -165,21 +152,27 @@ class HomeFragment : Fragment() {
 
         // Recycler Views
         initRecyclerView(
-            0,
+            model.getAnimeContinue(),
             binding.homeWatchingRecyclerView,
             binding.homeWatchingProgressBar,
             binding.homeWatchingEmpty,
-            binding.homeWatchingBrowseButton
         )
+        binding.homeWatchingBrowseButton.setOnClickListener {
+            bottomBar.selectTabAt(0)
+        }
+
         initRecyclerView(
-            1,
+            model.getMangaContinue(),
             binding.homeReadingRecyclerView,
             binding.homeReadingProgressBar,
             binding.homeReadingEmpty,
-            binding.homeReadingBrowseButton
         )
+        binding.homeReadingBrowseButton.setOnClickListener {
+            bottomBar.selectTabAt(2)
+        }
+
         initRecyclerView(
-            2,
+            model.getRecommendation(),
             binding.homeRecommendedRecyclerView,
             binding.homeRecommendedProgressBar,
             binding.homeRecommendedEmpty

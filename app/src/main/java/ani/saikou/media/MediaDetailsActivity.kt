@@ -32,7 +32,7 @@ import ani.saikou.anilist.Anilist
 import ani.saikou.anime.AnimeWatchFragment
 import ani.saikou.anime.HWatchFragment
 import ani.saikou.databinding.ActivityMediaBinding
-import ani.saikou.manga.MangaSourceFragment
+import ani.saikou.manga.MangaReadFragment
 import com.flaviofaria.kenburnsview.RandomTransitionGenerator
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -106,7 +106,15 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         })
         binding.mediaBanner.setOnTouchListener { _, motionEvent -> gestureDetector.onTouchEvent(motionEvent);true }
         binding.mediaTitle.text = media.userPreferredName
+        binding.mediaTitle.setOnLongClickListener {
+            copyToClipboard(media.userPreferredName)
+            true
+        }
         binding.mediaTitleCollapse.text = media.userPreferredName
+        binding.mediaTitleCollapse.setOnLongClickListener {
+            copyToClipboard(media.userPreferredName)
+            true
+        }
         binding.mediaStatus.text = media.status?:""
 
         //Fav Button
@@ -274,7 +282,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
             else{
                 when (position) {
                     0 -> return MediaInfoFragment()
-                    1 -> return MangaSourceFragment()
+                    1 -> return MangaReadFragment()
                 }
             }
             return MediaInfoFragment()

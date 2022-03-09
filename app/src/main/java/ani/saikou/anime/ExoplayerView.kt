@@ -33,7 +33,7 @@ import androidx.lifecycle.lifecycleScope
 import ani.saikou.*
 import ani.saikou.anilist.Anilist
 import ani.saikou.anime.source.AnimeSources
-import ani.saikou.anime.source.HSources
+import ani.saikou.anime.source.HAnimeSources
 import ani.saikou.databinding.ActivityExoplayerBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
@@ -215,15 +215,16 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         //Play Pause
 
         exoPlay.setOnClickListener {
-            if (isInitialized) isPlayerPlaying = exoPlayer.isPlaying
-            (exoPlay.drawable as Animatable?)?.start()
-            if(isPlayerPlaying) {
-                Glide.with(this).load(R.drawable.anim_play_to_pause).into(exoPlay)
-                exoPlayer.pause()
-            }
-            else {
-                Glide.with(this).load(R.drawable.anim_pause_to_play).into(exoPlay)
-                exoPlayer.play()
+            if (isInitialized) {
+                isPlayerPlaying = exoPlayer.isPlaying
+                (exoPlay.drawable as Animatable?)?.start()
+                if (isPlayerPlaying) {
+                    Glide.with(this).load(R.drawable.anim_play_to_pause).into(exoPlay)
+                    exoPlayer.pause()
+                } else {
+                    Glide.with(this).load(R.drawable.anim_pause_to_play).into(exoPlay)
+                    exoPlayer.play()
+                }
             }
         }
 
@@ -414,7 +415,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         media = intent.getSerializableExtra("media")!! as Media
         model.setMedia(media)
 
-        model.watchSources = if(media.isAdult) HSources else AnimeSources
+        model.watchAnimeWatchSources = if(media.isAdult) HAnimeSources else AnimeSources
 
         model.epChanged.observe(this) {
             epChanging = !it

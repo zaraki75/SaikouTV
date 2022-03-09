@@ -32,10 +32,10 @@ class MangaReaderActivity : AppCompatActivity() {
                     media = it
                     val chapImages = media.manga!!.chapters!![media.manga!!.selectedChapter]?.images
                     val headers = media.manga!!.chapters!![media.manga!!.selectedChapter]?.headers
+                    val trans = media.manga!!.chapters!![media.manga!!.selectedChapter]?.transformation
                     if (chapImages != null) {
-                        binding.mangaReaderRecyclerView.adapter = ImageAdapter(chapImages, headers)
+                        binding.mangaReaderRecyclerView.adapter = ImageAdapter(chapImages, headers,trans)
                         binding.mangaReaderRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-//                    binding.mangaReaderRecyclerView.recycledViewPool.setMaxRecycledViews(1,0)
                     }
                 }
             }

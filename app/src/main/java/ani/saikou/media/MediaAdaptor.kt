@@ -1,16 +1,14 @@
 package ani.saikou.media
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
-import androidx.core.util.Pair
-import androidx.core.view.ViewCompat
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
@@ -107,11 +105,13 @@ class MediaAdaptor(
                 if(media!=null) {
                     b.itemCompactImage.loadImage(media.cover)
                     b.itemCompactBanner.setTransitionGenerator(RandomTransitionGenerator(20000, AccelerateDecelerateInterpolator()))
-                    Glide.with(b.itemCompactBanner)
-                        .load(media.banner?:media.cover)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL).override(400)
-                        .apply(RequestOptions.bitmapTransform(BlurTransformation(2, 3)))
-                        .into(b.itemCompactBanner)
+                    val context = b.itemCompactBanner.context
+                    if(!(context as Activity).isDestroyed)
+                        Glide.with(context)
+                            .load(media.banner?:media.cover)
+                            .diskCacheStrategy(DiskCacheStrategy.ALL).override(400)
+                            .apply(RequestOptions.bitmapTransform(BlurTransformation(2, 3)))
+                            .into(b.itemCompactBanner)
 
                     b.itemCompactOngoing.visibility = if (media.status=="RELEASING")  View.VISIBLE else View.GONE
                     b.itemCompactTitle.text = media.userPreferredName
@@ -145,14 +145,14 @@ class MediaAdaptor(
     inner class MediaViewHolder(val binding: ItemMediaCompactBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
             if (matchParent) itemView.updateLayoutParams { width=-1 }
-            itemView.setSafeOnClickListener { clicked(bindingAdapterPosition,binding.itemCompactImage) }
+            itemView.setSafeOnClickListener { clicked(bindingAdapterPosition) }
             itemView.setOnLongClickListener { longClicked(bindingAdapterPosition) }
         }
     }
 
     inner class MediaLargeViewHolder(val binding: ItemMediaLargeBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
-            itemView.setSafeOnClickListener { clicked(bindingAdapterPosition,binding.itemCompactImage) }
+            itemView.setSafeOnClickListener { clicked(bindingAdapterPosition) }
             itemView.setOnLongClickListener { longClicked(bindingAdapterPosition) }
         }
     }
@@ -160,13 +160,13 @@ class MediaAdaptor(
     @SuppressLint("ClickableViewAccessibility")
     inner class MediaPageViewHolder(val binding: ItemMediaPageBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
-            binding.itemCompactImage.setSafeOnClickListener { clicked(bindingAdapterPosition,binding.itemCompactImage) }
+            binding.itemCompactImage.setSafeOnClickListener { clicked(bindingAdapterPosition) }
             itemView.setOnTouchListener { _, _ -> true}
             binding.itemCompactImage.setOnLongClickListener { longClicked(bindingAdapterPosition) }
         }
     }
 
-    fun clicked(position:Int,animate:View){
+    fun clicked(position:Int){
         if(mediaList?.size?:0>position && position!=-1){
             val media = mediaList?.get(position)
             ContextCompat.startActivity(
@@ -174,11 +174,7 @@ class MediaAdaptor(
                 Intent(activity, MediaDetailsActivity::class.java).putExtra(
                     "media",
                     media as Serializable
-                ),
-                ActivityOptionsCompat.makeSceneTransitionAnimation(
-                    activity,
-                    Pair.create(animate, ViewCompat.getTransitionName(animate)!!)
-                ).toBundle()
+                ),null
             )
         }
     }
