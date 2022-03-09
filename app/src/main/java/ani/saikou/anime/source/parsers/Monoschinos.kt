@@ -87,17 +87,17 @@ class Monoschinos(private val dub:Boolean=false, override val name: String = "Mo
     override fun getEpisodes(media: Media): MutableMap<String, Episode> {
         var slug:Source? = loadData("monoschinos_${media.id}")
         if (slug==null) {
-            val it = media.nameMAL?:media.name
+            val it = media.nameMAL?:media.nameRomaji
             setTextListener("Buscando $it")
             logger("Monoschinos : Searching for $it")
-            val search = search(media.name)
+            val search = search(media.nameRomaji)
             if (search.isNotEmpty()) {
                 slug = search[0]
                 saveSource(slug,media.id,false)
             }
         }
         else{
-            setTextListener("Buscando $it")
+            setTextListener("Buscando ${slug.name}")
         }
         if (slug!=null) return getSlugEpisodes(slug.link)
         return mutableMapOf()

@@ -11,7 +11,8 @@ object AnimeSources : WatchSources() {
         "ZORO",
         "TWIST",
         "TENSHI",
-            "MONOSCHINOS",
+        "MONOSCHINOS",
+        "ANIMEFENIX",
     )
 
     val animeParsers:MutableMap<Int,AnimeParser> = mutableMapOf()
@@ -25,6 +26,7 @@ object AnimeSources : WatchSources() {
             5 -> animeParsers.getOrPut(i) { Twist() }
             6 -> animeParsers.getOrPut(i) { Tenshi() }
             7 -> animeParsers.getOrPut(i) { Monoschinos() }
+            8 -> animeParsers.getOrPut(i) { Animefenix() }
             else -> null
         }
         return a
