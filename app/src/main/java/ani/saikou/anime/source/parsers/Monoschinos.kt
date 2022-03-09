@@ -88,7 +88,7 @@ class Monoschinos(private val dub:Boolean=false, override val name: String = "Mo
         var slug:Source? = loadData("monoschinos_${media.id}")
         if (slug==null) {
             val it = media.nameMAL?:media.name
-            live.postValue("Searching for $it")
+            setTextListener("Buscando $it")
             logger("Monoschinos : Searching for $it")
             val search = search(media.name)
             if (search.isNotEmpty()) {
@@ -97,7 +97,7 @@ class Monoschinos(private val dub:Boolean=false, override val name: String = "Mo
             }
         }
         else{
-            live.postValue("Selected : ${slug.name}")
+            setTextListener("Buscando $it")
         }
         if (slug!=null) return getSlugEpisodes(slug.link)
         return mutableMapOf()
