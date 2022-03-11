@@ -28,6 +28,7 @@ import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.min
 
+
 class AnimeFragment : Fragment() {
     private var _binding: FragmentAnimeBinding? = null
     private val binding get() = _binding!!
@@ -83,7 +84,8 @@ class AnimeFragment : Fragment() {
         }
         val popularAdaptor = MediaAdaptor(1, model.searchResults.results ,requireActivity())
         val progressAdaptor = ProgressAdapter(searched = model.searched)
-        binding.animePageRecyclerView.adapter = ConcatAdapter(animePageAdapter,popularAdaptor,progressAdaptor)
+        val adapter = ConcatAdapter(animePageAdapter,popularAdaptor,progressAdaptor)
+        binding.animePageRecyclerView.adapter = adapter
         val layout =  LinearLayoutManager(requireContext())
         binding.animePageRecyclerView.layoutManager = layout
 
@@ -104,7 +106,7 @@ class AnimeFragment : Fragment() {
         }
 
         binding.animePageScrollTop.setOnClickListener{
-            binding.animePageRecyclerView.scrollToPosition(2)
+            binding.animePageRecyclerView.scrollToPosition(4)
             binding.animePageRecyclerView.smoothScrollToPosition(0)
         }
 

@@ -10,7 +10,9 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ConcatAdapter
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.*
 import ani.saikou.databinding.ActivityStudioBinding
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +34,8 @@ class StudioActivity : AppCompatActivity() {
         initActivity(this)
         this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg)
 
+        val screenWidth = resources.displayMetrics.run { widthPixels / density }
+
         binding.root.updateLayoutParams<ViewGroup.MarginLayoutParams> { topMargin += statusBarHeight }
         binding.studioRecycler.updatePadding(bottom = 64f.px + navBarHeight)
         binding.studioTitle.isSelected = true
@@ -43,14 +47,32 @@ class StudioActivity : AppCompatActivity() {
             onBackPressed()
         }
 
-        model.getStudio().observe(this) {
-            if (it != null) {
-                studio = it
+        model.getStudio().observe(this) { i->
+            if (i != null) {
+                studio = i
                 loaded = true
                 binding.studioProgressBar.visibility = View.GONE
                 binding.studioRecycler.visibility = View.VISIBLE
-                binding.studioRecycler.adapter = MediasWithTitleAdapter(studio?.yearMedia!!, this)
-                binding.studioRecycler.layoutManager = LinearLayoutManager(this)
+
+                val adapters: ArrayList<RecyclerView.Adapter<out RecyclerView.ViewHolder>> = arrayListOf()
+                studio!!.yearMedia?.forEach {
+                    adapters.add(TitleAdapter("${it.key} (${it.value.size})"))
+                    adapters.add(MediaAdaptor(0,it.value,this,true))
+                }
+
+                val concatAdapter = ConcatAdapter(adapters)
+                binding.studioRecycler.adapter = concatAdapter
+                val gridSize = (screenWidth / 124f).toInt()
+                val gridLayoutManager = GridLayoutManager(this, gridSize)
+                gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                    override fun getSpanSize(position: Int): Int {
+                        return when (concatAdapter.getItemViewType(position)%2) {
+                            0 -> gridSize
+                            else -> 1
+                        }
+                    }
+                }
+                binding.studioRecycler.layoutManager = gridLayoutManager
             }
         }
         val live = Refresh.activity.getOrPut(this.hashCode()) { MutableLiveData(true) }

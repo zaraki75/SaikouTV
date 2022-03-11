@@ -12,16 +12,13 @@ import androidx.core.view.updatePadding
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.GridLayoutManager
 import ani.saikou.*
 import ani.saikou.databinding.ActivityCharacterBinding
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
 
 class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedListener {
     private lateinit var binding: ActivityCharacterBinding
@@ -36,8 +33,8 @@ class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChang
         setContentView(binding.root)
 
         initActivity(this)
-        screenWidth = resources.displayMetrics.widthPixels.toFloat()
-        this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg_inv)
+        screenWidth = resources.displayMetrics.run { widthPixels / density }
+        this.window.statusBarColor = ContextCompat.getColor(this, R.color.status)
 
         binding.characterBanner.updateLayoutParams{ height += statusBarHeight }
         binding.characterClose.updateLayoutParams<ViewGroup.MarginLayoutParams> { topMargin += statusBarHeight }
@@ -54,7 +51,7 @@ class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChang
         binding.characterTitle.text = character.name
         binding.characterBanner.loadImage(character.banner)
         binding.characterCoverImage.loadImage(character.image)
-        binding.characterCoverImage.setOnClickListener{ (openLinkInBrowser(character.image)) }
+        binding.characterCoverImage.setOnLongClickListener{ (openLinkInBrowser(character.image)); true}
 //        binding.characterBanner.setOnClickListener{ openImage(character.banner) }
 
         model.getCharacter().observe(this) {
@@ -64,26 +61,23 @@ class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChang
                 binding.characterProgress.visibility = View.GONE
                 binding.characterRecyclerView.visibility = View.VISIBLE
 
-                val adapters: ArrayList<RecyclerView.Adapter<out RecyclerView.ViewHolder>> =
-                    arrayListOf(CharacterDetailsAdapter(character, this))
                 val roles = character.roles
                 if(roles!=null){
-                    val perRow = clamp(resources.displayMetrics.widthPixels / 124f.px, 1, 4)
-                    val multiplier = min(perRow, roles.size)
-                    for (i in 0 until max(1, roles.size / perRow)) {
-                        adapters.add(
-                            MediaGridAdapter(
-                                ArrayList(
-                                    roles.subList(
-                                        i * multiplier,
-                                        (i + 1) * multiplier
-                                    )
-                                ), this
-                            )
-                        )
+                    val mediaAdaptor = MediaAdaptor(0, roles, this, matchParent = true)
+                    val concatAdaptor = ConcatAdapter(CharacterDetailsAdapter(character, this),mediaAdaptor)
+
+                    val gridSize = (screenWidth / 124f).toInt()
+                    val gridLayoutManager = GridLayoutManager(this, gridSize)
+                    gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                        override fun getSpanSize(position: Int): Int {
+                            return when (position) {
+                                0 -> gridSize
+                                else -> 1
+                            }
+                        }
                     }
-                    binding.characterRecyclerView.adapter = ConcatAdapter(adapters)
-                    binding.characterRecyclerView.layoutManager = LinearLayoutManager(this)
+                    binding.characterRecyclerView.adapter = concatAdaptor
+                    binding.characterRecyclerView.layoutManager = gridLayoutManager
                 }
             }
         }
@@ -120,10 +114,12 @@ class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChang
         if (percentage >= percent && !isCollapsed) {
             isCollapsed = true
             this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg)
+            binding.characterAppBar.setBackgroundResource(R.color.nav_bg)
         }
         if (percentage <= percent && isCollapsed) {
             isCollapsed = false
-            this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg_inv)
+            this.window.statusBarColor = ContextCompat.getColor(this, R.color.status)
+            binding.characterAppBar.setBackgroundResource(R.color.bg)
         }
     }
 }

@@ -35,8 +35,10 @@ class ListActivity : AppCompatActivity() {
             if (it != null) {
                 binding.listProgressBar.visibility = View.GONE
                 binding.listViewPager.adapter = ListViewPagerAdapter(it.size, this)
+                val keys = it.keys.toList()
+                val values = it.values.toList()
                 TabLayoutMediator(binding.listTabLayout, binding.listViewPager) { tab, position ->
-                    tab.text = it.keys.toList()[position]
+                    tab.text = "${keys[position]} (${values[position].size})"
                 }.attach()
             }
         }
