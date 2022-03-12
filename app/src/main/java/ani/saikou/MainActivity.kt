@@ -23,6 +23,7 @@ import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistHomeViewModel
 import ani.saikou.databinding.ActivityMainBinding
 import ani.saikou.media.MediaDetailsActivity
+import ani.saikou.settings.SettingsFragment
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -157,15 +158,16 @@ class MainActivity : AppCompatActivity() {
     //ViewPager
     private class ViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) : FragmentStateAdapter(fragmentManager, lifecycle) {
 
-        override fun getItemCount(): Int = 3
+        override fun getItemCount(): Int = 4
 
         override fun createFragment(position: Int): Fragment {
             when (position){
                 0-> return AnimeFragment()
                 1-> return if (Anilist.token!=null) HomeFragment() else LoginFragment()
                 2-> return MangaFragment()
+                3-> return SettingsFragment()
             }
-            return LoginFragment()
+            throw NotImplementedError()
         }
     }
 

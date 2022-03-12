@@ -14,4 +14,9 @@
         android:id="@+id/manga"
         android:icon="@drawable/ic_round_import_contacts_24"
         android:title="@string/manga"/>
+
+    <item
+        android:id="@+id/settings"
+        android:icon="@drawable/ic_outline_settings_24"
+        android:title="@string/settings"/>
 </menu>
