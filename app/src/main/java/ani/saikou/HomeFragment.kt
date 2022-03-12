@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LayoutAnimationController
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
@@ -23,9 +24,12 @@ import ani.saikou.databinding.FragmentHomeBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaAdaptor
 import ani.saikou.user.ListActivity
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.min
+
 
 class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
@@ -50,9 +54,10 @@ class HomeFragment : Fragment() {
                 binding.homeUserEpisodesWatched.text = Anilist.episodesWatched.toString()
                 binding.homeUserChaptersRead.text = Anilist.chapterRead.toString()
                 binding.homeUserAvatar.loadImage(Anilist.avatar)
+                binding.homeUserBg.loadImage(Anilist.bg)
                 binding.homeUserAvatar.scaleType = ImageView.ScaleType.FIT_CENTER
                 binding.homeUserDataProgressBar.visibility = View.GONE
-                binding.homeUserDataContainer.visibility = View.VISIBLE
+
                 binding.homeAnimeList.setOnClickListener {
                     ContextCompat.startActivity(
                         requireActivity(), Intent(requireActivity(), ListActivity::class.java)
@@ -69,6 +74,13 @@ class HomeFragment : Fragment() {
                             .putExtra("username", Anilist.username), null
                     )
                 }
+
+                binding.homeUserAvatarContainer.startAnimation(setSlideUp)
+                binding.homeUserDataContainer.visibility = View.VISIBLE
+                binding.homeUserDataContainer.layoutAnimation = LayoutAnimationController(setSlideUp, 0.25f)
+                binding.homeAnimeList.visibility = View.VISIBLE
+                binding.homeMangaList.visibility = View.VISIBLE
+                binding.homeListContainer.layoutAnimation = LayoutAnimationController(setSlideIn,0.25f)
             }
             else{
                 toastString("Please Reload.")
@@ -77,9 +89,9 @@ class HomeFragment : Fragment() {
 
 
         binding.homeContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-            topMargin = statusBarHeight
             bottomMargin = navBarHeight
         }
+        binding.homeUserBg.updateLayoutParams { height += statusBarHeight }
 
         var reached = false
         binding.homeScroll.setOnScrollChangeListener { _, _, _, _, _ ->
@@ -125,10 +137,11 @@ class HomeFragment : Fragment() {
         }
 
         //Function For Recycler Views
-        fun initRecyclerView(mode: LiveData<ArrayList<Media>>, recyclerView: RecyclerView, progress: View, empty: View) {
+        fun initRecyclerView(mode: LiveData<ArrayList<Media>>, recyclerView: RecyclerView, progress: View, empty: View, title:View) {
             progress.visibility = View.VISIBLE
             recyclerView.visibility = View.GONE
             empty.visibility = View.GONE
+            title.visibility = View.INVISIBLE
 
             mode.observe(viewLifecycleOwner) {
                 recyclerView.visibility = View.GONE
@@ -142,12 +155,17 @@ class HomeFragment : Fragment() {
                             false
                         )
                         recyclerView.visibility = View.VISIBLE
+                        recyclerView.layoutAnimation = LayoutAnimationController(setSlideIn, 0.25f)
+
                     } else {
                         empty.visibility = View.VISIBLE
                     }
+                    title.visibility = View.VISIBLE
+                    title.startAnimation(setSlideUp)
                     progress.visibility = View.GONE
                 }
             }
+
         }
 
         // Recycler Views
@@ -156,6 +174,7 @@ class HomeFragment : Fragment() {
             binding.homeWatchingRecyclerView,
             binding.homeWatchingProgressBar,
             binding.homeWatchingEmpty,
+            binding.homeContinueWatch
         )
         binding.homeWatchingBrowseButton.setOnClickListener {
             bottomBar.selectTabAt(0)
@@ -166,6 +185,7 @@ class HomeFragment : Fragment() {
             binding.homeReadingRecyclerView,
             binding.homeReadingProgressBar,
             binding.homeReadingEmpty,
+            binding.homeContinueRead
         )
         binding.homeReadingBrowseButton.setOnClickListener {
             bottomBar.selectTabAt(2)
@@ -175,8 +195,11 @@ class HomeFragment : Fragment() {
             model.getRecommendation(),
             binding.homeRecommendedRecyclerView,
             binding.homeRecommendedProgressBar,
-            binding.homeRecommendedEmpty
+            binding.homeRecommendedEmpty,
+            binding.homeRecommended
         )
+
+        binding.homeUserAvatarContainer.startAnimation(setSlideUp)
 
         val live = Refresh.activity.getOrPut(1) { MutableLiveData(false) }
         live.observe(viewLifecycleOwner) {
@@ -188,12 +211,10 @@ class HomeFragment : Fragment() {
                             if (Anilist.query.getUserData()) load() else logger("Error loading data")
                         else load()
                         model.loaded = true
-                        arrayListOf<Deferred<*>>(
-                            async { model.setAnimeContinue() },
-                            async { model.setMangaContinue() },
-                            async { model.setListImages() },
-                            async {  model.setRecommendation() }
-                        ).awaitAll()
+                        model.setListImages()
+                        model.setAnimeContinue()
+                        model.setMangaContinue()
+                        model.setRecommendation()
                     }
                     live.postValue(false)
                     _binding?.homeRefresh?.isRefreshing = false

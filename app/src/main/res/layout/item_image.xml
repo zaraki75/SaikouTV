@@ -3,10 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="32dp"
+    android:layout_marginTop="8dp"
     android:background="@color/bg"
     android:focusable="false"
-    android:minHeight="400dp">
+    android:minHeight="128dp">
 
     <ani.saikou.NoGestureSubsamplingImageView
         android:id="@+id/imgProgImage"

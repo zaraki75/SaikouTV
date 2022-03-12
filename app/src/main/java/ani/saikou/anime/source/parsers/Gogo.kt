@@ -25,7 +25,7 @@ class Gogo(private val dub:Boolean=false, override val name: String = "gogoanime
 
 
     private val host = listOf(
-        "http://gogoanime.cm"
+        "http://gogoanime.fi"
     )
 
     private fun httpsIfy(text: String): String {

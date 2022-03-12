@@ -56,10 +56,11 @@ data class SearchResults(
 class AnilistQueries{
     fun getUserData():Boolean{
         return try{
-            val response = executeQuery("""{Viewer {name options{ displayAdultContent } avatar{medium}id statistics{anime{episodesWatched}manga{chaptersRead}}}}""")!!["data"]!!.jsonObject["Viewer"]!!
+            val response = executeQuery("""{Viewer {name options{ displayAdultContent } avatar{medium} bannerImage id statistics{anime{episodesWatched}manga{chaptersRead}}}}""")!!["data"]!!.jsonObject["Viewer"]!!
 
             Anilist.userid = response.jsonObject["id"].toString().toInt()
             Anilist.username = response.jsonObject["name"].toString().trim('"')
+            Anilist.bg = response.jsonObject["bannerImage"].toString().trim('"').let { if(it!="null") it else null }
             Anilist.avatar = response.jsonObject["avatar"]!!.jsonObject["medium"].toString().trim('"')
             Anilist.episodesWatched = response.jsonObject["statistics"]!!.jsonObject["anime"]!!.jsonObject["episodesWatched"].toString().toInt()
             Anilist.chapterRead = response.jsonObject["statistics"]!!.jsonObject["manga"]!!.jsonObject["chaptersRead"].toString().toInt()
@@ -650,7 +651,6 @@ class AnilistQueries{
         val genres = loadData<MutableMap<String,Genre>>("genre_thumb")?: mutableMapOf()
         if(genres.checkTime(genre)){
             try {
-                println(genre)
                 val genreQuery = """{ Page(perPage: 10){media(genre:\"$genre\", sort: TRENDING_DESC, type: ANIME, countryOfOrigin:\"JP\") {id bannerImage } } }"""
                 val response = executeQuery(genreQuery, force = true)!!["data"]!!.jsonObject["Page"]!!
                 if (response.jsonObject["media"] != JsonNull) {
@@ -744,7 +744,6 @@ query (${"$"}page: Int = 1, ${"$"}id: Int, ${"$"}type: MediaType, ${"$"}isAdult:
             ${if (tags?.isNotEmpty() == true) """,\"tags\":\"${tags[0]}\"""" else ""}
             }""".replace("\n", " ").replace("""  """, "")
         val response = executeQuery(query, variables, true)
-        println(variables)
         if(response!=null){
             val a = if(response["data"]!=JsonNull) response["data"] else null
             val pag = a?.jsonObject?.get("Page") ?:return null

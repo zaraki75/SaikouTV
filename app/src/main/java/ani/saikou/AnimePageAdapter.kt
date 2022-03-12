@@ -6,6 +6,7 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LayoutAnimationController
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
@@ -86,6 +87,7 @@ class AnimePageAdapter: RecyclerView.Adapter<AnimePageAdapter.AnimePageViewHolde
         binding.animeTrendingViewPager.offscreenPageLimit = 3
         binding.animeTrendingViewPager.getChildAt(0).overScrollMode = RecyclerView.OVER_SCROLL_NEVER
         binding.animeTrendingViewPager.setPageTransformer(MediaPageTransformer())
+
         trendHandler = Handler(Looper.getMainLooper())
         trendRun = Runnable {
             binding.animeTrendingViewPager.currentItem = binding.animeTrendingViewPager.currentItem + 1
@@ -99,6 +101,10 @@ class AnimePageAdapter: RecyclerView.Adapter<AnimePageAdapter.AnimePageViewHolde
                 }
             }
         )
+
+        binding.animeTrendingViewPager.layoutAnimation = LayoutAnimationController(setSlideIn, 0.25f)
+        binding.animeTitleContainer.startAnimation(setSlideUp)
+        binding.animeListContainer.layoutAnimation = LayoutAnimationController(setSlideIn, 0.25f)
     }
 
     fun updateRecent(adaptor: MediaAdaptor){
@@ -106,6 +112,12 @@ class AnimePageAdapter: RecyclerView.Adapter<AnimePageAdapter.AnimePageViewHolde
         binding.animeUpdatedRecyclerView.adapter = adaptor
         binding.animeUpdatedRecyclerView.layoutManager = LinearLayoutManager(binding.animeUpdatedRecyclerView.context, LinearLayoutManager.HORIZONTAL, false)
         binding.animeUpdatedRecyclerView.visibility = View.VISIBLE
+
+        binding.animeRecently.visibility = View.VISIBLE
+        binding.animeRecently.startAnimation(setSlideUp)
+        binding.animeUpdatedRecyclerView.layoutAnimation = LayoutAnimationController(setSlideIn, 0.25f)
+        binding.animePopular.visibility = View.VISIBLE
+        binding.animePopular.startAnimation(setSlideUp)
     }
 
     fun updateAvatar(){

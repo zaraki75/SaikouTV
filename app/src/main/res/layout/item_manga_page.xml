@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/animeContainer"
+    android:id="@+id/mangaContainer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="-16dp"
@@ -34,6 +34,8 @@
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:hint="@string/manga"
+                android:textColorHint="@color/bg_opp"
+                app:endIconTint="@color/bg_opp"
                 android:transitionName="@string/search"
                 app:boxBackgroundColor="@color/status"
                 app:boxCornerRadiusBottomEnd="28dp"
@@ -62,9 +64,9 @@
                 android:layout_height="match_parent"
                 android:layout_marginTop="4dp"
                 android:backgroundTint="@color/bg_black"
-                app:cardCornerRadius="32dp">
+                app:cardCornerRadius="26dp">
 
-                <ImageView
+                <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/mangaUserAvatar"
                     android:layout_width="52dp"
                     android:layout_height="52dp"
@@ -87,10 +89,12 @@
     </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/mangaListContainer"
         android:layout_width="match_parent"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp">
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/mangaGenre"
@@ -199,6 +203,7 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
+        android:id="@+id/mangaNovel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
@@ -236,6 +241,7 @@
     </FrameLayout>
 
     <TextView
+        android:id="@+id/mangaPopular"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"

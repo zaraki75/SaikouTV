@@ -12,7 +12,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.*
 import ani.saikou.databinding.ActivityStudioBinding
 import kotlinx.coroutines.Dispatchers
@@ -47,31 +46,41 @@ class StudioActivity : AppCompatActivity() {
             onBackPressed()
         }
 
-        model.getStudio().observe(this) { i->
-            if (i != null) {
-                studio = i
+        model.getStudio().observe(this) {
+            if (it != null) {
+                studio = it
                 loaded = true
                 binding.studioProgressBar.visibility = View.GONE
                 binding.studioRecycler.visibility = View.VISIBLE
 
-                val adapters: ArrayList<RecyclerView.Adapter<out RecyclerView.ViewHolder>> = arrayListOf()
-                studio!!.yearMedia?.forEach {
-                    adapters.add(TitleAdapter("${it.key} (${it.value.size})"))
-                    adapters.add(MediaAdaptor(0,it.value,this,true))
-                }
+                val titlePosition = arrayListOf<Int>()
+                val concatAdapter = ConcatAdapter()
+                val map = studio!!.yearMedia?:return@observe
+                val keys = map.keys.toTypedArray()
+                var pos = 0
 
-                val concatAdapter = ConcatAdapter(adapters)
-                binding.studioRecycler.adapter = concatAdapter
                 val gridSize = (screenWidth / 124f).toInt()
                 val gridLayoutManager = GridLayoutManager(this, gridSize)
                 gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                     override fun getSpanSize(position: Int): Int {
-                        return when (concatAdapter.getItemViewType(position)%2) {
-                            0 -> gridSize
+                        return when (position in titlePosition) {
+                            true -> gridSize
                             else -> 1
                         }
                     }
                 }
+                for (i in keys.indices) {
+                    val medias = map[keys[i]]!!
+                    val empty =  if(medias.size>=4) medias.size%4 else 4-medias.size
+                    titlePosition.add(pos)
+                    pos += (empty+medias.size+1)
+
+                    concatAdapter.addAdapter(TitleAdapter("${keys[i]} (${medias.size})"))
+                    concatAdapter.addAdapter(MediaAdaptor(0,medias,this,true))
+                    concatAdapter.addAdapter(EmptyAdapter(empty))
+                }
+
+                binding.studioRecycler.adapter = concatAdapter
                 binding.studioRecycler.layoutManager = gridLayoutManager
             }
         }

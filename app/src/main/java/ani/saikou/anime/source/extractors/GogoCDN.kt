@@ -30,7 +30,7 @@ class GogoCDN : Extractor() {
         if(url.contains("streaming.php")) {
             response.select("script[data-name='crypto']").attr("data-value").also {
                 val id = cryptoHandler(cryptoHandler(it,false).findBetween("","&")?:return@also,true)
-                Jsoup.connect("http://gogoplay.io/encrypt-ajax.php?id=$id")
+                Jsoup.connect("https://gogoplay4.com/encrypt-ajax.php?id=$id")
                 .ignoreHttpErrors(true).ignoreContentType(true)
                 .header("X-Requested-With", "XMLHttpRequest").get().body().toString().apply {
                     cryptoHandler(this.findBetween("""{"data":"""","\"}")?:return@apply,false)

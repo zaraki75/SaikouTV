@@ -5,6 +5,17 @@
     android:layout_height="match_parent"
     tools:context=".anime.AnimeWatchFragment">
 
+    <TextView
+        android:id="@+id/mangaReadNovel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="32dp"
+        android:fontFamily="@font/poppins_bold"
+        android:text="@string/novel_na"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
     <ProgressBar
         android:id="@+id/mediaInfoProgressBar"
         style="?android:attr/progressBarStyle"

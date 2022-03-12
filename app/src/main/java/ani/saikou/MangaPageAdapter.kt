@@ -6,6 +6,7 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LayoutAnimationController
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
@@ -99,6 +100,10 @@ class MangaPageAdapter: RecyclerView.Adapter<MangaPageAdapter.MangaPageViewHolde
                 }
             }
         )
+
+        binding.mangaTrendingViewPager.layoutAnimation = LayoutAnimationController(setSlideIn, 0.25f)
+        binding.mangaTitleContainer.startAnimation(setSlideUp)
+        binding.mangaListContainer.layoutAnimation = LayoutAnimationController(setSlideIn, 0.25f)
     }
 
     fun updateNovel(adaptor: MediaAdaptor){
@@ -106,6 +111,12 @@ class MangaPageAdapter: RecyclerView.Adapter<MangaPageAdapter.MangaPageViewHolde
         binding.mangaNovelRecyclerView.adapter = adaptor
         binding.mangaNovelRecyclerView.layoutManager = LinearLayoutManager(binding.mangaNovelRecyclerView.context, LinearLayoutManager.HORIZONTAL, false)
         binding.mangaNovelRecyclerView.visibility = View.VISIBLE
+
+        binding.mangaNovel.visibility = View.VISIBLE
+        binding.mangaNovel.startAnimation(setSlideUp)
+        binding.mangaNovelRecyclerView.layoutAnimation = LayoutAnimationController(setSlideIn, 0.25f)
+        binding.mangaPopular.visibility = View.VISIBLE
+        binding.mangaPopular.startAnimation(setSlideUp)
     }
 
     fun updateAvatar(){

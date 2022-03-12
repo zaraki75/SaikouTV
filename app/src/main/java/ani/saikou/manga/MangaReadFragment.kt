@@ -1,5 +1,6 @@
 package ani.saikou.manga
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
@@ -19,6 +20,9 @@ import ani.saikou.manga.source.HMangaSources
 import ani.saikou.manga.source.MangaParser
 import ani.saikou.manga.source.MangaReadSources
 import ani.saikou.manga.source.MangaSources
+import ani.saikou.media.Media
+import ani.saikou.media.MediaDetailsViewModel
+import ani.saikou.navBarHeight
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
@@ -29,9 +33,9 @@ open class MangaReadFragment: Fragment()  {
     open val mangaReadSources: MangaReadSources = MangaSources
     private var _binding: FragmentAnimeWatchBinding? = null
     private val binding get() = _binding!!
-    private val model: ani.saikou.media.MediaDetailsViewModel by activityViewModels()
+    private val model: MediaDetailsViewModel by activityViewModels()
 
-    private lateinit var media: ani.saikou.media.Media
+    private lateinit var media: Media
 
     private var start = 0
     private var end: Int? = null
@@ -58,7 +62,7 @@ open class MangaReadFragment: Fragment()  {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.animeSourceRecycler.updatePadding(bottom = binding.animeSourceRecycler.paddingBottom + ani.saikou.navBarHeight)
+        binding.animeSourceRecycler.updatePadding(bottom = binding.animeSourceRecycler.paddingBottom + navBarHeight)
         screenWidth = resources.displayMetrics.widthPixels.dp
 
         var maxGridSize = (screenWidth / 100f).roundToInt()
@@ -86,29 +90,33 @@ open class MangaReadFragment: Fragment()  {
         model.getMedia().observe(viewLifecycleOwner) {
             if (it != null) {
                 media = it
-                media.selected = model.loadSelected(media.id)
-
-                style = media.selected!!.recyclerStyle
-                reverse = media.selected!!.recyclerReversed
-
                 progress = View.GONE
                 binding.mediaInfoProgressBar.visibility = progress
 
-                if(!loaded) {
-                    model.readMangaMangaReadSources = if (media.isAdult) HMangaSources else MangaSources
-
-                    headerAdapter = MangaReadAdapter(it, this, mangaReadSources)
-                    chapterAdapter = MangaChapterAdapter(style, media, this)
-
-                    binding.animeSourceRecycler.adapter = ConcatAdapter(headerAdapter, chapterAdapter)
-
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        model.loadMangaChapters(media, media.selected!!.source)
-                    }
-                    loaded = true
+                if(media.format!="MANGA"){
+                    binding.mangaReadNovel.visibility = View.VISIBLE
                 }
                 else{
-                    reload()
+                    media.selected = model.loadSelected(media.id)
+                    style = media.selected!!.recyclerStyle
+                    reverse = media.selected!!.recyclerReversed
+
+                    if(!loaded) {
+                        model.readMangaMangaReadSources = if (media.isAdult) HMangaSources else MangaSources
+
+                        headerAdapter = MangaReadAdapter(it, this, mangaReadSources)
+                        chapterAdapter = MangaChapterAdapter(style, media, this)
+
+                        binding.animeSourceRecycler.adapter = ConcatAdapter(headerAdapter, chapterAdapter)
+
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            model.loadMangaChapters(media, media.selected!!.source)
+                        }
+                        loaded = true
+                    }
+                    else{
+                        reload()
+                    }
                 }
             }
         }
@@ -190,7 +198,7 @@ open class MangaReadFragment: Fragment()  {
         }
     }
 
-    @android.annotation.SuppressLint("NotifyDataSetChanged")
+    @SuppressLint("NotifyDataSetChanged")
     private fun reload() {
         val selected = model.loadSelected(media.id)
         model.saveSelected(media.id, selected, requireActivity())

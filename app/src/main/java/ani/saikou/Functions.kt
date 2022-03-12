@@ -20,8 +20,7 @@ import android.text.InputFilter
 import android.text.Spanned
 import android.util.AttributeSet
 import android.view.*
-import android.view.animation.Animation
-import android.view.animation.ScaleAnimation
+import android.view.animation.*
 import android.widget.AutoCompleteTextView
 import android.widget.DatePicker
 import android.widget.ImageView
@@ -285,26 +284,6 @@ fun getMalMedia(media:Media) : Media{
     return media
 }
 
-fun toastString(s: String?){
-    if(s!=null) {
-        currActivity()?.apply{
-            runOnUiThread {
-                val snackBar = Snackbar.make(window.decorView.findViewById(android.R.id.content), s, Snackbar.LENGTH_LONG)
-                snackBar.view.translationY = -navBarHeight.dp
-                snackBar.view.setOnClickListener {
-                    snackBar.dismiss()
-                }
-                snackBar.view.setOnLongClickListener {
-                    copyToClipboard(s,false)
-                    true
-                }
-                snackBar.show()
-            }
-        }
-        logger(s)
-    }
-}
-
 class ZoomOutPageTransformer : ViewPager2.PageTransformer {
     override fun transformPage(view: View, position: Float) {
         if (position == 0.0f) {
@@ -407,7 +386,7 @@ fun String.findBetween(a:String,b:String):String?{
 }
 
 fun ImageView.loadImage(url:String?,size:Int=0,headers: MutableMap<String, String>?=null){
-    if(url!=null || url!="") {
+    if(!url.isNullOrEmpty()) {
         try{
             val glideUrl = GlideUrl(url){ headers?: mutableMapOf() }
             Glide.with(this).load(glideUrl).diskCacheStrategy(DiskCacheStrategy.ALL).transition(withCrossFade()).override(size).into(this)
@@ -697,3 +676,70 @@ fun MutableMap<String, Genre>.checkTime(genre:String):Boolean{
     return true
 }
 
+val setSlideIn = AnimationSet(false).apply {
+    var animation: Animation = AlphaAnimation(0.0f, 1.0f)
+    animation.duration = 500
+    animation.interpolator = AccelerateDecelerateInterpolator()
+    addAnimation(animation)
+
+    animation = TranslateAnimation(
+        Animation.RELATIVE_TO_SELF, 1.0f,
+        Animation.RELATIVE_TO_SELF, 0f,
+        Animation.RELATIVE_TO_SELF, 0.0f,
+        Animation.RELATIVE_TO_SELF, 0f
+    )
+
+    animation.duration = 750
+    animation.interpolator = OvershootInterpolator(1.1f)
+    addAnimation(animation)
+}
+
+val setSlideUp = AnimationSet(false).apply {
+    var animation: Animation = AlphaAnimation(0.0f, 1.0f)
+    animation.duration = 500
+    animation.interpolator = AccelerateDecelerateInterpolator()
+    addAnimation(animation)
+
+    animation = TranslateAnimation(
+        Animation.RELATIVE_TO_SELF, 0.0f,
+        Animation.RELATIVE_TO_SELF, 0f,
+        Animation.RELATIVE_TO_SELF, 1.0f,
+        Animation.RELATIVE_TO_SELF, 0f
+    )
+
+    animation.duration = 750
+    animation.interpolator = OvershootInterpolator(1.1f)
+    addAnimation(animation)
+}
+
+class EmptyAdapter(private val count:Int):RecyclerView.Adapter<RecyclerView.ViewHolder>(){
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return EmptyViewHolder(View(parent.context))
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {}
+
+    override fun getItemCount(): Int = count
+
+    inner class EmptyViewHolder(view: View):RecyclerView.ViewHolder(view)
+}
+
+fun toastString(s: String?){
+    if(s!=null) {
+        currActivity()?.apply{
+            runOnUiThread {
+                val snackBar = Snackbar.make(window.decorView.findViewById(android.R.id.content), s, Snackbar.LENGTH_LONG)
+                snackBar.view.translationY = -(navBarHeight.dp + 32f)
+                snackBar.view.setOnClickListener {
+                    snackBar.dismiss()
+                }
+                snackBar.view.setOnLongClickListener {
+                    copyToClipboard(s,false)
+                    true
+                }
+                snackBar.show()
+            }
+        }
+        logger(s)
+    }
+}

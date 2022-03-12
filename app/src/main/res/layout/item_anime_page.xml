@@ -36,6 +36,8 @@
                 android:hint="@string/anime"
                 android:transitionName="@string/search"
                 app:boxBackgroundColor="@color/status"
+                android:textColorHint="@color/bg_opp"
+                app:endIconTint="@color/bg_opp"
                 app:boxCornerRadiusBottomEnd="28dp"
                 app:boxCornerRadiusBottomStart="28dp"
                 app:boxCornerRadiusTopEnd="28dp"
@@ -62,9 +64,9 @@
                 android:layout_height="match_parent"
                 android:layout_marginTop="4dp"
                 android:backgroundTint="@color/bg_black"
-                app:cardCornerRadius="32dp">
+                app:cardCornerRadius="26dp">
 
-                <ImageView
+                <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/animeUserAvatar"
                     android:layout_width="52dp"
                     android:layout_height="52dp"
@@ -87,10 +89,12 @@
     </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/animeListContainer"
         android:layout_width="match_parent"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp">
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/animeGenre"
@@ -199,13 +203,16 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
+        android:id="@+id/animeRecently"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:fontFamily="@font/poppins_bold"
         android:padding="8dp"
         android:text="@string/updated"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:visibility="invisible"
+        tools:visibility="visible" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -236,12 +243,15 @@
     </FrameLayout>
 
     <TextView
+        android:id="@+id/animePopular"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:fontFamily="@font/poppins_bold"
         android:padding="8dp"
         android:text="@string/popular_anime"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:visibility="invisible"
+        tools:visibility="visible" />
 
 </LinearLayout>

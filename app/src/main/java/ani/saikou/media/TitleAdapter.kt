@@ -18,8 +18,4 @@ class TitleAdapter(private val text:String): RecyclerView.Adapter<TitleAdapter.T
     }
 
     override fun getItemCount(): Int = 1
-
-    override fun getItemViewType(position: Int): Int {
-        return 69
-    }
 }

@@ -14,6 +14,7 @@ object Anilist {
     var adult : Boolean = false
     var userid : Int? = null
     var avatar : String? = null
+    var bg : String? = null
     var episodesWatched : Int? = null
     var chapterRead : Int? = null
     var genres:ArrayList<String>?=null
