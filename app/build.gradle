@@ -67,4 +67,7 @@ dependencies {
     implementation 'com.flaviofaria:kenburnsview:1.0.7'
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view-androidx:3.10.0'
     implementation 'jp.wasabeef:glide-transformations:4.3.0'
+
+    // settings
+    implementation "androidx.preference:preference-ktx:1.2.0"
 }
