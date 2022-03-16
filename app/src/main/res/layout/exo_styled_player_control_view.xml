@@ -189,7 +189,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="0dp"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
                 android:orientation="horizontal">
 
@@ -373,7 +373,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             app:cardBackgroundColor="#A8000000"
             app:cardCornerRadius="16dp"

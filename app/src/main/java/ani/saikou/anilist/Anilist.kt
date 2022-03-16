@@ -17,6 +17,7 @@ object Anilist {
     var bg : String? = null
     var episodesWatched : Int? = null
     var chapterRead : Int? = null
+
     var genres:ArrayList<String>?=null
     var tags:ArrayList<String>?=null
     var sortBy = mapOf(
@@ -39,5 +40,19 @@ object Anilist {
             return true
         }
         return false
+    }
+
+    fun removeSavedToken(context: Context){
+        token = null
+        username = null
+        adult = false
+        userid = null
+        avatar = null
+        bg = null
+        episodesWatched = null
+        chapterRead = null
+        if ("anilistToken" in context.fileList()){
+            File(context.filesDir, "anilistToken").delete()
+        }
     }
 }

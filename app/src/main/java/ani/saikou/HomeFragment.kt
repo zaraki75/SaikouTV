@@ -23,6 +23,7 @@ import ani.saikou.anilist.AnilistHomeViewModel
 import ani.saikou.databinding.FragmentHomeBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaAdaptor
+import ani.saikou.settings.SettingsDialogFragment
 import ani.saikou.user.ListActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -57,6 +58,10 @@ class HomeFragment : Fragment() {
                 binding.homeUserBg.loadImage(Anilist.bg)
                 binding.homeUserAvatar.scaleType = ImageView.ScaleType.FIT_CENTER
                 binding.homeUserDataProgressBar.visibility = View.GONE
+
+                binding.homeUserAvatarContainer.setSafeOnClickListener {
+                    SettingsDialogFragment().show(parentFragmentManager, "dialog")
+                }
 
                 binding.homeAnimeList.setOnClickListener {
                     ContextCompat.startActivity(

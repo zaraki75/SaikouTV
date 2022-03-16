@@ -58,13 +58,14 @@ class SearchActivity : AppCompatActivity() {
         style = loadData<Int>("searchStyle") ?: 0
         adult = if (Anilist.adult) intent.getBooleanExtra("hentai", false) else false
         listOnly = intent.getBooleanExtra("listOnly",false)
+        if(!listOnly!!) listOnly = null
 
         val notSet = model.notSet
         if(model.notSet) {
             model.notSet = false
             model.searchResults = SearchResults(type,
                 isAdult = false,
-                onList = false,
+                onList = null,
                 results = arrayListOf(),
                 hasNextPage = false)
         }

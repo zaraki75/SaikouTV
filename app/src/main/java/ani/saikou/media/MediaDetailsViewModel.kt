@@ -26,8 +26,13 @@ class MediaDetailsViewModel:ViewModel() {
     fun saveSelected(id:Int,data:Selected,activity: Activity){
         saveData("$id-select",data,activity)
     }
-    fun loadSelected(id:Int):Selected{
-        return loadData<Selected>("$id-select")?: Selected()
+    fun loadSelected(media: Media):Selected{
+        return loadData<Selected>("${media.id}-select")?: Selected().let { it.source = if(media.isAdult) 0 else when(media.anime!=null) {
+                true-> loadData("settings_default_anime_source")?:0
+                else-> loadData("settings_default_manga_source")?:0
+            }
+            it
+        }
     }
 
     var continueMedia:Boolean? = null
@@ -113,7 +118,7 @@ class MediaDetailsViewModel:ViewModel() {
                 toastString("Couldn't find episode : $i")
                 return
             }
-            media.selected = this.loadSelected(media.id)
+            media.selected = this.loadSelected(media)
             if (media.selected!!.stream != null)
                 SelectorDialogFragment.newInstance(media.selected!!.stream, launch, cancellable).show(manager, "dialog")
             else
