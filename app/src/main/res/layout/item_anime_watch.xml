@@ -45,7 +45,7 @@
             app:boxCornerRadiusTopEnd="8dp"
             app:boxCornerRadiusTopStart="8dp"
             app:hintAnimationEnabled="true"
-            app:startIconDrawable="@drawable/ic_round_playlist_play_24">
+            app:startIconDrawable="@drawable/ic_round_source_24">
 
             <AutoCompleteTextView
                 android:id="@+id/animeSource"

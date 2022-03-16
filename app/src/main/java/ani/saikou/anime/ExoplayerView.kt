@@ -51,6 +51,7 @@ import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
+import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.material.slider.Slider
 import kotlinx.coroutines.delay
@@ -66,6 +67,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     private lateinit var exoPlayer: ExoPlayer
     private lateinit var trackSelector: DefaultTrackSelector
     private lateinit var cacheFactory : CacheDataSource.Factory
+    private lateinit var simpleCache : SimpleCache
     private lateinit var playbackParameters: PlaybackParameters
     private lateinit var mediaItem : MediaItem
 
@@ -425,7 +427,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                 hideSystemBars()
                 if (it != null && !epChanging) {
                     episode = it
-                    media.selected = model.loadSelected(media.id)
+                    media.selected = model.loadSelected(media)
                     model.setMedia(media)
                     currentEpisodeIndex = episodeArr.indexOf(it.number)
                     if (isInitialized) releasePlayer()
@@ -548,7 +550,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
         val stream = episode.streamLinks[episode.selectedStream]?: return
 
-        val simpleCache = VideoCache.getInstance(this)
+        simpleCache = VideoCache.getInstance(this)
         val dataSourceFactory = DataSource.Factory {
             val dataSource: HttpDataSource = DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true).createDataSource()
             dataSource.setRequestProperty("User-Agent","Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36")
@@ -640,6 +642,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         isPlayerPlaying = exoPlayer.playWhenReady
         playbackPosition = exoPlayer.currentPosition
         exoPlayer.release()
+        simpleCache.release()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -684,6 +687,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
     override fun onStop() {
         playerView.player?.pause()
+        releasePlayer()
         super.onStop()
     }
 
@@ -775,17 +779,6 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         if(isInitialized)
             progress { super.onBackPressed() }
         else super.onBackPressed()
-    }
-
-    private fun hideSystemBars() {
-        @Suppress("DEPRECATION")
-        window.decorView.systemUiVisibility = (
-               View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-            or View.SYSTEM_UI_FLAG_FULLSCREEN
-            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        )
     }
 
     // QUALITY SELECTOR

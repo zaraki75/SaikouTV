@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.LayoutAnimationController
 import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
@@ -19,6 +20,7 @@ import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.ItemMangaPageBinding
 import ani.saikou.media.MediaAdaptor
 import ani.saikou.media.SearchActivity
+import ani.saikou.settings.SettingsDialogFragment
 
 class MangaPageAdapter: RecyclerView.Adapter<MangaPageAdapter.MangaPageViewHolder>() {
     val ready = MutableLiveData(false)
@@ -47,6 +49,10 @@ class MangaPageAdapter: RecyclerView.Adapter<MangaPageAdapter.MangaPageViewHolde
                 Intent(it.context, SearchActivity::class.java).putExtra("type", "MANGA"),
                 null
             )
+        }
+
+        binding.mangaUserAvatar.setSafeOnClickListener {
+            SettingsDialogFragment().show((it.context as AppCompatActivity).supportFragmentManager, "dialog")
         }
 
         binding.mangaSearchBar.setEndIconOnClickListener {

@@ -42,6 +42,7 @@ import ani.saikou.anime.Episode
 import ani.saikou.databinding.ItemCountDownBinding
 import ani.saikou.media.Media
 import ani.saikou.media.Source
+import ani.saikou.settings.UserInterface
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.GlideUrl
@@ -138,16 +139,36 @@ fun <T> loadData(fileName:String,activity: Activity?=null): T? {
 fun initActivity(a: Activity) {
     val window = a.window
     WindowCompat.setDecorFitsSystemWindows(window, false)
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-    if (statusBarHeight==0) {
-        val windowInsets = ViewCompat.getRootWindowInsets(window.decorView.findViewById(android.R.id.content))
-        if (windowInsets!=null) {
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-            statusBarHeight = insets.top
-            navBarHeight = insets.bottom
-        }
+    val uiSettings = loadData<UserInterface>("settings_ui")?: UserInterface()
+    uiSettings.darkMode.apply {
+        AppCompatDelegate.setDefaultNightMode(when (this) {
+            true -> AppCompatDelegate.MODE_NIGHT_YES
+            false -> AppCompatDelegate.MODE_NIGHT_NO
+            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        })
     }
+    if ( uiSettings.immersiveMode)
+        a.hideSystemBars()
+    else
+        if (statusBarHeight == 0) {
+            val windowInsets = ViewCompat.getRootWindowInsets(window.decorView.findViewById(android.R.id.content))
+            if (windowInsets != null) {
+                val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+                statusBarHeight = insets.top
+                navBarHeight = insets.bottom
+            }
+        }
+}
+
+fun Activity.hideSystemBars() {
+    @Suppress("DEPRECATION")
+    window.decorView.systemUiVisibility = (
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            )
 }
 
 open class BottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -287,14 +308,14 @@ fun getMalMedia(media:Media) : Media{
 class ZoomOutPageTransformer : ViewPager2.PageTransformer {
     override fun transformPage(view: View, position: Float) {
         if (position == 0.0f) {
-            setAnimation(view.context,view,300, floatArrayOf(1.3f,1f,1.3f,1f))
+            setAnimation(view.context,view,300, floatArrayOf(1.3f,1f,1.3f,1f), 0.5f to 0f)
             ObjectAnimator.ofFloat(view,"alpha",0f,1.0f).setDuration(200).start()
         }
     }
 }
 
-fun setAnimation(context: Context,viewToAnimate: View, duration:Long=150,list: FloatArray= floatArrayOf(0.0f, 1.0f, 0.0f, 1.0f)) {
-    val anim = ScaleAnimation(list[0], list[1], list[2], list[3], Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
+fun setAnimation(context: Context,viewToAnimate: View, duration:Long=150,list: FloatArray= floatArrayOf(0.0f, 1.0f, 0.0f, 1.0f),pivot:Pair<Float,Float> = 0.5f to 0.5f) {
+    val anim = ScaleAnimation(list[0], list[1], list[2], list[3], Animation.RELATIVE_TO_SELF, pivot.first, Animation.RELATIVE_TO_SELF, pivot.second)
     anim.duration = duration
     anim.setInterpolator(context,R.anim.over_shoot)
     viewToAnimate.startAnimation(anim)
@@ -724,9 +745,9 @@ class EmptyAdapter(private val count:Int):RecyclerView.Adapter<RecyclerView.View
     inner class EmptyViewHolder(view: View):RecyclerView.ViewHolder(view)
 }
 
-fun toastString(s: String?){
+fun toastString(s: String?,activity: Activity?=null){
     if(s!=null) {
-        currActivity()?.apply{
+        (activity?:currActivity())?.apply{
             runOnUiThread {
                 val snackBar = Snackbar.make(window.decorView.findViewById(android.R.id.content), s, Snackbar.LENGTH_LONG)
                 snackBar.view.translationY = -(navBarHeight.dp + 32f)

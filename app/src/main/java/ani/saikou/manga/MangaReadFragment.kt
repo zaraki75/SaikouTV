@@ -97,7 +97,7 @@ open class MangaReadFragment: Fragment()  {
                     binding.mangaReadNovel.visibility = View.VISIBLE
                 }
                 else{
-                    media.selected = model.loadSelected(media.id)
+                    media.selected = model.loadSelected(media)
                     style = media.selected!!.recyclerStyle
                     reverse = media.selected!!.recyclerReversed
 
@@ -161,7 +161,7 @@ open class MangaReadFragment: Fragment()  {
     fun onSourceChange(i: Int): MangaParser {
         media.manga?.chapters = null
         reload()
-        val selected = model.loadSelected(media.id)
+        val selected = model.loadSelected(media)
         selected.source = i
         model.saveSelected(media.id, selected, requireActivity())
         media.selected = selected
@@ -200,7 +200,7 @@ open class MangaReadFragment: Fragment()  {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun reload() {
-        val selected = model.loadSelected(media.id)
+        val selected = model.loadSelected(media)
         model.saveSelected(media.id, selected, requireActivity())
         headerAdapter.handleChapters()
         chapterAdapter.notifyItemRangeRemoved(0, chapterAdapter.arr.size)

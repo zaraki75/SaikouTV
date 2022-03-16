@@ -88,7 +88,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         viewPager.setPageTransformer(ZoomOutPageTransformer())
 
         var media: Media = intent.getSerializableExtra("media") as Media
-        media.selected = model.loadSelected(media.id)
+        media.selected = model.loadSelected(media)
 
         binding.mediaCoverImage.loadImage(media.cover)
         binding.mediaCoverImage.setOnLongClickListener{ openLinkInBrowser(media.cover);true }
@@ -215,7 +215,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         tabLayout.setOnItemSelectedListener { item ->
             selectFromID(item.itemId)
             viewPager.setCurrentItem(selected,false)
-            val sel = model.loadSelected(media.id)
+            val sel = model.loadSelected(media)
             sel.window = selected
             model.saveSelected(media.id,sel,this)
             true

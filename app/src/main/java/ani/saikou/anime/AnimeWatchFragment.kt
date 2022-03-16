@@ -92,7 +92,7 @@ open class AnimeWatchFragment : Fragment() {
         model.getMedia().observe(viewLifecycleOwner) {
             if (it != null) {
                 media = it
-                media.selected = model.loadSelected(media.id)
+                media.selected = model.loadSelected(media)
 
                 style = media.selected!!.recyclerStyle
                 reverse = media.selected!!.recyclerReversed
@@ -189,7 +189,7 @@ open class AnimeWatchFragment : Fragment() {
     fun onSourceChange(i: Int): AnimeParser  {
         media.anime?.episodes = null
         reload()
-        val selected = model.loadSelected(media.id)
+        val selected = model.loadSelected(media)
         selected.source = i
         model.saveSelected(media.id, selected, requireActivity())
         media.selected = selected
@@ -224,7 +224,7 @@ open class AnimeWatchFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun reload() {
-        val selected = model.loadSelected(media.id)
+        val selected = model.loadSelected(media)
         model.saveSelected(media.id, selected, requireActivity())
         headerAdapter.handleEpisodes()
         episodeAdapter.notifyItemRangeRemoved(0, episodeAdapter.arr.size)

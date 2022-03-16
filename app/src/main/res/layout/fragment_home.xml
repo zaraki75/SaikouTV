@@ -87,7 +87,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/poppins_bold"
-                                    android:textColor="@color/violet_400"
+                                    android:textColor="?attr/colorSecondaryVariant"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -110,7 +110,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/poppins_bold"
-                                    android:textColor="@color/violet_400"
+                                    android:textColor="?attr/colorSecondaryVariant"
                                     android:textSize="12sp" />
                             </LinearLayout>
 
@@ -133,7 +133,7 @@
                         android:layout_width="52dp"
                         android:layout_height="52dp"
                         android:layout_marginTop="4dp"
-                        android:backgroundTint="@color/bg_black"
+                        android:backgroundTint="@color/nav_bg_inv"
                         app:cardCornerRadius="26dp">
 
                         <com.google.android.material.imageview.ShapeableImageView
@@ -141,7 +141,7 @@
                             android:layout_width="52dp"
                             android:layout_height="52dp"
                             android:scaleType="center"
-                            app:srcCompat="@drawable/ic_round_person_24"
+                            app:srcCompat="@drawable/ic_round_settings_24"
                             tools:ignore="ContentDescription,ImageContrastCheck" />
 
                     </com.google.android.material.card.MaterialCardView>

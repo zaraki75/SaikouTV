@@ -24,12 +24,15 @@
         android:usesCleartextTraffic="true"
         tools:ignore="AllowBackup">
         <activity
+            android:name=".settings.SettingsActivity"
+            android:exported="false" />
+        <activity
             android:name=".media.SearchActivity"
             android:exported="true" />
         <activity
             android:name=".media.StudioActivity"
-            android:launchMode = "singleTask"
-            android:exported="true" />
+            android:exported="true"
+            android:launchMode="singleTask" />
         <activity
             android:name=".user.ListActivity"
             android:exported="true" />
@@ -39,9 +42,8 @@
             android:exported="true" />
         <activity
             android:name=".GenreActivity"
-            android:launchMode = "singleTask"
-            android:exported="true" />
-
+            android:exported="true"
+            android:launchMode="singleTask" />
         <activity
             android:name=".media.MediaDetailsActivity"
             android:exported="true" />
@@ -59,9 +61,9 @@
             android:theme="@style/Theme.Saikou.Exoplayer" />
         <activity
             android:name=".anilist.Login"
-            android:launchMode = "singleTask"
             android:configChanges="orientation|screenSize|layoutDirection"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTask">
             <intent-filter android:label="Anilist Login for Saikou">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -75,9 +77,9 @@
         </activity>
         <activity
             android:name=".anilist.UrlMedia"
-            android:launchMode = "singleTask"
             android:configChanges="orientation|screenSize|layoutDirection"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTask">
             <intent-filter android:label="Read on Saikou">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -105,9 +107,9 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:launchMode = "singleTask"
             android:configChanges="orientation|screenSize|layoutDirection"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
