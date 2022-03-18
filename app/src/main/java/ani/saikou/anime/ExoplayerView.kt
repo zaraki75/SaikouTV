@@ -51,7 +51,6 @@ import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
-import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.material.slider.Slider
 import kotlinx.coroutines.delay
@@ -67,7 +66,6 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     private lateinit var exoPlayer: ExoPlayer
     private lateinit var trackSelector: DefaultTrackSelector
     private lateinit var cacheFactory : CacheDataSource.Factory
-    private lateinit var simpleCache : SimpleCache
     private lateinit var playbackParameters: PlaybackParameters
     private lateinit var mediaItem : MediaItem
 
@@ -107,6 +105,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
     override fun onDestroy() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        VideoCache.release()
         super.onDestroy()
     }
 
@@ -491,7 +490,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                     2 -> AspectRatioFrameLayout.RESIZE_MODE_FILL
                     else -> AspectRatioFrameLayout.RESIZE_MODE_FIT
                 }
-                toastString(when(isFullscreen) {
+                toastString("Stretch Mode set to " + when(isFullscreen) {
                     0 -> "Original"
                     1 -> "Zoom"
                     2 -> "Stretch"
@@ -550,7 +549,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
         val stream = episode.streamLinks[episode.selectedStream]?: return
 
-        simpleCache = VideoCache.getInstance(this)
+        val simpleCache = VideoCache.getInstance(this)
         val dataSourceFactory = DataSource.Factory {
             val dataSource: HttpDataSource = DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true).createDataSource()
             dataSource.setRequestProperty("User-Agent","Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36")
@@ -642,7 +641,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         isPlayerPlaying = exoPlayer.playWhenReady
         playbackPosition = exoPlayer.currentPosition
         exoPlayer.release()
-        simpleCache.release()
+        VideoCache.release()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -687,7 +686,6 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
     override fun onStop() {
         playerView.player?.pause()
-        releasePlayer()
         super.onStop()
     }
 
@@ -703,9 +701,12 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        isPlayerPlaying=isPlaying
-        (exoPlay.drawable as Animatable?)?.start()
-        Glide.with(this).load(if(isPlaying) R.drawable.anim_play_to_pause else R.drawable.anim_pause_to_play).into(exoPlay)
+        if(!isBuffering) {
+            isPlayerPlaying = isPlaying
+            playerView.keepScreenOn = isPlaying
+            (exoPlay.drawable as Animatable?)?.start()
+            Glide.with(this).load(if (isPlaying) R.drawable.anim_play_to_pause else R.drawable.anim_pause_to_play).into(exoPlay)
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -739,11 +740,13 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
     }
 
+    var isBuffering = true
     override fun onPlaybackStateChanged(playbackState: Int) {
         if (playbackState == ExoPlayer.STATE_READY && episodeLength==0f) {
             episodeLength = exoPlayer.duration.toFloat()
         }
-        playerView.keepScreenOn = !(playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED)
+        isBuffering = playbackState == Player.STATE_BUFFERING
+        println("${playbackState == Player.STATE_BUFFERING}\n${playbackState == Player.STATE_IDLE}\n${playbackState == Player.STATE_ENDED}\n${playbackState == Player.STATE_READY}\n=========")
         super.onPlaybackStateChanged(playbackState)
     }
 

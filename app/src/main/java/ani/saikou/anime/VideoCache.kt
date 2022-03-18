@@ -18,4 +18,8 @@ object VideoCache {
             )
         return simpleCache as SimpleCache
     }
+    fun release(){
+        simpleCache?.release()
+        simpleCache = null
+    }
 }

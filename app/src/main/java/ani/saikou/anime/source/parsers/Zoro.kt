@@ -85,10 +85,10 @@ class Zoro(override val name: String = "Zoro") : AnimeParser() {
     override fun getEpisodes(media: Media): MutableMap<String, Episode> {
         var slug:Source? = loadData("zoro_${media.id}")
         if (slug==null) {
-            val it = media.nameMAL?:media.name
+            val it = media.nameRomaji
             setTextListener("Searching for $it")
             logger("Zoro : Searching for $it")
-            val search = search("$!${media.getMainName()} | &type=${type.indexOf(media.format)}")
+            val search = search("$!${media.nameRomaji} | &type=${type.indexOf(media.format)}")
             if (search.isNotEmpty()) {
                 slug = search[0]
                 saveSource(slug,media.id,false)

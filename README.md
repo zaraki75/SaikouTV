@@ -45,6 +45,7 @@ Saikou is crafted based on simplistic yet out-of-state elegancy. It is an [Anili
 | [MangaSee](https://mangasee123.com/)  | WORKING |
 | [MangaPill](https://mangapill.com/)   | WORKING |
 | [MangaDex](https://mangadex.org/)     | WORKING |
+| [MangaReaderTo](https://mangareader.to/)     | WORKING |
 
 ✓ View extensive details about anime shows, movies and manga titles. It also features ability to countdown to the next episode of airing anime. (Powered by AniList)
 
