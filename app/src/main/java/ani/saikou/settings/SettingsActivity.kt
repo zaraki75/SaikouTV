@@ -46,7 +46,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         binding.settingsPlayer.setOnClickListener{
-            toastString("Warks in Porgassss",this)
+            startActivity(Intent(this, PlayerSettingsActivity::class.java))
         }
 
         binding.mangaSource.setText(MangaSources.names[loadData("settings_default_manga_source") ?: 0])

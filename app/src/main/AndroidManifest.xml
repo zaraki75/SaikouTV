@@ -24,8 +24,11 @@
         android:usesCleartextTraffic="true"
         tools:ignore="AllowBackup">
         <activity
+            android:name=".settings.PlayerSettingsActivity"
+            android:exported="true" />
+        <activity
             android:name=".settings.SettingsActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".media.SearchActivity"
             android:exported="true" />

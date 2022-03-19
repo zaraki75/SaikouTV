@@ -130,7 +130,7 @@
     <string name="theme">Theme</string>
     <string name="ui_settings">UI Settings</string>
     <string name="about">About</string>
-    <string name="desc">\u0008\u0008\u0008 Saikou is crafted based on simplistic yet out-of-state elegance. It is an Anilist only client, which also lets you stream &amp; download Anime &amp; Manga.\nSaikou literally means the "best" in japanese. Well, we would like to say this is the best open source app for anime and manga on Android, what would you say?</string>
+    <string name="desc">\u0008\u0008\u0008 Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an Anilist only client, which also lets you stream-download Anime &amp; Manga.\nSaikou literally means the "best" in japanese. Well, we would like to say this is the best open source app for anime and manga on Android, what would you say?</string>
     <string name="devs">Developers</string>
     <string name="disclaimer">Disclaimer</string>
     <string name="full_disclaimer">
@@ -157,4 +157,36 @@
         <item>You can Long Click to copy this Message.</item>
         <item>Saikou!</item>
     </string-array>
+
+    <string name="video">Video</string>
+    <string name="video_info">Show Video Info</string>
+    <string name="video_info_info">Shows what the Resolution of the current video playing, useful for "Multi Quality" servers.</string>
+    <string name="default_quality">Auto Quality Selection</string>
+    <string name="height">Height</string>
+    <string name="width">Width</string>
+    <string name="default_quality_info">Automatically uses the closest quality provided by default, ONLY applied for "Multi Quality" Servers.</string>
+    <string name="default_playback_speed">Default Playback Speed</string>
+
+    <string name="auto">Auto</string>
+    <string name="auto_play_next_episode">Autoplay Next Episode</string>
+    <string name="auto_play_next_episode_info">Automatically disables if there is no interaction with player after 1 hour.</string>
+    <string name="auto_skip_fillers">Auto Skip Fillers</string>
+    <string name="auto_skip_fillers_info">Skips filler episodes when going to next Episode.</string>
+
+    <string name="update_progress">Update Progress</string>
+    <string name="ask_update_progress">Ask Update Progress for each Anime Individually</string>
+    <string name="ask_update_progress_hentai">Ask to Update Progress for Hentai</string>
+    <string name="complete_percentage">Progress update percentage</string>
+    <string name="complete_percentage_info">The percentage at which your Anilist progress should be updated after watching an episode. \n This also sets the % for when to preload links for next episode</string>
+
+    <string name="player_interface">Player Interface</string>
+    <string name="pause_video_focus">Pause Video when not in focus</string>
+    <string name="gestures">Volume &amp; Brightness Gestures</string>
+    <string name="double_tap">Double tap to Seek</string>
+    <string name="fast_seek_time">Fast Seek Time</string>
+    <string name="fast_seek_time_info">Amount of time in seconds for fast forward &amp; rewind.</string>
+    <string name="skip_time">Video Skip Time</string>
+    <string name="skip_time_info">Setting to 0, hides the Skip Button.</string>
+    <string name="show_cast_button">Show Cast Button</string>
+    <string name="show_cast_button_info">Requires "Web Video Caster" app to cast.</string>
 </resources>
