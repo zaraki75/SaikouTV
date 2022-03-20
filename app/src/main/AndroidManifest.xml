@@ -45,8 +45,7 @@
             android:exported="true" />
         <activity
             android:name=".GenreActivity"
-            android:exported="true"
-            android:launchMode="singleTask" />
+            android:exported="true"/>
         <activity
             android:name=".media.MediaDetailsActivity"
             android:exported="true" />
@@ -110,8 +109,7 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|layoutDirection"
-            android:exported="true"
-            android:launchMode="singleTask">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

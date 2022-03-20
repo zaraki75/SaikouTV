@@ -46,7 +46,7 @@
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/exo_skip"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_height="48dp"
                         android:layout_gravity="bottom|end"
                         android:clickable="true"
                         android:focusable="true"
@@ -65,12 +65,23 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="-6dp"
                                 android:layout_marginTop="1dp"
+                                android:layout_marginEnd="-2dp"
                                 android:fontFamily="@font/poppins_bold"
-                                android:layoutDirection="rtl"
+                                android:text="+"
+                                android:textColor="?attr/colorSecondary"
+                                android:textSize="14sp"
+                                tools:ignore="HardcodedText" />
+
+                            <TextView
+                                android:id="@+id/exo_skip_time"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="1dp"
+                                android:layout_marginEnd="-6dp"
+                                android:fontFamily="@font/poppins_bold"
                                 android:padding="4dp"
-                                android:text="85+"
+                                android:text="85"
                                 android:textColor="?attr/colorSecondary"
                                 android:textSize="14sp"
                                 tools:ignore="HardcodedText" />
@@ -101,8 +112,10 @@
                         android:layout_height="48dp"
                         android:backgroundTint="#00FFFFFF"
                         android:contentDescription="@string/exo_controls_playback_speed"
+                        android:src="@drawable/ic_round_speed_24"
                         android:visibility="visible"
-                        tools:ignore="PrivateResource" />
+                        tools:ignore="PrivateResource"
+                        app:tint="#fff" />
 
                     <View
                         android:layout_width="0dp"
@@ -140,9 +153,34 @@
                     <ImageButton
                         android:id="@+id/exo_prev_ep"
                         style="@style/ExoMediaButton.Pause"
+                        android:scaleX="1.5"
+                        android:scaleY="1.5"
                         android:layout_width="72dp"
                         android:layout_height="72dp"
                         android:src="@drawable/ic_round_skip_previous_24"
+                        tools:ignore="ContentDescription,DuplicateSpeakableTextCheck" />
+
+                </androidx.cardview.widget.CardView>
+
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="-32dp"
+                    android:layout_weight="1"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="#00FFFFFF"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
+
+                    <ImageButton
+                        android:id="@+id/exo_fast_rewind_button"
+                        style="@style/ExoMediaButton.Pause"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:scaleX="1.5"
+                        android:scaleY="1.5"
+                        android:src="@drawable/ic_round_fast_rewind_24"
                         tools:ignore="ContentDescription,DuplicateSpeakableTextCheck" />
 
                 </androidx.cardview.widget.CardView>
@@ -169,6 +207,29 @@
                 <androidx.cardview.widget.CardView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="-32dp"
+                    android:layout_weight="1"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="#00FFFFFF"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
+
+                    <ImageButton
+                        android:id="@+id/exo_fast_forward_button"
+                        style="@style/ExoMediaButton.Pause"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:scaleX="1.5"
+                        android:scaleY="1.5"
+                        android:src="@drawable/ic_round_fast_forward_24"
+                        tools:ignore="ContentDescription,DuplicateSpeakableTextCheck" />
+
+                </androidx.cardview.widget.CardView>
+
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     app:cardBackgroundColor="#00FFFFFF"
                     app:cardCornerRadius="16dp"
@@ -179,6 +240,8 @@
                         style="@style/ExoMediaButton.Pause"
                         android:layout_width="72dp"
                         android:layout_height="72dp"
+                        android:scaleX="1.5"
+                        android:scaleY="1.5"
                         android:layout_weight="1"
                         android:src="@drawable/ic_round_skip_next_24"
                         tools:ignore="ContentDescription" />
