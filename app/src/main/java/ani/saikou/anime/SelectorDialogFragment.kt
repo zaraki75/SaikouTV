@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -32,6 +31,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
     private var scope: CoroutineScope = lifecycleScope
     private var media: Media? = null
     private var episode: Episode? = null
+    private var prevEpisode: Episode? = null
     private var makeDefault = false
     private var selected:String?=null
     private var launch:Boolean?=null
@@ -41,25 +41,13 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
         arguments?.let {
             selected = it.getString("server")
             launch = it.getBoolean("launch",true)
-//            isCancelable = it.getBoolean("cancellable",true)
+            prevEpisode = it.getSerializable("prev") as? Episode
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = BottomSheetSelectorBinding.inflate(inflater, container, false)
         return binding.root
-    }
-
-    private fun onCheckboxClicked(view: View) {
-        if (view is CheckBox) {
-            val checked: Boolean = view.isChecked
-
-            when (view.id) {
-                R.id.selectorMakeDefault-> {
-                    makeDefault = checked
-                }
-            }
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -85,9 +73,9 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
                         fun load() {
                             if (episode?.streamLinks?.containsKey(selected) == true) {
                                 if (episode!!.streamLinks[selected]!!.quality.size >= media!!.selected!!.quality) {
-                                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedStream =
+                                    media!!.anime!!.episodes?.get(media!!.anime!!.selectedEpisode!!)?.selectedStream =
                                         selected
-                                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedQuality =
+                                    media!!.anime!!.episodes?.get(media!!.anime!!.selectedEpisode!!)?.selectedQuality =
                                         media!!.selected!!.quality
                                     dismiss()
                                     startExoplayer(media!!)
@@ -110,13 +98,17 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
                         binding.selectorRecyclerView.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin = navBarHeight }
                         binding.selectorRecyclerView.adapter = null
                         binding.selectorProgressBar.visibility = View.VISIBLE
-
+                        makeDefault = loadData("make_default")?:true
+                        binding.selectorMakeDefault.isChecked = makeDefault
                         binding.selectorMakeDefault.setOnClickListener {
-                            onCheckboxClicked(it)
+                            makeDefault = binding.selectorMakeDefault.isChecked
+                            saveData("make_default",makeDefault)
                         }
                         fun load() {
                             binding.selectorProgressBar.visibility = View.GONE
-                            media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode?:""] = episode!!
+                            media!!.anime?.episodes?.set(media!!.anime?.selectedEpisode?:"",
+                                episode!!
+                            )
                             binding.selectorRecyclerView.layoutManager = LinearLayoutManager(
                                 requireActivity(),
                                 LinearLayoutManager.VERTICAL,
@@ -152,7 +144,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
             startActivity(intent)
         }
         else{
-            model.setEpisode(media.anime!!.episodes!![media.anime.selectedEpisode!!]!!)
+            model.setEpisode(media.anime!!.episodes!![media.anime.selectedEpisode!!]!!,"startExo no launch")
         }
     }
 
@@ -218,15 +210,17 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
     }
 
     companion object {
-        fun newInstance(server:String?=null,la:Boolean=true,ca:Boolean=true): SelectorDialogFragment =
+        fun newInstance(server:String?=null,la:Boolean=true,prev:Episode?=null): SelectorDialogFragment =
             SelectorDialogFragment().apply {
                 arguments = Bundle().apply {
                     putString("server",server)
                     putBoolean("launch",la)
-                    putBoolean("cancellable",ca)
+                    putSerializable("prev",prev)
                 }
             }
     }
+
+    override fun onSaveInstanceState(outState: Bundle) {}
 
     override fun onDismiss(dialog: DialogInterface) {
         if(launch == false){
@@ -238,6 +232,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
                 or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             )
+            if(prevEpisode!=null) model.setEpisode(prevEpisode,"prevEp")
         }
         super.onDismiss(dialog)
     }

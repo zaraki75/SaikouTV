@@ -3,6 +3,7 @@ package ani.saikou.media
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.LayoutInflater
@@ -310,7 +311,7 @@ class MediaInfoFragment : Fragment() {
                     )
                     bind.itemTitle.setText(R.string.characters)
                     bind.itemRecycler.adapter =
-                        CharacterAdapter(media.characters!!, requireActivity())
+                        CharacterAdapter(media.characters!!)
                     bind.itemRecycler.layoutManager = LinearLayoutManager(
                         requireContext(),
                         LinearLayoutManager.HORIZONTAL,
@@ -400,21 +401,24 @@ class MediaInfoFragment : Fragment() {
                 }
             }
         }
-        val cornerTop = ObjectAnimator.ofFloat(binding.root,"radius",0f,32f).setDuration(200)
-        val cornerNotTop = ObjectAnimator.ofFloat(binding.root,"radius",32f,0f).setDuration(200)
-        var cornered = true
-        cornerTop.start()
-        binding.mediaInfoScroll.setOnScrollChangeListener { v, _, _, _, _ ->
-            if(!v.canScrollVertically(-1)){
-                if(!cornered) {
-                    cornered = true
-                    cornerTop.start()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val cornerTop = ObjectAnimator.ofFloat(binding.root,"radius",0f,32f).setDuration(200)
+            val cornerNotTop = ObjectAnimator.ofFloat(binding.root,"radius",32f,0f).setDuration(200)
+            var cornered = true
+            cornerTop.start()
+            binding.mediaInfoScroll.setOnScrollChangeListener { v, _, _, _, _ ->
+                if(!v.canScrollVertically(-1)){
+                    if(!cornered) {
+                        cornered = true
+                        cornerTop.start()
+                    }
                 }
-            }
-            else {
-                if(cornered){
-                    cornered=false
-                    cornerNotTop.start()
+                else {
+                    if(cornered){
+                        cornered=false
+                        cornerNotTop.start()
+                    }
                 }
             }
         }

@@ -10,20 +10,27 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import okhttp3.*
 import org.jsoup.Jsoup
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class RapidCloud : Extractor() {
+
     override fun getStreamLinks(name: String, url: String): Episode.StreamLinks {
         val qualities = arrayListOf<Episode.Quality>()
         val subtitle = mutableMapOf<String,String>()
 
+        val client = OkHttpClient()
+
         val soup = Jsoup.connect(url).referrer("https://zoro.to/").get().toString().replace("\n","")
         val key = soup.findBetween("var recaptchaSiteKey = '","',")
         val number = soup.findBetween("recaptchaNumber = '","';")
-        if(key!=null && number!=null){
-            captcha(url,key).apply {
-                val jsonLink = "https://rapid-cloud.ru/ajax/embed-6/getSources?id=${url.findBetween("/embed-6/", "?z=")!!}&_token=${this?:return@apply}&_number=$number"
-                val json = Json.decodeFromString<JsonObject>(Jsoup.connect(jsonLink).ignoreContentType(true).execute().body())
+        val sId = sId(client)
+        if(key!=null && number!=null && sId!=null){
+            captcha(url,key)?.apply {
+                val jsonLink = "https://rapid-cloud.ru/ajax/embed-6/getSources?id=${url.findBetween("/embed-6/", "?z=")!!}&_token=${this}&_number=$number&sId=$sId"
+                val json = Json.decodeFromString<JsonObject>(client.newCall(Request.Builder().url(jsonLink).build()).execute().body!!.string())
                 val m3u8 = json["sources"]!!.jsonArray[0].jsonObject["file"].toString().trim('"')
 
                 json["tracks"]!!.jsonArray.forEach {
@@ -37,7 +44,11 @@ class RapidCloud : Extractor() {
         return Episode.StreamLinks(
             name,
             qualities,
-            null,
+            mutableMapOf(
+                "SID" to (sId?:""),
+                "origin" to "https://rapid-cloud.ru",
+                "referer" to "https://zoro.to/"
+            ),
             subtitle
         )
     }
@@ -50,5 +61,28 @@ class RapidCloud : Extractor() {
         return Jsoup.connect("https://www.google.com/recaptcha/api2/reload?k=$key").ignoreContentType(true)
                 .data(mutableMapOf("v" to vToken,"k" to key,"c" to recapToken,"co" to domain,"sa" to "","reason" to "q"))
                 .post().toString().replace("\n","").findBetween("rresp\",\"","\",null")
+    }
+
+    //jmir the lord & saviour
+    private fun sId(client: OkHttpClient): String? {
+        val latch = CountDownLatch(1)
+        var sId: String? = null
+        val listener = object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                webSocket.send("40")
+            }
+
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                if (text.startsWith("40")) {
+                    sId = text
+                    webSocket.close(1000, null)
+                    latch.countDown()
+                }
+            }
+        }
+        client.newWebSocket(Request.Builder().url("wss://ws1.rapid-cloud.ru/socket.io/?EIO=4&transport=websocket").build(), listener)
+        latch.await(30, TimeUnit.SECONDS)
+        return sId?.substringAfter("40{\"sid\":\"", "")
+            ?.substringBefore("\"", "")
     }
 }

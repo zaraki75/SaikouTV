@@ -19,9 +19,13 @@ import ani.saikou.anime.source.HAnimeSources
 import ani.saikou.anime.source.WatchSources
 import ani.saikou.databinding.FragmentAnimeWatchBinding
 import ani.saikou.dp
+import ani.saikou.loadData
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.navBarHeight
+import ani.saikou.saveData
+import ani.saikou.settings.PlayerSettings
+import ani.saikou.settings.UserInterfaceSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -40,7 +44,7 @@ open class AnimeWatchFragment : Fragment() {
 
     private var start = 0
     private var end: Int? = null
-    private var style = 0
+    private var style:Int? = null
     private var reverse = false
 
     private lateinit var headerAdapter: AnimeWatchAdapter
@@ -51,6 +55,9 @@ open class AnimeWatchFragment : Fragment() {
 
     var continueEp: Boolean = false
     var loaded = false
+
+    lateinit var playerSettings : PlayerSettings
+    lateinit var uiSettings : UserInterfaceSettings
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,6 +75,9 @@ open class AnimeWatchFragment : Fragment() {
 
         var maxGridSize = (screenWidth / 100f).roundToInt()
         maxGridSize = max(4,maxGridSize-(maxGridSize%2))
+
+        playerSettings = loadData("player_settings", toast = false)?:PlayerSettings().apply { saveData("player_settings",this) }
+        uiSettings = loadData("ui_settings", toast = false)?:UserInterfaceSettings().apply { saveData("ui_settings",this) }
 
         val gridLayoutManager = GridLayoutManager(requireContext(), maxGridSize)
 
@@ -104,7 +114,7 @@ open class AnimeWatchFragment : Fragment() {
                     model.watchAnimeWatchSources = if (media.isAdult) HAnimeSources else AnimeSources
 
                     headerAdapter = AnimeWatchAdapter(it, this, watchSources)
-                    episodeAdapter = EpisodeAdapter(style, media, this)
+                    episodeAdapter = EpisodeAdapter(style?:uiSettings.animeDefaultView, media, this)
 
                     binding.animeSourceRecycler.adapter = ConcatAdapter(headerAdapter, episodeAdapter)
 
@@ -191,6 +201,7 @@ open class AnimeWatchFragment : Fragment() {
         reload()
         val selected = model.loadSelected(media)
         selected.source = i
+        selected.stream = null
         model.saveSelected(media.id, selected, requireActivity())
         media.selected = selected
         return watchSources[i]!!
@@ -201,11 +212,11 @@ open class AnimeWatchFragment : Fragment() {
     }
 
     fun onIconPressed(viewType: Int, rev: Boolean) {
-        media.selected!!.recyclerStyle = viewType
-        media.selected!!.recyclerReversed = reverse
-        model.saveSelected(media.id, media.selected!!, requireActivity())
         style = viewType
         reverse = rev
+        media.selected!!.recyclerStyle = style
+        media.selected!!.recyclerReversed = reverse
+        model.saveSelected(media.id, media.selected!!, requireActivity())
         reload()
     }
 
@@ -239,7 +250,7 @@ open class AnimeWatchFragment : Fragment() {
                 arr = (arr.reversed() as? ArrayList<Episode>)?:arr
         }
         episodeAdapter.arr = arr
-        episodeAdapter.updateType(style)
+        episodeAdapter.updateType(style?:uiSettings.animeDefaultView)
         episodeAdapter.notifyItemRangeInserted(0, arr.size)
     }
 

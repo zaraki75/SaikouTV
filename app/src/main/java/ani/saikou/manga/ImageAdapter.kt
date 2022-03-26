@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.databinding.ItemImageBinding
-import ani.saikou.setAnimation
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.model.GlideUrl
@@ -33,7 +32,6 @@ private val transformation: Transformation<File>?=null
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val binding = holder.binding
-        setAnimation(binding.root.context,binding.root)
         binding.imgProgImage.recycle()
         binding.imgProgProgress.visibility= View.VISIBLE
         Glide.with(binding.imgProgImage)

@@ -33,7 +33,8 @@ class MangaChapterAdapter(
     inner class ChapterCompactViewHolder(val binding: ItemEpisodeCompactBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
             itemView.setOnClickListener {
-                fragment.onMangaChapterClick(arr[bindingAdapterPosition].number)
+                if( 0<=bindingAdapterPosition && bindingAdapterPosition<arr.size)
+                    fragment.onMangaChapterClick(arr[bindingAdapterPosition].number)
             }
         }
     }
@@ -41,6 +42,7 @@ class MangaChapterAdapter(
     inner class ChapterListViewHolder(val binding: ItemChapterListBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
             itemView.setOnClickListener {
+                if( 0<=bindingAdapterPosition && bindingAdapterPosition<arr.size)
                 fragment.onMangaChapterClick(arr[bindingAdapterPosition].number)
             }
         }
@@ -50,7 +52,7 @@ class MangaChapterAdapter(
         when (holder) {
             is ChapterCompactViewHolder -> {
                 val binding = holder.binding
-                setAnimation(fragment.requireContext(),holder.binding.root)
+                setAnimation(fragment.requireContext(),holder.binding.root,fragment.uiSettings)
                 val ep = arr[position]
                 binding.itemEpisodeNumber.text = ep.number
                 if (media.userProgress!=null) {
@@ -68,7 +70,7 @@ class MangaChapterAdapter(
             is ChapterListViewHolder -> {
                 val binding = holder.binding
                 val ep = arr[position]
-                setAnimation(fragment.requireContext(),holder.binding.root)
+                setAnimation(fragment.requireContext(),holder.binding.root,fragment.uiSettings)
                 binding.itemChapterNumber.text = ep.number
                 binding.itemChapterTitle.text = ep.title
                 if (media.userProgress!=null) {

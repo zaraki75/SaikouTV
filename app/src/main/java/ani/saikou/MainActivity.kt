@@ -23,6 +23,8 @@ import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistHomeViewModel
 import ani.saikou.databinding.ActivityMainBinding
 import ani.saikou.media.MediaDetailsActivity
+import ani.saikou.others.AppUpdater
+import ani.saikou.settings.UserInterfaceSettings
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,6 +36,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainBinding
     private val scope = lifecycleScope
     private var load = false
+
+    private var uiSettings = UserInterfaceSettings()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +69,8 @@ class MainActivity : AppCompatActivity() {
 
         binding.root.doOnAttach {
             initActivity(this)
+            uiSettings = loadData("ui_settings")?:uiSettings
+            selectedOption = uiSettings.defaultStartUpTab
             binding.navbarContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             bottomMargin = navBarHeight
         }
@@ -85,7 +91,7 @@ class MainActivity : AppCompatActivity() {
                         val mainViewPager = binding.viewpager
                         mainViewPager.isUserInputEnabled = false
                         mainViewPager.adapter = ViewPagerAdapter(supportFragmentManager, lifecycle)
-                        mainViewPager.setPageTransformer(ZoomOutPageTransformer())
+                        mainViewPager.setPageTransformer(ZoomOutPageTransformer(uiSettings))
                         navbar.setOnTabSelectListener(object :
                             AnimatedBottomBar.OnTabSelectListener {
                             override fun onTabSelected(
@@ -132,7 +138,10 @@ class MainActivity : AppCompatActivity() {
             //Load Data
             if (!load) {
                 Anilist.getSavedToken(this)
-                scope.launch(Dispatchers.IO) { model.genres.postValue(Anilist.query.getGenresAndTags()) }
+                scope.launch(Dispatchers.IO) {
+                    model.genres.postValue(Anilist.query.getGenresAndTags())
+                    AppUpdater.check(this@MainActivity)
+                }
                 load = true
             }
         }

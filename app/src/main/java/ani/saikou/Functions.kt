@@ -20,16 +20,16 @@ import android.text.InputFilter
 import android.text.Spanned
 import android.util.AttributeSet
 import android.view.*
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.animation.*
-import android.widget.AutoCompleteTextView
-import android.widget.DatePicker
-import android.widget.ImageView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
 import androidx.multidex.MultiDex
@@ -42,7 +42,7 @@ import ani.saikou.anime.Episode
 import ani.saikou.databinding.ItemCountDownBinding
 import ani.saikou.media.Media
 import ani.saikou.media.Source
-import ani.saikou.settings.UserInterface
+import ani.saikou.settings.UserInterfaceSettings
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.GlideUrl
@@ -71,7 +71,7 @@ const val STATE_RESUME_WINDOW = "resumeWindow"
 const val STATE_RESUME_POSITION = "resumePosition"
 const val STATE_PLAYER_FULLSCREEN = "playerFullscreen"
 const val STATE_PLAYER_PLAYING = "playerOnPlay"
-const val buildDebug = true
+const val buildDebug = false
 
 var statusBarHeight  = 0
 var navBarHeight = 0
@@ -118,7 +118,7 @@ fun saveData(fileName:String,data:Any,activity: Activity?=null){
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T> loadData(fileName:String,activity: Activity?=null): T? {
+fun <T> loadData(fileName:String,activity: Activity?=null,toast:Boolean=true): T? {
     val a = activity?: currActivity()
     try{
     if (a?.fileList() != null)
@@ -131,7 +131,7 @@ fun <T> loadData(fileName:String,activity: Activity?=null): T? {
             return data
         }
     }catch (e:Exception){
-        toastString("Error loading data $fileName")
+        if(toast) toastString("Error loading data $fileName")
     }
     return null
 }
@@ -139,7 +139,7 @@ fun <T> loadData(fileName:String,activity: Activity?=null): T? {
 fun initActivity(a: Activity) {
     val window = a.window
     WindowCompat.setDecorFitsSystemWindows(window, false)
-    val uiSettings = loadData<UserInterface>("settings_ui")?: UserInterface()
+    val uiSettings = loadData<UserInterfaceSettings>("ui_settings", toast = false)?: UserInterfaceSettings().apply { saveData("ui_settings",this) }
     uiSettings.darkMode.apply {
         AppCompatDelegate.setDefaultNightMode(when (this) {
             true -> AppCompatDelegate.MODE_NIGHT_YES
@@ -147,7 +147,7 @@ fun initActivity(a: Activity) {
             else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         })
     }
-    if ( uiSettings.immersiveMode)
+    if (uiSettings.immersiveMode)
         a.hideSystemBars()
     else
         if (statusBarHeight == 0) {
@@ -184,27 +184,30 @@ open class BottomSheetDialogFragment : BottomSheetDialogFragment() {
 fun isOnline(context: Context): Boolean {
     val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     try{
-    val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-    if (capabilities != null) {
-        when {
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
-                logger("Device on Cellular")
-                return true
-            }
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
-                logger("Device on Wifi")
-                return true
-            }
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
-                logger("Device on Ethernet, TF man?")
-                return true
-            }
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN) ->{
-                logger("Device on VPN")
-                return true
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+        if (capabilities != null) {
+            when {
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+                    logger("Device on Cellular")
+                    return true
+                }
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+                    logger("Device on Wifi")
+                    return true
+                }
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+                    logger("Device on Ethernet, TF man?")
+                    return true
+                }
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN) ->{
+                    logger("Device on VPN")
+                    return true
+                }
             }
         }
     }
+    else return true
     }catch (e:Exception){
         toastString(e.toString())
     }
@@ -229,10 +232,17 @@ data class FuzzyDate(
         val cal = Calendar.getInstance()
         return FuzzyDate(cal.get(Calendar.YEAR),cal.get(Calendar.MONTH)+1,cal.get(Calendar.DAY_OF_MONTH))
     }
-    fun getEpoch():Long{
-        val cal = Calendar.getInstance()
-        cal.set(year?:cal.get(Calendar.YEAR),month?:cal.get(Calendar.MONTH),day?:cal.get(Calendar.DAY_OF_MONTH))
-        return cal.timeInMillis
+//    fun getEpoch():Long{
+//        val cal = Calendar.getInstance()
+//        cal.set(year?:cal.get(Calendar.YEAR),month?:cal.get(Calendar.MONTH),day?:cal.get(Calendar.DAY_OF_MONTH))
+//        return cal.timeInMillis
+//    }
+    fun toVariableString():String{
+        return ("{"
+            + (if(year!=null) "year:$year" else "")
+            + (if(month!=null) ",month:$month" else "")
+            + (if(day!=null) ",day:$day" else "")
+        + "}")
     }
 }
 
@@ -305,20 +315,22 @@ fun getMalMedia(media:Media) : Media{
     return media
 }
 
-class ZoomOutPageTransformer : ViewPager2.PageTransformer {
+class ZoomOutPageTransformer(private val uiSettings: UserInterfaceSettings) : ViewPager2.PageTransformer {
     override fun transformPage(view: View, position: Float) {
         if (position == 0.0f) {
-            setAnimation(view.context,view,300, floatArrayOf(1.3f,1f,1.3f,1f), 0.5f to 0f)
-            ObjectAnimator.ofFloat(view,"alpha",0f,1.0f).setDuration(200).start()
+            setAnimation(view.context,view,uiSettings,300, floatArrayOf(1.3f,1f,1.3f,1f), 0.5f to 0f)
+            ObjectAnimator.ofFloat(view,"alpha",0f,1.0f).setDuration((200*uiSettings.animationSpeed).toLong()).start()
         }
     }
 }
 
-fun setAnimation(context: Context,viewToAnimate: View, duration:Long=150,list: FloatArray= floatArrayOf(0.0f, 1.0f, 0.0f, 1.0f),pivot:Pair<Float,Float> = 0.5f to 0.5f) {
-    val anim = ScaleAnimation(list[0], list[1], list[2], list[3], Animation.RELATIVE_TO_SELF, pivot.first, Animation.RELATIVE_TO_SELF, pivot.second)
-    anim.duration = duration
-    anim.setInterpolator(context,R.anim.over_shoot)
-    viewToAnimate.startAnimation(anim)
+fun setAnimation(context: Context,viewToAnimate: View, uiSettings: UserInterfaceSettings, duration:Long=150,list: FloatArray= floatArrayOf(0.0f, 1.0f, 0.0f, 1.0f),pivot:Pair<Float,Float> = 0.5f to 0.5f) {
+    if(uiSettings.layoutAnimations) {
+        val anim = ScaleAnimation(list[0], list[1], list[2], list[3], Animation.RELATIVE_TO_SELF, pivot.first, Animation.RELATIVE_TO_SELF, pivot.second)
+        anim.duration = (duration*uiSettings.animationSpeed).toLong()
+        anim.setInterpolator(context,R.anim.over_shoot)
+        viewToAnimate.startAnimation(anim)
+    }
 }
 
 
@@ -406,11 +418,14 @@ fun String.findBetween(a:String,b:String):String?{
     return if(end!=-1) this.subSequence(start,end).removePrefix(a).removeSuffix(b).toString() else null
 }
 
-fun ImageView.loadImage(url:String?,size:Int=0,headers: MutableMap<String, String>?=null){
+fun ImageView.loadImage(url:String?,size:Int=0,headers: MutableMap<String, String>?=null,scale:Boolean=false){
     if(!url.isNullOrEmpty()) {
         try{
             val glideUrl = GlideUrl(url){ headers?: mutableMapOf() }
-            Glide.with(this).load(glideUrl).diskCacheStrategy(DiskCacheStrategy.ALL).transition(withCrossFade()).override(size).into(this)
+            Glide.with(this).load(glideUrl).diskCacheStrategy(DiskCacheStrategy.ALL).transition(withCrossFade()).override(size).let {
+                if(scale) scaleType = ImageView.ScaleType.FIT_XY
+                return@let if (scale) it.centerCrop() else it
+            }.into(this)
         }catch (e:Exception){
             logger(e.localizedMessage)
         }
@@ -509,7 +524,7 @@ class ExtendedTimeBar(
 
 abstract class DoubleClickListener : GestureDetector.SimpleOnGestureListener() {
     private var timer: Timer? = null //at class level;
-    private val delay:Long = 400
+    private val delay:Long = 200
 
     override fun onSingleTapUp(e: MotionEvent?): Boolean {
         processSingleClickEvent(e)
@@ -534,29 +549,29 @@ abstract class DoubleClickListener : GestureDetector.SimpleOnGestureListener() {
     private fun processSingleClickEvent(e:MotionEvent?) {
         val handler = Handler(Looper.getMainLooper())
         val mRunnable = Runnable {
-            onSingleClick(e) //Do what ever u want on single click
+            onSingleClick(e)
         }
-        val timerTask: TimerTask = object : TimerTask() {
-            override fun run() {
-                handler.post(mRunnable)
-            }
+        timer = Timer().apply {
+            schedule(object : TimerTask() {
+                override fun run() {
+                    handler.post(mRunnable)
+                }
+            }, delay)
         }
-        timer = Timer()
-        timer!!.schedule(timerTask, delay)
     }
 
     private fun processDoubleClickEvent(e: MotionEvent?) {
-        if (timer != null) {
-            timer!!.cancel() //Cancels Running Tasks or Waiting Tasks.
-            timer!!.purge() //Frees Memory by erasing cancelled Tasks.
+        timer?.apply {
+            cancel()
+            purge()
         }
         onDoubleClick(e) //Do what ever u want on Double Click
     }
 
     private fun processLongClickEvent(e: MotionEvent?) {
-        if (timer != null) {
-            timer!!.cancel() //Cancels Running Tasks or Waiting Tasks.
-            timer!!.purge() //Frees Memory by erasing cancelled Tasks.
+        timer?.apply {
+            cancel()
+            purge()
         }
         onLongClick(e) //Do what ever u want on Double Click
     }
@@ -697,9 +712,9 @@ fun MutableMap<String, Genre>.checkTime(genre:String):Boolean{
     return true
 }
 
-val setSlideIn = AnimationSet(false).apply {
+fun setSlideIn(speed: Float) = AnimationSet(false).apply {
     var animation: Animation = AlphaAnimation(0.0f, 1.0f)
-    animation.duration = 500
+    animation.duration = (500*speed).toLong()
     animation.interpolator = AccelerateDecelerateInterpolator()
     addAnimation(animation)
 
@@ -710,14 +725,14 @@ val setSlideIn = AnimationSet(false).apply {
         Animation.RELATIVE_TO_SELF, 0f
     )
 
-    animation.duration = 750
+    animation.duration = (750*speed).toLong()
     animation.interpolator = OvershootInterpolator(1.1f)
     addAnimation(animation)
 }
 
-val setSlideUp = AnimationSet(false).apply {
+fun setSlideUp(speed: Float) = AnimationSet(false).apply {
     var animation: Animation = AlphaAnimation(0.0f, 1.0f)
-    animation.duration = 500
+    animation.duration = (500*speed).toLong()
     animation.interpolator = AccelerateDecelerateInterpolator()
     addAnimation(animation)
 
@@ -728,7 +743,7 @@ val setSlideUp = AnimationSet(false).apply {
         Animation.RELATIVE_TO_SELF, 0f
     )
 
-    animation.duration = 750
+    animation.duration = (750*speed).toLong()
     animation.interpolator = OvershootInterpolator(1.1f)
     addAnimation(animation)
 }
@@ -750,6 +765,10 @@ fun toastString(s: String?,activity: Activity?=null){
         (activity?:currActivity())?.apply{
             runOnUiThread {
                 val snackBar = Snackbar.make(window.decorView.findViewById(android.R.id.content), s, Snackbar.LENGTH_LONG)
+                snackBar.view.updateLayoutParams<FrameLayout.LayoutParams> {
+                    gravity = (Gravity.CENTER_HORIZONTAL or Gravity.BOTTOM)
+                    width = WRAP_CONTENT
+                }
                 snackBar.view.translationY = -(navBarHeight.dp + 32f)
                 snackBar.view.setOnClickListener {
                     snackBar.dismiss()
@@ -762,5 +781,13 @@ fun toastString(s: String?,activity: Activity?=null){
             }
         }
         logger(s)
+    }
+}
+
+open class NoPaddingArrayAdapter<T>(context: Context, layoutId: Int, items: List<T>) : ArrayAdapter<T>(context, layoutId, items) {
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val view = super.getView(position, convertView, parent)
+        view.setPadding(0,view.paddingTop,view.paddingRight,view.paddingBottom)
+        return view
     }
 }

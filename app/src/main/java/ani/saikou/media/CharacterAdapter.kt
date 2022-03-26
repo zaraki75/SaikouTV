@@ -11,23 +11,24 @@ import androidx.core.util.Pair
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.databinding.ItemCharacterBinding
+import ani.saikou.loadData
 import ani.saikou.loadImage
 import ani.saikou.setAnimation
+import ani.saikou.settings.UserInterfaceSettings
 import java.io.Serializable
 
 class CharacterAdapter(
-    private val characterList: ArrayList<Character>,
-    private val activity: Activity
+    private val characterList: ArrayList<Character>
 ): RecyclerView.Adapter<CharacterAdapter.CharacterViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CharacterViewHolder {
         val binding = ItemCharacterBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return CharacterViewHolder(binding)
     }
-
+    private val uiSettings = loadData<UserInterfaceSettings>("ui_settings") ?: UserInterfaceSettings()
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: CharacterViewHolder, position: Int) {
         val binding = holder.binding
-        setAnimation(activity,holder.binding.root)
+        setAnimation(binding.root.context,holder.binding.root,uiSettings)
         val character = characterList[position]
         binding.itemCompactRelation.text = character.role+"  "
         binding.itemCompactImage.loadImage(character.image)
@@ -40,9 +41,9 @@ class CharacterAdapter(
             itemView.setOnClickListener {
                 val char = characterList[bindingAdapterPosition]
                 ContextCompat.startActivity(
-                    activity,
-                    Intent(activity, CharacterDetailsActivity::class.java).putExtra("character",char as Serializable),
-                    ActivityOptionsCompat.makeSceneTransitionAnimation(activity,
+                    itemView.context,
+                    Intent(itemView.context, CharacterDetailsActivity::class.java).putExtra("character",char as Serializable),
+                    ActivityOptionsCompat.makeSceneTransitionAnimation(itemView.context as Activity,
                         Pair.create(binding.itemCompactImage, ViewCompat.getTransitionName(binding.itemCompactImage)!!),
                     ).toBundle()
                 )

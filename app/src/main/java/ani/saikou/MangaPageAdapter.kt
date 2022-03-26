@@ -21,6 +21,7 @@ import ani.saikou.databinding.ItemMangaPageBinding
 import ani.saikou.media.MediaAdaptor
 import ani.saikou.media.SearchActivity
 import ani.saikou.settings.SettingsDialogFragment
+import ani.saikou.settings.UserInterfaceSettings
 
 class MangaPageAdapter: RecyclerView.Adapter<MangaPageAdapter.MangaPageViewHolder>() {
     val ready = MutableLiveData(false)
@@ -28,6 +29,7 @@ class MangaPageAdapter: RecyclerView.Adapter<MangaPageAdapter.MangaPageViewHolde
     private var trendHandler: Handler? = null
     private lateinit var trendRun: Runnable
     var trendingViewPager:ViewPager2?=null
+    private var uiSettings: UserInterfaceSettings = loadData("ui_settings")?: UserInterfaceSettings()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MangaPageViewHolder {
         val binding = ItemMangaPageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -107,9 +109,9 @@ class MangaPageAdapter: RecyclerView.Adapter<MangaPageAdapter.MangaPageViewHolde
             }
         )
 
-        binding.mangaTrendingViewPager.layoutAnimation = LayoutAnimationController(setSlideIn, 0.25f)
-        binding.mangaTitleContainer.startAnimation(setSlideUp)
-        binding.mangaListContainer.layoutAnimation = LayoutAnimationController(setSlideIn, 0.25f)
+        binding.mangaTrendingViewPager.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings.animationSpeed), 0.25f)
+        binding.mangaTitleContainer.startAnimation(setSlideUp(uiSettings.animationSpeed))
+        binding.mangaListContainer.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings.animationSpeed), 0.25f)
     }
 
     fun updateNovel(adaptor: MediaAdaptor){
@@ -119,10 +121,10 @@ class MangaPageAdapter: RecyclerView.Adapter<MangaPageAdapter.MangaPageViewHolde
         binding.mangaNovelRecyclerView.visibility = View.VISIBLE
 
         binding.mangaNovel.visibility = View.VISIBLE
-        binding.mangaNovel.startAnimation(setSlideUp)
-        binding.mangaNovelRecyclerView.layoutAnimation = LayoutAnimationController(setSlideIn, 0.25f)
+        binding.mangaNovel.startAnimation(setSlideUp(uiSettings.animationSpeed))
+        binding.mangaNovelRecyclerView.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings.animationSpeed), 0.25f)
         binding.mangaPopular.visibility = View.VISIBLE
-        binding.mangaPopular.startAnimation(setSlideUp)
+        binding.mangaPopular.startAnimation(setSlideUp(uiSettings.animationSpeed))
     }
 
     fun updateAvatar(){

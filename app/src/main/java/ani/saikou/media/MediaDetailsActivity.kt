@@ -33,6 +33,7 @@ import ani.saikou.anime.AnimeWatchFragment
 import ani.saikou.anime.HWatchFragment
 import ani.saikou.databinding.ActivityMediaBinding
 import ani.saikou.manga.MangaReadFragment
+import ani.saikou.settings.UserInterfaceSettings
 import com.flaviofaria.kenburnsview.RandomTransitionGenerator
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -49,6 +50,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
     private val scope = lifecycleScope
     private val model: MediaDetailsViewModel by viewModels()
     private lateinit var tabLayout : BottomNavigationView
+    private lateinit var uiSettings : UserInterfaceSettings
     var selected = 0
     var anime = true
     private var adult = false
@@ -61,10 +63,13 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         screenWidth = resources.displayMetrics.widthPixels.toFloat()
 
         //Ui init
+
         initActivity(this)
-        this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg_inv)
+        uiSettings = loadData<UserInterfaceSettings>("ui_settings")?: UserInterfaceSettings()
+        if(uiSettings.immersiveMode) this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg_inv)
 
         binding.mediaBanner.updateLayoutParams{ height += statusBarHeight }
+        binding.mediaBannerNoKen.updateLayoutParams{ height += statusBarHeight }
         binding.mediaClose.updateLayoutParams<ViewGroup.MarginLayoutParams> { topMargin += statusBarHeight }
         binding.mediaCollapsing.minimumHeight = statusBarHeight
         binding.mediaTab.updatePadding(bottom = navBarHeight)
@@ -78,33 +83,39 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
             onBackPressed()
         }
 
-        val adi = AccelerateDecelerateInterpolator()
-        val generator = RandomTransitionGenerator(20000, adi)
-        binding.mediaBanner.setTransitionGenerator(generator)
-
+        if(uiSettings.bannerAnimations) {
+            val adi = AccelerateDecelerateInterpolator()
+            val generator = RandomTransitionGenerator((10000 + 15000*(uiSettings.animationSpeed)).toLong(), adi)
+            binding.mediaBanner.setTransitionGenerator(generator)
+        }
+        val banner = if(uiSettings.bannerAnimations) binding.mediaBanner else binding.mediaBannerNoKen
         val viewPager = binding.mediaViewPager
         tabLayout = binding.mediaTab
         viewPager.isUserInputEnabled = false
-        viewPager.setPageTransformer(ZoomOutPageTransformer())
+        viewPager.setPageTransformer(ZoomOutPageTransformer(uiSettings))
 
         var media: Media = intent.getSerializableExtra("media") as Media
         media.selected = model.loadSelected(media)
 
         binding.mediaCoverImage.loadImage(media.cover)
         binding.mediaCoverImage.setOnLongClickListener{ openLinkInBrowser(media.cover);true }
-        binding.mediaBanner.loadImage(media.banner?:media.cover,400)
+        banner.loadImage(media.banner?:media.cover,400, scale = !uiSettings.bannerAnimations)
         val gestureDetector = GestureDetector(this,object: DoubleClickListener() {
             override fun onDoubleClick(event: MotionEvent?) {
-                binding.mediaBanner.restart()
-                binding.mediaBanner.performClick()
+                if(!uiSettings.bannerAnimations)
+                    toastString("Try Enabling Banner Animations from Settings")
+                else {
+                    binding.mediaBanner.restart()
+                    binding.mediaBanner.performClick()
+                }
             }
 
             override fun onLongClick(event: MotionEvent?) {
                 openLinkInBrowser(media.banner?:media.cover)
-                binding.mediaBanner.performClick()
+                banner.performClick()
             }
         })
-        binding.mediaBanner.setOnTouchListener { _, motionEvent -> gestureDetector.onTouchEvent(motionEvent);true }
+        banner.setOnTouchListener { _, motionEvent -> gestureDetector.onTouchEvent(motionEvent);true }
         binding.mediaTitle.text = media.userPreferredName
         binding.mediaTitle.setOnLongClickListener {
             copyToClipboard(media.userPreferredName)
@@ -232,7 +243,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         live.observe(this){
             if(it){
                 scope.launch(Dispatchers.IO) {
-                    model.loadMedia(media,"activity")
+                    model.loadMedia(media)
                     live.postValue(false)
                 }
             }
@@ -296,24 +307,24 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         val percentage = abs(i) * 100 / mMaxScrollSize
 
         binding.mediaCover.visibility= if(binding.mediaCover.scaleX==0f) View.GONE else View.VISIBLE
-
+        val duration = (200*uiSettings.animationSpeed).toLong()
         if (percentage >= percent && !isCollapsed) {
             isCollapsed = true
-            ObjectAnimator.ofFloat(binding.mediaTitle,"translationX",0f).setDuration(200).start()
-            ObjectAnimator.ofFloat(binding.mediaAccessContainer,"translationX",screenWidth).setDuration(200).start()
-            ObjectAnimator.ofFloat(binding.mediaCover,"translationX",screenWidth).setDuration(200).start()
-            ObjectAnimator.ofFloat(binding.mediaCollapseContainer,"translationX",screenWidth).setDuration(200).start()
+            ObjectAnimator.ofFloat(binding.mediaTitle,"translationX",0f).setDuration(duration).start()
+            ObjectAnimator.ofFloat(binding.mediaAccessContainer,"translationX",screenWidth).setDuration(duration).start()
+            ObjectAnimator.ofFloat(binding.mediaCover,"translationX",screenWidth).setDuration(duration).start()
+            ObjectAnimator.ofFloat(binding.mediaCollapseContainer,"translationX",screenWidth).setDuration(duration).start()
             binding.mediaBanner.pause()
-            this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg)
+            if(uiSettings.immersiveMode) this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg)
         }
         if (percentage <= percent && isCollapsed) {
             isCollapsed = false
-            ObjectAnimator.ofFloat(binding.mediaTitle,"translationX",-screenWidth).setDuration(200).start()
-            ObjectAnimator.ofFloat(binding.mediaAccessContainer,"translationX",0f).setDuration(200).start()
-            ObjectAnimator.ofFloat(binding.mediaCover,"translationX",0f).setDuration(200).start()
-            ObjectAnimator.ofFloat(binding.mediaCollapseContainer,"translationX",0f).setDuration(200).start()
-            binding.mediaBanner.resume()
-            this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg_inv)
+            ObjectAnimator.ofFloat(binding.mediaTitle,"translationX",-screenWidth).setDuration(duration).start()
+            ObjectAnimator.ofFloat(binding.mediaAccessContainer,"translationX",0f).setDuration(duration).start()
+            ObjectAnimator.ofFloat(binding.mediaCover,"translationX",0f).setDuration(duration).start()
+            ObjectAnimator.ofFloat(binding.mediaCollapseContainer,"translationX",0f).setDuration(duration).start()
+            if(uiSettings.bannerAnimations) binding.mediaBanner.resume()
+            if(uiSettings.immersiveMode) this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg_inv)
         }
     }
     inner class PopImageButton(private val scope: CoroutineScope,private val activity: Activity,private val image:ImageView,private val media:Media,private val d1:Int,private val d2:Int,private val c1:Int,private val c2:Int,private val fav_or_not:Boolean? = null){

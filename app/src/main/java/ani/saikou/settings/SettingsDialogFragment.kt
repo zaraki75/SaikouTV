@@ -26,8 +26,8 @@ class SettingsDialogFragment : BottomSheetDialogFragment() {
         if(Anilist.token!=null){
             binding.settingsLogin.setText(R.string.logout)
             binding.settingsLogin.setOnClickListener {
-
                 Anilist.removeSavedToken(it.context)
+                dismiss()
                 startMainActivity(requireActivity())
             }
             binding.settingsUsername.text = Anilist.username
@@ -36,19 +36,23 @@ class SettingsDialogFragment : BottomSheetDialogFragment() {
             binding.settingsUsername.visibility = View.GONE
             binding.settingsLogin.setText(R.string.login)
             binding.settingsLogin.setOnClickListener {
+                dismiss()
                 Anilist.loginIntent(requireActivity())
             }
         }
 
         binding.settingsSettings.setSafeOnClickListener {
             startActivity(Intent(activity, SettingsActivity::class.java))
+            dismiss()
         }
         binding.settingsAnilistSettings.setOnClickListener{
             openLinkInBrowser("https://anilist.co/settings/lists")
+            dismiss()
         }
 
         binding.settingsDownloads.setSafeOnClickListener {
             startActivity(Intent(DownloadManager.ACTION_VIEW_DOWNLOADS))
+            dismiss()
         }
     }
 

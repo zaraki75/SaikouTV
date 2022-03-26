@@ -1,8 +1,10 @@
 package ani.saikou.anilist
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
+import ani.saikou.openLinkInBrowser
 import java.io.File
 
 object Anilist {
@@ -31,7 +33,11 @@ object Anilist {
 
     fun loginIntent(context: Context){
         val clientID = 6818
-        CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse("https://anilist.co/api/v2/oauth/authorize?client_id=$clientID&response_type=token"))
+        try{
+            CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse("https://anilist.co/api/v2/oauth/authorize?client_id=$clientID&response_type=token"))
+        } catch (e:ActivityNotFoundException){
+            openLinkInBrowser("https://anilist.co/api/v2/oauth/authorize?client_id=$clientID&response_type=token")
+        }
     }
 
     fun getSavedToken(context: Context):Boolean{

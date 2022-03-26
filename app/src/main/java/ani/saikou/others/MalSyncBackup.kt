@@ -16,12 +16,9 @@ object MalSyncBackup {
             if(json!="404: Not Found")
                 when(name){
                     "Gogoanime"->{
-                        println("Gogo")
                         Json.decodeFromString<JsonObject>(json)["Pages"]?.jsonObject?.get(name)?.also {
-                            println(it)
                             val slug = it.toString().replace("\n","").findBetween((if(dub) "-dub" else "") + "\":{\"identifier\":\"","\",")
                             if(slug!=null){
-                                println(slug)
                                 return Source(slug,"Automatically","")
                             }
                         }

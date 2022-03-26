@@ -35,7 +35,7 @@ class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWat
         _binding = binding
 
         //Youtube
-        if (media.anime!!.youtube != null) {
+        if (media.anime!!.youtube != null && fragment.uiSettings.showYtButton) {
             binding.animeSourceYT.visibility = View.VISIBLE
             binding.animeSourceYT.setOnClickListener {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(media.anime.youtube))
@@ -66,14 +66,14 @@ class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWat
 
         //Icons
         var reversed = media.selected!!.recyclerReversed
-        var style = media.selected!!.recyclerStyle
-        binding.animeSourceTop.rotation = if (!reversed) 90f else -90f
+        var style = media.selected!!.recyclerStyle?:fragment.uiSettings.animeDefaultView
+        binding.animeSourceTop.rotation = if (reversed) -90f else 90f
         binding.animeSourceTop.setOnClickListener {
-            binding.animeSourceTop.rotation = if (reversed) 90f else -90f
             reversed = !reversed
+            binding.animeSourceTop.rotation = if (reversed) -90f else 90f
             fragment.onIconPressed(style,reversed)
         }
-        var selected = when (media.selected!!.recyclerStyle) {
+        var selected = when (style) {
             0 -> binding.animeSourceList
             1 -> binding.animeSourceGrid
             2 -> binding.animeSourceCompact
@@ -150,7 +150,7 @@ class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWat
                 if(episodes.contains(continueEp)) {
                     binding.animeSourceContinue.visibility = View.VISIBLE
                     handleProgress(binding.itemEpisodeProgressCont,binding.itemEpisodeProgress,binding.itemEpisodeProgressEmpty,media.id,continueEp)
-                    if((binding.itemEpisodeProgress.layoutParams as LinearLayout.LayoutParams).weight>0.8f){
+                    if((binding.itemEpisodeProgress.layoutParams as LinearLayout.LayoutParams).weight>fragment.playerSettings.watchPercentage){
                         val  e = episodes.indexOf(continueEp)
                         if (e != - 1 && e+1 < episodes.size) {
                             continueEp = episodes[e + 1]
@@ -165,7 +165,7 @@ class AnimeWatchAdapter(private val media: Media, private val fragment: AnimeWat
                         fragment.onEpisodeClick(continueEp)
                     }
                     if(fragment.continueEp) {
-                        if((binding.itemEpisodeProgress.layoutParams as LinearLayout.LayoutParams).weight<0.8f) {
+                        if((binding.itemEpisodeProgress.layoutParams as LinearLayout.LayoutParams).weight<fragment.playerSettings.watchPercentage) {
                             binding.animeSourceContinue.performClick()
                             fragment.continueEp = false
                         }

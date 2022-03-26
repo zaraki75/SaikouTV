@@ -24,6 +24,9 @@
         android:usesCleartextTraffic="true"
         tools:ignore="AllowBackup">
         <activity
+            android:name=".settings.UserInterfaceSettingsActivity"
+            android:exported="false" />
+        <activity
             android:name=".settings.PlayerSettingsActivity"
             android:exported="true" />
         <activity
@@ -45,7 +48,7 @@
             android:exported="true" />
         <activity
             android:name=".GenreActivity"
-            android:exported="true"/>
+            android:exported="true" />
         <activity
             android:name=".media.MediaDetailsActivity"
             android:exported="true" />

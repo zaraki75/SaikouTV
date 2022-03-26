@@ -1,10 +1,13 @@
 package ani.saikou.anime.source.parsers
 
-import ani.saikou.*
 import ani.saikou.anime.Episode
 import ani.saikou.anime.source.AnimeParser
+import ani.saikou.loadData
+import ani.saikou.logger
 import ani.saikou.media.Media
 import ani.saikou.media.Source
+import ani.saikou.saveData
+import ani.saikou.toastString
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -14,34 +17,27 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
-import org.jsoup.Connection
+import okhttp3.Headers.Companion.toHeaders
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
+import java.net.URI
 
 open class Tenshi(override val name: String="tenshi.moe") : AnimeParser() {
-    private var cookie:MutableMap<String, String>?=null
+    var cookie = "__ddg1_=;__ddg2_=;loop-view=thumb"
+    private val httpClient = OkHttpClient()
 
-    fun getCookies(): MutableMap<String, String> {
-        cookie = cookie ?: Jsoup.connect("https://check.ddos-guard.net/check.js").ignoreContentType(true).method(Connection.Method.GET).execute().cookies()
-        return cookie!!
-    }
-
-    fun getCookieHeaders() : String{
-        var a = ""
-        cookie = cookie ?: getCookies()
-        cookie!!.forEach {
-            val s = it.key
-            val s2 = it.value
-            a = ",$a$s=$s2"
-        }
-        return a.removePrefix(",")
-    }
     override fun getStream(episode: Episode, server: String): Episode {
         try {
             runBlocking{
                 val asy = arrayListOf<Deferred<*>>()
                 episode.streamLinks = mutableMapOf()
-                Jsoup.connect(episode.link!!).cookies(getCookies()).get().select("ul.dropdown-menu > li > a.dropdown-item").forEach {
+                val htmlResponse = httpClient.newCall(
+                    Request.Builder().url(episode.link!!)
+                        .header("Cookie","__ddg1_=;__ddg2_=;loop-view=thumb").build()
+                ).execute().body!!.string()
+                Jsoup.parse(htmlResponse).select("ul.dropdown-menu > li > a.dropdown-item").forEach {
                     asy.add(async{
                         val a = it.text().replace(" ","").replace("/-","")
                         if(server==a)
@@ -61,7 +57,11 @@ open class Tenshi(override val name: String="tenshi.moe") : AnimeParser() {
             runBlocking{
                 val asy = arrayListOf<Deferred<*>>()
                 episode.streamLinks = mutableMapOf()
-                Jsoup.connect(episode.link!!).cookies(getCookies()).get().select("ul.dropdown-menu > li > a.dropdown-item").forEach {
+                val htmlResponse = httpClient.newCall(
+                    Request.Builder().url(episode.link!!)
+                        .header("Cookie","__ddg1_=;__ddg2_=;loop-view=thumb").build()
+                ).execute().body!!.string()
+                Jsoup.parse(htmlResponse).select("ul.dropdown-menu > li > a.dropdown-item").forEach {
                     asy.add(async{
                         load(episode,it)
                     })
@@ -76,17 +76,25 @@ open class Tenshi(override val name: String="tenshi.moe") : AnimeParser() {
 
     open fun load(episode: Episode,it:Element){
         val server = it.text().replace(" ","").replace("/-","")
-        val url = "https://$name/embed?v="+("${it.attr("href")}|").findBetween("?v=","|")
-        val unSanitized = Jsoup.connect(url).header("Referer",episode.link!!).cookies(getCookies()).get().select("main").toString().findBetween("player.source = ",";")!!
+        val headers = mutableMapOf("cookie" to cookie,"referer" to episode.link!!)
+        val url = "https://$name/embed?" + URI(it.attr("href")).query
+
+
+        val unSanitized = httpClient.newCall(
+            Request.Builder()
+                .url(url)
+                .headers(headers.toHeaders())
+                .build()
+        ).execute().body!!.string().substringAfter("player.source = ").substringBefore(';')
+
         val json = Json.decodeFromString<JsonObject>(
             Regex("""([a-z0-9A-Z_]+): """,RegexOption.DOT_MATCHES_ALL)
                 .replace(unSanitized,"\"$1\" : ")
                 .replace('\'','"')
-                .replace("\n","").replace(" ","").replace(",}","}").replace(",]","]")
-                .also { i-> println(i) })
+                .replace("\n","").replace(" ","").replace(",}","}").replace(",]","]"))
 
         val a = arrayListOf<Deferred<*>>()
-        val headers = mutableMapOf("cookie" to getCookieHeaders(),"referer" to url)
+
         val qualities = arrayListOf<Episode.Quality>()
         runBlocking {
             json["sources"]?.jsonArray?.forEach{ i->
@@ -97,7 +105,7 @@ open class Tenshi(override val name: String="tenshi.moe") : AnimeParser() {
                             Episode.Quality(
                                 url = uri,
                                 quality = i.jsonObject["size"].toString()+"p",
-                                size = getSize(uri,headers)
+                                size = null
                             )
                         )
                 })
@@ -139,17 +147,19 @@ open class Tenshi(override val name: String="tenshi.moe") : AnimeParser() {
         logger("Searching for : $string")
         val responseArray = arrayListOf<Source>()
         try{
-            Jsoup.connect("https://$name/anime?q=$string&s=vtt-d").cookies(mutableMapOf("loop-view" to "thumb")).cookies(getCookies()).get().apply {
-                select("ul.loop.anime-loop.thumb > li > a").forEach{
-                    responseArray.add(
-                        Source(
-                            link = it.attr("abs:href"),
-                            name = it.attr("title"),
-                            cover = it.select(".image")[0].attr("src"),
-                            headers = mutableMapOf("cookie" to getCookieHeaders(),"referer" to "https://$name/")
-                        )
+            val htmlResponse = httpClient.newCall(
+                Request.Builder().url("https://$name/anime?q=$string&s=vtt-d")
+                    .header("Cookie",cookie).build()
+            ).execute().body!!.string()
+            Jsoup.parse(htmlResponse).select("ul.loop.anime-loop.thumb > li > a").forEach{
+                responseArray.add(
+                    Source(
+                        link = it.attr("abs:href"),
+                        name = it.attr("title"),
+                        cover = it.select(".image")[0].attr("src"),
+                        headers = mutableMapOf("Cookie" to cookie)
                     )
-                }
+                )
             }
         }catch (e:Exception){
             toastString(e.toString())
@@ -160,7 +170,11 @@ open class Tenshi(override val name: String="tenshi.moe") : AnimeParser() {
     override fun getSlugEpisodes(slug: String): MutableMap<String, Episode> {
         val responseArray = mutableMapOf<String,Episode>()
         try {
-            (1..Jsoup.connect(slug).cookies(getCookies()).get().select(".entry-episodes > h2 > span.badge.badge-secondary.align-top").text().toInt()).forEach{
+            val htmlResponse = httpClient.newCall(
+                Request.Builder().url(slug)
+                    .header("Cookie",cookie).build()
+            ).execute().body!!.string()
+            (1..Jsoup.parse(htmlResponse).select(".entry-episodes > h2 > span.badge.badge-secondary.align-top").text().toInt()).forEach{
                 responseArray[it.toString()] = Episode(it.toString(), link = "${slug}/$it")
             }
         }catch (e:Exception){

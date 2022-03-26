@@ -48,13 +48,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="bottom"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="32dp"
         android:layout_weight="1"
         android:adjustViewBounds="true">
 
     </com.google.android.exoplayer2.ui.SubtitleView>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/exo_full_area"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal">
@@ -104,9 +105,7 @@
             android:id="@+id/exo_rewind_area"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:clickable="true"
-            android:focusable="true" />
+            android:layout_weight="1" />
 
         <View
             android:layout_width="128dp"
@@ -116,9 +115,48 @@
             android:id="@+id/exo_forward_area"
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/exo_fast_rewind_anim"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
             android:layout_weight="1"
-            android:clickable="true"
-            android:focusable="true" />
+            android:alpha="0"
+            android:fontFamily="@font/poppins_bold"
+            android:text="-10"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            app:drawableTopCompat="@drawable/anim_rewind"
+            android:layout_marginTop="16dp"
+            tools:ignore="HardcodedText,RtlCompat" />
+        <View
+            android:layout_width="128dp"
+            android:layout_height="match_parent"/>
+
+        <TextView
+            android:id="@+id/exo_fast_forward_anim"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
+            android:layout_weight="1"
+            android:alpha="0"
+            android:fontFamily="@font/poppins_bold"
+            android:text="10+"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            app:drawableTopCompat="@drawable/anim_skip"
+            tools:ignore="HardcodedText,RtlCompat" />
     </LinearLayout>
 
     <View android:id="@id/exo_controller_placeholder"
@@ -209,47 +247,6 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/exo_fast_rewind_anim"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical|end"
-            android:layout_weight="1"
-            android:alpha="0"
-            android:fontFamily="@font/poppins_bold"
-            android:text="-10"
-            android:textAlignment="center"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            app:drawableTopCompat="@drawable/anim_rewind"
-            android:layout_marginTop="16dp"
-            tools:ignore="HardcodedText,RtlCompat" />
-        <View
-            android:layout_width="128dp"
-            android:layout_height="match_parent"/>
-
-        <TextView
-            android:id="@+id/exo_fast_forward_anim"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical|end"
-            android:layout_weight="1"
-            android:alpha="0"
-            android:fontFamily="@font/poppins_bold"
-            android:text="10+"
-            android:textAlignment="center"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:layout_marginTop="16dp"
-            app:drawableTopCompat="@drawable/anim_skip"
-            tools:ignore="HardcodedText,RtlCompat" />
-    </LinearLayout>
-
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@id/exo_buffering"
         android:layout_width="72dp"
@@ -262,4 +259,8 @@
         app:trackCornerRadius="4dp"
         app:trackThickness="4dp" />
 
+    <View
+        android:id="@+id/exo_touch_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </merge>

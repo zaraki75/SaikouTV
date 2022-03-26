@@ -45,7 +45,7 @@ class GenreActivity : AppCompatActivity() {
             binding.mediaInfoGenresRecyclerView.layoutManager = GridLayoutManager(this, (screenWidth / 156f).toInt())
 
             lifecycleScope.launch(Dispatchers.IO) {
-                model.loadGenres(Anilist.genres!!){
+                model.loadGenres(Anilist.genres?: loadData("genres_list")?: arrayListOf()){
                     MainScope().launch {
                         adapter.addGenre(it)
                     }

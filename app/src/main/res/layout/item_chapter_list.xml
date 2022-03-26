@@ -23,8 +23,7 @@
                 android:layout_width="128dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:orientation="horizontal"
-                android:textDirection="firstStrongRtl">
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="0dp"

@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
 import ani.saikou.databinding.FragmentAnimeWatchBinding
 import ani.saikou.dp
+import ani.saikou.loadData
 import ani.saikou.manga.source.HMangaSources
 import ani.saikou.manga.source.MangaParser
 import ani.saikou.manga.source.MangaReadSources
@@ -23,6 +24,8 @@ import ani.saikou.manga.source.MangaSources
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.navBarHeight
+import ani.saikou.saveData
+import ani.saikou.settings.UserInterfaceSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
@@ -39,7 +42,7 @@ open class MangaReadFragment: Fragment()  {
 
     private var start = 0
     private var end: Int? = null
-    private var style = 0
+    private var style : Int? = null
     private var reverse = false
 
     private lateinit var headerAdapter: MangaReadAdapter
@@ -50,6 +53,8 @@ open class MangaReadFragment: Fragment()  {
 
     var continueEp: Boolean = false
     var loaded = false
+
+    val uiSettings = loadData("ui_settings", toast = false)?: UserInterfaceSettings().apply { saveData("ui_settings",this) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -105,7 +110,7 @@ open class MangaReadFragment: Fragment()  {
                         model.readMangaMangaReadSources = if (media.isAdult) HMangaSources else MangaSources
 
                         headerAdapter = MangaReadAdapter(it, this, mangaReadSources)
-                        chapterAdapter = MangaChapterAdapter(style, media, this)
+                        chapterAdapter = MangaChapterAdapter(style?:uiSettings.mangaDefaultView, media, this)
 
                         binding.animeSourceRecycler.adapter = ConcatAdapter(headerAdapter, chapterAdapter)
 
@@ -163,6 +168,7 @@ open class MangaReadFragment: Fragment()  {
         reload()
         val selected = model.loadSelected(media)
         selected.source = i
+        selected.stream = null
         model.saveSelected(media.id, selected, requireActivity())
         media.selected = selected
         return mangaReadSources[i]!!
@@ -173,11 +179,11 @@ open class MangaReadFragment: Fragment()  {
     }
 
     fun onIconPressed(viewType: Int, rev: Boolean) {
-        media.selected!!.recyclerStyle = viewType
-        media.selected!!.recyclerReversed = reverse
-        model.saveSelected(media.id, media.selected!!, requireActivity())
         style = viewType
         reverse = rev
+        media.selected!!.recyclerStyle = style
+        media.selected!!.recyclerReversed = reverse
+        model.saveSelected(media.id, media.selected!!, requireActivity())
         reload()
     }
 
@@ -214,7 +220,7 @@ open class MangaReadFragment: Fragment()  {
                 arr = (arr.reversed() as? ArrayList<MangaChapter>)?:arr
         }
         chapterAdapter.arr = arr
-        chapterAdapter.updateType(style)
+        chapterAdapter.updateType(style?:uiSettings.mangaDefaultView)
         chapterAdapter.notifyItemRangeInserted(0, arr.size)
     }
 

@@ -21,6 +21,7 @@ import ani.saikou.databinding.ItemAnimePageBinding
 import ani.saikou.media.MediaAdaptor
 import ani.saikou.media.SearchActivity
 import ani.saikou.settings.SettingsDialogFragment
+import ani.saikou.settings.UserInterfaceSettings
 
 class AnimePageAdapter: RecyclerView.Adapter<AnimePageAdapter.AnimePageViewHolder>() {
     val ready = MutableLiveData(false)
@@ -28,6 +29,7 @@ class AnimePageAdapter: RecyclerView.Adapter<AnimePageAdapter.AnimePageViewHolde
     private var trendHandler: Handler? = null
     private lateinit var trendRun: Runnable
     var trendingViewPager:ViewPager2?=null
+    private var uiSettings: UserInterfaceSettings = loadData("ui_settings")?: UserInterfaceSettings()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AnimePageViewHolder {
         val binding = ItemAnimePageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -108,9 +110,9 @@ class AnimePageAdapter: RecyclerView.Adapter<AnimePageAdapter.AnimePageViewHolde
             }
         )
 
-        binding.animeTrendingViewPager.layoutAnimation = LayoutAnimationController(setSlideIn, 0.25f)
-        binding.animeTitleContainer.startAnimation(setSlideUp)
-        binding.animeListContainer.layoutAnimation = LayoutAnimationController(setSlideIn, 0.25f)
+        binding.animeTrendingViewPager.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings.animationSpeed), 0.25f)
+        binding.animeTitleContainer.startAnimation(setSlideUp(uiSettings.animationSpeed))
+        binding.animeListContainer.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings.animationSpeed), 0.25f)
     }
 
     fun updateRecent(adaptor: MediaAdaptor){
@@ -120,10 +122,10 @@ class AnimePageAdapter: RecyclerView.Adapter<AnimePageAdapter.AnimePageViewHolde
         binding.animeUpdatedRecyclerView.visibility = View.VISIBLE
 
         binding.animeRecently.visibility = View.VISIBLE
-        binding.animeRecently.startAnimation(setSlideUp)
-        binding.animeUpdatedRecyclerView.layoutAnimation = LayoutAnimationController(setSlideIn, 0.25f)
+        binding.animeRecently.startAnimation(setSlideUp(uiSettings.animationSpeed))
+        binding.animeUpdatedRecyclerView.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings.animationSpeed), 0.25f)
         binding.animePopular.visibility = View.VISIBLE
-        binding.animePopular.startAnimation(setSlideUp)
+        binding.animePopular.startAnimation(setSlideUp(uiSettings.animationSpeed))
     }
 
     fun updateAvatar(){

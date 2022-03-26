@@ -57,7 +57,7 @@ class EpisodeAdapter(
         when (holder) {
             is EpisodeListViewHolder  -> {
                 val binding = holder.binding
-                setAnimation(fragment.requireContext(),holder.binding.root)
+                setAnimation(fragment.requireContext(),holder.binding.root,fragment.uiSettings)
                 val ep = arr[position]
                 Glide.with(binding.itemEpisodeImage).load(ep.thumb?:media.cover).override(400,0).into(binding.itemEpisodeImage)
                 binding.itemEpisodeNumber.text = ep.number
@@ -93,7 +93,7 @@ class EpisodeAdapter(
 
             is EpisodeGridViewHolder -> {
                 val binding = holder.binding
-                setAnimation(fragment.requireContext(), binding.itemEpisodeCont)
+                setAnimation(fragment.requireContext(),holder.binding.root,fragment.uiSettings)
                 val ep = arr[position]
                 Glide.with(binding.itemEpisodeImage).load(ep.thumb?:media.cover).override(400,0).into(binding.itemEpisodeImage)
                 binding.itemEpisodeNumber.text = ep.number
@@ -132,7 +132,7 @@ class EpisodeAdapter(
 
             is EpisodeCompactViewHolder -> {
                 val binding = holder.binding
-                setAnimation(fragment.requireContext(),binding.itemEpisodeCont)
+                setAnimation(fragment.requireContext(),holder.binding.root,fragment.uiSettings)
                 val ep = arr[position]
                 binding.itemEpisodeNumber.text = ep.number
                 binding.itemEpisodeFillerView.visibility = if (ep.filler)  View.VISIBLE else View.GONE

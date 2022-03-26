@@ -1,6 +1,8 @@
 package ani.saikou.media
 
 import android.app.Activity
+import android.os.Handler
+import android.os.Looper
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -27,7 +29,8 @@ class MediaDetailsViewModel:ViewModel() {
         saveData("$id-select",data,activity)
     }
     fun loadSelected(media: Media):Selected{
-        return loadData<Selected>("${media.id}-select")?: Selected().let { it.source = if(media.isAdult) 0 else when(media.anime!=null) {
+        return loadData<Selected>("${media.id}-select")?: Selected().let {
+            it.source = if(media.isAdult) 0 else when(media.anime!=null) {
                 true-> loadData("settings_default_anime_source")?:0
                 else-> loadData("settings_default_manga_source")?:0
             }
@@ -40,10 +43,9 @@ class MediaDetailsViewModel:ViewModel() {
 
     private val media: MutableLiveData<Media> = MutableLiveData<Media>(null)
     fun getMedia(): LiveData<Media> = media
-    fun loadMedia(m:Media,who:String) {
+    fun loadMedia(m:Media) {
         if(!loading) {
             loading = true
-            println(who)
             media.postValue(Anilist.query.mediaDetails(m))
         }
         loading=false
@@ -82,26 +84,38 @@ class MediaDetailsViewModel:ViewModel() {
 
     private var episode: MutableLiveData<Episode?> = MutableLiveData<Episode?>(null)
     fun getEpisode() : LiveData<Episode?> = episode
-    fun loadEpisodeStreams(ep: Episode,i:Int){
-        episode.postValue(watchAnimeWatchSources?.get(i)?.getStreams(ep)?.apply {
-            this.allStreams = true
-        }?:ep)
-        MainScope().launch(Dispatchers.Main) {
-            episode.value = null
+    fun loadEpisodeStreams(ep: Episode,i:Int,post:Boolean=true){
+        if(!ep.allStreams || ep.streamLinks.isNullOrEmpty()) {
+            watchAnimeWatchSources?.get(i)?.getStreams(ep)?.apply {
+                this.allStreams = true
+            }
         }
-    }
-    fun loadEpisodeStream(ep: Episode,selected: Selected):Boolean{
-        return if(selected.stream!=null) {
-            episode.postValue(watchAnimeWatchSources?.get(selected.source)?.getStream(ep, selected.stream!!)?.apply {
-                this.allStreams = false
-            })
+        if(post) {
+            episode.postValue(ep)
             MainScope().launch(Dispatchers.Main) {
                 episode.value = null
+            }
+        }
+
+    }
+    fun loadEpisodeStream(ep: Episode,selected: Selected,post: Boolean=true):Boolean{
+        return if(selected.stream!=null) {
+            if(ep.streamLinks.isNullOrEmpty()) {
+                watchAnimeWatchSources?.get(selected.source)?.getStream(ep, selected.stream!!)?.apply {
+                    this.allStreams = false
+                }
+            }
+            if (post) {
+                episode.postValue(ep)
+                MainScope().launch(Dispatchers.Main) {
+                    episode.value = null
+                }
             }
             true
         } else false
     }
-    fun setEpisode(ep: Episode?){
+    fun setEpisode(ep: Episode?,who:String){
+        logger("set episode - $who",false)
         episode.postValue(ep)
         MainScope().launch(Dispatchers.Main) {
             episode.value = null
@@ -109,20 +123,24 @@ class MediaDetailsViewModel:ViewModel() {
     }
 
     val epChanged = MutableLiveData(true)
-    fun onEpisodeClick(media: Media, i:String,manager:FragmentManager,launch:Boolean=true,cancellable:Boolean=true){
-        if(manager.findFragmentByTag("dialog")==null && !manager.isDestroyed) {
-            if (media.anime?.episodes?.get(i)!=null) {
-                media.anime.selectedEpisode = i
+    fun onEpisodeClick(media: Media, i:String,manager:FragmentManager,launch:Boolean=true){
+        Handler(Looper.getMainLooper()).post{
+            if(manager.findFragmentByTag("dialog")==null && !manager.isDestroyed) {
+                if (media.anime?.episodes?.get(i)!=null) {
+                    media.anime.selectedEpisode = i
+                }
+                else {
+                    toastString("Couldn't find episode : $i")
+                    return@post
+                }
+                media.selected = this.loadSelected(media)
+                val selector = if (media.selected!!.stream != null)
+                    SelectorDialogFragment.newInstance(media.selected!!.stream, launch)
+                else {
+                    SelectorDialogFragment.newInstance(null,launch)
+                }
+                selector.show(manager, "dialog")
             }
-            else {
-                toastString("Couldn't find episode : $i")
-                return
-            }
-            media.selected = this.loadSelected(media)
-            if (media.selected!!.stream != null)
-                SelectorDialogFragment.newInstance(media.selected!!.stream, launch, cancellable).show(manager, "dialog")
-            else
-                SelectorDialogFragment.newInstance(la = launch, ca = cancellable).show(manager, "dialog")
         }
     }
 

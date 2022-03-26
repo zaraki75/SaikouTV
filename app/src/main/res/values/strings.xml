@@ -124,13 +124,18 @@
     <string name="downloads">Downloads</string>
     <string name="settings">Settings</string>
     <string name="player_settings">Player Settings</string>
+    <string name="recentlyListOnly">Only show My Anime in Recently Updated</string>
     <string name="reader_settings">Reader Settings</string>
     <string name="default_source">Default Source</string>
+    <string name="show_yt">Show Youtube Link</string>
+    <string name="default_ep_view">Default Episode View</string>
+    <string name="default_chp_view">Default Chapter View</string>
     <string name="ui">User Interface</string>
+    <string name="common">Common</string>
     <string name="theme">Theme</string>
     <string name="ui_settings">UI Settings</string>
     <string name="about">About</string>
-    <string name="desc">\u0008\u0008\u0008 Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an Anilist only client, which also lets you stream-download Anime &amp; Manga.\nSaikou literally means the "best" in japanese. Well, we would like to say this is the best open source app for anime and manga on Android, what would you say?</string>
+    <string name="desc">\u0008\u0008\u0008 Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an Anilist only client, which also lets you stream-download Anime &amp; Manga.\nSaikou literally means the \"best\" in japanese. Well, we would like to say this is the best open source app for anime and manga on Android, what would you say?</string>
     <string name="devs">Developers</string>
     <string name="disclaimer">Disclaimer</string>
     <string name="full_disclaimer">
@@ -165,7 +170,8 @@
     <string name="height">Height</string>
     <string name="width">Width</string>
     <string name="default_quality_info">Automatically uses the closest quality provided by default, ONLY applied for \"Multi Quality\" Servers.</string>
-    <string name="default_playback_speed">Default Playback Speed - %1$s x</string>
+    <string name="default_playback_speed">Default Playback Speed - %1$s</string>
+    <string name="cursed_speeds">Cursed Speeds</string>
 
     <string name="auto">Auto</string>
     <string name="auto_play_next_episode">Autoplay Next Episode</string>
@@ -181,6 +187,7 @@
     <string name="complete_percentage_info">The percentage at which your Anilist progress should be updated after watching an episode. \nThis also sets the % for when to preload links for the next episode.</string>
 
     <string name="behaviour">Behaviour</string>
+    <string name="always_continue">Always Continue from where you Left</string>
     <string name="pause_video_focus">Pause when not in Focus</string>
     <string name="gestures">Volume &amp; Brightness Gestures</string>
     <string name="double_tap">Double tap to Seek</string>
@@ -191,4 +198,26 @@
     <string name="skip_time_info">Setting to 0, hides the Skip Button.</string>
     <string name="show_cast_button">Show Cast Button</string>
     <string name="show_cast_button_info">Requires \"Web Video Caster\" app to cast.</string>
+
+    <string name="app">App</string>
+    <string name="immersive_mode">Immersive Mode</string>
+    <string name="immersive_mode_info">Requires App restart to fully apply.</string>
+    <string name="home_layout_show">Show/Hide Layouts on Home</string>
+    <string-array name="home_layouts">
+        <item>Continue Watching</item>
+        <item>Favourite Anime</item>
+        <item>Continue Reading</item>
+        <item>Favourite Manga</item>
+        <item>Recommended</item>
+    </string-array>
+
+    <string name="startUpTab">Default Start Up Tab</string>
+    <string name="animations">Animations</string>
+    <string name="banner_animations">Banner Animations</string>
+    <string name="layout_animations">Layout Animations</string>
+    <string name="animation_speed">Overall Speed</string>
+    <string name="empty_fav">Looks like you don\'t like anything,\nTry Hearting a show to keep it here.</string>
+    <string name="fav_anime">Favourite Anime</string>
+    <string name="fav_manga">Favourite Manga</string>
+    <string name="restart_app">Restart the app?</string>
 </resources>

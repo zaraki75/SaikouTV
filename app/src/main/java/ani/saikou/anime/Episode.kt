@@ -12,7 +12,7 @@ data class Episode (
     var selectedStream : String?=null,
     var selectedQuality: Int = 0,
     var streamLinks : MutableMap<String,StreamLinks?> = mutableMapOf(),
-    var allStreams: Boolean = true,
+    var allStreams: Boolean = false,
     var watched: Long?=null,
     var maxLength: Long?=null,
 ):Serializable{

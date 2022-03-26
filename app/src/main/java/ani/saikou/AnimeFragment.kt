@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistAnimeViewModel
 import ani.saikou.anilist.SearchResults
 import ani.saikou.databinding.FragmentAnimeBinding
@@ -177,11 +178,18 @@ class AnimeFragment : Fragment() {
             }
         }
 
+        suspend fun load() = withContext(Dispatchers.Main){
+            animePageAdapter.updateAvatar()
+        }
+
         val live = Refresh.activity.getOrPut(this.hashCode()) { MutableLiveData(true) }
         live.observe(viewLifecycleOwner) {
             if (it) {
                 scope.launch {
                     withContext(Dispatchers.IO) {
+                        if (Anilist.userid == null)
+                            if (Anilist.query.getUserData()) load() else logger("Error loading data")
+                        else load()
                         model.loaded = true
                         model.loadTrending()
                         model.loadUpdated()

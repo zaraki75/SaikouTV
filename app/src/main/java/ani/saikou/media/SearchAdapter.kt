@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.R
 import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.ItemSearchHeaderBinding
+import ani.saikou.loadData
 import ani.saikou.saveData
 
 
@@ -54,11 +55,11 @@ class SearchAdapter(private val activity: SearchActivity): RecyclerView.Adapter<
         binding.searchList.isChecked = listOnly==true
 
         binding.searchGenre.setText(activity.genre)
-        binding.searchGenre.setAdapter(ArrayAdapter(binding.root.context, R.layout.item_dropdown,Anilist.genres!!))
+        binding.searchGenre.setAdapter(ArrayAdapter(binding.root.context, R.layout.item_dropdown,Anilist.genres?: loadData<ArrayList<String>>("genres_list") ?: arrayListOf()))
         binding.searchSortBy.setText(activity.sortBy)
         binding.searchSortBy.setAdapter(ArrayAdapter(binding.root.context, R.layout.item_dropdown, Anilist.sortBy.keys.toTypedArray()))
         binding.searchTag.setText(activity.tag)
-        binding.searchTag.setAdapter(ArrayAdapter(binding.root.context, R.layout.item_dropdown, Anilist.tags?: arrayListOf()))
+        binding.searchTag.setAdapter(ArrayAdapter(binding.root.context, R.layout.item_dropdown, Anilist.tags?: loadData<ArrayList<String>>("tags_list") ?: arrayListOf()))
 
         fun searchTitle(){
             val search = if (binding.searchBarText.text.toString()!="") binding.searchBarText.text.toString() else null

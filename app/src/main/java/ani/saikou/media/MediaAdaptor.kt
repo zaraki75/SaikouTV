@@ -13,15 +13,14 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import ani.saikou.R
+import ani.saikou.*
 import ani.saikou.databinding.ItemMediaCompactBinding
 import ani.saikou.databinding.ItemMediaLargeBinding
 import ani.saikou.databinding.ItemMediaPageBinding
-import ani.saikou.loadImage
-import ani.saikou.setAnimation
-import ani.saikou.setSafeOnClickListener
+import ani.saikou.settings.UserInterfaceSettings
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.request.RequestOptions
 import com.flaviofaria.kenburnsview.RandomTransitionGenerator
 import jp.wasabeef.glide.transformations.BlurTransformation
@@ -35,6 +34,8 @@ class MediaAdaptor(
     private val matchParent:Boolean=false,
     private val viewPager: ViewPager2?=null
     ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    private val uiSettings = loadData<UserInterfaceSettings>("ui_settings")?: UserInterfaceSettings()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (type){
@@ -50,7 +51,7 @@ class MediaAdaptor(
         when (type){
             0->{
                 val b = (holder as MediaViewHolder).binding
-                setAnimation(activity,b.root)
+                setAnimation(activity,b.root,uiSettings)
                 val media = mediaList?.get(position)
                 if(media!=null) {
                     b.itemCompactImage.loadImage(media.cover)
@@ -62,6 +63,8 @@ class MediaAdaptor(
                     if (media.relation != null) {
                         b.itemCompactRelation.text = "${media.relation}  "
                         b.itemCompactType.visibility = View.VISIBLE
+                    } else {
+                        b.itemCompactType.visibility = View.GONE
                     }
                     if (media.anime != null) {
                         if (media.relation != null) b.itemCompactTypeImage.setImageDrawable(AppCompatResources.getDrawable(activity, R.drawable.ic_round_movie_filter_24))
@@ -75,7 +78,7 @@ class MediaAdaptor(
             }
             1->{
                 val b = (holder as MediaLargeViewHolder).binding
-                setAnimation(activity,b.root)
+                setAnimation(activity,b.root,uiSettings)
                 val media = mediaList?.get(position)
                 if(media!=null) {
                     b.itemCompactImage.loadImage(media.cover)
@@ -104,15 +107,21 @@ class MediaAdaptor(
                 val media = mediaList?.get(position)
                 if(media!=null) {
                     b.itemCompactImage.loadImage(media.cover)
-                    b.itemCompactBanner.setTransitionGenerator(RandomTransitionGenerator(20000, AccelerateDecelerateInterpolator()))
+                    if(uiSettings.bannerAnimations)
+                        b.itemCompactBanner.setTransitionGenerator(
+                            RandomTransitionGenerator(
+                                (10000 + 15000 * (uiSettings.animationSpeed)).toLong(),
+                                AccelerateDecelerateInterpolator()
+                            )
+                        )
+                    val banner = if(uiSettings.bannerAnimations) b.itemCompactBanner else b.itemCompactBannerNoKen
                     val context = b.itemCompactBanner.context
                     if(!(context as Activity).isDestroyed)
                         Glide.with(context)
-                            .load(media.banner?:media.cover)
+                            .load(GlideUrl(media.banner?:media.cover))
                             .diskCacheStrategy(DiskCacheStrategy.ALL).override(400)
                             .apply(RequestOptions.bitmapTransform(BlurTransformation(2, 3)))
-                            .into(b.itemCompactBanner)
-
+                            .into(banner)
                     b.itemCompactOngoing.visibility = if (media.status=="RELEASING")  View.VISIBLE else View.GONE
                     b.itemCompactTitle.text = media.userPreferredName
                     b.itemCompactScore.text = ((if(media.userScore==0) (media.meanScore?:0) else media.userScore)/10.0).toString()

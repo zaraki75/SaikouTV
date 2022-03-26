@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
 import ani.saikou.*
 import ani.saikou.databinding.ActivityCharacterBinding
+import ani.saikou.settings.UserInterfaceSettings
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,6 +27,7 @@ class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChang
     private val model: OtherDetailsViewModel by viewModels()
     private lateinit var character: Character
     private var loaded = false
+    val uiSettings = loadData<UserInterfaceSettings>("ui_settings")?:UserInterfaceSettings()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,9 +36,11 @@ class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChang
 
         initActivity(this)
         screenWidth = resources.displayMetrics.run { widthPixels / density }
-        this.window.statusBarColor = ContextCompat.getColor(this, R.color.status)
+        if(uiSettings.immersiveMode) this.window.statusBarColor = ContextCompat.getColor(this, R.color.status)
 
-        binding.characterBanner.updateLayoutParams{ height += statusBarHeight }
+        val banner = if(uiSettings.bannerAnimations) binding.characterBanner else binding.characterBannerNoKen
+
+        banner.updateLayoutParams{ height += statusBarHeight }
         binding.characterClose.updateLayoutParams<ViewGroup.MarginLayoutParams> { topMargin += statusBarHeight }
         binding.characterCollapsing.minimumHeight = statusBarHeight
         binding.characterCover.updateLayoutParams<ViewGroup.MarginLayoutParams> { topMargin += statusBarHeight }
@@ -49,10 +53,9 @@ class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChang
         }
         character = intent.getSerializableExtra("character") as Character
         binding.characterTitle.text = character.name
-        binding.characterBanner.loadImage(character.banner)
+        banner.loadImage(character.banner)
         binding.characterCoverImage.loadImage(character.image)
         binding.characterCoverImage.setOnLongClickListener{ (openLinkInBrowser(character.image)); true}
-//        binding.characterBanner.setOnClickListener{ openImage(character.banner) }
 
         model.getCharacter().observe(this) {
             if (it != null && !loaded) {
@@ -113,12 +116,12 @@ class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChang
 
         if (percentage >= percent && !isCollapsed) {
             isCollapsed = true
-            this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg)
+            if(uiSettings.immersiveMode) this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg)
             binding.characterAppBar.setBackgroundResource(R.color.nav_bg)
         }
         if (percentage <= percent && isCollapsed) {
             isCollapsed = false
-            this.window.statusBarColor = ContextCompat.getColor(this, R.color.status)
+            if(uiSettings.immersiveMode) this.window.statusBarColor = ContextCompat.getColor(this, R.color.status)
             binding.characterAppBar.setBackgroundResource(R.color.bg)
         }
     }

@@ -14,13 +14,23 @@ class AnilistHomeViewModel : ViewModel() {
     fun getAnimeContinue(): LiveData<ArrayList<Media>> = animeContinue
     fun setAnimeContinue() = animeContinue.postValue(Anilist.query.continueMedia("ANIME"))
 
+    private val animeFav: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
+    fun getAnimeFav(): LiveData<ArrayList<Media>> = animeFav
+    fun setAnimeFav() = animeFav.postValue(Anilist.query.favMedia(true))
+
     private val mangaContinue: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
     fun getMangaContinue(): LiveData<ArrayList<Media>> = mangaContinue
     fun setMangaContinue() = mangaContinue.postValue(Anilist.query.continueMedia("MANGA"))
 
+    private val mangaFav: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
+    fun getMangaFav(): LiveData<ArrayList<Media>> = mangaFav
+    fun setMangaFav() = mangaFav.postValue(Anilist.query.favMedia(false))
+
     private val recommendation: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
     fun getRecommendation(): LiveData<ArrayList<Media>> = recommendation
     fun setRecommendation() = recommendation.postValue(Anilist.query.recommendations())
+
+    val empty = MutableLiveData<Boolean>(null)
 
     var loaded : Boolean = false
     val genres : MutableLiveData<Boolean?> = MutableLiveData(null)

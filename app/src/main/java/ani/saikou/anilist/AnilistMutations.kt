@@ -1,5 +1,7 @@
 package ani.saikou.anilist
 
+import ani.saikou.FuzzyDate
+
 class AnilistMutations {
 
     fun toggleFav(anime:Boolean=true,id:Int){
@@ -13,24 +15,23 @@ class AnilistMutations {
         progress:Int?=null,
         score: Int?=null,
         status: String?=null,
-        startedAt:Long?=null,
-        completedAt:Long?=null
+        startedAt:FuzzyDate?=null,
+        completedAt:FuzzyDate?=null
     ){
         val query = """
-            mutation ( ${"$"}mediaID: Int, ${"$"}progress: Int, ${"$"}scoreRaw:Int, ${"$"}status:MediaListStatus, ${"$"}start:FuzzyDateInput, ${"$"}completed:FuzzyDateInput ) {
+            mutation ( ${"$"}mediaID: Int, ${"$"}progress: Int, ${"$"}scoreRaw:Int, ${"$"}status:MediaListStatus, ${"$"}start:FuzzyDateInput${if(startedAt!=null) "="+startedAt.toVariableString() else ""}, ${"$"}completed:FuzzyDateInput${if(completedAt!=null) "="+completedAt.toVariableString() else ""} ) {
                 SaveMediaListEntry( mediaId: ${"$"}mediaID, progress: ${"$"}progress, scoreRaw: ${"$"}scoreRaw, status:${"$"}status, startedAt: ${"$"}start, completedAt: ${"$"}completed ) {
-                    score(format:POINT_10_DECIMAL)
+                    score(format:POINT_10_DECIMAL) startedAt{year month day} completedAt{year month day}
                 }
             }
         """.replace("\n","").replace("""    ""","")
-        val variables = """{\"mediaID\":\"$mediaID\"
-            ${if (progress!=null) """,\"progress\":\"$progress\"""" else ""}
-            ${if (score!=null) """,\"scoreRaw\":\"$score\"""" else ""}
+
+        val variables = """{\"mediaID\":$mediaID
+            ${if (progress!=null) """,\"progress\":$progress""" else ""}
+            ${if (score!=null) """,\"scoreRaw\":$score""" else ""}
             ${if (status!=null) """,\"status\":\"${status}\"""" else ""}
-            ${if (startedAt!=null) """,\"startedAt\":\"$startedAt\"""" else ""}
-            ${if (completedAt!=null) """,\"completedAt\":\"$completedAt\"""" else ""}
             }""".replace("\n","").replace("""    ""","")
-        executeQuery(query,variables)
+        executeQuery(query,variables,show=true)
     }
 
     fun deleteList(listId:Int){

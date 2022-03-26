@@ -6,11 +6,17 @@
         <item name="android:textSize">14sp</item>
         <item name="android:padding">2sp</item>
     </style>
+
     <style name="Suffix">
         <item name="android:height">54dp</item>
         <item name="android:fontFamily">@font/poppins_bold</item>
         <item name="android:textSize">14sp</item>
         <item name="android:layout_gravity">center</item>
+    </style>
+
+    <style name="text10sp">
+        <item name="android:textSize">10sp</item>
+        <item name="fontFamily">@font/poppins_family</item>
     </style>
 
     <style name="ModalBottomSheetDialog" parent="Widget.MaterialComponents.BottomSheet.Modal">
