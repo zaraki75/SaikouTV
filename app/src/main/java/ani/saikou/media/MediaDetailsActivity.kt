@@ -66,7 +66,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
 
         initActivity(this)
         uiSettings = loadData<UserInterfaceSettings>("ui_settings")?: UserInterfaceSettings()
-        if(uiSettings.immersiveMode) this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg_inv)
+        if(!uiSettings.immersiveMode) this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg_inv)
 
         binding.mediaBanner.updateLayoutParams{ height += statusBarHeight }
         binding.mediaBannerNoKen.updateLayoutParams{ height += statusBarHeight }
@@ -315,7 +315,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
             ObjectAnimator.ofFloat(binding.mediaCover,"translationX",screenWidth).setDuration(duration).start()
             ObjectAnimator.ofFloat(binding.mediaCollapseContainer,"translationX",screenWidth).setDuration(duration).start()
             binding.mediaBanner.pause()
-            if(uiSettings.immersiveMode) this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg)
+            if(!uiSettings.immersiveMode) this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg)
         }
         if (percentage <= percent && isCollapsed) {
             isCollapsed = false
@@ -324,7 +324,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
             ObjectAnimator.ofFloat(binding.mediaCover,"translationX",0f).setDuration(duration).start()
             ObjectAnimator.ofFloat(binding.mediaCollapseContainer,"translationX",0f).setDuration(duration).start()
             if(uiSettings.bannerAnimations) binding.mediaBanner.resume()
-            if(uiSettings.immersiveMode) this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg_inv)
+            if(!uiSettings.immersiveMode) this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg_inv)
         }
     }
     inner class PopImageButton(private val scope: CoroutineScope,private val activity: Activity,private val image:ImageView,private val media:Media,private val d1:Int,private val d2:Int,private val c1:Int,private val c2:Int,private val fav_or_not:Boolean? = null){

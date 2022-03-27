@@ -128,7 +128,7 @@ class MangaPageAdapter: RecyclerView.Adapter<MangaPageAdapter.MangaPageViewHolde
     }
 
     fun updateAvatar(){
-        if (Anilist.avatar != null) {
+        if (Anilist.avatar != null && ready.value == true) {
             binding.mangaUserAvatar.loadImage(Anilist.avatar)
             binding.mangaUserAvatar.scaleType = ImageView.ScaleType.FIT_CENTER
         }

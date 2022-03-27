@@ -38,11 +38,14 @@
         <item name="android:layout_marginRight">16dp</item>
         <item name="android:background">@drawable/round_corner</item>
     </style>
+    <string name="MySnackBarText" parent="Widget.MaterialComponents.Snackbar.TextView">
+        <item name="android:textColor">@color/bg_opp</item>
+    </string>
     
     <style name="fontTooltip" parent="Widget.Material3.Tooltip">
         <item name="android:padding">8dp</item>
         <item name="android:textAppearance">@style/Suffix</item>
     </style>
-    
+
     <style name="BottomNavBar" parent="Widget.Material3.BottomNavigationView.ActiveIndicator"/>
 </resources>

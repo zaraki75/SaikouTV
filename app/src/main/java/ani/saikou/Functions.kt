@@ -12,6 +12,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources.getSystem
+import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
@@ -102,7 +103,7 @@ fun logger(e:Any?,print:Boolean=true){
         println(e)
 }
 
-fun saveData(fileName:String,data:Any,activity: Activity?=null){
+fun saveData(fileName:String,data:Any?,activity: Activity?=null){
     try{
         val a = activity?: currActivity()
         if (a!=null) {
@@ -147,8 +148,16 @@ fun initActivity(a: Activity) {
             else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         })
     }
-    if (uiSettings.immersiveMode)
+    if (uiSettings.immersiveMode) {
         a.hideSystemBars()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && statusBarHeight == 0 && a.resources.configuration.orientation==Configuration.ORIENTATION_PORTRAIT) {
+            window.decorView.rootWindowInsets?.displayCutout?.apply {
+                if (boundingRects.size>0) {
+                    statusBarHeight = min(boundingRects[0].width(),boundingRects[0].height())
+                }
+            }
+        }
+    }
     else
         if (statusBarHeight == 0) {
             val windowInsets = ViewCompat.getRootWindowInsets(window.decorView.findViewById(android.R.id.content))
@@ -157,6 +166,7 @@ fun initActivity(a: Activity) {
                 statusBarHeight = insets.top
                 navBarHeight = insets.bottom
             }
+
         }
 }
 
@@ -788,6 +798,7 @@ open class NoPaddingArrayAdapter<T>(context: Context, layoutId: Int, items: List
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = super.getView(position, convertView, parent)
         view.setPadding(0,view.paddingTop,view.paddingRight,view.paddingBottom)
+        (view as TextView).setTextColor(Color.WHITE)
         return view
     }
 }

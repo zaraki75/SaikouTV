@@ -9,7 +9,8 @@
         android:id="@+id/mediaAppBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/bg">
+        android:background="@color/bg"
+        android:translationZ="4dp">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/mediaCollapsing"
@@ -27,6 +28,7 @@
                 app:layout_collapseMode="parallax"
                 tools:ignore="ContentDescription,ImageContrastCheck"
                 tools:srcCompat="@tools:sample/backgrounds/scenic[0]" />
+
             <ImageView
                 android:id="@+id/mediaBannerNoKen"
                 android:layout_width="match_parent"
@@ -46,6 +48,7 @@
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
+                android:alpha="0.66"
                 android:clickable="false"
                 android:scaleY="-1"
                 android:src="@drawable/linear_gradient_bg"
@@ -234,9 +237,10 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/mediaTab"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="94dp"
         android:layout_gravity="bottom"
         android:background="@color/nav_bg"
+        android:translationZ="1dp"
         app:itemActiveIndicatorStyle="@style/BottomNavBar"
         app:itemIconTint="@color/tab_layout_icon"
         app:itemRippleColor="?attr/colorSecondary"
@@ -251,7 +255,7 @@
         android:layout_height="32dp"
         android:layout_gravity="end"
         android:layout_margin="16dp"
-        android:translationZ="2dp"
+        android:translationZ="6dp"
         app:cardBackgroundColor="@color/nav_bg"
         app:cardCornerRadius="16dp">
 
@@ -269,7 +273,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start|top"
-        android:translationZ="4dp"
+        android:translationZ="5dp"
         app:cardCornerRadius="16dp"
         app:cardElevation="16dp"
         app:layout_anchor="@id/mediaTitleCollapseContainer"

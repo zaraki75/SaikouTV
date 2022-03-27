@@ -14,17 +14,14 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
+import ani.saikou.*
 import ani.saikou.databinding.FragmentAnimeWatchBinding
-import ani.saikou.dp
-import ani.saikou.loadData
 import ani.saikou.manga.source.HMangaSources
 import ani.saikou.manga.source.MangaParser
 import ani.saikou.manga.source.MangaReadSources
 import ani.saikou.manga.source.MangaSources
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
-import ani.saikou.navBarHeight
-import ani.saikou.saveData
 import ani.saikou.settings.UserInterfaceSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -98,10 +95,7 @@ open class MangaReadFragment: Fragment()  {
                 progress = View.GONE
                 binding.mediaInfoProgressBar.visibility = progress
 
-                if(media.format!="MANGA"){
-                    binding.mangaReadNovel.visibility = View.VISIBLE
-                }
-                else{
+                if(media.format=="MANGA" || media.format=="ONE_SHOT"){
                     media.selected = model.loadSelected(media)
                     style = media.selected!!.recyclerStyle
                     reverse = media.selected!!.recyclerReversed
@@ -122,6 +116,10 @@ open class MangaReadFragment: Fragment()  {
                     else{
                         reload()
                     }
+                }
+                else{
+                    binding.animeNotSupported.visibility = View.VISIBLE
+                    binding.animeNotSupported.text = getString(R.string.not_supported,media.format?:"")
                 }
             }
         }

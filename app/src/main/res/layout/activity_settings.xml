@@ -538,7 +538,7 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:layout_marginTop="16dp"
-                android:layout_marginBottom="64dp"
+                android:layout_marginBottom="8dp"
                 android:alpha="0.5"
                 android:gravity="center"
                 android:orientation="horizontal">
@@ -576,6 +576,18 @@
                     tools:ignore="ContentDescription" />
 
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/settingsVersion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="64dp"
+                android:alpha="0.58"
+                android:ellipsize="end"
+                android:maxLines="3"
+                android:text="@string/version_current"
+                android:textAlignment="center"
+                tools:ignore="TextContrastCheck" />
 
         </LinearLayout>
 

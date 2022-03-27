@@ -264,7 +264,6 @@
                     android:id="@+id/exo_back"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:layout_marginTop="6dp"
                     android:backgroundTint="#00FFFFFF"
                     android:src="@drawable/ic_round_arrow_back_ios_new_24"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -281,46 +280,15 @@
                     <Spinner
                         android:id="@+id/exo_ep_sel"
                         android:layout_width="match_parent"
-                        android:layout_height="54dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="0dp"
                         android:layout_marginBottom="-10dp"
+                        android:background="@drawable/spinner_icon"
                         android:backgroundTint="#fff"
                         android:backgroundTintMode="src_atop"
+                        android:entries="@array/tips"
+                        android:popupBackground="@drawable/round_corner"
                         tools:ignore="SpeakableTextPresentCheck" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                        android:layout_width="match_parent"
-                        android:layout_height="54dp"
-                        android:layout_marginBottom="-10dp"
-                        android:textColorHint="#fff"
-                        android:visibility="gone"
-                        app:boxCornerRadiusBottomEnd="8dp"
-                        app:boxCornerRadiusBottomStart="8dp"
-                        app:boxCornerRadiusTopEnd="8dp"
-                        app:boxCornerRadiusTopStart="8dp"
-                        app:boxStrokeWidth="0dp"
-                        app:boxStrokeWidthFocused="0dp"
-                        app:endIconTint="#fff"
-                        app:hintAnimationEnabled="true"
-                        app:hintTextColor="#fff">
-
-                        <AutoCompleteTextView
-                            android:id="@+id/exo_episode_selector"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:ellipsize="end"
-                            android:fontFamily="@font/poppins_bold"
-                            android:freezesText="false"
-                            android:hint="@string/ep"
-                            android:inputType="none"
-                            android:padding="0dp"
-                            android:singleLine="true"
-                            android:text="@string/ep"
-                            android:textColor="#fff"
-                            android:textSize="14sp"
-                            tools:ignore="LabelFor,TextContrastCheck,DuplicateSpeakableTextCheck" />
-                    </com.google.android.material.textfield.TextInputLayout>
 
                     <TextView
                         android:id="@+id/exo_anime_title"

@@ -513,7 +513,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         episodeTitleArr = arrayListOf()
         episodes.forEach {
             val episode = it.value
-            episodeTitleArr.add("${episode.number}${if(episode.filler) " [Filler]" else ""}${if(!episode.title.isNullOrEmpty() && episode.title!="null") " : "+episode.title else ""}")
+            episodeTitleArr.add("${if(!episode.title.isNullOrEmpty() && episode.title!="null") "" else "Episode "}${episode.number}${if(episode.filler) " [Filler]" else ""}${if(!episode.title.isNullOrEmpty() && episode.title!="null") " : "+episode.title else ""}")
         }
 
         //Episode Change

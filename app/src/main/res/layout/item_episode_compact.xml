@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="64dp"
     android:layout_margin="8dp"
+    app:cardBackgroundColor="@color/nav_bg"
     app:cardCornerRadius="16dp">
 
     <LinearLayout
@@ -48,7 +49,7 @@
         android:id="@+id/itemEpisodeViewedCover"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="0.66"
+        android:alpha="0.33"
         android:background="@color/bg"
         android:visibility="gone" />
 </androidx.cardview.widget.CardView>

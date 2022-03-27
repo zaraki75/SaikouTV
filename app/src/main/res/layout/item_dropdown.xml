@@ -5,8 +5,8 @@
     android:layout_height="56dp"
     android:fontFamily="@font/poppins_bold"
     android:ellipsize="marquee"
-    android:maxLines="1"
     android:marqueeRepeatLimit="marquee_forever"
     android:padding="16dp"
     android:textColor="?android:attr/textColorSecondary"
-    tools:text="Item" />
+    tools:text="Item"
+    android:singleLine="true" />

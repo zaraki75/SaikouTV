@@ -75,7 +75,7 @@ class MediaInfoFragment : Fragment() {
                 }
                 binding.mediaInfoMeanScore.text = if (media.meanScore != null) (media.meanScore / 10.0).toString() else "??"
                 binding.mediaInfoStatus.text = media.status
-                binding.mediaInfoFormat.text = media.format
+                binding.mediaInfoFormat.text = media.format?.replace("_"," ")
                 binding.mediaInfoSource.text = media.source
                 binding.mediaInfoStart.text =
                     if (media.startDate.toString() != "") media.startDate.toString() else "??"

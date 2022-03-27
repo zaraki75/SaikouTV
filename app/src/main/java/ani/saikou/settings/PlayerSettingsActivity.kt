@@ -41,14 +41,15 @@ class PlayerSettingsActivity : AppCompatActivity() {
 
         binding.playerSettingsQualityHeight.setText((loadData<Int>("maxHeight", toast = false)?:480).toString())
         binding.playerSettingsQualityHeight.addTextChangedListener {
-            val height = binding.playerSettingsQualityHeight.text.toString().toIntOrNull()?:return@addTextChangedListener
+            val height = binding.playerSettingsQualityHeight.text.toString().toIntOrNull()
             saveData("maxHeight",height)
         }
         binding.playerSettingsQualityWidth.setText((loadData<Int>("maxWidth", toast = false)?:720).toString())
         binding.playerSettingsQualityWidth.addTextChangedListener {
-            val height = binding.playerSettingsQualityWidth.text.toString().toIntOrNull()?:return@addTextChangedListener
+            val height = binding.playerSettingsQualityWidth.text.toString().toIntOrNull()
             saveData("maxWidth",height)
         }
+
 
         val speeds = arrayOf( 0.25f , 0.33f , 0.5f , 0.66f , 0.75f , 1f , 1.25f , 1.33f , 1.5f , 1.66f , 1.75f , 2f )
         val cursedSpeeds = arrayOf(1f , 1.25f , 1.5f , 1.75f , 2f , 2.5f , 3f , 4f, 5f , 10f , 25f, 50f)
@@ -96,6 +97,7 @@ class PlayerSettingsActivity : AppCompatActivity() {
         binding.playerSettingsAskUpdateHentai.isChecked = settings.updateForH
         binding.playerSettingsAskUpdateHentai.setOnCheckedChangeListener { _, isChecked ->
             settings.updateForH = isChecked
+            if(isChecked) toastString(getString(R.string.very_bold))
             saveData(player,settings)
         }
         binding.playerSettingsCompletePercentage.value = (settings.watchPercentage*100).roundToInt().toFloat()

@@ -8,6 +8,7 @@
     android:layout_margin="8dp"
     android:backgroundTintMode="src_atop"
     android:longClickable="true"
+    app:cardBackgroundColor="@color/nav_bg"
     app:cardCornerRadius="16dp">
 
     <View
@@ -150,7 +151,7 @@
         android:id="@+id/itemEpisodeViewedCover"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="0.66"
+        android:alpha="0.33"
         android:background="@color/bg"
         android:visibility="gone" />
 
