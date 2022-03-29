@@ -110,9 +110,9 @@ class AnimePageAdapter: RecyclerView.Adapter<AnimePageAdapter.AnimePageViewHolde
             }
         )
 
-        binding.animeTrendingViewPager.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings.animationSpeed), 0.25f)
-        binding.animeTitleContainer.startAnimation(setSlideUp(uiSettings.animationSpeed))
-        binding.animeListContainer.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings.animationSpeed), 0.25f)
+        binding.animeTrendingViewPager.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings), 0.25f)
+        binding.animeTitleContainer.startAnimation(setSlideUp(uiSettings))
+        binding.animeListContainer.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings), 0.25f)
     }
 
     fun updateRecent(adaptor: MediaAdaptor){
@@ -122,10 +122,10 @@ class AnimePageAdapter: RecyclerView.Adapter<AnimePageAdapter.AnimePageViewHolde
         binding.animeUpdatedRecyclerView.visibility = View.VISIBLE
 
         binding.animeRecently.visibility = View.VISIBLE
-        binding.animeRecently.startAnimation(setSlideUp(uiSettings.animationSpeed))
-        binding.animeUpdatedRecyclerView.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings.animationSpeed), 0.25f)
+        binding.animeRecently.startAnimation(setSlideUp(uiSettings))
+        binding.animeUpdatedRecyclerView.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings), 0.25f)
         binding.animePopular.visibility = View.VISIBLE
-        binding.animePopular.startAnimation(setSlideUp(uiSettings.animationSpeed))
+        binding.animePopular.startAnimation(setSlideUp(uiSettings))
     }
 
     fun updateAvatar(){

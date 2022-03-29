@@ -3,7 +3,6 @@ package ani.saikou.settings
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
@@ -72,33 +71,6 @@ class UserInterfaceSettingsActivity : AppCompatActivity() {
         }
 
 
-        var previous: View = when(settings.defaultStartUpTab){
-            0 -> binding.uiSettingsAnime
-            1 -> binding.uiSettingsHome
-            2 -> binding.uiSettingsManga
-            else -> binding.uiSettingsHome
-        }
-        previous.alpha = 1f
-        fun uiTheme(mode:Int,current: View){
-            previous.alpha = 0.33f
-            previous = current
-            current.alpha = 1f
-            settings.defaultStartUpTab = mode
-            saveData("ui_settings",settings)
-            initActivity(this)
-        }
-
-        binding.uiSettingsAnime.setOnClickListener {
-            uiTheme(0,it)
-        }
-
-        binding.uiSettingsHome.setOnClickListener {
-            uiTheme(1,it)
-        }
-
-        binding.uiSettingsManga.setOnClickListener {
-            uiTheme(2,it)
-        }
     }
 
     private fun restartApp(){

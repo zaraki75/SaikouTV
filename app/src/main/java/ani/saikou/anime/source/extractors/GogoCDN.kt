@@ -26,10 +26,9 @@ class GogoCDN : Extractor() {
                 .ignoreContentType(true)
                 .ignoreHttpErrors(true)
                 .get()
-
         if(url.contains("streaming.php")) {
-            response.select("script[data-name='crypto']").attr("data-value").also {
-                val id = cryptoHandler(cryptoHandler(it,false).findBetween("","&")?:return@also,true)
+            response.select("script[data-name=\"episode\"]").attr("data-value").also {
+                val id = cryptoHandler(cryptoHandler(it,false).findBetween("","&")!!,true)
                 Jsoup.connect("https://gogoplay4.com/encrypt-ajax.php?id=$id")
                 .ignoreHttpErrors(true).ignoreContentType(true)
                 .header("X-Requested-With", "XMLHttpRequest").get().body().toString().apply {
@@ -81,14 +80,15 @@ class GogoCDN : Extractor() {
         return Episode.StreamLinks(name, list, mutableMapOf("referer" to url))
     }
 
+    //KR(animdl) lord & saviour
     private fun cryptoHandler(string:String,encrypt:Boolean=true) : String {
-        val key = "25716538522938396164662278833288".toByteArray()
+        val key = "63976882873559819639988080820907".toByteArray()
         val secretKey =  SecretKeySpec(key, "AES")
 
-        val iv = "1285672985238393".toByteArray()
+        val iv = "4770478969418267".toByteArray()
         val ivParameterSpec =  IvParameterSpec(iv)
 
-        val padding = byteArrayOf(0x8,0xe,0x3,0x8,0x9,0x3,0x4,0x9)
+        val padding = byteArrayOf(0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8)
 
         val cipher = Cipher.getInstance("AES/CBC/NoPadding")
         return if (!encrypt) {

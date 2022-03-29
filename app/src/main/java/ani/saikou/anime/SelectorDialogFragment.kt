@@ -225,13 +225,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
     override fun onDismiss(dialog: DialogInterface) {
         if(launch == false){
             @Suppress("DEPRECATION")
-            activity?.window?.decorView?.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            )
+            activity?.hideSystemBars()
             if(prevEpisode!=null) model.setEpisode(prevEpisode,"prevEp")
         }
         super.onDismiss(dialog)

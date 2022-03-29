@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/bg"
-        android:translationZ="4dp">
+        android:translationZ="5dp">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/mediaCollapsing"
@@ -237,7 +237,7 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/mediaTab"
         android:layout_width="match_parent"
-        android:layout_height="94dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="@color/nav_bg"
         android:translationZ="1dp"
@@ -255,7 +255,7 @@
         android:layout_height="32dp"
         android:layout_gravity="end"
         android:layout_margin="16dp"
-        android:translationZ="6dp"
+        android:translationZ="7dp"
         app:cardBackgroundColor="@color/nav_bg"
         app:cardCornerRadius="16dp">
 

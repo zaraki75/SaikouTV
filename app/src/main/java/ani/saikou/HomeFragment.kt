@@ -59,7 +59,7 @@ class HomeFragment : Fragment() {
                 binding.homeUserChaptersRead.text = Anilist.chapterRead.toString()
                 binding.homeUserAvatar.loadImage(Anilist.avatar)
                 if(!uiSettings.bannerAnimations) binding.homeUserBg.pause()
-                binding.homeUserBg.loadImage(Anilist.bg, scale = !uiSettings.bannerAnimations)
+                binding.homeUserBg.loadImage(Anilist.bg)
                 binding.homeUserAvatar.scaleType = ImageView.ScaleType.FIT_CENTER
                 binding.homeUserDataProgressBar.visibility = View.GONE
 
@@ -80,12 +80,12 @@ class HomeFragment : Fragment() {
                     )
                 }
 
-                binding.homeUserAvatarContainer.startAnimation(setSlideUp(uiSettings.animationSpeed))
+                binding.homeUserAvatarContainer.startAnimation(setSlideUp(uiSettings))
                 binding.homeUserDataContainer.visibility = View.VISIBLE
-                binding.homeUserDataContainer.layoutAnimation = LayoutAnimationController(setSlideUp(uiSettings.animationSpeed), 0.25f)
+                binding.homeUserDataContainer.layoutAnimation = LayoutAnimationController(setSlideUp(uiSettings), 0.25f)
                 binding.homeAnimeList.visibility = View.VISIBLE
                 binding.homeMangaList.visibility = View.VISIBLE
-                binding.homeListContainer.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings.animationSpeed),0.25f)
+                binding.homeListContainer.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings),0.25f)
             }
             else{
                 toastString("Please Reload.")
@@ -167,13 +167,13 @@ class HomeFragment : Fragment() {
                             false
                         )
                         recyclerView.visibility = View.VISIBLE
-                        recyclerView.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings.animationSpeed), 0.25f)
+                        recyclerView.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings), 0.25f)
 
                     } else {
                         empty.visibility = View.VISIBLE
                     }
                     title.visibility = View.VISIBLE
-                    title.startAnimation(setSlideUp(uiSettings.animationSpeed))
+                    title.startAnimation(setSlideUp(uiSettings))
                     progress.visibility = View.GONE
                 }
             }
@@ -232,12 +232,12 @@ class HomeFragment : Fragment() {
             binding.homeRecommended
         )
 
-        binding.homeUserAvatarContainer.startAnimation(setSlideUp(uiSettings.animationSpeed))
+        binding.homeUserAvatarContainer.startAnimation(setSlideUp(uiSettings))
 
         model.empty.observe(viewLifecycleOwner){
             binding.homeSaikouContainer.visibility = if(it==true) View.VISIBLE else View.GONE
             (binding.homeSaikouIcon.drawable as Animatable).start()
-            binding.homeSaikouContainer.startAnimation(setSlideUp(uiSettings.animationSpeed))
+            binding.homeSaikouContainer.startAnimation(setSlideUp(uiSettings))
             binding.homeSaikouIcon.setSafeOnClickListener {
                 (binding.homeSaikouIcon.drawable as Animatable).start()
             }
