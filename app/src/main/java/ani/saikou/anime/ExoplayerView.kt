@@ -48,6 +48,7 @@ import ani.saikou.settings.UserInterfaceSettings
 import com.bumptech.glide.Glide
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
+import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector
@@ -57,7 +58,6 @@ import com.google.android.exoplayer2.ui.CaptionStyleCompat.EDGE_TYPE_OUTLINE
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.google.android.exoplayer2.ui.TrackSelectionDialogBuilder
 import com.google.android.exoplayer2.upstream.DataSource
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import com.google.android.exoplayer2.util.MimeTypes
@@ -65,6 +65,7 @@ import com.google.android.material.slider.Slider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.min
@@ -688,9 +689,12 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         val stream = episode.streamLinks[episode.selectedStream]?: return
 
         val simpleCache = VideoCache.getInstance(this)
+        val httpClient = OkHttpClient().newBuilder().ignoreAllSSLErrors().apply {
+            followRedirects(true)
+            followSslRedirects(true)
+        }.build()
         val dataSourceFactory = DataSource.Factory {
-            val dataSource: HttpDataSource = DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true).createDataSource()
-            dataSource.setRequestProperty("User-Agent","Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36")
+            val dataSource: HttpDataSource = OkHttpDataSource.Factory(httpClient).createDataSource()
             if(stream.headers!=null)
                 stream.headers.forEach {
                     dataSource.setRequestProperty(it.key, it.value)
@@ -861,8 +865,12 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         saveData("${media.id}_${media.anime!!.selectedEpisode}_max",exoPlayer.duration,this)
         val height = (exoPlayer.videoFormat?:return).height
         val width = (exoPlayer.videoFormat?:return).width
-        saveData("maxHeight",height)
-        saveData("maxWidth",width)
+
+        if(episode.streamLinks[episode.selectedStream]?.quality?.get(episode.selectedQuality)?.quality == "Multi Quality") {
+            saveData("maxHeight", height)
+            saveData("maxWidth", width)
+        }
+
         videoInfo.text = "${episode.selectedStream}\n$width x $height"
 
         if(exoPlayer.duration<playbackPosition)

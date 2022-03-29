@@ -501,7 +501,7 @@ class AnilistQueries{
         val responseArray = arrayListOf<Media>()
         val ids = arrayListOf<Int>()
         if (response?.get("data")!=null && response["data"] != JsonNull)
-            response["data"]?.apply {  if(this==jsonObject) jsonObject["Page"]?.apply { if(this==jsonObject) jsonObject["recommendations"]?.apply { if(this==jsonArray) jsonArray.reversed().forEach{
+            response["data"]?.apply {  if(this != JsonNull) jsonObject["Page"]?.apply { if(this != JsonNull) jsonObject["recommendations"]?.apply { if(this != JsonNull) jsonArray.reversed().forEach{
                 val json = it.jsonObject["mediaRecommendation"]
                 if(json!=null && json!=JsonNull){
                     val id =  json.jsonObject["id"]?.toString()?.toInt()?:return responseArray

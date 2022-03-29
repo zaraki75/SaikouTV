@@ -1,6 +1,7 @@
 package ani.saikou.settings
 
 import android.app.DownloadManager
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -51,7 +52,11 @@ class SettingsDialogFragment : BottomSheetDialogFragment() {
         }
 
         binding.settingsDownloads.setSafeOnClickListener {
-            startActivity(Intent(DownloadManager.ACTION_VIEW_DOWNLOADS))
+            try {
+                startActivity(Intent(DownloadManager.ACTION_VIEW_DOWNLOADS))
+            }catch (e:ActivityNotFoundException){
+                toastString("Couldn't find any File Manager to open Downloads Folder")
+            }
             dismiss()
         }
     }

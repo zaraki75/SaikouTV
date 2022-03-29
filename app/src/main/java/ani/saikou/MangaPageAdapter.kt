@@ -109,9 +109,9 @@ class MangaPageAdapter: RecyclerView.Adapter<MangaPageAdapter.MangaPageViewHolde
             }
         )
 
-        binding.mangaTrendingViewPager.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings.animationSpeed), 0.25f)
-        binding.mangaTitleContainer.startAnimation(setSlideUp(uiSettings.animationSpeed))
-        binding.mangaListContainer.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings.animationSpeed), 0.25f)
+        binding.mangaTrendingViewPager.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings), 0.25f)
+        binding.mangaTitleContainer.startAnimation(setSlideUp(uiSettings))
+        binding.mangaListContainer.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings), 0.25f)
     }
 
     fun updateNovel(adaptor: MediaAdaptor){
@@ -121,10 +121,10 @@ class MangaPageAdapter: RecyclerView.Adapter<MangaPageAdapter.MangaPageViewHolde
         binding.mangaNovelRecyclerView.visibility = View.VISIBLE
 
         binding.mangaNovel.visibility = View.VISIBLE
-        binding.mangaNovel.startAnimation(setSlideUp(uiSettings.animationSpeed))
-        binding.mangaNovelRecyclerView.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings.animationSpeed), 0.25f)
+        binding.mangaNovel.startAnimation(setSlideUp(uiSettings))
+        binding.mangaNovelRecyclerView.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings), 0.25f)
         binding.mangaPopular.visibility = View.VISIBLE
-        binding.mangaPopular.startAnimation(setSlideUp(uiSettings.animationSpeed))
+        binding.mangaPopular.startAnimation(setSlideUp(uiSettings))
     }
 
     fun updateAvatar(){

@@ -32,6 +32,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.multidex.MultiDex
 import androidx.multidex.MultiDexApplication
@@ -58,11 +59,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import nl.joery.animatedbottombar.AnimatedBottomBar
+import okhttp3.OkHttpClient
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.*
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.text.DateFormatSymbols
 import java.util.*
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -149,7 +156,12 @@ fun initActivity(a: Activity) {
         })
     }
     if (uiSettings.immersiveMode) {
-        a.hideSystemBars()
+        if(navBarHeight == 0){
+            ViewCompat.getRootWindowInsets(window.decorView.findViewById(android.R.id.content))?.apply {
+                navBarHeight = this.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+            }
+        }
+        a.hideStatusBar()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && statusBarHeight == 0 && a.resources.configuration.orientation==Configuration.ORIENTATION_PORTRAIT) {
             window.decorView.rootWindowInsets?.displayCutout?.apply {
                 if (boundingRects.size>0) {
@@ -166,12 +178,10 @@ fun initActivity(a: Activity) {
                 statusBarHeight = insets.top
                 navBarHeight = insets.bottom
             }
-
         }
 }
-
+@Suppress("DEPRECATION")
 fun Activity.hideSystemBars() {
-    @Suppress("DEPRECATION")
     window.decorView.systemUiVisibility = (
             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                     or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
@@ -181,6 +191,11 @@ fun Activity.hideSystemBars() {
             )
 }
 
+@Suppress("DEPRECATION")
+fun Activity.hideStatusBar(){
+    window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+}
+
 open class BottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun onStart() {
         super.onStart()
@@ -188,6 +203,12 @@ open class BottomSheetDialogFragment : BottomSheetDialogFragment() {
             val behavior = BottomSheetBehavior.from(requireView().parent as View)
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
+    }
+
+    override fun show(manager: FragmentManager, tag: String?) {
+        val ft = manager.beginTransaction()
+        ft.add(this, tag)
+        ft.commitAllowingStateLoss()
     }
 }
 
@@ -327,7 +348,7 @@ fun getMalMedia(media:Media) : Media{
 
 class ZoomOutPageTransformer(private val uiSettings: UserInterfaceSettings) : ViewPager2.PageTransformer {
     override fun transformPage(view: View, position: Float) {
-        if (position == 0.0f) {
+        if (position == 0.0f && uiSettings.layoutAnimations) {
             setAnimation(view.context,view,uiSettings,300, floatArrayOf(1.3f,1f,1.3f,1f), 0.5f to 0f)
             ObjectAnimator.ofFloat(view,"alpha",0f,1.0f).setDuration((200*uiSettings.animationSpeed).toLong()).start()
         }
@@ -428,14 +449,11 @@ fun String.findBetween(a:String,b:String):String?{
     return if(end!=-1) this.subSequence(start,end).removePrefix(a).removeSuffix(b).toString() else null
 }
 
-fun ImageView.loadImage(url:String?,size:Int=0,headers: MutableMap<String, String>?=null,scale:Boolean=false){
+fun ImageView.loadImage(url:String?,size:Int=0,headers: MutableMap<String, String>?=null){
     if(!url.isNullOrEmpty()) {
         try{
             val glideUrl = GlideUrl(url){ headers?: mutableMapOf() }
-            Glide.with(this).load(glideUrl).diskCacheStrategy(DiskCacheStrategy.ALL).transition(withCrossFade()).override(size).let {
-                if(scale) scaleType = ImageView.ScaleType.FIT_XY
-                return@let if (scale) it.centerCrop() else it
-            }.into(this)
+            Glide.with(this).load(glideUrl).diskCacheStrategy(DiskCacheStrategy.ALL).transition(withCrossFade()).override(size).into(this)
         }catch (e:Exception){
             logger(e.localizedMessage)
         }
@@ -722,40 +740,44 @@ fun MutableMap<String, Genre>.checkTime(genre:String):Boolean{
     return true
 }
 
-fun setSlideIn(speed: Float) = AnimationSet(false).apply {
-    var animation: Animation = AlphaAnimation(0.0f, 1.0f)
-    animation.duration = (500*speed).toLong()
-    animation.interpolator = AccelerateDecelerateInterpolator()
-    addAnimation(animation)
+fun setSlideIn(uiSettings: UserInterfaceSettings) = AnimationSet(false).apply {
+    if (uiSettings.layoutAnimations) {
+        var animation: Animation = AlphaAnimation(0.0f, 1.0f)
+        animation.duration = (500 * uiSettings.animationSpeed).toLong()
+        animation.interpolator = AccelerateDecelerateInterpolator()
+        addAnimation(animation)
 
-    animation = TranslateAnimation(
-        Animation.RELATIVE_TO_SELF, 1.0f,
-        Animation.RELATIVE_TO_SELF, 0f,
-        Animation.RELATIVE_TO_SELF, 0.0f,
-        Animation.RELATIVE_TO_SELF, 0f
-    )
+        animation = TranslateAnimation(
+            Animation.RELATIVE_TO_SELF, 1.0f,
+            Animation.RELATIVE_TO_SELF, 0f,
+            Animation.RELATIVE_TO_SELF, 0.0f,
+            Animation.RELATIVE_TO_SELF, 0f
+        )
 
-    animation.duration = (750*speed).toLong()
-    animation.interpolator = OvershootInterpolator(1.1f)
-    addAnimation(animation)
+        animation.duration = (750 * uiSettings.animationSpeed).toLong()
+        animation.interpolator = OvershootInterpolator(1.1f)
+        addAnimation(animation)
+    }
 }
 
-fun setSlideUp(speed: Float) = AnimationSet(false).apply {
-    var animation: Animation = AlphaAnimation(0.0f, 1.0f)
-    animation.duration = (500*speed).toLong()
-    animation.interpolator = AccelerateDecelerateInterpolator()
-    addAnimation(animation)
+fun setSlideUp(uiSettings: UserInterfaceSettings) = AnimationSet(false).apply {
+    if (uiSettings.layoutAnimations) {
+        var animation: Animation = AlphaAnimation(0.0f, 1.0f)
+        animation.duration = (500 * uiSettings.animationSpeed).toLong()
+        animation.interpolator = AccelerateDecelerateInterpolator()
+        addAnimation(animation)
 
-    animation = TranslateAnimation(
-        Animation.RELATIVE_TO_SELF, 0.0f,
-        Animation.RELATIVE_TO_SELF, 0f,
-        Animation.RELATIVE_TO_SELF, 1.0f,
-        Animation.RELATIVE_TO_SELF, 0f
-    )
+        animation = TranslateAnimation(
+            Animation.RELATIVE_TO_SELF, 0.0f,
+            Animation.RELATIVE_TO_SELF, 0f,
+            Animation.RELATIVE_TO_SELF, 1.0f,
+            Animation.RELATIVE_TO_SELF, 0f
+        )
 
-    animation.duration = (750*speed).toLong()
-    animation.interpolator = OvershootInterpolator(1.1f)
-    addAnimation(animation)
+        animation.duration = (750 * uiSettings.animationSpeed).toLong()
+        animation.interpolator = OvershootInterpolator(1.1f)
+        addAnimation(animation)
+    }
 }
 
 class EmptyAdapter(private val count:Int):RecyclerView.Adapter<RecyclerView.ViewHolder>(){
@@ -801,4 +823,52 @@ open class NoPaddingArrayAdapter<T>(context: Context, layoutId: Int, items: List
         (view as TextView).setTextColor(Color.WHITE)
         return view
     }
+}
+
+@SuppressLint("ClickableViewAccessibility")
+class SpinnerNoSwipe : androidx.appcompat.widget.AppCompatSpinner {
+    private var mGestureDetector: GestureDetector? = null
+
+    constructor(context: Context) : super(context) {
+        setup()
+    }
+
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+        setup()
+    }
+
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+        setup()
+    }
+
+    private fun setup() {
+        mGestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onSingleTapUp(e: MotionEvent): Boolean {
+                return performClick()
+            }
+        })
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        mGestureDetector!!.onTouchEvent(event)
+        return true
+    }
+}
+
+fun OkHttpClient.Builder.ignoreAllSSLErrors(): OkHttpClient.Builder {
+    val naiveTrustManager = @SuppressLint("CustomX509TrustManager")
+    object : X509TrustManager {
+        override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+        override fun checkClientTrusted(certs: Array<X509Certificate>, authType: String) = Unit
+        override fun checkServerTrusted(certs: Array<X509Certificate>, authType: String) = Unit
+    }
+
+    val insecureSocketFactory = SSLContext.getInstance("TLSv1.2").apply {
+        val trustAllCerts = arrayOf<TrustManager>(naiveTrustManager)
+        init(null, trustAllCerts, SecureRandom())
+    }.socketFactory
+
+    sslSocketFactory(insecureSocketFactory, naiveTrustManager)
+    hostnameVerifier { _, _ -> true }
+    return this
 }

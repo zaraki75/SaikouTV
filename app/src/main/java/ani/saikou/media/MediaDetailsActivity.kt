@@ -99,7 +99,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
 
         binding.mediaCoverImage.loadImage(media.cover)
         binding.mediaCoverImage.setOnLongClickListener{ openLinkInBrowser(media.cover);true }
-        banner.loadImage(media.banner?:media.cover,400, scale = !uiSettings.bannerAnimations)
+        banner.loadImage(media.banner?:media.cover,400)
         val gestureDetector = GestureDetector(this,object: DoubleClickListener() {
             override fun onDoubleClick(event: MotionEvent?) {
                 if(!uiSettings.bannerAnimations)

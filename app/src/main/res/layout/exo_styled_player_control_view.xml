@@ -270,39 +270,50 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     tools:ignore="ContentDescription,SpeakableTextPresentCheck" />
 
-                <LinearLayout
+                <FrameLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:orientation="vertical">
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
 
-                    <Spinner
-                        android:id="@+id/exo_ep_sel"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:layout_marginEnd="0dp"
-                        android:layout_marginBottom="-10dp"
-                        android:background="@drawable/spinner_icon"
-                        android:backgroundTint="#fff"
-                        android:backgroundTintMode="src_atop"
-                        android:entries="@array/tips"
-                        android:popupBackground="@drawable/round_corner"
-                        tools:ignore="SpeakableTextPresentCheck" />
-
-                    <TextView
-                        android:id="@+id/exo_anime_title"
-                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:alpha="0.66"
-                        android:fontFamily="@font/poppins"
-                        android:singleLine="false"
-                        android:textColor="@color/bg_white"
-                        android:textSize="12sp"
-                        tools:ignore="TextContrastCheck"
-                        tools:text="@string/popular_anime" />
+                        android:gravity="center_vertical"
+                        android:orientation="vertical">
 
-                </LinearLayout>
+                        <ani.saikou.SpinnerNoSwipe
+                            android:id="@+id/exo_ep_sel"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginEnd="0dp"
+                            android:layout_marginBottom="-10dp"
+                            android:background="@drawable/spinner_icon"
+                            android:backgroundTint="#fff"
+                            android:backgroundTintMode="src_atop"
+                            android:entries="@array/tips"
+                            android:popupBackground="@drawable/round_corner"
+                            tools:ignore="SpeakableTextPresentCheck" />
+
+                        <TextView
+                            android:id="@+id/exo_anime_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:alpha="0.66"
+                            android:fontFamily="@font/poppins"
+                            android:singleLine="false"
+                            android:textColor="@color/bg_white"
+                            android:textSize="12sp"
+                            tools:ignore="TextContrastCheck"
+                            tools:text="@string/popular_anime" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_marginEnd="48dp"
+                        android:layout_height="32dp"/>
+
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -335,8 +346,7 @@
                             android:visibility="gone"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
-                            tools:ignore="ContentDescription,SpeakableTextPresentCheck"
-                            tools:visibility="visible" />
+                            tools:ignore="ContentDescription,SpeakableTextPresentCheck" />
 
                         <ImageButton
                             android:id="@+id/exo_source"
@@ -370,7 +380,7 @@
 
                     <TextView
                         android:id="@+id/exo_video_info"
-                        android:layout_width="136dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
                         android:alpha="0.58"

@@ -134,11 +134,7 @@ class MediaDetailsViewModel:ViewModel() {
                     return@post
                 }
                 media.selected = this.loadSelected(media)
-                val selector = if (media.selected!!.stream != null)
-                    SelectorDialogFragment.newInstance(media.selected!!.stream, launch)
-                else {
-                    SelectorDialogFragment.newInstance(null,launch)
-                }
+                val selector = SelectorDialogFragment.newInstance(media.selected!!.stream, launch)
                 selector.show(manager, "dialog")
             }
         }

@@ -96,6 +96,34 @@ class SettingsActivity : AppCompatActivity() {
             uiTheme(true,it)
         }
 
+        var previousStart: View = when(uiSettings.defaultStartUpTab){
+            0 -> binding.uiSettingsAnime
+            1 -> binding.uiSettingsHome
+            2 -> binding.uiSettingsManga
+            else -> binding.uiSettingsHome
+        }
+        previousStart.alpha = 1f
+        fun uiTheme(mode:Int,current: View){
+            previousStart.alpha = 0.33f
+            previousStart = current
+            current.alpha = 1f
+            uiSettings.defaultStartUpTab = mode
+            saveData("ui_settings",uiSettings)
+            initActivity(this)
+        }
+
+        binding.uiSettingsAnime.setOnClickListener {
+            uiTheme(0,it)
+        }
+
+        binding.uiSettingsHome.setOnClickListener {
+            uiTheme(1,it)
+        }
+
+        binding.uiSettingsManga.setOnClickListener {
+            uiTheme(2,it)
+        }
+
         binding.settingsShowYt.isChecked = uiSettings.showYtButton
         binding.settingsShowYt.setOnCheckedChangeListener { _, isChecked ->
             uiSettings.showYtButton = isChecked
