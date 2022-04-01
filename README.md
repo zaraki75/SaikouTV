@@ -12,13 +12,17 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 <br>
 <br>
 
-> NOTE: Please do not attempt to upload Saikou or any of it's forks upon the Playstore or any other Android appstores on the internet. Doing so may infringe their terms and conditions. This may result to legal action or immediate take-down of the app.
+### 🌟STAR THIS REPOSITORY TO SUPPORT THE DEVELOPER AND ENCOURAGE THE DEVELOPMENT OF THE APPLICATION!
 
 <br>
 
-**🌟STAR THIS REPOSITORY TO SUPPORT THE DEVELOPER AND ENCOURAGE THE DEVELOPMENT OF THE APPLICATION!**
+> Please do not attempt to upload Saikou or any of it's forks on Playstore or any other Android appstores on the internet. Doing so, may infringe their terms and conditions. This may result to legal action or immediate take-down of the app.
 
-<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220208-125810.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220208-125840.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220208-125850.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220208-130037.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220208-130042.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220208-130054.png?raw=true" style="width: 23%;margin:16px;" />
+<br>
+
+<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-175525.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-175542.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-175551.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-175600.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-183102.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-183112.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-183120.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-182352.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-182421.png?raw=true" style="width: 23%;margin:16px;" />
+
+
 ## APP FEATURES
 
 - Easy and functional way to both, watch anime and read manga, Ad Free.
@@ -56,13 +60,10 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 | [MangaReaderTo](https://mangareader.to/)     | WORKING |
 
 ## Planned Stuff
-- Add Settings #52 , #19
-  
-- Add WebVideoCaster support #5
-  
+
+- Rework Manga Reader #18  
+
 - User Profile
-  
-- Rework Manga Reader #18
   
 - Downloads for Manga
   
@@ -78,6 +79,9 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 
 
 ## Rejected Stuff
+
+- Sources of any language except English
+
 - News Section in the App
    
 - More Search Options
@@ -89,6 +93,7 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 - Subtitles Customization
 
 ## Help wanted for:
+
 - TV support
   
 - PiP
