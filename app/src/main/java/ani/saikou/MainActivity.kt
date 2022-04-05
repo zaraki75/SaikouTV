@@ -72,7 +72,8 @@ class MainActivity : AppCompatActivity() {
             uiSettings = loadData("ui_settings")?:uiSettings
             selectedOption = uiSettings.defaultStartUpTab
             binding.navbarContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-            bottomMargin = navBarHeight
+                bottomMargin = navBarHeight
+            }
         }
 
         if (!isOnline(this)) {
@@ -144,7 +145,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 load = true
             }
-        }
         }
     }
 

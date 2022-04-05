@@ -22,6 +22,7 @@ import ani.saikou.anilist.SearchResults
 import ani.saikou.databinding.FragmentAnimeBinding
 import ani.saikou.media.MediaAdaptor
 import ani.saikou.media.ProgressAdapter
+import ani.saikou.settings.UserInterfaceSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -33,6 +34,8 @@ import kotlin.math.min
 class AnimeFragment : Fragment() {
     private var _binding: FragmentAnimeBinding? = null
     private val binding get() = _binding!!
+
+    private var uiSettings: UserInterfaceSettings = loadData("ui_settings")?: UserInterfaceSettings()
 
     val model: AnilistAnimeViewModel by activityViewModels()
 
@@ -152,7 +155,7 @@ class AnimeFragment : Fragment() {
                     animePageAdapter.updateHeight()
                     model.getTrending().observe(viewLifecycleOwner) {
                         if (it != null) {
-                            animePageAdapter.updateTrending(MediaAdaptor(2, it, requireActivity(), viewPager = animePageAdapter.trendingViewPager))
+                            animePageAdapter.updateTrending(MediaAdaptor(if(uiSettings.smallView) 3 else 2, it, requireActivity(), viewPager = animePageAdapter.trendingViewPager))
                             animePageAdapter.updateAvatar()
                         }
                     }
@@ -182,7 +185,7 @@ class AnimeFragment : Fragment() {
             animePageAdapter.updateAvatar()
         }
 
-        val live = Refresh.activity.getOrPut(this.hashCode()) { MutableLiveData(true) }
+        val live = Refresh.activity.getOrPut(this.hashCode()) { MutableLiveData(false) }
         live.observe(viewLifecycleOwner) {
             if (it) {
                 scope.launch {

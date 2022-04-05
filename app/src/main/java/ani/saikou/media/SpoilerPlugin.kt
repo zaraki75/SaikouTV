@@ -22,11 +22,11 @@ class SpoilerPlugin : AbstractMarkwonPlugin() {
         override fun updateDrawState(tp: TextPaint) {
             if (!revealed) {
                 // use the same text color
-                tp.bgColor = Color.BLACK
-                tp.color = Color.BLACK
+                tp.bgColor = Color.DKGRAY
+                tp.color = Color.DKGRAY
             } else {
                 // for example keep a bit of black background to remind that it is a spoiler
-                tp.bgColor = ColorUtils.applyAlpha(Color.BLACK, 25)
+                tp.bgColor = ColorUtils.applyAlpha(Color.DKGRAY, 25)
             }
         }
 

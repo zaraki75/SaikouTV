@@ -8,6 +8,7 @@ data class Episode (
     var desc : String?=null,
     var thumb : String?=null,
     var filler : Boolean = false,
+    val saveStreams : Boolean = true,
     var link : String? = null,
     var selectedStream : String?=null,
     var selectedQuality: Int = 0,

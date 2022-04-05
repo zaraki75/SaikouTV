@@ -84,13 +84,14 @@
                         android:scrollHorizontally="false"
                         android:singleLine="false"
                         android:text="@string/slogan"
-                        android:textSize="20sp"
+                        android:textSize="16sp"
                         android:transitionName="mediaTitle" />
 
                     <TextView
                         android:id="@+id/mediaStatus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:alpha="0.66"
                         android:ellipsize="marquee"
                         android:fontFamily="@font/poppins_bold"
                         android:marqueeRepeatLimit="marquee_forever"
@@ -98,7 +99,7 @@
                         android:singleLine="true"
                         android:text="@string/status"
                         android:textColor="?attr/colorPrimary"
-                        android:textSize="16sp"
+                        android:textSize="14sp"
                         tools:ignore="TextContrastCheck" />
 
                 </LinearLayout>

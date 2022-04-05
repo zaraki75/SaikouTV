@@ -10,6 +10,7 @@
     android:orientation="vertical">
 
     <FrameLayout
+        android:id="@+id/mangaTrendingContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp">
@@ -35,7 +36,6 @@
                 android:layout_weight="1"
                 android:hint="@string/manga"
                 android:textColorHint="@color/bg_opp"
-                app:endIconTint="@color/bg_opp"
                 android:transitionName="@string/search"
                 app:boxBackgroundColor="@color/status"
                 app:boxCornerRadiusBottomEnd="28dp"
@@ -43,6 +43,7 @@
                 app:boxCornerRadiusTopEnd="28dp"
                 app:boxCornerRadiusTopStart="28dp"
                 app:endIconDrawable="@drawable/ic_round_search_24"
+                app:endIconTint="@color/bg_opp"
                 app:hintAnimationEnabled="true">
 
                 <AutoCompleteTextView

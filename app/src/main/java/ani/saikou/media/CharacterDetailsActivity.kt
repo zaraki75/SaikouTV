@@ -51,7 +51,7 @@ class CharacterDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChang
         binding.characterClose.setOnClickListener{
             onBackPressed()
         }
-        character = intent.getSerializableExtra("character") as Character
+        character = intent.getSerializableExtra("character") as? Character?:return
         binding.characterTitle.text = character.name
         banner.loadImage(character.banner)
         binding.characterCoverImage.loadImage(character.image)

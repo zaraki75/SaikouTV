@@ -85,7 +85,8 @@ class MediaDetailsViewModel:ViewModel() {
     private var episode: MutableLiveData<Episode?> = MutableLiveData<Episode?>(null)
     fun getEpisode() : LiveData<Episode?> = episode
     fun loadEpisodeStreams(ep: Episode,i:Int,post:Boolean=true){
-        if(!ep.allStreams || ep.streamLinks.isNullOrEmpty()) {
+        println("load Streams")
+        if(!ep.allStreams || ep.streamLinks.isNullOrEmpty() || !ep.saveStreams) {
             watchAnimeWatchSources?.get(i)?.getStreams(ep)?.apply {
                 this.allStreams = true
             }
@@ -100,7 +101,8 @@ class MediaDetailsViewModel:ViewModel() {
     }
     fun loadEpisodeStream(ep: Episode,selected: Selected,post: Boolean=true):Boolean{
         return if(selected.stream!=null) {
-            if(ep.streamLinks.isNullOrEmpty()) {
+            println("load Stream")
+            if(ep.streamLinks.isNullOrEmpty() || !ep.saveStreams) {
                 watchAnimeWatchSources?.get(selected.source)?.getStream(ep, selected.stream!!)?.apply {
                     this.allStreams = false
                 }
@@ -115,7 +117,7 @@ class MediaDetailsViewModel:ViewModel() {
         } else false
     }
     fun setEpisode(ep: Episode?,who:String){
-        logger("set episode - $who",false)
+        logger("set episode ${ep?.number} - $who",false)
         episode.postValue(ep)
         MainScope().launch(Dispatchers.Main) {
             episode.value = null
@@ -123,7 +125,7 @@ class MediaDetailsViewModel:ViewModel() {
     }
 
     val epChanged = MutableLiveData(true)
-    fun onEpisodeClick(media: Media, i:String,manager:FragmentManager,launch:Boolean=true){
+    fun onEpisodeClick(media: Media, i:String,manager:FragmentManager,launch:Boolean=true,prevEp:String?=null){
         Handler(Looper.getMainLooper()).post{
             if(manager.findFragmentByTag("dialog")==null && !manager.isDestroyed) {
                 if (media.anime?.episodes?.get(i)!=null) {
@@ -134,7 +136,7 @@ class MediaDetailsViewModel:ViewModel() {
                     return@post
                 }
                 media.selected = this.loadSelected(media)
-                val selector = SelectorDialogFragment.newInstance(media.selected!!.stream, launch)
+                val selector = SelectorDialogFragment.newInstance(media.selected!!.stream, launch, prevEp)
                 selector.show(manager, "dialog")
             }
         }

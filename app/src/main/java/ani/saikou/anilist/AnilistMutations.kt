@@ -31,7 +31,7 @@ class AnilistMutations {
             ${if (score!=null) """,\"scoreRaw\":$score""" else ""}
             ${if (status!=null) """,\"status\":\"${status}\"""" else ""}
             }""".replace("\n","").replace("""    ""","")
-        executeQuery(query,variables,show=true)
+        executeQuery(query,variables)
     }
 
     fun deleteList(listId:Int){

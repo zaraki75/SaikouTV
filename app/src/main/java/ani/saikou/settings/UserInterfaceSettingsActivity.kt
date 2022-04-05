@@ -40,6 +40,13 @@ class UserInterfaceSettingsActivity : AppCompatActivity() {
             }.show()
         }
 
+        binding.uiSettingsSmallView.isChecked = settings.smallView
+        binding.uiSettingsSmallView.setOnCheckedChangeListener { _, isChecked ->
+            settings.smallView = isChecked
+            saveData(ui,settings)
+            restartApp()
+        }
+
         binding.uiSettingsImmersive.isChecked = settings.immersiveMode
         binding.uiSettingsImmersive.setOnCheckedChangeListener { _, isChecked ->
             settings.immersiveMode = isChecked

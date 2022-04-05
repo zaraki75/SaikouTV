@@ -31,7 +31,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
     private var scope: CoroutineScope = lifecycleScope
     private var media: Media? = null
     private var episode: Episode? = null
-    private var prevEpisode: Episode? = null
+    private var prevEpisode: String? = null
     private var makeDefault = false
     private var selected:String?=null
     private var launch:Boolean?=null
@@ -41,7 +41,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
         arguments?.let {
             selected = it.getString("server")
             launch = it.getBoolean("launch",true)
-            prevEpisode = it.getSerializable("prev") as? Episode
+            prevEpisode = it.getString("prev")
         }
     }
 
@@ -51,9 +51,12 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        var loaded = false
         model.getMedia().observe(viewLifecycleOwner) { m ->
             media = m
-            if (media != null) {
+            if (media != null && !loaded) {
+                loaded = true
+                println(media?.id)
                 episode = media?.anime?.episodes?.get(media?.anime?.selectedEpisode)
                 if(episode!=null){
                     if (selected != null) {
@@ -77,12 +80,11 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
                                         selected
                                     media!!.anime!!.episodes?.get(media!!.anime!!.selectedEpisode!!)?.selectedQuality =
                                         media!!.selected!!.quality
-                                    dismiss()
                                     startExoplayer(media!!)
                                 } else fail()
                             } else fail()
                         }
-                        if (episode?.streamLinks?.isEmpty() == true) {
+                        if (episode?.streamLinks?.isEmpty() == true || episode?.saveStreams==false) {
                             model.getEpisode().observe(this) {
                                 if (it != null) {
                                     episode = it
@@ -116,7 +118,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
                             )
                             binding.selectorRecyclerView.adapter = StreamAdapter()
                         }
-                        if (episode!!.streamLinks.isEmpty() || !episode!!.allStreams) {
+                        if (episode!!.streamLinks.isEmpty() || !episode!!.allStreams || episode?.saveStreams==false) {
                             model.getEpisode().observe(this) {
                                 if (it != null) {
                                     episode = it
@@ -136,7 +138,9 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
     }
 
     fun startExoplayer(media: Media){
-        model.epChanged.postValue(true)
+        prevEpisode = null
+
+        dismiss()
         if (launch!!) {
             val intent = Intent(activity, ExoplayerView::class.java).apply {
                 putExtra("media", media)
@@ -202,7 +206,6 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
                         media!!.selected!!.quality = bindingAdapterPosition
                         model.saveSelected(media!!.id,media!!.selected!!,requireActivity())
                     }
-                    dismiss()
                     startExoplayer(media!!)
                 }
             }
@@ -210,12 +213,12 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
     }
 
     companion object {
-        fun newInstance(server:String?=null,la:Boolean=true,prev:Episode?=null): SelectorDialogFragment =
+        fun newInstance(server:String?=null,la:Boolean=true,prev:String?=null): SelectorDialogFragment =
             SelectorDialogFragment().apply {
                 arguments = Bundle().apply {
                     putString("server",server)
                     putBoolean("launch",la)
-                    putSerializable("prev",prev)
+                    putString("prev",prev)
                 }
             }
     }
@@ -226,7 +229,11 @@ class SelectorDialogFragment : BottomSheetDialogFragment(){
         if(launch == false){
             @Suppress("DEPRECATION")
             activity?.hideSystemBars()
-            if(prevEpisode!=null) model.setEpisode(prevEpisode,"prevEp")
+            model.epChanged.postValue(true)
+            if(prevEpisode!=null) {
+                media?.anime?.selectedEpisode = prevEpisode
+                model.setEpisode(media?.anime?.episodes?.get(prevEpisode) ?: return, "prevEp")
+            }
         }
         super.onDismiss(dialog)
     }

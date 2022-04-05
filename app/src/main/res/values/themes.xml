@@ -42,8 +42,8 @@
     <style name="Theme.Saikou.AppBarOverlay" parent="Theme.Saikou" />
     <style name="Theme.Saikou.PopupOverlay" parent="Theme.Saikou" />
 
-    <style name="Theme.Saikou.Exoplayer" parent="@style/Theme.Saikou.NoActionBar">
-        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">shortEdges</item>
+    <style name="Theme.Saikou.NeverCutout" parent="@style/Theme.Saikou.NoActionBar">
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">default</item>
     </style>
 
     <style name="DialogTheme" parent="Theme.Saikou">

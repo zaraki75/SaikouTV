@@ -27,9 +27,11 @@ class GenreAdapter(
 
     override fun onBindViewHolder(holder: GenreViewHolder, position: Int) {
         val binding = holder.binding
-        val genre = genres[pos[position]]
-        binding.genreTitle.text = pos[position]
-        binding.genreImage.loadImage(genre)
+        if(pos.size > position) {
+            val genre = genres[pos[position]]
+            binding.genreTitle.text = pos[position]
+            binding.genreImage.loadImage(genre)
+        }
     }
 
     override fun getItemCount(): Int = genres.size

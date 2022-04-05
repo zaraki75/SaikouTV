@@ -22,7 +22,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Saikou"
         android:usesCleartextTraffic="true"
-        tools:ignore="AllowBackup">
+        tools:ignore="AllowBackup"
+        tools:targetApi="m">
         <activity
             android:name=".settings.UserInterfaceSettingsActivity"
             android:exported="false" />
@@ -51,6 +52,7 @@
             android:exported="true" />
         <activity
             android:name=".media.MediaDetailsActivity"
+            android:theme="@style/Theme.Saikou.NeverCutout"
             android:exported="true" />
         <activity
             android:name=".media.CharacterDetailsActivity"
@@ -61,8 +63,7 @@
         <activity
             android:name=".anime.ExoplayerView"
             android:configChanges="orientation|screenSize|layoutDirection"
-            android:exported="true"
-            android:theme="@style/Theme.Saikou.Exoplayer" />
+            android:exported="true" />
         <activity
             android:name=".anilist.Login"
             android:configChanges="orientation|screenSize|layoutDirection"

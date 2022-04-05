@@ -42,6 +42,8 @@ class AnimePageAdapter: RecyclerView.Adapter<AnimePageAdapter.AnimePageViewHolde
 
         binding.animeTitleContainer.updatePadding(top = statusBarHeight)
 
+        if(uiSettings.smallView) binding.animeTrendingContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin = (-108f).px }
+
         updateAvatar()
 
         binding.animeSearchBar.hint = "ANIME"

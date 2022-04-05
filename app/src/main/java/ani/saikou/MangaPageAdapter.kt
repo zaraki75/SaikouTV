@@ -42,6 +42,8 @@ class MangaPageAdapter: RecyclerView.Adapter<MangaPageAdapter.MangaPageViewHolde
 
         binding.mangaTitleContainer.updatePadding(top = statusBarHeight)
 
+        if(uiSettings.smallView) binding.mangaTrendingContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin = (-108f).px }
+
         updateAvatar()
 
         binding.mangaSearchBar.hint = "MANGA"

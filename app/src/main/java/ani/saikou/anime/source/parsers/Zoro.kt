@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import java.net.URLEncoder
 
-class Zoro(override val name: String = "Zoro") : AnimeParser() {
+class Zoro(override val name: String = "Zoro", override val saveStreams: Boolean = false) : AnimeParser() {
     private val type = arrayOf("TV_SHORT","MOVIE","TV","OVA","ONA","SPECIAL","MUSIC")
     private val host = "https://zoro.to"
 
@@ -131,7 +131,7 @@ class Zoro(override val name: String = "Zoro") : AnimeParser() {
             val id = it.attr("data-id")
             val filler = it.attr("class").contains("ssl-item-filler")
 
-            responseArray[num] = Episode(number = num,link = id, title = title, filler = filler)
+            responseArray[num] = Episode(number = num,link = id, title = title, filler = filler,saveStreams=false)
         } }catch (e:Exception){
             toastString(e.toString())
         }
