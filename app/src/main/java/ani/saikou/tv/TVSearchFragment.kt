@@ -63,10 +63,19 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
         adult = if (Anilist.adult) intent.getBooleanExtra("hentai", false) else false
         listOnly = intent.getBooleanExtra("listOnly",false)
 
-        super.setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
+        setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
             val intent = Intent(requireActivity().applicationContext, TVAnimeDetailActivity::class.java)
             intent.putExtra("media", item as Media)
             startActivity(intent)
+        }
+
+        setOnItemViewSelectedListener { itemViewHolder, item, rowViewHolder, row ->
+            if (model.searchResults.hasNextPage && model.searchResults.results.isNotEmpty() && !loading) {
+                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                    loading=true
+                    model.loadNextPage(model.searchResults)
+                }
+            }
         }
 
         setObservers()
@@ -98,10 +107,8 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
                     hasNextPage = it.hasNextPage
                 }
 
-                val prev = model.searchResults.results.size
                 model.searchResults.results.addAll(it.results)
-                rowAdapter.clear()
-                rowAdapter.addAll(0,it.results)
+                rowAdapter.addAll(rowAdapter.size(),it.results)
             }
         }
     }
@@ -116,7 +123,6 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
         adult: Boolean = false,
         listOnly: Boolean? = null
     ) {
-        val size = model.searchResults.results.size
         model.searchResults.results.clear()
         rowAdapter.clear()
 
@@ -155,11 +161,11 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
     }
 
     override fun onQueryTextChange(newQuery: String?): Boolean {
+        search(newQuery)
         return true
     }
 
     override fun onQueryTextSubmit(query: String?): Boolean {
-        search(query)
         return true
     }
 

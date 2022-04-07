@@ -1,32 +1,33 @@
 package ani.saikou.tv
 
 import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
-import android.widget.TextView
 import androidx.core.graphics.drawable.toDrawable
+import androidx.core.math.MathUtils
 import androidx.fragment.app.activityViewModels
 import androidx.leanback.app.DetailsSupportFragment
 import androidx.leanback.app.DetailsSupportFragmentBackgroundController
 import androidx.leanback.widget.*
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
-import ani.saikou.*
+import ani.saikou.R
+import ani.saikou.Refresh
 import ani.saikou.anime.source.AnimeSources
 import ani.saikou.anime.source.HAnimeSources
+import ani.saikou.loadData
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
+import ani.saikou.saveData
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.tv.components.CustomListRowPresenter
 import ani.saikou.tv.presenters.EpisodePresenter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.transition.Transition
 import kotlinx.coroutines.*
+import kotlin.math.ceil
 
 class TVAnimeDetailFragment: DetailsSupportFragment() {
 
@@ -41,8 +42,7 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
     private lateinit var detailsBackground: DetailsSupportFragmentBackgroundController
 
     private lateinit var rowsAdapter: ArrayObjectAdapter
-
-    private lateinit var episodesAdapter: ArrayObjectAdapter
+    var episodePresenters = mutableListOf<ArrayObjectAdapter>()
     private lateinit var detailsOverview: DetailsOverviewRow
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,7 +70,6 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
 
         initializeBackground()
         val selector = ClassPresenterSelector().apply {
-            // Attach your media item details presenter to the row presenter:
             FullWidthDetailsOverviewRowPresenter(DetailsDescriptionPresenter()).also {
                 it.setOnActionClickedListener {
                     if (it.id.toInt() == 0) {
@@ -93,8 +92,7 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
         detailsOverview = DetailsOverviewRow(media)
         detailsOverview.actionsAdapter = actions
 
-        val episodePresenter = EpisodePresenter(1, media, this)
-        episodesAdapter = ArrayObjectAdapter(episodePresenter)
+
 
         adapter = rowsAdapter
 
@@ -141,9 +139,10 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
             if (loadedEpisodes != null) {
                 val episodes = loadedEpisodes[media.selected!!.source]
                 if (episodes != null) {
-                    episodesAdapter.clear()
+
+                    clearEpisodes()
+
                     episodes.forEach { (i, episode) ->
-                        episodesAdapter.add(episode)
                         if (media.anime?.fillerEpisodes != null) {
                             if (media.anime!!.fillerEpisodes!!.containsKey(i)) {
                                 episode.title = media.anime!!.fillerEpisodes!![i]?.title
@@ -160,10 +159,32 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
                             }
                         }
                     }
+
+                    //CHIP GROUP
+                    val total = episodes.size
+                    val divisions = total.toDouble() / 10
+                    val limit = when {
+                        (divisions < 25) -> 25
+                        (divisions < 50) -> 50
+                        else -> 100
+                    }
+
                     media.anime?.episodes = episodes
-                    rowsAdapter.notifyArrayItemRangeChanged(0,rowsAdapter.size())
 
+                    if (total > limit) {
+                        val arr = media.anime!!.episodes!!.keys.toTypedArray()
+                        val stored = ceil((total).toDouble() / limit).toInt()
 
+                        (1..stored).toList().forEachIndexed { index, i ->
+                            val last = if (index + 1 == stored) total else (limit * (index + 1))
+                            val start: Int = arr[limit * (index)].toInt()
+                            val end: Int = arr[last - 1].toInt()
+                            createEpisodePresenter("Episodes ${arr[limit * (index)]} - ${arr[last - 1]}").addAll(0, episodes.values.toList().subList(start-1, end))
+                        }
+
+                    } else {
+                        createEpisodePresenter("Episodes").addAll(0, episodes.values)
+                    }
                 }
             }
         }
@@ -198,9 +219,22 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
 
     }
 
+    private fun createEpisodePresenter(title: String): ArrayObjectAdapter {
+        val adapter = ArrayObjectAdapter(EpisodePresenter(1, media, this))
+        episodePresenters.add(adapter)
+        rowsAdapter.add(ListRow(HeaderItem(1, title), adapter))
+        return adapter
+    }
+
+    private fun clearEpisodes() {
+        episodePresenters.forEach {
+            rowsAdapter.remove(it)
+        }
+        episodePresenters.clear()
+    }
+
     private fun finishLoadingRows() {
         rowsAdapter.add(detailsOverview)
-        rowsAdapter.add(ListRow(HeaderItem(1, "Episodes"), episodesAdapter))
     }
 
     private fun initializeBackground() {

@@ -41,6 +41,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
     lateinit var updatedAdapter: ArrayObjectAdapter
     lateinit var popularAdapter: ArrayObjectAdapter
     lateinit var rowAdapter: ArrayObjectAdapter
+    var loading = true
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -129,6 +130,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                 scope.launch {
                     withContext(Dispatchers.IO) {
                         model.loaded = true
+                        loading = false
                         model.loadTrending()
                         model.loadUpdated()
                         model.loadPopular("ANIME", sort = "Popular")
@@ -185,6 +187,12 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         setOnItemViewSelectedListener { itemViewHolder, item, rowViewHolder, row ->
             //Pagination here??
+            if (model.searchResults.hasNextPage && model.searchResults.results.isNotEmpty() && !loading) {
+                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                    loading=true
+                    model.loadNextPage(model.searchResults)
+                }
+            }
         }
     }
 
