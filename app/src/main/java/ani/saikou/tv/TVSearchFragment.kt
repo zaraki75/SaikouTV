@@ -1,21 +1,38 @@
 package ani.saikou.tv
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.os.Handler
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.view.inputmethod.CompletionInfo
+import android.widget.FrameLayout
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.leanback.app.RowsSupportFragment
 import androidx.leanback.app.SearchSupportFragment
 import androidx.leanback.widget.*
+import androidx.leanback.widget.ObjectAdapter.DataObserver
+import androidx.leanback.widget.SearchBar.SearchBarListener
+import androidx.leanback.widget.SearchBar.SearchBarPermissionListener
 import androidx.lifecycle.lifecycleScope
 import ani.saikou.anilist.AnilistSearch
 import ani.saikou.anilist.SearchResults
 import ani.saikou.media.Media
+import ani.saikou.tv.components.SearchFragment
 import ani.saikou.tv.presenters.AnimePresenter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
-class TVSearch: SearchSupportFragment(), SearchSupportFragment.SearchResultProvider {
+class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProvider {
 
     lateinit var rowAdapter: ArrayObjectAdapter
     private val scope = lifecycleScope
@@ -32,10 +49,20 @@ class TVSearch: SearchSupportFragment(), SearchSupportFragment.SearchResultProvi
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        //AnimePresenter(0, requireActivity())
-        rowAdapter = ArrayObjectAdapter(ListRowPresenter())
 
-        val notSet = model.notSet
+        rowAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
+        super.setSearchResultProvider(this)
+
+        super.setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
+            val intent = Intent(requireActivity().applicationContext, TVAnimeDetailActivity::class.java)
+            intent.putExtra("media", item as Media)
+            startActivity(intent)
+        }
+
+        setObservers()
+    }
+
+    private fun setObservers(){
         if(model.notSet) {
             model.notSet = false
             model.searchResults = SearchResults(type,
@@ -62,19 +89,9 @@ class TVSearch: SearchSupportFragment(), SearchSupportFragment.SearchResultProvi
 
                 val prev = model.searchResults.results.size
                 model.searchResults.results.addAll(it.results)
-                val listRowAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
-
-                listRowAdapter.addAll(0,it.results)
-                rowAdapter.add(ListRow(HeaderItem("Results"), listRowAdapter))
+                rowAdapter.clear()
+                rowAdapter.addAll(0,it.results)
             }
-        }
-
-
-        setSearchResultProvider(this)
-        setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
-            val intent = Intent(requireActivity().applicationContext, TVAnimeDetailActivity::class.java)
-            intent.putExtra("media", item as Media)
-            startActivity(intent)
         }
     }
 

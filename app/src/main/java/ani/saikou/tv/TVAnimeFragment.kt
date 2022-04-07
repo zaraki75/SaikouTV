@@ -23,7 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class TVAnimeBrowser: BrowseSupportFragment()  {
+class TVAnimeFragment: BrowseSupportFragment()  {
 
     val model: AnilistAnimeViewModel by activityViewModels()
     lateinit var rowAdapter: ArrayObjectAdapter
@@ -119,29 +119,9 @@ class TVAnimeBrowser: BrowseSupportFragment()  {
                 super.onScrolled(v, dx, dy)
             }
         })*/
-        //animePresenter = AnimePresenter(0, requireActivity())
-        /*val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
-
-        val gridHeader = HeaderItem(NUM_ROWS.toLong(), "PREFERENCES")
-
-        val mGridPresenter = GridItemPresenter()
-        val gridRowAdapter = ArrayObjectAdapter(mGridPresenter)
-        gridRowAdapter.add("Cosas")
-        gridRowAdapter.add("Mas cosas")
-        gridRowAdapter.add("Aunmas cosas")
-        rowsAdapter.add(ListRow(gridHeader, gridRowAdapter))
-
-        val gridHeader2 = HeaderItem(NUM_ROWS.toLong(), "PREFERENCES")
-
-        val mGridPresenter2 = GridItemPresenter()
-        val gridRowAdapter2 = ArrayObjectAdapter(mGridPresenter)
-        gridRowAdapter2.add("Cosas")
-        gridRowAdapter2.add("Mas cosas")
-        gridRowAdapter2.add("Aunmas cosas")
-        rowsAdapter.add(ListRow(gridHeader2, gridRowAdapter2))*/
-
-        rowAdapter = ArrayObjectAdapter(ListRowPresenter())
-
+        val presenter = ListRowPresenter()
+        presenter.shadowEnabled = false
+        rowAdapter = ArrayObjectAdapter(presenter)
         adapter = rowAdapter
 
         model.getUpdated().observe(viewLifecycleOwner) {
@@ -203,9 +183,6 @@ class TVAnimeBrowser: BrowseSupportFragment()  {
             val intent = Intent(requireActivity().applicationContext, TVSearchActivity::class.java)
             startActivity(intent)
         }
-
-        rowAdapter = ArrayObjectAdapter(ListRowPresenter())
-        adapter = rowAdapter
 
         setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
 

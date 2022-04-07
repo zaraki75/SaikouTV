@@ -4,19 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginStart="-16dp"
-    android:layout_marginEnd="-16dp"
     android:clipToPadding="false"
     android:gravity="center_horizontal"
     android:orientation="vertical">
-
-    <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="-16dp"
-        android:layout_marginBottom="-16dp"
-        android:clipToPadding="false"
-        android:padding="24dp">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/itemCompactCard"
@@ -26,7 +16,7 @@
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp">
 
-            <com.google.android.material.imageview.ShapeableImageView
+            <ImageView
                 android:id="@+id/itemCompactImage"
                 android:layout_width="108dp"
                 android:layout_height="160dp"
@@ -85,7 +75,6 @@
                 android:layout_height="match_parent"
                 android:background="@drawable/item_ongoing" />
         </androidx.cardview.widget.CardView>
-    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/itemCompactType"
