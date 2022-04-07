@@ -5,10 +5,9 @@
     android:id="@+id/itemEpisodeCont"
     android:layout_width="400dp"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    android:backgroundTintMode="src_atop"
+    android:layout_margin="15dp"
     android:longClickable="true"
-    app:cardBackgroundColor="@color/nav_bg"
+    app:cardBackgroundColor="@color/cardview_dark_background"
     app:cardCornerRadius="16dp">
 
     <View
@@ -115,7 +114,6 @@
                     android:fontFamily="@font/poppins_bold"
                     android:text="@string/filler"
                     android:textAlignment="center"
-                    android:textColor="@android:color/black"
                     android:textStyle="italic"
                     android:visibility="gone"
                     app:lineHeight="15sp" />
@@ -125,7 +123,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ellipsize="marquee"
-                    android:textColor="@android:color/black"
+                    android:textColor="@color/bg_white"
                     android:fontFamily="@font/poppins_bold"
                     android:text="@string/empty"
                     app:lineHeight="15sp" />
@@ -143,7 +141,7 @@
             android:maxLines="3"
             android:padding="16dp"
             app:lineHeight="16sp"
-            android:textColor="@android:color/black"
+            android:textColor="@color/bg_white"
             tools:ignore="TextContrastCheck"
             tools:text="@tools:sample/lorem/random" />
 

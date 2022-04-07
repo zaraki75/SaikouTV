@@ -23,8 +23,10 @@ import androidx.leanback.widget.ObjectAdapter.DataObserver
 import androidx.leanback.widget.SearchBar.SearchBarListener
 import androidx.leanback.widget.SearchBar.SearchBarPermissionListener
 import androidx.lifecycle.lifecycleScope
+import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistSearch
 import ani.saikou.anilist.SearchResults
+import ani.saikou.loadData
 import ani.saikou.media.Media
 import ani.saikou.tv.components.SearchFragment
 import ani.saikou.tv.presenters.AnimePresenter
@@ -53,6 +55,14 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
         rowAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
         super.setSearchResultProvider(this)
 
+        val intent = requireActivity().intent
+        type = intent.getStringExtra("type") ?: type
+        genre = intent.getStringExtra("genre")
+        sortBy = intent.getStringExtra("sortBy")
+        //style = loadData<Int>("searchStyle") ?: 0
+        adult = if (Anilist.adult) intent.getBooleanExtra("hentai", false) else false
+        listOnly = intent.getBooleanExtra("listOnly",false)
+
         super.setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
             val intent = Intent(requireActivity().applicationContext, TVAnimeDetailActivity::class.java)
             intent.putExtra("media", item as Media)
@@ -60,6 +70,7 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
         }
 
         setObservers()
+        search(null,genre,tag,sortBy,adult,listOnly)
     }
 
     private fun setObservers(){

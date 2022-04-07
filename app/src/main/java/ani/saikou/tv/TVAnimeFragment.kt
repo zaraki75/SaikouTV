@@ -7,89 +7,50 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.leanback.app.BrowseSupportFragment
 import androidx.leanback.widget.*
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import ani.saikou.R
 import ani.saikou.Refresh
+import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistAnimeViewModel
+import ani.saikou.anilist.GenresViewModel
 import ani.saikou.anilist.SearchResults
+import ani.saikou.loadData
 import ani.saikou.media.Media
 import ani.saikou.tv.presenters.AnimePresenter
+import ani.saikou.tv.presenters.GenresPresenter
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class TVAnimeFragment: BrowseSupportFragment()  {
 
     val model: AnilistAnimeViewModel by activityViewModels()
+    val genresModel: GenresViewModel by viewModels()
+
+    lateinit var genresAdapter: ArrayObjectAdapter
+    lateinit var trendingAdapter: ArrayObjectAdapter
+    lateinit var updatedAdapter: ArrayObjectAdapter
+    lateinit var popularAdapter: ArrayObjectAdapter
     lateinit var rowAdapter: ArrayObjectAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupUIElements()
 
-        val scope = viewLifecycleOwner.lifecycleScope
-
-        /*var height = statusBarHeight
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val displayCutout = activity?.window?.decorView?.rootWindowInsets?.displayCutout
-            if (displayCutout != null) {
-                if (displayCutout.boundingRects.size > 0) {
-                    height = max(
-                        statusBarHeight,
-                        min(
-                            displayCutout.boundingRects[0].width(),
-                            displayCutout.boundingRects[0].height()
-                        )
-                    )
-                }
-            }
-        }
-        binding.animeRefresh.setSlingshotDistance(height + 128)
-        binding.animeRefresh.setProgressViewEndTarget(false, height + 128)
-        binding.animeRefresh.setOnRefreshListener {
-            Refresh.activity[this.hashCode()]!!.postValue(true)
-        }*/
-
-        //binding.animePageRecyclerView.updatePaddingRelative(bottom = navBarHeight+160f.px)
-
         if(model.notSet) {
             model.notSet = false
             model.searchResults = SearchResults("ANIME", isAdult = false, onList = false, results = arrayListOf(), hasNextPage = true, sort = "Popular")
         }
-        /*val popularAdaptor = MediaAdaptor(1, model.searchResults.results ,requireActivity())
-        val progressAdaptor = ProgressAdapter(searched = model.searched)
-        val adapter = ConcatAdapter(animePageAdapter,popularAdaptor,progressAdaptor)
-        binding.animePageRecyclerView.adapter = adapter
-        val layout =  LinearLayoutManager(requireContext())
-        binding.animePageRecyclerView.layoutManager = layout*/
 
-        /*var visible=false
-        fun animate(){
-            val start = if(visible) 0f else 1f
-            val end = if(!visible) 0f else 1f
-            ObjectAnimator.ofFloat(binding.animePageScrollTop,"scaleX",start,end).apply {
-                duration=300
-                interpolator = OvershootInterpolator(2f)
-                start()
-            }
-            ObjectAnimator.ofFloat(binding.animePageScrollTop,"scaleY",start,end).apply {
-                duration=300
-                interpolator = OvershootInterpolator(2f)
-                start()
-            }
-        }*/
-
-        /*binding.animePageScrollTop.setOnClickListener{
-            binding.animePageRecyclerView.scrollToPosition(4)
-            binding.animePageRecyclerView.smoothScrollToPosition(0)
-        }*/
-
-
+        //TODO Pagination of all lists
         /*binding.animePageRecyclerView.addOnScrollListener(object :
             RecyclerView.OnScrollListener() {
             override fun onScrolled(v: RecyclerView, dx: Int, dy: Int) {
@@ -119,33 +80,48 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                 super.onScrolled(v, dx, dy)
             }
         })*/
+
+
+
         val presenter = ListRowPresenter()
         presenter.shadowEnabled = false
         rowAdapter = ArrayObjectAdapter(presenter)
         adapter = rowAdapter
 
-        model.getUpdated().observe(viewLifecycleOwner) {
-                    if (it != null) {
-                        val listRowAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
-                        listRowAdapter.addAll(0, it)
-                        rowAdapter.add(ListRow(HeaderItem("Recent"), listRowAdapter))
+        genresAdapter = ArrayObjectAdapter(GenresPresenter("ANIME",true))
+        trendingAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
+        popularAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
+        updatedAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
 
-                    }
-                }
+        //This determines order in screen
+        rowAdapter.add(ListRow(HeaderItem(0, "Trending"), trendingAdapter))
+        rowAdapter.add(ListRow(HeaderItem(1, "Genres"), genresAdapter))
+        rowAdapter.add(ListRow(HeaderItem(0, "Trending"), popularAdapter))
+        rowAdapter.add(ListRow(HeaderItem(0, "Trending"), updatedAdapter))
 
+        observeData()
+    }
+
+    private fun observeData() {
         model.getTrending().observe(viewLifecycleOwner) {
-                if (it != null) {
-                    val listRowAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
-                    listRowAdapter.addAll(0, it)
-                    rowAdapter.add(ListRow(HeaderItem("Trending"), listRowAdapter))
-                }
-        }
-        /*model.getPopular().observe(viewLifecycleOwner) {
             if (it != null) {
-
+                trendingAdapter.addAll(0, it)
             }
-        }*/
+        }
 
+        model.getUpdated().observe(viewLifecycleOwner) {
+            if (it != null) {
+                updatedAdapter.addAll(0, it)
+            }
+        }
+
+        model.getPopular().observe(viewLifecycleOwner) {
+            if (it != null) {
+                popularAdapter.addAll(0, it.results)
+            }
+        }
+
+        val scope = viewLifecycleOwner.lifecycleScope
         val live = Refresh.activity.getOrPut(this.hashCode()) { MutableLiveData(true) }
         live.observe(viewLifecycleOwner) {
             if (it) {
@@ -154,13 +130,17 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                         model.loaded = true
                         model.loadTrending()
                         model.loadUpdated()
-                        //model.loadPopular("ANIME", sort = "Popular")
+                        model.loadPopular("ANIME", sort = "Popular")
+                        genresModel.loadGenres(Anilist.genres?: loadData("genres_list") ?: arrayListOf()) {
+                            MainScope().launch {
+                                genresAdapter.add(it)
+                            }
+                        }
                     }
                     live.postValue(false)
                 }
             }
         }
-
     }
 
     private fun setupUIElements() {
@@ -169,10 +149,10 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         isHeadersTransitionOnBackEnabled = true
 
         // Set fastLane (or headers) background color
-        //brandColor =
+        brandColor = ContextCompat.getColor(requireActivity(), R.color.violet_700)
 
         // Set search icon color.
-        searchAffordanceColor = ContextCompat.getColor(requireActivity(), R.color.lb_default_search_color)
+        searchAffordanceColor = ContextCompat.getColor(requireActivity(), R.color.bg_black)
         /*setHeaderPresenterSelector(object : PresenterSelector() {
             override fun getPresenter(o: Any): Presenter {
                 return AnimePresenter(0, requireActivity())
@@ -186,9 +166,19 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
 
-            val intent = Intent(requireActivity().applicationContext, TVAnimeDetailActivity::class.java)
-            intent.putExtra("media", item as Media)
-            startActivity(intent)
+            if (item is Media) {
+                val intent =
+                    Intent(requireActivity().applicationContext, TVAnimeDetailActivity::class.java)
+                intent.putExtra("media", item as Media)
+                startActivity(intent)
+            } else if (item is Pair<*,*>) {
+                ContextCompat.startActivity(requireContext(), Intent(requireContext(), TVSearchActivity::class.java).putExtra("type","ANIME").putExtra("genre",item.first as String).putExtra("sortBy","Trending").also {
+                    //TODO deal with this when we have settings on TV
+                    /* if(item.lowercase()=="hentai") {
+                        it.putExtra("hentai", true)
+                    }*/
+                },null)
+            }
         }
 
         setOnItemViewSelectedListener { itemViewHolder, item, rowViewHolder, row ->
