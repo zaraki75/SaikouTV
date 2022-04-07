@@ -20,6 +20,7 @@ import ani.saikou.anime.source.HAnimeSources
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.settings.UserInterfaceSettings
+import ani.saikou.tv.components.CustomListRowPresenter
 import ani.saikou.tv.presenters.EpisodePresenter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
@@ -82,7 +83,7 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
                 }
                 addClassPresenter(DetailsOverviewRow::class.java, it)
             }
-            val presenter = ListRowPresenter(FocusHighlight.ZOOM_FACTOR_MEDIUM, false)
+            val presenter = CustomListRowPresenter(FocusHighlight.ZOOM_FACTOR_MEDIUM, false)
             presenter.shadowEnabled = false
             addClassPresenter(ListRow::class.java, presenter)
         }

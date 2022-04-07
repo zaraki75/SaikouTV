@@ -23,6 +23,7 @@ import ani.saikou.anilist.GenresViewModel
 import ani.saikou.anilist.SearchResults
 import ani.saikou.loadData
 import ani.saikou.media.Media
+import ani.saikou.tv.components.CustomListRowPresenter
 import ani.saikou.tv.presenters.AnimePresenter
 import ani.saikou.tv.presenters.GenresPresenter
 import kotlinx.coroutines.Dispatchers
@@ -83,7 +84,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
 
 
-        val presenter = ListRowPresenter()
+        val presenter = CustomListRowPresenter(FocusHighlight.ZOOM_FACTOR_MEDIUM, false)
         presenter.shadowEnabled = false
         rowAdapter = ArrayObjectAdapter(presenter)
         adapter = rowAdapter
@@ -94,10 +95,10 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         updatedAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
 
         //This determines order in screen
-        rowAdapter.add(ListRow(HeaderItem(0, "Trending"), trendingAdapter))
         rowAdapter.add(ListRow(HeaderItem(1, "Genres"), genresAdapter))
-        rowAdapter.add(ListRow(HeaderItem(0, "Trending"), popularAdapter))
-        rowAdapter.add(ListRow(HeaderItem(0, "Trending"), updatedAdapter))
+        rowAdapter.add(ListRow(HeaderItem(0, "Trending"), trendingAdapter))
+        rowAdapter.add(ListRow(HeaderItem(0, "Popular"), popularAdapter))
+        rowAdapter.add(ListRow(HeaderItem(0, "Updated"), updatedAdapter))
 
         observeData()
     }
@@ -149,10 +150,11 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         isHeadersTransitionOnBackEnabled = true
 
         // Set fastLane (or headers) background color
-        brandColor = ContextCompat.getColor(requireActivity(), R.color.violet_700)
+        //brandColor = ContextCompat.getColor(requireActivity(), R.color.violet_700)
+        badgeDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_logo)
 
         // Set search icon color.
-        searchAffordanceColor = ContextCompat.getColor(requireActivity(), R.color.bg_black)
+        //searchAffordanceColor = ContextCompat.getColor(requireActivity(), R.color.bg_black)
         /*setHeaderPresenterSelector(object : PresenterSelector() {
             override fun getPresenter(o: Any): Presenter {
                 return AnimePresenter(0, requireActivity())
