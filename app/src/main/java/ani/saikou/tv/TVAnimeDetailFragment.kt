@@ -225,7 +225,7 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
     }
 
     private fun clearEpisodes() {
-        rowsAdapter.removeItems(1,rowsAdapter.size()-1)
+        rowsAdapter.removeItems(1,episodePresenters.count())
         episodePresenters.clear()
     }
 
