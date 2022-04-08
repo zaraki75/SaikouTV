@@ -65,7 +65,18 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
     }
 
     private fun buildDetails() {
-        media = activity?.intent?.getSerializableExtra("media") as Media
+        val mediaObject = activity?.intent?.getSerializableExtra("media")
+        if (mediaObject is Int) {
+            //TODO null check this monster
+            val name = activity?.intent?.getStringExtra("name")
+            val nameRomanji = activity?.intent?.getStringExtra("nameRomaji")
+            val userPreferredName = activity?.intent?.getStringExtra("userPreferredName")
+            val isAdult = activity?.intent?.getBooleanExtra("isAdult", false)
+            media = Media(id = mediaObject, name = name!!, nameRomaji = nameRomanji!!, userPreferredName = userPreferredName!!, isAdult = isAdult!!)
+        } else {
+            media = mediaObject as Media
+        }
+
         media.selected = model.loadSelected(media)
 
         initializeBackground()
@@ -225,7 +236,7 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
     }
 
     private fun clearEpisodes() {
-        rowsAdapter.removeItems(1,episodePresenters.count())
+        rowsAdapter.removeItems(1, episodePresenters.count())
         episodePresenters.clear()
     }
 

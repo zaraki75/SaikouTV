@@ -1,13 +1,12 @@
 package ani.saikou.tv
 
+import android.content.ContentUris
+import android.content.Context
 import android.content.Intent
-import android.graphics.Color
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
-import android.widget.TextView
-import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -15,6 +14,8 @@ import androidx.leanback.app.BrowseSupportFragment
 import androidx.leanback.widget.*
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.tvprovider.media.tv.PreviewProgram
+import androidx.tvprovider.media.tv.TvContractCompat
 import ani.saikou.R
 import ani.saikou.Refresh
 import ani.saikou.anilist.Anilist
@@ -52,39 +53,6 @@ class TVAnimeFragment: BrowseSupportFragment()  {
             model.searchResults = SearchResults("ANIME", isAdult = false, onList = false, results = arrayListOf(), hasNextPage = true, sort = "Popular")
         }
 
-        //TODO Pagination of all lists
-        /*binding.animePageRecyclerView.addOnScrollListener(object :
-            RecyclerView.OnScrollListener() {
-            override fun onScrolled(v: RecyclerView, dx: Int, dy: Int) {
-                if (!v.canScrollVertically(1)) {
-                    if (model.searchResults.hasNextPage && model.searchResults.results.isNotEmpty() && !loading) {
-                        scope.launch(Dispatchers.IO) {
-                            loading=true
-                            model.loadNextPage(model.searchResults)
-                        }
-                    }
-                }
-                if(layout.findFirstVisibleItemPosition()>1 && !visible){
-                    binding.animePageScrollTop.visibility = View.VISIBLE
-                    visible = true
-                    animate()
-                }
-
-                if(!v.canScrollVertically(-1)){
-                    visible = false
-                    animate()
-                    scope.launch{
-                        delay(300)
-                        binding.animePageScrollTop.visibility = View.GONE
-                    }
-                }
-
-                super.onScrolled(v, dx, dy)
-            }
-        })*/
-
-
-
         val presenter = CustomListRowPresenter(FocusHighlight.ZOOM_FACTOR_MEDIUM, false)
         presenter.shadowEnabled = false
         rowAdapter = ArrayObjectAdapter(presenter)
@@ -107,6 +75,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
     private fun observeData() {
         model.getTrending().observe(viewLifecycleOwner) {
             if (it != null) {
+                updateHomeTVChannel(it)
                 trendingAdapter.addAll(0, it)
             }
         }
@@ -186,7 +155,6 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         }
 
         setOnItemViewSelectedListener { itemViewHolder, item, rowViewHolder, row ->
-            //Pagination here??
             if (model.searchResults.hasNextPage && model.searchResults.results.isNotEmpty() && !loading) {
                 viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                     loading=true
@@ -195,29 +163,41 @@ class TVAnimeFragment: BrowseSupportFragment()  {
             }
         }
     }
-
-
-    private inner class GridItemPresenter : Presenter() {
-        override fun onCreateViewHolder(parent: ViewGroup): Presenter.ViewHolder {
-            val view = TextView(parent.context)
-            view.layoutParams = ViewGroup.LayoutParams(GRID_ITEM_WIDTH, GRID_ITEM_HEIGHT)
-            view.isFocusable = true
-            view.isFocusableInTouchMode = true
-            view.setBackgroundColor(ContextCompat.getColor(activity!!, R.color.cardview_dark_background))
-            view.setTextColor(Color.WHITE)
-            view.gravity = Gravity.CENTER
-            return ViewHolder(view)
+    
+    private fun updateHomeTVChannel(animes: List<Media>) {
+        clearHomeTVChannel()
+        animes.forEach {
+            addMediaToHomeTVChannel(it)
         }
-
-        override fun onBindViewHolder(viewHolder: Presenter.ViewHolder, item: Any) {
-            (viewHolder.view as TextView).text = item as String
-        }
-
-        override fun onUnbindViewHolder(viewHolder: Presenter.ViewHolder) {}
     }
 
-    companion object {
-        private val GRID_ITEM_WIDTH = 200
-        private val GRID_ITEM_HEIGHT = 200
+    
+    private fun clearHomeTVChannel() {
+        requireContext().contentResolver.delete(TvContractCompat.PreviewPrograms.CONTENT_URI, null, null)
+    }
+
+    private fun addMediaToHomeTVChannel(media: Media): Long {
+        val sharedPref = requireActivity().getPreferences(Context.MODE_PRIVATE) ?: return -1
+        val channelID = sharedPref.getLong(TVMainActivity.defaultChannelIDKey, -1)
+        if (channelID == -1L) return -1
+
+        val intent = Intent(requireContext(), TVMainActivity::class.java)
+        intent.putExtra("media", media.id)
+
+        val builder = PreviewProgram.Builder()
+        builder.setChannelId(channelID)
+            .setType(TvContractCompat.PreviewPrograms.TYPE_TV_SERIES)
+            .setTitle(media.name)
+            .setDescription(media.description)
+            .setPosterArtUri(Uri.parse(media.cover))
+            .setIntent(intent)
+
+        val programURI = requireContext().contentResolver.insert(TvContractCompat.PreviewPrograms.CONTENT_URI,
+            builder.build().toContentValues())
+        programURI?.let {
+            return ContentUris.parseId(it)
+        } ?: run {
+            return -1
+        }
     }
 }
