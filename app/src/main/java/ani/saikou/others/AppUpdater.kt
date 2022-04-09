@@ -128,19 +128,23 @@ object AppUpdater {
     }
 
     fun openApk(context: Context, uri: Uri) {
-        uri.path?.let {
-            val contentUri = FileProvider.getUriForFile(
-                context,
-                BuildConfig.APPLICATION_ID + ".provider",
-                File(it)
-            )
-            val installIntent = Intent(Intent.ACTION_VIEW).apply {
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
-                data = contentUri
+        try{
+            uri.path?.let {
+                val contentUri = FileProvider.getUriForFile(
+                    context,
+                    BuildConfig.APPLICATION_ID + ".provider",
+                    File(it)
+                )
+                val installIntent = Intent(Intent.ACTION_VIEW).apply {
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
+                    data = contentUri
+                }
+                context.startActivity(installIntent)
             }
-            context.startActivity(installIntent)
+        }catch (e:Exception){
+            toastString(e.toString())
         }
     }
 }
