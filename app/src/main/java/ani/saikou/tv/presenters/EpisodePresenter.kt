@@ -54,7 +54,7 @@ class EpisodePresenter(
                 }
                 binding.itemEpisodeDesc.visibility = if (ep.desc!=null && ep.desc?.trim(' ')!="") View.VISIBLE else View.GONE
                 binding.itemEpisodeDesc.text = ep.desc?:""
-                binding.itemEpisodeTitle.text = ep.title?:media.userPreferredName
+                binding.itemEpisodeTitle.text = "${if(!ep.title.isNullOrEmpty() && ep.title!="null") "" else "Episode "}${ep.number}${if(!ep.title.isNullOrEmpty() && ep.title!="null") " : "+ep.title else ""}"
                 if (media.userProgress!=null) {
                     if (ep.number.toFloatOrNull()?:9999f<=media.userProgress!!.toFloat()) {
                         binding.itemEpisodeViewedCover.visibility= View.VISIBLE
