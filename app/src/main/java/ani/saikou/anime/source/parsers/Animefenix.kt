@@ -156,7 +156,7 @@ class Animefenix(private val dub:Boolean=false, override val name: String = "Ani
         val responseArray = mutableMapOf<String,Episode>()
         try{
             val pageBody = Jsoup.connect(slug).get()
-            pageBody.select("ul.anime-page__episode-list.is-size-6 li").forEach { it ->
+            pageBody.select("ul.anime-page__episode-list.is-size-6 li").reversed().forEach { it ->
                 val epNum = it.select("a span").text().replace("Episodio", "")
                 logger("Episode-$epNum")
                 val url = it.select("a").attr("href")

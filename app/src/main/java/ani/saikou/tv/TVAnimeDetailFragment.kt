@@ -33,6 +33,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.min
 
 class TVAnimeDetailFragment : DetailsSupportFragment() {
 
@@ -162,8 +164,7 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
         model.getEpisodes().observe(viewLifecycleOwner) { loadedEpisodes ->
             loadedEpisodes?.let { epMap ->
                 epMap[media.selected!!.source]?.let { ep ->
-                    val episodes = ep.toSortedMap(compareBy { it.trim().toInt() })
-                    episodes.remove("0")
+                    val episodes = ep
                     media.anime?.episodes = ep
 
                     clearEpisodes()
@@ -195,22 +196,26 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
                         else -> 100
                     }
 
-                    if(total == 0){
-                        rowsAdapter.removeItems(1,rowsAdapter.size()-1)
+                    if (total == 0) {
+                        rowsAdapter.removeItems(1, rowsAdapter.size() - 1)
                         rowsAdapter.add(HeaderOnlyRow("No episodes found, try another source"))
                     } else if (total > limit) {
                         val arr = episodes.keys.toList()
-                        val stored = ceil((total).toDouble() / limit).toInt()
+                        val numberOfChips = ceil((total).toDouble() / limit).toInt()
 
-                        (1..stored).toList().forEachIndexed { index, i ->
-                            val last = if (index + 1 == stored) total else (limit * (index + 1))
-                            val start: Int = arr[limit * (index)].trim().toInt()
-                            val end: Int = arr[last - 1].trim().toInt()
+
+                        for (index in 0..numberOfChips - 1) {
+                            val last =
+                                if (index + 1 == numberOfChips) total else (limit * (index + 1))
+                            val startIndex = limit * (index)
+                            val start = arr[startIndex]
+                            val end = arr[last - 1]
                             createEpisodePresenter("Episodes ${start} - ${end}").addAll(
                                 0,
-                                episodes.values.toList().subList(start - 1, end)
+                                episodes.values.toList().subList(startIndex, min(startIndex+limit,episodes.values.size))
                             )
                         }
+
                     } else {
                         createEpisodePresenter("Episodes").addAll(
                             0,
@@ -259,7 +264,7 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
     }
 
     private fun clearEpisodes() {
-        rowsAdapter.removeItems(1, rowsAdapter.size()-1)
+        rowsAdapter.removeItems(1, rowsAdapter.size() - 1)
         episodePresenters.clear()
     }
 

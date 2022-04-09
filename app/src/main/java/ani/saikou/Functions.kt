@@ -793,7 +793,7 @@ class EmptyAdapter(private val count:Int):RecyclerView.Adapter<RecyclerView.View
 }
 
 fun toastString(s: String?,activity: Activity?=null){
-    if(s!=null) {
+   /* if(s!=null) {
         (activity?:currActivity())?.apply{
             runOnUiThread {
                 val snackBar = Snackbar.make(window.decorView.findViewById(android.R.id.content), s, Snackbar.LENGTH_LONG)
@@ -813,7 +813,7 @@ fun toastString(s: String?,activity: Activity?=null){
             }
         }
         logger(s)
-    }
+    }*/
 }
 
 open class NoPaddingArrayAdapter<T>(context: Context, layoutId: Int, items: List<T>) : ArrayAdapter<T>(context, layoutId, items) {

@@ -127,7 +127,7 @@ open class SearchFragment : Fragment() {
                             + " adapter " + rowsSupportFragment!!.adapter
                 )
             }
-            if (mAutoStartRecognition) {
+            if (false) { //Was mAutoStartRecognition
                 mHandler.removeCallbacks(mStartRecognitionRunnable)
                 mHandler.postDelayed(
                     mStartRecognitionRunnable,
@@ -335,6 +335,7 @@ open class SearchFragment : Fragment() {
 
     override fun onDestroy() {
         releaseAdapter()
+        mSpeechRecognizer?.destroy()
         super.onDestroy()
     }
 
