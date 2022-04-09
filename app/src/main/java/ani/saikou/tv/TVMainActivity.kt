@@ -103,7 +103,7 @@ class TVMainActivity : FragmentActivity() {
                     apply()
                 }
 
-                ChannelLogoUtils.storeChannelLogo(this, channelID, getDrawable(R.drawable.banner2)!!.toBitmap())
+                ChannelLogoUtils.storeChannelLogo(this, channelID, getDrawable(R.drawable.saikouflush)!!.toBitmap())
                 TvContractCompat.requestChannelBrowsable(this, channelID)
             }
         }

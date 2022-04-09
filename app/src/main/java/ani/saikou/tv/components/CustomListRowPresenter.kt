@@ -15,4 +15,5 @@ class CustomListRowPresenter(focusZoomFactor: Int, useFocusDimmer: Boolean) :
         //Custom dim here
     }
 
+
 }

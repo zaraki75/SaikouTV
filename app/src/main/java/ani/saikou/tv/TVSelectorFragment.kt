@@ -59,18 +59,9 @@ class TVSelectorFragment: VerticalGridSupportFragment() {
                 episode = media?.anime?.episodes?.get(media?.anime?.selectedEpisode)
                 if(episode!=null){
                     if (selected != null) {
-                       /* binding.selectorListContainer.visibility = View.GONE
-                        binding.selectorAutoListContainer.visibility = View.VISIBLE
-                        binding.selectorAutoText.text = selected
-                        binding.selectorCancel.setOnClickListener {
-                            media!!.selected!!.stream = null
-                            model.saveSelected(media!!.id, media!!.selected!!, requireActivity())
-                            requireActivity().supportFragmentManager.popBackStack()
-                        }*/
+
                         fun fail() {
-                            toastString("Couldn't auto select the server, Please try again!")
                            cancel()
-                            //binding.selectorCancel.performClick()
                         }
 
                         fun load() {
@@ -97,26 +88,12 @@ class TVSelectorFragment: VerticalGridSupportFragment() {
                         } else load()
                     }
                     else {
-                        /*binding.selectorRecyclerView.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin = navBarHeight }
-                        binding.selectorRecyclerView.adapter = null
-                        binding.selectorProgressBar.visibility = View.VISIBLE*/
                         makeDefault = loadData("make_default") ?:true
-                        /*binding.selectorMakeDefault.isChecked = makeDefault
-                        binding.selectorMakeDefault.setOnClickListener {
-                            makeDefault = binding.selectorMakeDefault.isChecked
-                            saveData("make_default",makeDefault)
-                        }*/
+
                         fun load() {
-                            //binding.selectorProgressBar.visibility = View.GONE
                             media!!.anime?.episodes?.set(media!!.anime?.selectedEpisode?:"",
                                 episode!!
                             )
-                           /* binding.selectorRecyclerView.layoutManager = LinearLayoutManager(
-                                requireActivity(),
-                                LinearLayoutManager.VERTICAL,
-                                false
-                            )
-                            binding.selectorRecyclerView.adapter = StreamAdapter()*/
 
                             val links = episode!!.streamLinks
                             val linkList = mutableListOf<Episode.StreamLinks>()
@@ -124,7 +101,6 @@ class TVSelectorFragment: VerticalGridSupportFragment() {
                             links.keys.toList().forEach { key ->
                                 links[key]?.let { links ->
                                     links.quality.forEach {
-                                        //this shouldnt be done with that model
                                         linkList.add(Episode.StreamLinks(links.server, listOf(it), links.headers, links.subtitles))
                                     }
                                 }
@@ -159,7 +135,6 @@ class TVSelectorFragment: VerticalGridSupportFragment() {
             val intent = Intent(activity, TVVideoActivity::class.java).apply {
                 putExtra("media", media)
             }
-            //requireActivity().supportFragmentManager.popBackStack("Detail", FragmentManager.POP_BACK_STACK_INCLUSIVE)
             startActivity(intent)
         }
         else{
@@ -219,13 +194,15 @@ class TVSelectorFragment: VerticalGridSupportFragment() {
                 if(url.quality!="Multi Quality") {
                     binding.urlSize.visibility = if(url.size!=null) View.VISIBLE else View.GONE
                     binding.urlSize.text = (if (url.note!=null) " : " else "")+ DecimalFormat("#.##").format(url.size?:0).toString()+" MB"
-                    binding.urlDownload.visibility = View.VISIBLE
+
+                    //TODO Download? on TV?
+                    /*binding.urlDownload.visibility = View.VISIBLE
                     binding.urlDownload.setOnClickListener {
                         media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedStream = server
                         media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedQuality = qualityPos
                         download(requireActivity(),media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!,media!!.userPreferredName)
-                    }
-                }else binding.urlDownload.visibility = View.GONE
+                    }*/
+                }
 
             }
         }

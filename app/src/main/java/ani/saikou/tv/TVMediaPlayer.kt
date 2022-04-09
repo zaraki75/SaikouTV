@@ -83,6 +83,8 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
             }
         }
 
+        surfaceView.keepScreenOn = true
+
         episodeObserverRunnable.run()
 
         //Handle Media

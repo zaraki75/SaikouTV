@@ -56,6 +56,7 @@
         <item name="android:windowBackground">@drawable/shape_corner_16dp</item>
     </style>
 
+    <!--TV Themes-->
     <style name="Theme.SaikouTV" parent="Theme.Leanback">
         <item name="android:statusBarColor">@color/status</item>
         <item name="colorPrimary">@color/pink_500</item>

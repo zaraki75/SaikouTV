@@ -5,7 +5,6 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
 import androidx.core.graphics.drawable.toDrawable
-import androidx.core.math.MathUtils
 import androidx.fragment.app.activityViewModels
 import androidx.leanback.app.DetailsSupportFragment
 import androidx.leanback.app.DetailsSupportFragmentBackgroundController
@@ -22,21 +21,26 @@ import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.saveData
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.tv.components.CustomListRowPresenter
+import ani.saikou.tv.components.HeaderRow
+import ani.saikou.tv.presenters.HeaderRowPresenter
 import ani.saikou.tv.presenters.EpisodePresenter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 import kotlin.math.ceil
 
-class TVAnimeDetailFragment: DetailsSupportFragment() {
+class TVAnimeDetailFragment : DetailsSupportFragment() {
 
     private val model: MediaDetailsViewModel by activityViewModels()
     private val scope = lifecycleScope
     val actions = ArrayObjectAdapter()
 
     private lateinit var media: Media
-    lateinit var uiSettings : UserInterfaceSettings
+    lateinit var uiSettings: UserInterfaceSettings
     var loaded = false
 
     private lateinit var detailsBackground: DetailsSupportFragmentBackgroundController
@@ -49,7 +53,8 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
         super.onCreate(savedInstanceState)
         detailsBackground = DetailsSupportFragmentBackgroundController(this)
 
-        uiSettings = loadData("ui_settings", toast = false) ?:UserInterfaceSettings().apply { saveData("ui_settings",this) }
+        uiSettings = loadData("ui_settings", toast = false)
+            ?: UserInterfaceSettings().apply { saveData("ui_settings", this) }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -72,7 +77,13 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
             val nameRomanji = activity?.intent?.getStringExtra("nameRomaji")
             val userPreferredName = activity?.intent?.getStringExtra("userPreferredName")
             val isAdult = activity?.intent?.getBooleanExtra("isAdult", false)
-            media = Media(id = mediaObject, name = name!!, nameRomaji = nameRomanji!!, userPreferredName = userPreferredName!!, isAdult = isAdult!!)
+            media = Media(
+                id = mediaObject,
+                name = name!!,
+                nameRomaji = nameRomanji!!,
+                userPreferredName = userPreferredName!!,
+                isAdult = isAdult!!
+            )
         } else {
             media = mediaObject as Media
         }
@@ -96,6 +107,7 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
             val presenter = CustomListRowPresenter(FocusHighlight.ZOOM_FACTOR_MEDIUM, false)
             presenter.shadowEnabled = false
             addClassPresenter(ListRow::class.java, presenter)
+            addClassPresenter(HeaderRow::class.java, HeaderRowPresenter())
         }
 
         rowsAdapter = ArrayObjectAdapter(selector)
@@ -111,12 +123,12 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
 
     fun observeData() {
         model.getKitsuEpisodes().observe(viewLifecycleOwner) { i ->
-            if(i!=null)
+            if (i != null)
                 media.anime?.kitsuEpisodes = i
         }
 
         model.getFillerEpisodes().observe(viewLifecycleOwner) { i ->
-            if(i!=null)
+            if (i != null)
                 media.anime?.fillerEpisodes = i
         }
 
@@ -127,8 +139,9 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
 
                 finishLoadingRows()
 
-                if(!loaded) {
-                    model.watchAnimeWatchSources = if (media.isAdult) HAnimeSources else AnimeSources
+                if (!loaded) {
+                    model.watchAnimeWatchSources =
+                        if (media.isAdult) HAnimeSources else AnimeSources
 
                     setupActions()
 
@@ -145,9 +158,11 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
         }
 
         model.getEpisodes().observe(viewLifecycleOwner) { loadedEpisodes ->
-            if (loadedEpisodes != null) {
-                val episodes = loadedEpisodes[media.selected!!.source]
-                if (episodes != null) {
+            loadedEpisodes?.let { epMap ->
+                epMap[media.selected!!.source]?.let { ep ->
+                    val episodes = ep.toSortedMap(compareBy { it.trim().toInt() })
+                    episodes.remove("0")
+                    media.anime?.episodes = ep
 
                     clearEpisodes()
 
@@ -178,29 +193,31 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
                         else -> 100
                     }
 
-                    media.anime?.episodes = episodes
-
                     if (total > limit) {
-                        val arr = media.anime!!.episodes!!.keys.toTypedArray()
+                        val arr = episodes.keys.toList()
                         val stored = ceil((total).toDouble() / limit).toInt()
 
                         (1..stored).toList().forEachIndexed { index, i ->
                             val last = if (index + 1 == stored) total else (limit * (index + 1))
-                            val start: Int = arr[limit * (index)].toInt()
-                            val end: Int = arr[last - 1].toInt()
-                            createEpisodePresenter("Episodes ${arr[limit * (index)]} - ${arr[last - 1]}").addAll(0, episodes.values.toList().subList(start-1, end))
+                            val start: Int = arr[limit * (index)].trim().toInt()
+                            val end: Int = arr[last - 1].trim().toInt()
+                            createEpisodePresenter("Episodes ${start} - ${end}").addAll(
+                                0,
+                                episodes.values.toList().subList(start - 1, end)
+                            )
                         }
 
                     } else {
-                        createEpisodePresenter("Episodes").addAll(0, episodes.values)
+                        rowsAdapter.removeItems(1,rowsAdapter.size()-1)
+                        rowsAdapter.add(HeaderRow())
                     }
                 }
             }
         }
 
-        val live = Refresh.activity.getOrPut(this.hashCode()){ MutableLiveData(true) }
-        live.observe(requireActivity()){
-            if(it){
+        val live = Refresh.activity.getOrPut(this.hashCode()) { MutableLiveData(true) }
+        live.observe(requireActivity()) {
+            if (it) {
                 scope.launch(Dispatchers.IO) {
                     model.loadMedia(media)
                     live.postValue(false)
@@ -212,7 +229,7 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
     fun onEpisodeClick(i: String) {
         model.continueMedia = false
 
-        if (media.anime?.episodes?.get(i)!=null) {
+        if (media.anime?.episodes?.get(i) != null) {
             media.anime!!.selectedEpisode = i
         } else {
             return
@@ -250,10 +267,11 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
             .asBitmap()
             .centerInside()
             .load(media.banner)
-            .into(object : CustomTarget<Bitmap>(){
+            .into(object : CustomTarget<Bitmap>() {
                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                     detailsBackground.coverBitmap = resource
                 }
+
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
     }
@@ -262,24 +280,27 @@ class TVAnimeDetailFragment: DetailsSupportFragment() {
         Glide.with(this)
             .asBitmap()
             .load(media.cover)
-            .into(object : CustomTarget<Bitmap>(){
+            .into(object : CustomTarget<Bitmap>() {
                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                     detailsOverview.apply {
                         imageDrawable = resource.toDrawable(requireActivity().resources)
                     }
                 }
+
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
     }
 
     private fun setupActions() {
         actions.clear()
-        val selectedSourceName: String? = model.watchAnimeWatchSources?.names?.get(media!!.selected?.source
-            ?: 0)
+        val selectedSourceName: String? = model.watchAnimeWatchSources?.names?.get(
+            media!!.selected?.source
+                ?: 0
+        )
         selectedSourceName?.let {
-            actions.add(Action(0,"Source: "+ it))
-        }?: kotlin.run {
-            actions.add(Action(0,"Select Source"))
+            actions.add(Action(0, "Source: " + it))
+        } ?: kotlin.run {
+            actions.add(Action(0, "Select Source"))
         }
     }
 
