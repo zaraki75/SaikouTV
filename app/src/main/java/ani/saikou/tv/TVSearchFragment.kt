@@ -37,6 +37,8 @@ import java.util.*
 
 class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProvider {
 
+    private val PAGING_THRESHOLD = 40
+
     lateinit var rowAdapter: ArrayObjectAdapter
     private val scope = lifecycleScope
 
@@ -71,7 +73,7 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
         }
 
         setOnItemViewSelectedListener { itemViewHolder, item, rowViewHolder, row ->
-            if (model.searchResults.hasNextPage && model.searchResults.results.isNotEmpty() && !loading) {
+            if (model.searchResults.hasNextPage && model.searchResults.results.isNotEmpty() && !loading && isNearEndOfList(rowAdapter, item)) {
                 viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                     loading=true
                     model.loadNextPage(model.searchResults)
@@ -82,6 +84,16 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
         setObservers()
         search(null,genre,tag,sortBy,adult,listOnly)
         setLoadingVisibility(View.VISIBLE)
+    }
+
+    private fun isNearEndOfList(adapter: ArrayObjectAdapter, item: Any): Boolean {
+        var found = false
+        for (i in adapter.size()-PAGING_THRESHOLD until adapter.size()-1) {
+            if(adapter.get(i) == item) {
+                found = true
+            }
+        }
+        return found
     }
 
     private fun setObservers(){

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
@@ -33,6 +34,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class TVAnimeFragment: BrowseSupportFragment()  {
+
+    private val PAGING_THRESHOLD = 15
 
     val model: AnilistAnimeViewModel by activityViewModels()
     val genresModel: GenresViewModel by viewModels()
@@ -88,7 +91,9 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         model.getPopular().observe(viewLifecycleOwner) {
             if (it != null) {
-                popularAdapter.addAll(0, it.results)
+                loading = false
+                model.searchResults = it
+                popularAdapter.addAll(popularAdapter.size(), it.results)
             }
         }
 
@@ -155,15 +160,27 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         }
 
         setOnItemViewSelectedListener { itemViewHolder, item, rowViewHolder, row ->
-            if (model.searchResults.hasNextPage && model.searchResults.results.isNotEmpty() && !loading) {
-                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-                    loading=true
-                    model.loadNextPage(model.searchResults)
+            item?.let {
+                if ((row as ListRow).adapter == popularAdapter && model.searchResults.hasNextPage && model.searchResults.results.isNotEmpty() && !loading && isNearEndOfList(popularAdapter, item)) {
+                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                        loading=true
+                        model.loadNextPage(model.searchResults)
+                    }
                 }
             }
         }
     }
-    
+
+    private fun isNearEndOfList(adapter: ArrayObjectAdapter, item: Any): Boolean {
+        var found = false
+        for (i in adapter.size()-PAGING_THRESHOLD until adapter.size()-1) {
+            if(adapter.get(i) == item) {
+                found = true
+            }
+        }
+        return found
+    }
+
     private fun updateHomeTVChannel(animes: List<Media>) {
         clearHomeTVChannel()
         animes.forEach {
