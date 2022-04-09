@@ -1,5 +1,6 @@
 package ani.saikou.manga
 
+import android.animation.ObjectAnimator
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.databinding.ItemImageBinding
 import ani.saikou.px
 import ani.saikou.settings.CurrentReaderSettings
+import ani.saikou.settings.UserInterfaceSettings
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.request.target.CustomViewTarget
@@ -23,6 +25,7 @@ import java.io.File
 class ImageAdapter(
 private val chapter: MangaChapter,
 private val settings: CurrentReaderSettings,
+private val uiSettings: UserInterfaceSettings
 ): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val images = chapter.images?: arrayListOf()
 
@@ -46,10 +49,11 @@ private val settings: CurrentReaderSettings,
                 binding.imgProgImageNoGestures
             }else binding.imgProgImageGestures
 
-            binding.imgProgProgress.visibility= View.VISIBLE
+            imageView.recycle()
+            imageView.visibility= View.VISIBLE
 
-
-            Glide.with(imageView).download(GlideUrl(images[position]){chapter.headers?: mutableMapOf()}).override(Target.SIZE_ORIGINAL)
+            Glide.with(imageView).download(GlideUrl(images[position]){chapter.headers?: mutableMapOf()})
+            .override(Target.SIZE_ORIGINAL)
             .apply{
                 val target = object : CustomViewTarget<SubsamplingScaleImageView, File>(imageView) {
                     override fun onLoadFailed(errorDrawable: Drawable?) {
@@ -63,6 +67,7 @@ private val settings: CurrentReaderSettings,
                             height = ViewGroup.LayoutParams.WRAP_CONTENT
                         }
                         view.setImage(ImageSource.uri(Uri.fromFile(resource)))
+                        ObjectAnimator.ofFloat(binding.root,"alpha",0f,1f).setDuration((400*uiSettings.animationSpeed).toLong()).start()
                         binding.imgProgProgress.visibility= View.GONE
                     }
                 }

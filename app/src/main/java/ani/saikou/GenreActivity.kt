@@ -25,6 +25,7 @@ class GenreActivity : AppCompatActivity() {
         binding = ActivityGenreBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initActivity(this)
+
         binding.genreContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> { topMargin += statusBarHeight;bottomMargin+= navBarHeight }
         val screenWidth = resources.displayMetrics.run { widthPixels / density }
         val type = intent.getStringExtra("type")
