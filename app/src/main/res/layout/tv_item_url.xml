@@ -16,6 +16,14 @@
             android:padding="10dp"
             android:paddingStart="20dp"
             android:paddingEnd="20dp">
+            <TextView
+                android:id="@+id/serverName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins_bold"
+                android:gravity="center"
+                android:textSize="16sp"
+                tools:ignore="NestedWeights" />
 
             <TextView
                 android:id="@+id/urlQuality"
@@ -23,6 +31,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins_bold"
                 android:gravity="center_vertical"
+                android:textColor="@color/violet_400"
                 android:textSize="16sp"
                 tools:ignore="NestedWeights" />
 

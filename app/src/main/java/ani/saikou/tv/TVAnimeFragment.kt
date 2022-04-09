@@ -72,6 +72,8 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         rowAdapter.add(ListRow(HeaderItem(0, "Popular"), popularAdapter))
         rowAdapter.add(ListRow(HeaderItem(0, "Updated"), updatedAdapter))
 
+        progressBarManager.initialDelay = 0
+        progressBarManager.show()
         observeData()
     }
 
@@ -80,12 +82,14 @@ class TVAnimeFragment: BrowseSupportFragment()  {
             if (it != null) {
                 updateHomeTVChannel(it)
                 trendingAdapter.addAll(0, it)
+                progressBarManager.hide()
             }
         }
 
         model.getUpdated().observe(viewLifecycleOwner) {
             if (it != null) {
                 updatedAdapter.addAll(0, it)
+                progressBarManager.hide()
             }
         }
 
@@ -94,6 +98,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                 loading = false
                 model.searchResults = it
                 popularAdapter.addAll(popularAdapter.size(), it.results)
+                progressBarManager.hide()
             }
         }
 

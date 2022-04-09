@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.leanback.app.ProgressBarManager
 import androidx.leanback.app.VerticalGridSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.Presenter
@@ -47,6 +48,8 @@ class TVSelectorFragment: VerticalGridSupportFragment() {
 
         title = "Select quality"
 
+        progressBarManager.initialDelay = 0
+        progressBarManager.show()
         val presenter = VerticalGridPresenter()
         presenter.numberOfColumns = 1
         gridPresenter = presenter
@@ -109,6 +112,7 @@ class TVSelectorFragment: VerticalGridSupportFragment() {
                             val arrayAdapter = ArrayObjectAdapter(StreamAdapter())
                             arrayAdapter.addAll(0, linkList)
                             adapter = arrayAdapter
+                            progressBarManager.hide()
                         }
                         if (episode!!.streamLinks.isEmpty() || !episode!!.allStreams) {
                             model.getEpisode().observe(viewLifecycleOwner) {
@@ -188,6 +192,7 @@ class TVSelectorFragment: VerticalGridSupportFragment() {
 
                 val binding = holder.binding
                 val url = quality
+                binding.serverName.text = stream.server
                 binding.urlQuality.text = url.quality
                 binding.urlNote.text = url.note?:""
                 binding.urlNote.visibility = if(url.note!=null) View.VISIBLE else View.GONE
