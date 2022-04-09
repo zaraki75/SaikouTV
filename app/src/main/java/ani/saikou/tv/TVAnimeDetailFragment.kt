@@ -193,7 +193,10 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
                         else -> 100
                     }
 
-                    if (total > limit) {
+                    if(total == 0){
+                        rowsAdapter.removeItems(1,rowsAdapter.size()-1)
+                        rowsAdapter.add(HeaderOnlyRow("No episodes found, try another source"))
+                    } else if (total > limit) {
                         val arr = episodes.keys.toList()
                         val stored = ceil((total).toDouble() / limit).toInt()
 
@@ -206,10 +209,11 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
                                 episodes.values.toList().subList(start - 1, end)
                             )
                         }
-
                     } else {
-                        rowsAdapter.removeItems(1,rowsAdapter.size()-1)
-                        rowsAdapter.add(HeaderOnlyRow("No episodes found, try another source"))
+                        createEpisodePresenter("Episodes").addAll(
+                            0,
+                            episodes.values.toList()
+                        )
                     }
                 }
             }
