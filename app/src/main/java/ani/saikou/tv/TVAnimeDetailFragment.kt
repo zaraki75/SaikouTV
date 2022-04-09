@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
+import android.widget.ProgressBar
 import androidx.core.graphics.drawable.toDrawable
 import androidx.fragment.app.activityViewModels
 import androidx.leanback.app.DetailsSupportFragment
@@ -59,6 +60,7 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
 
         buildDetails()
         observeData()
@@ -264,6 +266,7 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
     private fun finishLoadingRows() {
         rowsAdapter.add(detailsOverview)
         rowsAdapter.add(HeaderOnlyRow(null))
+        requireActivity().findViewById<ProgressBar>(R.id.progress).visibility = View.GONE
     }
 
     private fun initializeBackground() {
