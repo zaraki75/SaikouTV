@@ -1,5 +1,6 @@
 package ani.saikou.anilist
 
+import android.app.Activity
 import ani.saikou.*
 import ani.saikou.anime.Anime
 import ani.saikou.manga.Manga
@@ -11,23 +12,33 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
-import org.jsoup.Connection
-import org.jsoup.Jsoup
+import okhttp3.FormBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
 import java.io.Serializable
 import java.net.UnknownHostException
 
+val httpClient =  OkHttpClient()
+
 fun executeQuery(query:String, variables:String="",force:Boolean=false,useToken:Boolean=true,show:Boolean=false): JsonObject? {
     try {
-        val set = Jsoup.connect("https://graphql.anilist.co/")
+        val formBody: RequestBody = FormBody.Builder()
+            .add("query", query)
+            .add("variables", variables)
+            .build()
+
+        val request = Request.Builder()
+            .url("https://graphql.anilist.co/")
             .header("Content-Type", "application/json")
             .header("Accept", "application/json")
-            .requestBody("""{"query":"$query","variables": "$variables"}""")
-            .maxBodySize(0)
-            .ignoreContentType(true).ignoreHttpErrors(true)
+            .post(formBody)
+
+
         if (Anilist.token!=null || force) {
-            if (Anilist.token!=null && useToken) set.header("Authorization", "Bearer ${Anilist.token}")
-            val json = set.method(Connection.Method.POST).execute().body().toString()
-            if(show) logger("JSON : $json")
+            if (Anilist.token!=null && useToken) request.header("Authorization", "Bearer ${Anilist.token}")
+            val json = httpClient.newCall(request.build()).execute().body?.string()?:return null
+            if(show) toastString("JSON : $json")
             val js = Json.decodeFromString<JsonObject>(json)
             if(js["data"]!=JsonNull)
                 return js
@@ -565,12 +576,13 @@ class AnilistQueries{
     }
 
 
-    fun getGenresAndTags():Boolean{
-        var genres:ArrayList<String>? = loadData("genres_list")
-        var tags:ArrayList<String>? = loadData("tags_list")
+    fun getGenresAndTags(activity: Activity):Boolean{
+        var genres:ArrayList<String>? = loadData("genres_list",activity)
+        var tags:ArrayList<String>? = loadData("tags_list",activity)
 
         if (genres==null) {
-            executeQuery("""{GenreCollection}""", force = true)?.get("data")?.apply {
+            executeQuery("""{GenreCollection}""", force = true, useToken = false, show = true)?.get("data")?.apply {
+//                toastString(this.toString())
                 if(this!=JsonNull){
                     genres = arrayListOf()
                     this.jsonObject["GenreCollection"]?.apply {
@@ -616,8 +628,8 @@ class AnilistQueries{
     private fun getGenreThumbnail(genre:String):Genre?{
         val genres = loadData<MutableMap<String,Genre>>("genre_thumb")?: mutableMapOf()
         if(genres.checkTime(genre)){
-            try {
-                val genreQuery = """{ Page(perPage: 10){media(genre:\"$genre\", sort: TRENDING_DESC, type: ANIME, countryOfOrigin:\"JP\") {id bannerImage } } }"""
+//            try {
+                val genreQuery = """{ Page(perPage: 10){media(genre:"$genre", sort: TRENDING_DESC, type: ANIME, countryOfOrigin:"JP") {id bannerImage } } }"""
                 val response = executeQuery(genreQuery, force = true)!!["data"]!!.jsonObject["Page"]!!
                 if (response.jsonObject["media"] != JsonNull) {
                     response.jsonObject["media"]!!.jsonArray.forEach {
@@ -634,9 +646,9 @@ class AnilistQueries{
                         }
                     }
                 }
-            } catch (e: Exception) {
-                toastString(e.toString())
-            }
+//            } catch (e: Exception) {
+//                toastString(e.toString())
+//            }
         }else{
             return genres[genre]!!
         }
@@ -700,15 +712,15 @@ query (${"$"}page: Int = 1, ${"$"}id: Int, ${"$"}type: MediaType, ${"$"}isAdult:
   }
 }
         """.replace("\n", " ").replace("""  """, "")
-        val variables = """{\"type\":\"$type\",\"isAdult\":$isAdult
-            ${if (onList != null) """,\"onList\":$onList""" else ""}
-            ${if (page != null) """,\"page\":\"$page\"""" else ""}
-            ${if (id != null) """,\"id\":\"$id\"""" else ""}
-            ${if (search != null) """,\"search\":\"$search\"""" else ""}
-            ${if (Anilist.sortBy.containsKey(sort)) """,\"sort\":\"${Anilist.sortBy[sort]}\"""" else ""}
-            ${if (format != null) """,\"format\":\"$format\"""" else ""}
-            ${if (genres?.isNotEmpty() == true) """,\"genres\":\"${genres[0]}\"""" else ""}
-            ${if (tags?.isNotEmpty() == true) """,\"tags\":\"${tags[0]}\"""" else ""}
+        val variables = """{"type":"$type","isAdult":$isAdult
+            ${if (onList != null) ""","onList":$onList""" else ""}
+            ${if (page != null) ""","page":"$page"""" else ""}
+            ${if (id != null) ""","id":"$id"""" else ""}
+            ${if (search != null) ""","search":"$search"""" else ""}
+            ${if (Anilist.sortBy.containsKey(sort)) ""","sort":"${Anilist.sortBy[sort]}"""" else ""}
+            ${if (format != null) ""","format":"$format"""" else ""}
+            ${if (genres?.isNotEmpty() == true) ""","genres":"${genres[0]}"""" else ""}
+            ${if (tags?.isNotEmpty() == true) ""","tags":"${tags[0]}"""" else ""}
             }""".replace("\n", " ").replace("""  """, "")
         val response = executeQuery(query, variables, true)
         if(response!=null){

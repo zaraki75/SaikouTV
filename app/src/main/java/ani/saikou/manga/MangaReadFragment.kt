@@ -101,7 +101,7 @@ open class MangaReadFragment: Fragment()  {
                     reverse = media.selected!!.recyclerReversed
 
                     if(!loaded) {
-                        model.readMangaMangaReadSources = if (media.isAdult) HMangaSources else MangaSources
+                        model.readMangaReadSources = if (media.isAdult) HMangaSources else MangaSources
 
                         headerAdapter = MangaReadAdapter(it, this, mangaReadSources)
                         chapterAdapter = MangaChapterAdapter(style?:uiSettings.mangaDefaultView, media, this)
