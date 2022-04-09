@@ -1,9 +1,11 @@
 package ani.saikou.tv.presenters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.leanback.widget.RowPresenter
 import ani.saikou.databinding.TvHeaderRowBinding
+import ani.saikou.tv.components.HeaderOnlyRow
 
 class HeaderRowPresenter: RowPresenter() {
     override fun createRowViewHolder(parent: ViewGroup?): ViewHolder {
@@ -14,9 +16,17 @@ class HeaderRowPresenter: RowPresenter() {
         return false
     }
 
-    inner class HeaderRowViewholder(val binding: TvHeaderRowBinding) : ViewHolder(binding.root) {
-        init {
-            binding.title.text = "No episodes found, try another source"
+    override fun onBindRowViewHolder(vh: ViewHolder?, item: Any?) {
+        (vh as HeaderRowViewholder)?.let { holder ->
+            (item as HeaderOnlyRow)?.title?.let { item ->
+                holder.binding.title.text = item
+                holder.binding.progress.visibility = View.GONE
+            } ?: run {
+            holder.binding.title.visibility = View.GONE
+            holder.binding.progress.visibility = View.VISIBLE
+            }
         }
     }
+
+    inner class HeaderRowViewholder(val binding: TvHeaderRowBinding) : ViewHolder(binding.root) {}
 }

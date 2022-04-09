@@ -21,7 +21,7 @@ import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.saveData
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.tv.components.CustomListRowPresenter
-import ani.saikou.tv.components.HeaderRow
+import ani.saikou.tv.components.HeaderOnlyRow
 import ani.saikou.tv.presenters.HeaderRowPresenter
 import ani.saikou.tv.presenters.EpisodePresenter
 import com.bumptech.glide.Glide
@@ -107,7 +107,7 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
             val presenter = CustomListRowPresenter(FocusHighlight.ZOOM_FACTOR_MEDIUM, false)
             presenter.shadowEnabled = false
             addClassPresenter(ListRow::class.java, presenter)
-            addClassPresenter(HeaderRow::class.java, HeaderRowPresenter())
+            addClassPresenter(HeaderOnlyRow::class.java, HeaderRowPresenter())
         }
 
         rowsAdapter = ArrayObjectAdapter(selector)
@@ -209,7 +209,7 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
 
                     } else {
                         rowsAdapter.removeItems(1,rowsAdapter.size()-1)
-                        rowsAdapter.add(HeaderRow())
+                        rowsAdapter.add(HeaderOnlyRow("No episodes found, try another source"))
                     }
                 }
             }
@@ -253,12 +253,13 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
     }
 
     private fun clearEpisodes() {
-        rowsAdapter.removeItems(1, episodePresenters.count())
+        rowsAdapter.removeItems(1, rowsAdapter.size()-1)
         episodePresenters.clear()
     }
 
     private fun finishLoadingRows() {
         rowsAdapter.add(detailsOverview)
+        rowsAdapter.add(HeaderOnlyRow(null))
     }
 
     private fun initializeBackground() {

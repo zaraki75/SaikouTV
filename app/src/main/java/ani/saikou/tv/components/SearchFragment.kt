@@ -14,6 +14,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.CompletionInfo
 import android.widget.FrameLayout
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
 import androidx.leanback.R
 import androidx.leanback.app.RowsSupportFragment
@@ -43,6 +45,8 @@ import androidx.leanback.widget.*
  */
 
 open class SearchFragment : Fragment() {
+
+    lateinit var progress: ProgressBar
 
     val mAdapterObserver: ObjectAdapter.DataObserver = object : ObjectAdapter.DataObserver() {
         override fun onChanged() {
@@ -166,6 +170,11 @@ open class SearchFragment : Fragment() {
         )
     }
 
+    fun setLoadingVisibility(visibility: Int) {
+        progress?.visibility = visibility
+    }
+
+
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<String>,
         grantResults: IntArray
@@ -189,7 +198,8 @@ open class SearchFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val root = inflater.inflate(ani.saikou.R.layout.tv_search_fragment, container, false)
-        val searchFrame = root.findViewById<View>(R.id.lb_search_frame) as FrameLayout
+        progress = root.findViewById<ProgressBar>(ani.saikou.R.id.progress) as ProgressBar
+        val searchFrame = root.findViewById<View>(R.id.lb_search_frame) as RelativeLayout
         mSearchBar = searchFrame.findViewById<View>(R.id.lb_search_bar) as SearchBar
         mSearchBar!!.setSearchBarListener(object : SearchBar.SearchBarListener {
             override fun onSearchQueryChange(query: String) {

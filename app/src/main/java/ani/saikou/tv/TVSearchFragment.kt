@@ -31,6 +31,7 @@ import ani.saikou.media.Media
 import ani.saikou.tv.components.SearchFragment
 import ani.saikou.tv.presenters.AnimePresenter
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -80,6 +81,7 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
 
         setObservers()
         search(null,genre,tag,sortBy,adult,listOnly)
+        setLoadingVisibility(View.VISIBLE)
     }
 
     private fun setObservers(){
@@ -92,7 +94,7 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
                 hasNextPage = false)
         }
 
-        model.getSearch().observe(this) {
+        model.getSearch().observe(viewLifecycleOwner) {
             if (it != null) {
                 model.searchResults.apply {
                     onList = it.onList
@@ -106,7 +108,8 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
                     page = it.page
                     hasNextPage = it.hasNextPage
                 }
-
+                loading = false
+                setLoadingVisibility(View.GONE)
                 model.searchResults.results.addAll(it.results)
                 rowAdapter.addAll(rowAdapter.size(),it.results)
             }
@@ -139,6 +142,9 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
             override fun run() {
                 scope.launch(Dispatchers.IO) {
                     loading = true
+                    MainScope().launch {
+                        setLoadingVisibility(View.VISIBLE)
+                    }
                     model.loadSearch(
                         type,
                         search,
@@ -148,7 +154,6 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
                         adult,
                         listOnly
                     )
-                    loading = false
                 }
             }
         }
