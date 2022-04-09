@@ -15,7 +15,6 @@ import ani.saikou.loadData
 import ani.saikou.logger
 import ani.saikou.manga.MangaChapter
 import ani.saikou.manga.source.MangaReadSources
-import ani.saikou.manga.source.MangaSources
 import ani.saikou.others.AnimeFillerList
 import ani.saikou.others.Kitsu
 import ani.saikou.saveData
@@ -85,7 +84,6 @@ class MediaDetailsViewModel:ViewModel() {
     private var episode: MutableLiveData<Episode?> = MutableLiveData<Episode?>(null)
     fun getEpisode() : LiveData<Episode?> = episode
     fun loadEpisodeStreams(ep: Episode,i:Int,post:Boolean=true){
-        println("load Streams")
         if(!ep.allStreams || ep.streamLinks.isNullOrEmpty() || !ep.saveStreams) {
             watchAnimeWatchSources?.get(i)?.getStreams(ep)?.apply {
                 this.allStreams = true
@@ -101,7 +99,6 @@ class MediaDetailsViewModel:ViewModel() {
     }
     fun loadEpisodeStream(ep: Episode,selected: Selected,post: Boolean=true):Boolean{
         return if(selected.stream!=null) {
-            println("load Stream")
             if(ep.streamLinks.isNullOrEmpty() || !ep.saveStreams) {
                 watchAnimeWatchSources?.get(selected.source)?.getStream(ep, selected.stream!!)?.apply {
                     this.allStreams = false
@@ -144,7 +141,7 @@ class MediaDetailsViewModel:ViewModel() {
 
 
     //Manga
-    var readMangaMangaReadSources: MangaReadSources?=null
+    var readMangaReadSources: MangaReadSources?=null
 
     private val mangaChapters: MutableLiveData<MutableMap<Int,MutableMap<String,MangaChapter>>> = MutableLiveData<MutableMap<Int,MutableMap<String,MangaChapter>>>(null)
     private val mangaLoaded = mutableMapOf<Int,MutableMap<String,MangaChapter>>()
@@ -152,13 +149,21 @@ class MediaDetailsViewModel:ViewModel() {
     fun loadMangaChapters(media:Media,i:Int){
         logger("Loading Manga Chapters : $mangaLoaded")
         if(!mangaLoaded.containsKey(i)){
-            mangaLoaded[i] = MangaSources[i]!!.getChapters(media)
+            mangaLoaded[i] = readMangaReadSources?.get(i)!!.getChapters(media)
         }
         mangaChapters.postValue(mangaLoaded)
     }
+
     fun overrideMangaChapters(i: Int, source: Source,id:Int){
-        MangaSources[i]!!.saveSource(source,id)
-        mangaLoaded[i] = MangaSources[i]!!.getLinkChapters(source.link)
+        readMangaReadSources?.get(i)!!.saveSource(source,id)
+        mangaLoaded[i] = readMangaReadSources?.get(i)!!.getLinkChapters(source.link)
         mangaChapters.postValue(mangaLoaded)
+    }
+
+    private val mangaChapter = MutableLiveData<MangaChapter?>(null)
+    fun getMangaChapter(): LiveData<MangaChapter?> = mangaChapter
+    fun loadMangaChapterImages(chapter: MangaChapter,selected: Selected){
+        readMangaReadSources?.get(selected.source)?.getChapter(chapter)
+        mangaChapter.postValue(chapter)
     }
 }

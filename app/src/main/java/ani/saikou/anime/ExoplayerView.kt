@@ -71,15 +71,20 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-
+@SuppressLint("SetTextI18n", "ClickableViewAccessibility")
 class ExoplayerView : AppCompatActivity(), Player.Listener {
-    private lateinit var binding : ActivityExoplayerBinding
+    private val resumeWindow = "resumeWindow"
+    private val resumePosition = "resumePosition"
+    private val playerFullscreen = "playerFullscreen"
+    private val playerOnPlay = "playerOnPlay"
+
     private lateinit var exoPlayer: ExoPlayer
     private lateinit var trackSelector: DefaultTrackSelector
     private lateinit var cacheFactory : CacheDataSource.Factory
     private lateinit var playbackParameters: PlaybackParameters
     private lateinit var mediaItem : MediaItem
 
+    private lateinit var binding : ActivityExoplayerBinding
     private lateinit var playerView: StyledPlayerView
     private lateinit var exoPlay: ImageButton
     private lateinit var exoSource: ImageButton
@@ -97,7 +102,9 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     private lateinit var videoInfo : TextView
     private lateinit var serverInfo : TextView
     private lateinit var episodeTitle : Spinner
+
     private var orientationListener : OrientationEventListener? =null
+    private var progressDialog : AlertDialog.Builder?=null
 
     private lateinit var media: Media
     private lateinit var episode: Episode
@@ -106,9 +113,9 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     private lateinit var episodeTitleArr: ArrayList<String>
     private var currentEpisodeIndex = 0
     private var epChanging = false
-    private var progressDialog : AlertDialog.Builder?=null
     private var showProgressDialog = true
 
+    private var notchHeight:Int=0
     private var currentWindow = 0
     private var playbackPosition: Long = 0
     private var episodeLength: Float = 0f
@@ -118,10 +125,13 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     private var changingServer = false
     private var interacted = false
 
+    private var t1=Timer()
+    private var t2=Timer()
+
     private var settings = PlayerSettings()
     private var uiSettings = UserInterfaceSettings()
 
-    val handler = Handler(Looper.getMainLooper())
+    private val handler = Handler(Looper.getMainLooper())
     private val model: MediaDetailsViewModel by viewModels()
 
     override fun onDestroy() {
@@ -129,10 +139,6 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         VideoCache.release()
         super.onDestroy()
     }
-
-    @SuppressLint("ClickableViewAccessibility")
-
-    var notchHeight:Int=0
 
     override fun onAttachedToWindow() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -171,7 +177,6 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
     }
 
-    @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityExoplayerBinding.inflate(layoutInflater)
@@ -226,10 +231,10 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         playerView.subtitleView?.setFixedTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
 
         if (savedInstanceState != null) {
-            currentWindow = savedInstanceState.getInt(STATE_RESUME_WINDOW)
-            playbackPosition = savedInstanceState.getLong(STATE_RESUME_POSITION)
-            isFullscreen = savedInstanceState.getInt(STATE_PLAYER_FULLSCREEN)
-            isPlayerPlaying = savedInstanceState.getBoolean(STATE_PLAYER_PLAYING)
+            currentWindow = savedInstanceState.getInt(resumeWindow)
+            playbackPosition = savedInstanceState.getLong(resumePosition)
+            isFullscreen = savedInstanceState.getInt(playerFullscreen)
+            isPlayerPlaying = savedInstanceState.getBoolean(playerOnPlay)
         }
 
         //BackButton
@@ -684,7 +689,6 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
     }
 
-    @SuppressLint("SetTextI18n")
     private fun initPlayer(){
         checkNotch()
 
@@ -804,11 +808,11 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
     override fun onSaveInstanceState(outState: Bundle) {
         if(isInitialized) {
-            outState.putInt(STATE_RESUME_WINDOW, exoPlayer.currentMediaItemIndex)
-            outState.putLong(STATE_RESUME_POSITION, exoPlayer.currentPosition)
+            outState.putInt(resumeWindow, exoPlayer.currentMediaItemIndex)
+            outState.putLong(resumePosition, exoPlayer.currentPosition)
         }
-        outState.putInt(STATE_PLAYER_FULLSCREEN, isFullscreen)
-        outState.putBoolean(STATE_PLAYER_PLAYING, isPlayerPlaying)
+        outState.putInt(playerFullscreen, isFullscreen)
+        outState.putBoolean(playerOnPlay, isPlayerPlaying)
         super.onSaveInstanceState(outState)
     }
 
@@ -869,7 +873,6 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
     }
 
-    @SuppressLint("SetTextI18n")
     override fun onRenderedFirstFrame() {
         super.onRenderedFirstFrame()
         saveData("${media.id}_${media.anime!!.selectedEpisode}_max",exoPlayer.duration,this)
@@ -946,7 +949,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         super.onPlaybackStateChanged(playbackState)
     }
 
-    fun progress(runnable: Runnable){
+    private fun progress(runnable: Runnable){
         if (exoPlayer.currentPosition / episodeLength > settings.watchPercentage && Anilist.userid != null) {
             if (showProgressDialog && progressDialog!=null) {
                 progressDialog?.setCancelable(false)
@@ -1020,8 +1023,6 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     }
 
     //Double Tap Animation
-    private var t1=Timer()
-    private var t2=Timer()
     private fun hideLayer(v:View,text:View){
         val timerTask = object : TimerTask() {
             override fun run() {
@@ -1044,6 +1045,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             t2.schedule(timerTask, 450)
         }
     }
+
     private fun viewDoubleTapped(v:View,event:MotionEvent?=null,text:TextView){
         ObjectAnimator.ofFloat(text,"alpha",1f,1f).setDuration(600).start()
         ObjectAnimator.ofFloat(text,"alpha",0f,1f).setDuration(150).start()

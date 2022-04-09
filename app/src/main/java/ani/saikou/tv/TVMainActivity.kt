@@ -69,7 +69,7 @@ class TVMainActivity : FragmentActivity() {
             if (!load) {
                 Anilist.getSavedToken(this)
                 scope.launch(Dispatchers.IO) {
-                    model.genres.postValue(Anilist.query.getGenresAndTags())
+                    model.genres.postValue(Anilist.query.getGenresAndTags(this@TVMainActivity))
                     //AppUpdater.check(this@MainActivity)
                 }
                 load = true
