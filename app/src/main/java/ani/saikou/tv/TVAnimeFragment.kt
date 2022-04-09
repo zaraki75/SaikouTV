@@ -176,6 +176,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         for (i in adapter.size()-PAGING_THRESHOLD until adapter.size()-1) {
             if(adapter.get(i) == item) {
                 found = true
+                break
             }
         }
         return found

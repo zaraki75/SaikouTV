@@ -91,6 +91,7 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
         for (i in adapter.size()-PAGING_THRESHOLD until adapter.size()-1) {
             if(adapter.get(i) == item) {
                 found = true
+                break
             }
         }
         return found
@@ -122,8 +123,14 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
                 }
                 loading = false
                 setLoadingVisibility(View.GONE)
-                model.searchResults.results.addAll(it.results)
-                rowAdapter.addAll(rowAdapter.size(),it.results)
+                setEmptyListText(null)
+                if( it.results.size == 0) {
+                    setEmptyListText("Your search \"" + searchText + "\" returned no results")
+                } else {
+                    setEmptyListText(null)
+                    model.searchResults.results.addAll(it.results)
+                    rowAdapter.addAll(rowAdapter.size(), it.results)
+                }
             }
         }
     }
@@ -156,6 +163,7 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
                     loading = true
                     MainScope().launch {
                         setLoadingVisibility(View.VISIBLE)
+                        setEmptyListText(null)
                     }
                     model.loadSearch(
                         type,
@@ -178,11 +186,20 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
     }
 
     override fun onQueryTextChange(newQuery: String?): Boolean {
-        search(newQuery)
+        if (newQuery != null && newQuery != searchText) {
+            if(newQuery.isNotEmpty()) {
+                search(newQuery)
+            } else {
+                search(null,genre,tag,sortBy,adult,listOnly)
+            }
+        }
         return true
     }
 
     override fun onQueryTextSubmit(query: String?): Boolean {
+        if (query != null && query != searchText) {
+            search(query)
+        }
         return true
     }
 
