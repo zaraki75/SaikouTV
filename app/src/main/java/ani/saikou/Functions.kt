@@ -46,7 +46,6 @@ import ani.saikou.media.Media
 import ani.saikou.media.Source
 import ani.saikou.settings.UserInterfaceSettings
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
@@ -74,13 +73,6 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-
-const val STATE_RESUME_WINDOW = "resumeWindow"
-const val STATE_RESUME_POSITION = "resumePosition"
-const val STATE_PLAYER_FULLSCREEN = "playerFullscreen"
-const val STATE_PLAYER_PLAYING = "playerOnPlay"
-const val buildDebug = true
-
 var statusBarHeight  = 0
 var navBarHeight = 0
 val Int.dp: Float get() = (this / getSystem().displayMetrics.density)
@@ -106,7 +98,7 @@ var loadMedia:Int?=null
 var loadIsMAL=false
 
 fun logger(e:Any?,print:Boolean=true){
-    if(buildDebug && print)
+    if(print)
         println(e)
 }
 
@@ -453,7 +445,7 @@ fun ImageView.loadImage(url:String?,size:Int=0,headers: MutableMap<String, Strin
     if(!url.isNullOrEmpty()) {
         try{
             val glideUrl = GlideUrl(url){ headers?: mutableMapOf() }
-            Glide.with(this).load(glideUrl).diskCacheStrategy(DiskCacheStrategy.ALL).transition(withCrossFade()).override(size).into(this)
+            Glide.with(this).load(glideUrl).transition(withCrossFade()).override(size).into(this)
         }catch (e:Exception){
             logger(e.localizedMessage)
         }
@@ -674,19 +666,17 @@ fun updateAnilistProgress(id:Int,number:String){
 }
 
 class MediaPageTransformer : ViewPager2.PageTransformer {
-    private fun parallax(view:View, position: Float, speed:Float){
+    private fun parallax(view:View, position: Float){
         if (position > -1 && position < 1) {
             val width = view.width.toFloat()
-            view.translationX = -(position * width * speed)
+            view.translationX = -(position * width * 0.8f)
         }
     }
 
     override fun transformPage(view: View, position: Float) {
 
         val bannerContainer = view.findViewById<View>(R.id.itemCompactBanner)
-        parallax(bannerContainer,position,0.8f)
-//        val titleContainer = view.findViewById<View>(R.id.itemCompactTitleContainer)
-//        parallax(titleContainer,position,0.5f)
+        parallax(bannerContainer,position)
     }
 }
 
