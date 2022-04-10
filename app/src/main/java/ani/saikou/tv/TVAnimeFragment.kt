@@ -4,9 +4,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
@@ -25,8 +23,10 @@ import ani.saikou.anilist.GenresViewModel
 import ani.saikou.anilist.SearchResults
 import ani.saikou.loadData
 import ani.saikou.media.Media
+import ani.saikou.tv.components.ButtonListRow
 import ani.saikou.tv.components.CustomListRowPresenter
 import ani.saikou.tv.presenters.AnimePresenter
+import ani.saikou.tv.presenters.ButtonListRowPresenter
 import ani.saikou.tv.presenters.GenresPresenter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -67,10 +67,17 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         updatedAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
 
         //This determines order in screen
-        rowAdapter.add(ListRow(HeaderItem(1, "Genres"), genresAdapter))
-        rowAdapter.add(ListRow(HeaderItem(0, "Trending"), trendingAdapter))
-        rowAdapter.add(ListRow(HeaderItem(0, "Popular"), popularAdapter))
-        rowAdapter.add(ListRow(HeaderItem(0, "Updated"), updatedAdapter))
+        rowAdapter.add(ListRow(HeaderItem("Genres"), genresAdapter))
+        rowAdapter.add(ListRow(HeaderItem("Trending"), trendingAdapter))
+        rowAdapter.add(ListRow(HeaderItem("Popular"), popularAdapter))
+        rowAdapter.add(ListRow(HeaderItem("Updated"), updatedAdapter))
+        rowAdapter.add(ButtonListRow("Login", object : ButtonListRow.OnClickListener {
+            override fun onClick() {
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .replace(R.id.main_browse_fragment, TVLoginFragment()).addToBackStack(null)
+                    .commit()
+            }
+        }))
 
         progressBarManager.initialDelay = 0
         progressBarManager.show()
@@ -136,11 +143,15 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         // Set search icon color.
         //searchAffordanceColor = ContextCompat.getColor(requireActivity(), R.color.bg_black)
-        /*setHeaderPresenterSelector(object : PresenterSelector() {
+        setHeaderPresenterSelector(object : PresenterSelector() {
             override fun getPresenter(o: Any): Presenter {
-                return AnimePresenter(0, requireActivity())
+                if(o is ButtonListRow) {
+                    return ButtonListRowPresenter()
+                } else {
+                    return RowHeaderPresenter()
+                }
             }
-        })*/
+        })
 
         setOnSearchClickedListener {
             val intent = Intent(requireActivity().applicationContext, TVSearchActivity::class.java)

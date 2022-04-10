@@ -1,6 +1,8 @@
 package ani.saikou
 
+import android.R
 import android.animation.ObjectAnimator
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -10,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnticipateInterpolator
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.view.doOnAttach
@@ -26,12 +29,16 @@ import ani.saikou.media.MediaDetailsActivity
 import ani.saikou.others.AppUpdater
 import ani.saikou.others.DisableFirebase
 import ani.saikou.settings.UserInterfaceSettings
+import ani.saikou.tv.TVLoginFragment
+import com.google.android.gms.nearby.Nearby
+import com.google.android.gms.nearby.connection.*
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nl.joery.animatedbottombar.AnimatedBottomBar
 import java.io.Serializable
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainBinding
@@ -142,6 +149,7 @@ class MainActivity : AppCompatActivity() {
             //Load Data
             if (!load) {
                 Anilist.getSavedToken(this)
+                startAdvertising()
                 scope.launch(Dispatchers.IO) {
                     AppUpdater.check(this@MainActivity)
                     model.genres.postValue(Anilist.query.getGenresAndTags(this@MainActivity))
@@ -149,6 +157,8 @@ class MainActivity : AppCompatActivity() {
                 load = true
             }
         }
+
+
     }
 
     //Double Tap Back
@@ -164,6 +174,67 @@ class MainActivity : AppCompatActivity() {
         snackBar.show()
 
         Handler(Looper.getMainLooper()).postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
+    }
+
+    //TVConnection
+    private fun startAdvertising() {
+        val token = Anilist.token ?: return
+        val advertisingOptions: AdvertisingOptions = AdvertisingOptions.Builder().setStrategy(
+            Strategy.P2P_POINT_TO_POINT
+        ).build()
+        Nearby.getConnectionsClient(this)
+            .startAdvertising(
+                TVLoginFragment.PHONE_NAME.toByteArray(), TVLoginFragment.SERVICE_ID, object : ConnectionLifecycleCallback() {
+                    override fun onConnectionInitiated(p0: String, p1: ConnectionInfo) {
+                        AlertDialog.Builder(this@MainActivity)
+                            .setTitle("Accept connection to " + p1.endpointName)
+                            .setMessage("Confirm the code matches on both devices: " + p1.authenticationDigits)
+                            .setPositiveButton(
+                                "Accept"
+                            ) { dialog: DialogInterface?, which: Int ->  // The user confirmed, so we can accept the connection.
+                                Nearby.getConnectionsClient(this@MainActivity)
+                                    .acceptConnection(p0, object : PayloadCallback() {
+                                        override fun onPayloadReceived(p0: String, p1: Payload) {}
+                                        override fun onPayloadTransferUpdate(
+                                            p0: String,
+                                            p1: PayloadTransferUpdate
+                                        ) {}
+                                    })
+                            }
+                            .setNegativeButton(
+                                R.string.cancel
+                            ) { dialog: DialogInterface?, which: Int ->  // The user canceled, so we should reject the connection.
+                                Nearby.getConnectionsClient(this@MainActivity).rejectConnection(p0)
+                            }
+                            .setIcon(R.drawable.ic_dialog_alert)
+                            .show()
+                    }
+
+                    override fun onConnectionResult(p0: String, p1: ConnectionResolution) {
+                        when (p1.status.statusCode) {
+                            ConnectionsStatusCodes.STATUS_OK -> { // We are connected, send token to TV
+                                val bytesPayload =
+                                    Payload.fromBytes(token.toByteArray())
+                                Nearby.getConnectionsClient(this@MainActivity)
+                                    .sendPayload(p0, bytesPayload)
+                            }
+                            ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> { toastString("TVConnection rejected") }
+                            ConnectionsStatusCodes.STATUS_ERROR -> { toastString("TVConnection error") }
+                            else -> {
+                            }
+                        }
+                    }
+
+                    override fun onDisconnected(p0: String) {
+                    }
+                }, advertisingOptions
+            )
+            .addOnSuccessListener {
+                toastString("Advertising OK")
+            }
+            .addOnFailureListener { e: Exception? ->
+                toastString("Advertising KO")
+            }
     }
 
     //ViewPager
