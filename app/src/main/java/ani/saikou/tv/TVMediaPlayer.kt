@@ -20,6 +20,7 @@ import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.saveData
 import ani.saikou.settings.PlayerSettings
 import ani.saikou.settings.UserInterfaceSettings
+import ani.saikou.tv.utils.VideoPlayerGlue
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackParameters

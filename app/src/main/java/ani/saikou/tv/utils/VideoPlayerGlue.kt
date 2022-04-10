@@ -1,4 +1,4 @@
-package ani.saikou.tv
+package ani.saikou.tv.utils
 
 import android.content.Context
 import androidx.leanback.media.PlaybackTransportControlGlue

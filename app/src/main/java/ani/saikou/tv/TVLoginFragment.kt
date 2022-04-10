@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.TvLoginFragmentBinding
+import ani.saikou.tv.utils.TVConnection
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.*
 import com.google.android.gms.tasks.OnFailureListener
@@ -54,19 +55,21 @@ class TVLoginFragment() : Fragment() {
     private fun startDiscovery() {
         val discoveryOptions = DiscoveryOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build()
         Nearby.getConnectionsClient(requireContext())
-            .startDiscovery(SERVICE_ID, object : EndpointDiscoveryCallback() {
+            .startDiscovery(TVConnection.SERVICE_ID, object : EndpointDiscoveryCallback() {
                 override fun onEndpointFound(p0: String, p1: DiscoveredEndpointInfo) {
-                    if(p1.serviceId == SERVICE_ID)
+                    if(p1.serviceId == TVConnection.SERVICE_ID && p1.endpointName == TVConnection.PHONE_NAME)
                     Nearby.getConnectionsClient(context!!)
                         .requestConnection(
-                            TV_NAME,
+                            TVConnection.TV_NAME,
                             p0,
                             connectionCallback
                         )
                         .addOnSuccessListener(
                             OnSuccessListener { unused: Void? -> })
                         .addOnFailureListener(
-                            OnFailureListener { e: Exception? -> })
+                            OnFailureListener { e: Exception? ->
+                                binding.text.text = "Something went wrong"
+                            })
 
                 }
 
@@ -92,8 +95,8 @@ class TVLoginFragment() : Fragment() {
                             p1?.asBytes()?.let {
                                 val token = String(it)
                                 saveToken(token)
-                                binding.text.text = token
                                 Nearby.getConnectionsClient(requireContext()).disconnectFromEndpoint(p0)
+                                requireActivity().supportFragmentManager.popBackStack()
                             } ?: run {
                                 binding.text.text = "Something is wrong with the token"
                             }
@@ -129,11 +132,5 @@ class TVLoginFragment() : Fragment() {
         requireActivity().openFileOutput(filename, Context.MODE_PRIVATE).use {
             it.write(token.toByteArray())
         }
-    }
-
-    companion object {
-        val SERVICE_ID = "SaikouTV"
-        val TV_NAME = "TV"
-        val PHONE_NAME = "PHONE"
     }
 }
