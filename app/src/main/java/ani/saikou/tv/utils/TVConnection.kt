@@ -87,5 +87,6 @@ object TVConnection {
 
     fun stopAdvertising(activity: Activity) {
         Nearby.getConnectionsClient(activity).stopAdvertising()
+        _advertising = false
     }
 }

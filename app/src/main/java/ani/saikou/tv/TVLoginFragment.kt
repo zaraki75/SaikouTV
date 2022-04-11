@@ -51,29 +51,29 @@ class TVLoginFragment() : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         singlePermission.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
     }
 
     private fun startDiscovery() {
+        binding.text.text = "Initializing...\nPlease make sure you have Saikou installed on your phone and logged in"
         val discoveryOptions = DiscoveryOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build()
         Nearby.getConnectionsClient(requireContext())
             .startDiscovery(TVConnection.SERVICE_ID, object : EndpointDiscoveryCallback() {
                 override fun onEndpointFound(p0: String, p1: DiscoveredEndpointInfo) {
-                    if(p1.serviceId == TVConnection.SERVICE_ID && p1.endpointName == TVConnection.PHONE_NAME)
-                    Nearby.getConnectionsClient(context!!)
-                        .requestConnection(
-                            TVConnection.TV_NAME,
-                            p0,
-                            connectionCallback
-                        )
-                        .addOnSuccessListener(
-                            OnSuccessListener { unused: Void? -> })
-                        .addOnFailureListener(
-                            OnFailureListener { e: Exception? ->
-                                binding.text.text = "Something went wrong"
-                            })
-
+                    if(p1.serviceId == TVConnection.SERVICE_ID && p1.endpointName == TVConnection.PHONE_NAME) {
+                        binding.text.text = "Connecting to " + p1.endpointName + "..."
+                        Nearby.getConnectionsClient(context!!)
+                            .requestConnection(
+                                TVConnection.TV_NAME,
+                                p0,
+                                connectionCallback
+                            )
+                            .addOnSuccessListener(
+                                OnSuccessListener { unused: Void? -> })
+                            .addOnFailureListener(
+                                OnFailureListener { e: Exception? ->
+                                    binding.text.text = "Please open Saikou on your phone and login..."})
+                    }
                 }
 
                 override fun onEndpointLost(p0: String) {
@@ -81,13 +81,11 @@ class TVLoginFragment() : Fragment() {
                 }
             }, discoveryOptions)
             .addOnSuccessListener {
-                binding.progress.visibility = View.GONE
-                binding.text.visibility = View.VISIBLE
+                binding.progress.visibility = View.INVISIBLE
                 binding.text.text = "Please open Saikou on your phone and login"
             }
             .addOnFailureListener { e: java.lang.Exception? ->
-                binding.progress.visibility = View.GONE
-                binding.text.visibility = View.VISIBLE
+                binding.progress.visibility = View.INVISIBLE
                 binding.text.text = e?.message ?: "Error"
             }
     }
@@ -106,7 +104,7 @@ class TVLoginFragment() : Fragment() {
                                 TVAnimeFragment.shouldReload = true
                                 requireActivity().supportFragmentManager.popBackStack()
                             } ?: run {
-                                binding.text.text = "Something went wrong"
+                                binding.text.text = "Something went wrong while processing your login info"
                             }
                         }
                     }
@@ -126,7 +124,8 @@ class TVLoginFragment() : Fragment() {
                     binding.text.text = "You need to accept the TV connection popup on your phone"
                 }
                 ConnectionsStatusCodes.STATUS_ERROR -> {
-                    binding.text.text = "Something went wrong"
+                    binding.text.text = "Something went wrong, trying again..."
+                    binding.progress.visibility = View.VISIBLE
                 }
                 else -> {
                 }

@@ -54,7 +54,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
     val genresModel: GenresViewModel by activityViewModels()
 
     //TODO Sketchy handling here
-    private var nCallbacks = 0
+    var nCallbacks: Int = 0
 
     lateinit var continueAdapter: ArrayObjectAdapter
     lateinit var recommendedAdapter: ArrayObjectAdapter
@@ -70,13 +70,15 @@ class TVAnimeFragment: BrowseSupportFragment()  {
     lateinit var trendingRow: ListRow
     lateinit var updatedRow: ListRow
     lateinit var popularRow: ListRow
-    lateinit var rowRow: ListRow
-    private var loading = true
-    private var viewLoaded = false
+    var loading: Boolean = false
+    var viewLoaded: Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupUIElements()
+        loading = true
+        viewLoaded = false
+        nCallbacks = 0
 
         if(model.notSet) {
             model.notSet = false
@@ -84,6 +86,13 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         }
 
         initAdapters()
+
+        genresModel.genres?.let {
+            it.forEach {
+                genresAdapter.add(it.toPair())
+            }
+        }
+
         observeData()
     }
 
@@ -95,7 +104,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         continueAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
         recommendedAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
-        genresAdapter = ArrayObjectAdapter(GenresPresenter("ANIME",true))
+        genresAdapter = ArrayObjectAdapter(GenresPresenter(true))
         trendingAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
         popularAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
         updatedAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
