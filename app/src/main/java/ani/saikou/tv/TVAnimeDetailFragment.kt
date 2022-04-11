@@ -141,9 +141,8 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
                 media = it
                 media.selected = model.loadSelected(media)
 
-                finishLoadingRows()
-
                 if (!loaded) {
+                    finishLoadingRows()
                     model.watchAnimeWatchSources =
                         if (media.isAdult) HAnimeSources else AnimeSources
 

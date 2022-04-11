@@ -16,6 +16,7 @@ import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.leanback.app.BackgroundManager
 import androidx.leanback.app.BrowseSupportFragment
 import androidx.leanback.widget.*
 import androidx.lifecycle.MutableLiveData
@@ -31,6 +32,7 @@ import ani.saikou.tv.components.CustomListRowPresenter
 import ani.saikou.tv.presenters.AnimePresenter
 import ani.saikou.tv.presenters.ButtonListRowPresenter
 import ani.saikou.tv.presenters.GenresPresenter
+import ani.saikou.tv.presenters.MainHeaderPresenter
 import ani.saikou.user.ListActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
@@ -42,6 +44,9 @@ import kotlinx.coroutines.withContext
 
 class TVAnimeFragment: BrowseSupportFragment()  {
 
+    companion object {
+        var shouldReload: Boolean = false
+    }
     private val PAGING_THRESHOLD = 15
 
     val homeModel: AnilistHomeViewModel by activityViewModels()
@@ -66,7 +71,8 @@ class TVAnimeFragment: BrowseSupportFragment()  {
     lateinit var updatedRow: ListRow
     lateinit var popularRow: ListRow
     lateinit var rowRow: ListRow
-    var loading = true
+    private var loading = true
+    private var viewLoaded = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -77,6 +83,11 @@ class TVAnimeFragment: BrowseSupportFragment()  {
             model.searchResults = SearchResults("ANIME", isAdult = false, onList = false, results = arrayListOf(), hasNextPage = true, sort = "Popular")
         }
 
+        initAdapters()
+        observeData()
+    }
+
+    private fun initAdapters() {
         val presenter = CustomListRowPresenter(FocusHighlight.ZOOM_FACTOR_MEDIUM, false)
         presenter.shadowEnabled = false
         rowAdapter = ArrayObjectAdapter(presenter)
@@ -90,7 +101,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         updatedAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
 
         continueRow = ListRow(HeaderItem("Continue Watching"), continueAdapter)
-        recommendedRow = ListRow(HeaderItem("Recommended for you"), recommendedAdapter)
+        recommendedRow = ListRow(HeaderItem("Recommended"), recommendedAdapter)
         genresRow = ListRow(HeaderItem("Genres"), genresAdapter)
         trendingRow = ListRow(HeaderItem("Trending"), trendingAdapter)
         popularRow = ListRow(HeaderItem("Popular"), popularAdapter)
@@ -98,7 +109,6 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         progressBarManager.initialDelay = 0
         progressBarManager.show()
-        observeData()
     }
 
     private fun observeData() {
@@ -138,14 +148,13 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         homeModel.getRecommendation().observe(viewLifecycleOwner) {
             if (it != null) {
-                recommendedAdapter.addAll(0, it)
+                recommendedAdapter.addAll(0, it.filter { it.relation == "ANIME" })
                 if(it.isEmpty()) {
                     rowAdapter.remove(recommendedRow)
                 }
                 checkLoadingState()
             }
         }
-
         val scope = viewLifecycleOwner.lifecycleScope
         val live = Refresh.activity.getOrPut(this.hashCode()) { MutableLiveData(true) }
         live.observe(viewLifecycleOwner) {
@@ -154,23 +163,24 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                     withContext(Dispatchers.IO) {
                         model.loaded = true
                         loading = false
+
+                        if (Anilist.userid == null) {
+                            if (Anilist.query.getUserData())
+                                loadUserData()
+                        }
+
                         model.loadTrending()
                         model.loadUpdated()
                         model.loadPopular("ANIME", sort = "Popular")
                         genresModel.loadGenres(Anilist.genres?: loadData("genres_list") ?: arrayListOf()) {
                             MainScope().launch {
-                            genresAdapter.add(it)
+                                genresAdapter.add(it)
                             }
                         }
                         homeModel.loaded = true
                         homeModel.setListImages()
                         homeModel.setAnimeContinue()
                         homeModel.setRecommendation()
-
-                        if (Anilist.userid == null) {
-                            if (Anilist.query.getUserData())
-                                loadUserData()
-                        }
                     }
                     live.postValue(false)
                 }
@@ -179,10 +189,10 @@ class TVAnimeFragment: BrowseSupportFragment()  {
     }
 
     fun checkLoadingState(){
-        if(nCallbacks == 4) {
+        if(nCallbacks == 4 && !viewLoaded) {
             progressBarManager.hide()
             //This determines order in screen
-            if (Anilist.token == null) {
+            if (Anilist.userid == null) {
                 rowAdapter.add(genresRow)
                 rowAdapter.add(trendingRow)
                 rowAdapter.add(popularRow)
@@ -204,7 +214,14 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                 rowAdapter.add(trendingRow)
                 rowAdapter.add(popularRow)
                 rowAdapter.add(updatedRow)
+                rowAdapter.add(ButtonListRow("Logout", object : ButtonListRow.OnClickListener {
+                    override fun onClick() {
+                        Anilist.removeSavedToken(requireContext())
+                        reloadScreen()
+                    }
+                }))
             }
+            viewLoaded = true
         } else {
             nCallbacks++
         }
@@ -222,47 +239,39 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                         override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                             badgeDrawable = BitmapDrawable(resource)
                         }
-
                         override fun onLoadCleared(placeholder: Drawable?) {}
                     })
-            /*
-            binding.homeUserName.text = Anilist.username
-            binding.homeUserEpisodesWatched.text = Anilist.episodesWatched.toString()
-            binding.homeUserChaptersRead.text = Anilist.chapterRead.toString()
-            binding.homeUserAvatar.loadImage(Anilist.avatar)
-            if(!uiSettings.bannerAnimations) binding.homeUserBg.pause()
-            binding.homeUserBg.loadImage(Anilist.bg)
-            binding.homeUserAvatar.scaleType = ImageView.ScaleType.FIT_CENTER
-            binding.homeUserDataProgressBar.visibility = View.GONE
-
-            binding.homeAnimeList.setOnClickListener {
-                ContextCompat.startActivity(
-                    requireActivity(), Intent(requireActivity(), ListActivity::class.java)
-                        .putExtra("anime", true)
-                        .putExtra("userId", Anilist.userid)
-                        .putExtra("username", Anilist.username), null
-                )
-            }
-            binding.homeMangaList.setOnClickListener {
-                ContextCompat.startActivity(
-                    requireActivity(), Intent(requireActivity(), ListActivity::class.java)
-                        .putExtra("anime", false)
-                        .putExtra("userId", Anilist.userid)
-                        .putExtra("username", Anilist.username), null
-                )
-            }
-
-            binding.homeUserAvatarContainer.startAnimation(setSlideUp(uiSettings))
-            binding.homeUserDataContainer.visibility = View.VISIBLE
-            binding.homeUserDataContainer.layoutAnimation = LayoutAnimationController(setSlideUp(uiSettings), 0.25f)
-            binding.homeAnimeList.visibility = View.VISIBLE
-            binding.homeMangaList.visibility = View.VISIBLE
-            binding.homeListContainer.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings),0.25f)
-                 */
+                val backgroundManager = BackgroundManager.getInstance(requireActivity())
+                backgroundManager.attach(requireActivity().window)
+                Glide.with(requireContext())
+                    .asBitmap()
+                    .centerInside()
+                    .load(Anilist.bg)
+                    .into(object : CustomTarget<Bitmap>() {
+                        override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                            backgroundManager.drawable = BitmapDrawable(resource)
+                        }
+                        override fun onLoadCleared(placeholder: Drawable?) {}
+                    })
         }
-        else{
-            toastString("Please Reload.")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if(shouldReload) {
+            reloadScreen()
         }
+    }
+
+    private fun reloadScreen() {
+        shouldReload = false
+        nCallbacks = 0
+        model.loaded = true
+        loading = false
+        viewLoaded = false
+        genresModel.genres = null
+        initAdapters()
+        Refresh.all()
     }
 
     private fun setupUIElements() {
@@ -271,16 +280,15 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         // Set fastLane (or headers) background color
         //brandColor = ContextCompat.getColor(requireActivity(), R.color.violet_700)
-        //badgeDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_logo)
-
         // Set search icon color.
         //searchAffordanceColor = ContextCompat.getColor(requireActivity(), R.color.bg_black)
+
         setHeaderPresenterSelector(object : PresenterSelector() {
             override fun getPresenter(o: Any): Presenter {
                 if(o is ButtonListRow) {
                     return ButtonListRowPresenter()
                 } else {
-                    return RowHeaderPresenter()
+                    return MainHeaderPresenter()
                 }
             }
         })

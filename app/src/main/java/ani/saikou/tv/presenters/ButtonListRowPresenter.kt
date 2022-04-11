@@ -4,13 +4,13 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.leanback.widget.Presenter
 import androidx.leanback.widget.RowHeaderPresenter
-import ani.saikou.databinding.TvHeaderButtonBinding
+import ani.saikou.databinding.TvButtonRowHeaderBinding
 import ani.saikou.tv.components.ButtonListRow
 
 class ButtonListRowPresenter(): Presenter() {
 
     override fun onCreateViewHolder(parent: ViewGroup?): ViewHolder {
-        return ButtonListRowViewHolder(TvHeaderButtonBinding.inflate(LayoutInflater.from(parent?.context), parent, false))
+        return ButtonListRowViewHolder(TvButtonRowHeaderBinding.inflate(LayoutInflater.from(parent?.context), parent, false))
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder?, item: Any?) {
@@ -24,5 +24,5 @@ class ButtonListRowPresenter(): Presenter() {
 
     override fun onUnbindViewHolder(viewHolder: ViewHolder?) {}
 
-    inner class ButtonListRowViewHolder(val binding: TvHeaderButtonBinding) : RowHeaderPresenter.ViewHolder(binding.root) {}
+    inner class ButtonListRowViewHolder(val binding: TvButtonRowHeaderBinding) : RowHeaderPresenter.ViewHolder(binding.root) {}
 }

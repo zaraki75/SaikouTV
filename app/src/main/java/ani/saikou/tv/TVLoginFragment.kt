@@ -28,9 +28,13 @@ class TVLoginFragment() : Fragment() {
                 startDiscovery()
             }
             !shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) -> {
+                binding.progress.visibility = View.GONE
+                binding.text.visibility = View.VISIBLE
                 binding.text.text = "Permission denied"
             }
             else -> {
+                binding.progress.visibility = View.GONE
+                binding.text.visibility = View.VISIBLE
                 binding.text.text = "Permission denied"
             }
         }
@@ -42,7 +46,6 @@ class TVLoginFragment() : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = TvLoginFragmentBinding.inflate(inflater)
-        binding.text.text = "Login Fragment"
         return binding.root
     }
 
@@ -78,9 +81,13 @@ class TVLoginFragment() : Fragment() {
                 }
             }, discoveryOptions)
             .addOnSuccessListener {
+                binding.progress.visibility = View.GONE
+                binding.text.visibility = View.VISIBLE
                 binding.text.text = "Please open Saikou on your phone and login"
             }
             .addOnFailureListener { e: java.lang.Exception? ->
+                binding.progress.visibility = View.GONE
+                binding.text.visibility = View.VISIBLE
                 binding.text.text = e?.message ?: "Error"
             }
     }
@@ -96,9 +103,10 @@ class TVLoginFragment() : Fragment() {
                                 val token = String(it)
                                 saveToken(token)
                                 Nearby.getConnectionsClient(requireContext()).disconnectFromEndpoint(p0)
+                                TVAnimeFragment.shouldReload = true
                                 requireActivity().supportFragmentManager.popBackStack()
                             } ?: run {
-                                binding.text.text = "Something is wrong with the token"
+                                binding.text.text = "Something went wrong"
                             }
                         }
                     }
@@ -115,8 +123,10 @@ class TVLoginFragment() : Fragment() {
                     Nearby.getConnectionsClient(requireContext()).stopAdvertising()
                 }
                 ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
+                    binding.text.text = "You need to accept the TV connection popup on your phone"
                 }
                 ConnectionsStatusCodes.STATUS_ERROR -> {
+                    binding.text.text = "Something went wrong"
                 }
                 else -> {
                 }
