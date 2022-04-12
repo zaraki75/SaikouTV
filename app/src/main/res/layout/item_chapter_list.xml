@@ -10,77 +10,63 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <androidx.cardview.widget.CardView
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            app:cardBackgroundColor="@color/violet_400_50"
-            app:cardElevation="0dp"
-            app:contentPaddingLeft="16dp"
-            app:contentPaddingRight="16dp">
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
 
-            <LinearLayout
-                android:layout_width="96dp"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="horizontal">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:fontFamily="@font/poppins_bold"
+                android:singleLine="true"
+                android:text="@string/chap"
+                android:textSize="14dp"
+                tools:ignore="SpUsage" />
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:fontFamily="@font/poppins_bold"
-                    android:singleLine="true"
-                    android:text="@string/chap"
-                    android:textSize="16sp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins_bold"
+                android:text="@string/colon"
+                android:textSize="14dp"
+                tools:ignore="SpUsage" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/poppins_bold"
-                    android:text="@string/colon"
-                    android:textSize="16sp" />
+            <TextView
+                android:id="@+id/itemChapterNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:fontFamily="@font/poppins_bold"
+                android:singleLine="true"
+                android:textSize="14dp"
+                tools:ignore="SpUsage"
+                tools:text="1" />
 
-                <TextView
-                    android:id="@+id/itemChapterNumber"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:fontFamily="@font/poppins_bold"
-                    android:singleLine="true"
-                    android:textSize="16sp"
-                    tools:text="1" />
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/itemChapterTitle"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="8dp"
-            android:layout_weight="1"
+            android:alpha="0.66"
             android:ellipsize="end"
             android:fontFamily="@font/poppins_bold"
-            android:singleLine="true"
-            android:textSize="16sp" />
-
-        <ImageView
-            android:id="@+id/itemEpisodeViewed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical|end"
-            android:layout_margin="8dp"
+            android:maxLines="1"
+            android:textSize="14dp"
             android:visibility="gone"
-            app:srcCompat="@drawable/ic_round_remove_red_eye_24"
-            tools:ignore="ContentDescription" />
+            tools:ignore="SpUsage" />
 
     </LinearLayout>
 
@@ -91,5 +77,15 @@
         android:alpha="0.33"
         android:background="@color/bg"
         android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/itemEpisodeViewed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_margin="8dp"
+        android:visibility="gone"
+        app:srcCompat="@drawable/ic_round_remove_red_eye_24"
+        tools:ignore="ContentDescription" />
 
 </androidx.cardview.widget.CardView>

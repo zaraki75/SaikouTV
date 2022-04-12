@@ -18,6 +18,7 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import java.io.Serializable
 import java.net.UnknownHostException
+import kotlin.random.Random
 
 val httpClient =  OkHttpClient()
 
@@ -465,17 +466,27 @@ class AnilistQueries{
             } } } }
         return responseArray
     }
-
     private fun bannerImage(type: String): String? {
-        val response = executeQuery("""{ MediaListCollection(userId: ${Anilist.userid}, type: $type, sort:[SCORE_DESC,UPDATED_TIME_DESC],chunk:1,perChunk:1) { lists { entries{ media { bannerImage } } } } } """)
-        val data = if (response!=null) response["data"] else null
-        if(data!=null && data!=JsonNull) {
-            val b = if(data.jsonObject["MediaListCollection"]!=JsonNull) data.jsonObject["MediaListCollection"] else null
-            val list = b?.jsonObject?.get("lists")?.jsonArray
-            if (list != null && list.isNotEmpty()) {
-                val a = list[0].jsonObject["entries"]?.jsonArray?.get(0)?.jsonObject?.get("media")?.jsonObject?.get("bannerImage")?.toString()?.trim('"')
-                return if (a != null && a != "null") a else null
+        val image = loadData<MutableMap<String,BannerImage>>(type)?: mutableMapOf()
+        if(image.checkBannerTime(type)){
+            val response = executeQuery("""{ MediaListCollection(userId: ${Anilist.userid}, type: $type, chunk:1,perChunk:25, sort: [SCORE_DESC,UPDATED_TIME_DESC]) { lists { entries{ media { bannerImage } } } } } """)
+            val data = if (response!=null) response["data"] else null
+            if(data!=null && data!=JsonNull) {
+                val mediaListCollection = if(data.jsonObject["MediaListCollection"]!=JsonNull) data.jsonObject["MediaListCollection"] else null
+                val list = mediaListCollection?.jsonObject?.get("lists")?.jsonArray
+                if (list != null && list.isNotEmpty()) {
+                    val entriesList = list[Random.nextInt(0, list.size)].jsonObject["entries"]
+                    val imageUrl = entriesList?.jsonArray?.get(Random.nextInt(0, entriesList.jsonArray.size))?.jsonObject?.get("media")?.jsonObject?.get("bannerImage")?.toString()?.trim('"')?:return null
+                    image[type] = BannerImage(
+                        imageUrl,
+                        System.currentTimeMillis()
+                    )
+                    saveData(type,image)
+                    return if (imageUrl != "null") imageUrl else null
+                }
             }
+        }else{
+            return image[type]?.url
         }
         return null
     }
@@ -581,7 +592,7 @@ class AnilistQueries{
         var tags:ArrayList<String>? = loadData("tags_list",activity)
 
         if (genres==null) {
-            executeQuery("""{GenreCollection}""", force = true, useToken = false, show = true)?.get("data")?.apply {
+            executeQuery("""{GenreCollection}""", force = true, useToken = false)?.get("data")?.apply {
 //                toastString(this.toString())
                 if(this!=JsonNull){
                     genres = arrayListOf()
@@ -627,7 +638,7 @@ class AnilistQueries{
 
     private fun getGenreThumbnail(genre:String):Genre?{
         val genres = loadData<MutableMap<String,Genre>>("genre_thumb")?: mutableMapOf()
-        if(genres.checkTime(genre)){
+        if(genres.checkGenreTime(genre)){
 //            try {
                 val genreQuery = """{ Page(perPage: 10){media(genre:"$genre", sort: TRENDING_DESC, type: ANIME, countryOfOrigin:"JP") {id bannerImage } } }"""
                 val response = executeQuery(genreQuery, force = true)!!["data"]!!.jsonObject["Page"]!!

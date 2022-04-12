@@ -35,7 +35,7 @@ import ani.saikou.manga.MangaReadFragment
 import ani.saikou.settings.UserInterfaceSettings
 import com.flaviofaria.kenburnsview.RandomTransitionGenerator
 import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.navigation.NavigationBarView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -48,7 +48,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
     private lateinit var binding: ActivityMediaBinding
     private val scope = lifecycleScope
     private val model: MediaDetailsViewModel by viewModels()
-    private lateinit var tabLayout : BottomNavigationView
+    private lateinit var tabLayout : NavigationBarView
     private lateinit var uiSettings : UserInterfaceSettings
     var selected = 0
     var anime = true
@@ -72,6 +72,8 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         binding.mediaClose.updateLayoutParams<ViewGroup.MarginLayoutParams> { topMargin += statusBarHeight }
         binding.mediaCollapsing.minimumHeight = statusBarHeight
 
+        if(binding.mediaTab is CustomBottomNavBar) binding.mediaTab.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin = navBarHeight }
+
         binding.mediaTitle.isSelected = true
 
         mMaxScrollSize = binding.mediaAppBar.totalScrollRange
@@ -88,7 +90,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         }
         val banner = if(uiSettings.bannerAnimations) binding.mediaBanner else binding.mediaBannerNoKen
         val viewPager = binding.mediaViewPager
-        tabLayout = binding.mediaTab
+        tabLayout = binding.mediaTab as NavigationBarView
         viewPager.isUserInputEnabled = false
         viewPager.setPageTransformer(ZoomOutPageTransformer(uiSettings))
 
@@ -179,7 +181,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
                 else toastString("Please Login with Anilist!")
             }
             binding.mediaAddToList.setOnLongClickListener {
-                saveData("${media.id}_progressDialog", false)
+                saveData("${media.id}_progressDialog", true)
                 toastString("Auto Update Progress has now been Reset-ed ")
                 true
             }
