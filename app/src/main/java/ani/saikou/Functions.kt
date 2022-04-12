@@ -17,6 +17,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.*
+import android.provider.Settings
 import android.text.InputFilter
 import android.text.Spanned
 import android.util.AttributeSet
@@ -28,6 +29,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat.getExternalFilesDirs
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.math.MathUtils.clamp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -66,6 +68,7 @@ import okhttp3.OkHttpClient
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.*
+import java.lang.reflect.Field
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import java.text.DateFormatSymbols
@@ -73,9 +76,8 @@ import java.util.*
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.roundToInt
+import kotlin.math.*
+
 
 var statusBarHeight  = 0
 var navBarHeight = 0
@@ -259,11 +261,7 @@ data class FuzzyDate(
         val cal = Calendar.getInstance()
         return FuzzyDate(cal.get(Calendar.YEAR),cal.get(Calendar.MONTH)+1,cal.get(Calendar.DAY_OF_MONTH))
     }
-//    fun getEpoch():Long{
-//        val cal = Calendar.getInstance()
-//        cal.set(year?:cal.get(Calendar.YEAR),month?:cal.get(Calendar.MONTH),day?:cal.get(Calendar.DAY_OF_MONTH))
-//        return cal.timeInMillis
-//    }
+
     fun toVariableString():String{
         return ("{"
             + (if(year!=null) "year:$year" else "")
@@ -637,8 +635,8 @@ fun download(activity: Activity, episode:Episode, animeTitle:String){
         try{
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
 
-            val arrayOfFiles = getExternalFilesDirs(activity,Environment.DIRECTORY_DOWNLOADS)
-            if (arrayOfFiles.size > 1 && arrayOfFiles[0] != null && arrayOfFiles[1] != null) {
+            val arrayOfFiles = getExternalFilesDirs(activity,null)
+            if (loadData<Boolean>("sd_dl") == true && arrayOfFiles.size > 1 && arrayOfFiles[0] != null && arrayOfFiles[1] != null) {
                 val parentDirectory = arrayOfFiles[1].toString() + "/Anime/${aTitle}/".also { println("external $it") }
                 val direct = File(parentDirectory)
                 if (!direct.exists()) direct.mkdirs()
@@ -907,3 +905,33 @@ class CustomBottomNavBar @JvmOverloads constructor(
         }
     }
 }
+
+fun getCurrentBrightnessValue(context: Context): Float {
+    fun getMax():Int{
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+
+        val fields: Array<Field> = powerManager.javaClass.declaredFields
+        for (field in fields) {
+            if (field.name.equals("BRIGHTNESS_ON")) {
+                field.isAccessible = true
+                return try {
+                    field.get(powerManager)?.toString()?.toInt()?:255
+                } catch (e: IllegalAccessException) {
+                    255
+                }
+            }
+        }
+        return 255
+    }
+
+    fun getCur():Float{
+        return Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_BRIGHTNESS, 127).toFloat()
+    }
+
+    return brightnessConverter(getCur()/getMax(),true)
+}
+
+fun brightnessConverter(it:Float,fromLog:Boolean) =
+    clamp(if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+            if(fromLog) log2( (it * 256f)) * 12.5f / 100f else 2f.pow(it*100f/12.5f) / 256f
+    else it,0.001f,1f)

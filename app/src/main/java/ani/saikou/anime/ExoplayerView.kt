@@ -390,14 +390,11 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                 brightnessTimer = Timer()
                 brightnessTimer.schedule(timerTask, 3000)
             }
-            exoBrightness.value = clamp(
-                System.getInt(contentResolver, System.SCREEN_BRIGHTNESS, 127) / 255f * 10f,
-                0f,
-                10f
-            )
+            exoBrightness.value = (getCurrentBrightnessValue(this) * 10f)
+
             exoBrightness.addOnChangeListener { _, value, _ ->
                 val lp = window.attributes
-                lp.screenBrightness = value / 10f
+                lp.screenBrightness = brightnessConverter(value/10,false)
                 window.attributes = lp
                 brightnessHide()
             }
@@ -418,7 +415,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
                 override fun onScrollYClick(y: Float) {
                     if (!locked && settings.gestures) {
-                        exoBrightness.value = clamp(exoBrightness.value + y / 50, 0f, 10f)
+                        exoBrightness.value = clamp(exoBrightness.value + y / 100, 0f, 10f)
                         if (exoBrightnessCont.visibility != View.VISIBLE) {
                             exoBrightnessCont.visibility = View.VISIBLE
                         }
@@ -475,7 +472,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
                 override fun onScrollYClick(y: Float) {
                     if (!locked && settings.gestures) {
-                        exoVolume.value = clamp(exoVolume.value + y / 50, 0f, 10f)
+                        exoVolume.value = clamp(exoVolume.value + y / 100, 0f, 10f)
                         if (exoVolumeCont.visibility != View.VISIBLE) {
                             exoVolumeCont.visibility = View.VISIBLE
                         }
