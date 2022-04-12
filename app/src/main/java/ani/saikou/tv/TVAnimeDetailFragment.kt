@@ -55,6 +55,7 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         detailsBackground = DetailsSupportFragmentBackgroundController(this)
+        TVAnimeFragment.shouldReload = true
 
         uiSettings = loadData("ui_settings", toast = false)
             ?: UserInterfaceSettings().apply { saveData("ui_settings", this) }

@@ -2,13 +2,11 @@ package ani.saikou
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.app.Application
-import android.app.DatePickerDialog
-import android.app.DownloadManager
+import android.app.*
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Context.UI_MODE_SERVICE
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources.getSystem
@@ -74,6 +72,7 @@ import javax.net.ssl.X509TrustManager
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
+
 
 var statusBarHeight  = 0
 var navBarHeight = 0
@@ -799,27 +798,34 @@ fun toast(string: String?,activity: Activity?=null){
 }
 
 fun toastString(s: String?,activity: Activity?=null){
-   /* if(s!=null) {
-        (activity?:currActivity())?.apply{
-            runOnUiThread {
-                val snackBar = Snackbar.make(window.decorView.findViewById(android.R.id.content), s, Snackbar.LENGTH_LONG)
-                snackBar.view.updateLayoutParams<FrameLayout.LayoutParams> {
-                    gravity = (Gravity.CENTER_HORIZONTAL or Gravity.BOTTOM)
-                    width = WRAP_CONTENT
+        if(s!=null) {
+            (activity?:currActivity())?.apply{
+                val uiModeManager = getSystemService(UI_MODE_SERVICE) as UiModeManager
+                if (uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_TELEVISION) {
+                    runOnUiThread {
+                        val snackBar = Snackbar.make(
+                            window.decorView.findViewById(android.R.id.content),
+                            s,
+                            Snackbar.LENGTH_LONG
+                        )
+                        snackBar.view.updateLayoutParams<FrameLayout.LayoutParams> {
+                            gravity = (Gravity.CENTER_HORIZONTAL or Gravity.BOTTOM)
+                            width = WRAP_CONTENT
+                        }
+                        snackBar.view.translationY = -(navBarHeight.dp + 32f)
+                        snackBar.view.setOnClickListener {
+                            snackBar.dismiss()
+                        }
+                        snackBar.view.setOnLongClickListener {
+                            copyToClipboard(s, false)
+                            true
+                        }
+                        snackBar.show()
+                    }
                 }
-                snackBar.view.translationY = -(navBarHeight.dp + 32f)
-                snackBar.view.setOnClickListener {
-                    snackBar.dismiss()
-                }
-                snackBar.view.setOnLongClickListener {
-                    copyToClipboard(s,false)
-                    true
-                }
-                snackBar.show()
             }
+            logger(s)
         }
-        logger(s)
-    }*/
 }
 
 open class NoPaddingArrayAdapter<T>(context: Context, layoutId: Int, items: List<T>) : ArrayAdapter<T>(context, layoutId, items) {

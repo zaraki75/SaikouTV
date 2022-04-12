@@ -137,6 +137,7 @@
     <string name="about">About</string>
     <string name="desc">\u0008\u0008\u0008 Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an Anilist only client, which also lets you stream-download Anime &amp; Manga.\nSaikou literally means the \"best\" in japanese. Well, we would like to say this is the best open source app for anime and manga on Android, what would you say?</string>
     <string name="devs">Developers</string>
+    <string name="tv_login">TV Login</string>
     <string name="disclaimer">Disclaimer</string>
     <string name="full_disclaimer">
          - Saikou only scrapes links from various websites and makes it easier for users to find anime and manga.

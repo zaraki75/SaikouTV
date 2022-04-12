@@ -59,11 +59,11 @@
     <!--TV Themes-->
     <style name="Theme.SaikouTV" parent="Theme.Leanback">
         <item name="android:statusBarColor">@color/status</item>
-        <item name="colorPrimary">@color/pink_500</item>
+        <item name="colorPrimary">@color/pink_200</item>
         <item name="colorPrimaryVariant">@color/pink_700</item>
-        <item name="colorOnPrimary">@color/bg_white</item>
+        <item name="colorOnPrimary">@color/bg_black</item>
         <item name="colorSecondary">@color/violet_400</item>
-        <item name="colorSecondaryVariant">@color/violet_700</item>
+        <item name="colorSecondaryVariant">@color/violet_400</item>
         <item name="colorOnSecondary">@color/bg_black</item>
         <item name="colorSecondaryContainer">?attr/colorSecondary</item>
         <item name="colorOnSecondaryContainer">?attr/colorOnSecondary</item>

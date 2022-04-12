@@ -109,6 +109,14 @@ class TVMainActivity : FragmentActivity() {
         }
     }
 
+    private fun saveToken(token: String) {
+        Anilist.token = token
+        val filename = "anilistToken"
+        openFileOutput(filename, Context.MODE_PRIVATE).use {
+            it.write(token.toByteArray())
+        }
+    }
+
     companion object {
         final val defaultChannelIDKey = "default_tv_channel_id"
         final val defaultChannelProgramsKey = "default_tv_programs_list_id"

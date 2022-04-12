@@ -210,6 +210,10 @@ class SettingsActivity : AppCompatActivity() {
                toastString(array[(Math.random()*array.size).toInt()],this)
         }
 
+        binding.tvLogin.setOnClickListener {
+            startActivity(Intent(this, TVConnectionActivity::class.java))
+        }
+
         binding.settingsDev.setOnClickListener{
             DevelopersDialogFragment().show(supportFragmentManager,"dialog")
         }

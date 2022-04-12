@@ -1,6 +1,5 @@
 package ani.saikou
 
-import android.R
 import android.animation.ObjectAnimator
 import android.content.Intent
 import android.os.Build
@@ -27,7 +26,6 @@ import ani.saikou.media.MediaDetailsActivity
 import ani.saikou.others.AppUpdater
 import ani.saikou.others.DisableFirebase
 import ani.saikou.settings.UserInterfaceSettings
-import ani.saikou.tv.utils.TVConnection
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -145,8 +143,6 @@ class MainActivity : AppCompatActivity() {
             //Load Data
             if (!load) {
                 Anilist.getSavedToken(this)
-                //TVConnection
-                TVConnection.startAdvertising(this)
                 scope.launch(Dispatchers.IO) {
                     AppUpdater.check(this@MainActivity)
                     model.genres.postValue(Anilist.query.getGenresAndTags(this@MainActivity))
