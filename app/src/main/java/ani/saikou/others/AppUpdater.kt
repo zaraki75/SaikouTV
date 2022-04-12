@@ -22,11 +22,11 @@ object AppUpdater {
         try{
             val version =
             if(!BuildConfig.DEBUG)
-                OkHttpClient().newCall(Request.Builder().url("https://raw.githubusercontent.com/saikou-app/mal-id-filler-list/main/stable.txt").build()).execute().body?.string()?.replace("\n","")?:return
+                OkHttpClient().newCall(Request.Builder().url("https://raw.githubusercontent.com/Diegopyl1209/saikouSP/main/stableVersion.txt").build()).execute().body?.string()?.replace("\n","")?:return
             else {
                 OkHttpClient().newCall(
                     Request.Builder()
-                        .url("https://raw.githubusercontent.com/saikou-app/saikou/main/app/build.gradle")
+                        .url("https://raw.githubusercontent.com/Diegopyl1209/saikouSP/main/app/build.gradle")
                         .build()
                 ).execute().body?.string()?.substringAfter("versionName \"")?.substringBefore('"') ?: return
             }
@@ -45,15 +45,15 @@ object AppUpdater {
                     setPositiveButton("Let's Go") { _: DialogInterface, _: Int ->
                         if(!BuildConfig.DEBUG) {
                             MainScope().launch(Dispatchers.IO){
-                                OkHttpClient().newCall(Request.Builder().url("https://api.github.com/repos/saikou-app/saikou/releases/tags/v$version").build()).execute().body?.string()?.apply {
+                                OkHttpClient().newCall(Request.Builder().url("https://api.github.com/repos/Diegopyl1209/saikouSP/releases/tags/v$version"+"SP").build()).execute().body?.string()?.apply {
                                     substringAfter("\"browser_download_url\":\"").substringBefore('"').apply {
                                         if (endsWith("apk")) activity.downloadUpdate(this)
-                                        else openLinkInBrowser("https://github.com/saikou-app/saikou/releases/")
+                                        else openLinkInBrowser("https://github.com/Diegopyl1209/saikouSP/releases/")
                                     }
                                 }
                             }
                         }
-                        else openLinkInBrowser( "https://discord.com/channels/902174389351620629/946852010198728704")
+                        else openLinkInBrowser( "https://discordapp.com/channels/902174389351620629/902238613029412865/942687552731746305")
                     }
                     setNegativeButton("Cope") { dialogInterface: DialogInterface, _: Int ->
                         dialogInterface.dismiss()
