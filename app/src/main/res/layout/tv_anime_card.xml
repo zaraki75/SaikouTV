@@ -90,6 +90,7 @@
                 android:id="@+id/itemCompactUserProgress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/violet_400"
                 tools:ignore="TextContrastCheck"
                 tools:text="0" />
 

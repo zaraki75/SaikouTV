@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import ani.saikou.anilist.Anilist
@@ -29,6 +30,7 @@ class TVLoginFragment() : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.text.text = "Please open Saikou on your phone and login\nOnce logged in go to \"Settings/TV Login\" and introduce this code"
+        TVAnimeFragment.shouldReload = true
 
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
@@ -54,7 +56,12 @@ class TVLoginFragment() : Fragment() {
                         requireActivity().supportFragmentManager.popBackStack()
                     }
                 } ?: run {
-                    binding.code.text = "Token null"
+                    MainScope().launch {
+                        if(NetworkTVConnection.isListening) {
+                            Toast.makeText(requireContext(), "Something went wrong, try again", Toast.LENGTH_LONG)
+                            listen()
+                        }
+                    }
                 }
             }
         })

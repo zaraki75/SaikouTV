@@ -14,8 +14,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.CompletionInfo
 import android.widget.FrameLayout
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.leanback.app.BackgroundManager
 import androidx.leanback.app.RowsSupportFragment
 import androidx.leanback.app.SearchSupportFragment
 import androidx.leanback.widget.*
@@ -23,6 +25,7 @@ import androidx.leanback.widget.ObjectAdapter.DataObserver
 import androidx.leanback.widget.SearchBar.SearchBarListener
 import androidx.leanback.widget.SearchBar.SearchBarPermissionListener
 import androidx.lifecycle.lifecycleScope
+import ani.saikou.R
 import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistSearch
 import ani.saikou.anilist.SearchResults

@@ -4,6 +4,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
@@ -236,24 +237,12 @@ class TVAnimeFragment: BrowseSupportFragment()  {
             lifecycleScope.launch(Dispatchers.Main) {
                 title = Anilist.username
                 Glide.with(requireContext())
-                    .asBitmap()
+                    .asDrawable()
                     .centerInside()
                     .load(Anilist.avatar)
-                    .into(object : CustomTarget<Bitmap>() {
-                        override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                            badgeDrawable = BitmapDrawable(resource)
-                        }
-                        override fun onLoadCleared(placeholder: Drawable?) {}
-                    })
-                val backgroundManager = BackgroundManager.getInstance(requireActivity())
-                backgroundManager.attach(requireActivity().window)
-                Glide.with(requireContext())
-                    .asBitmap()
-                    .centerInside()
-                    .load(Anilist.bg)
-                    .into(object : CustomTarget<Bitmap>() {
-                        override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                            backgroundManager.drawable = BitmapDrawable(resource)
+                    .into(object : CustomTarget<Drawable>() {
+                        override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                            badgeDrawable = resource
                         }
                         override fun onLoadCleared(placeholder: Drawable?) {}
                     })
@@ -283,9 +272,9 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         isHeadersTransitionOnBackEnabled = true
 
         // Set fastLane (or headers) background color
-        //brandColor = ContextCompat.getColor(requireActivity(), R.color.violet_700)
+        brandColor = Color.parseColor("#66000000")//ContextCompat.getColor(requireActivity(), R.color.bg_black)
         // Set search icon color.
-        //searchAffordanceColor = ContextCompat.getColor(requireActivity(), R.color.bg_black)
+        searchAffordanceColor = ContextCompat.getColor(requireActivity(), R.color.pink_200)
 
         setHeaderPresenterSelector(object : PresenterSelector() {
             override fun getPresenter(o: Any): Presenter {
@@ -327,6 +316,25 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                         model.loadNextPage(model.searchResults)
                     }
                 }
+                //TODO find a way of properly showing this image
+                /*if (it is Media && !it.banner.isNullOrEmpty()) {
+                    Glide.with(requireContext())
+                        .asDrawable()
+                        .centerCrop()
+                        .load(it.banner)
+                        .into(object : CustomTarget<Drawable>() {
+                            override fun onResourceReady(
+                                resource: Drawable,
+                                transition: Transition<in Drawable>?
+                            ) {
+                                backgroundManager.drawable = resource
+                            }
+
+                            override fun onLoadCleared(placeholder: Drawable?) {}
+                        })
+                } else {
+                    //backgroundManager.clearDrawable()
+                }*/
             }
         }
     }
@@ -367,7 +375,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
             .setType(TvContractCompat.PreviewPrograms.TYPE_TV_SERIES)
             .setTitle(media.name)
             .setDescription(media.description)
-            .setPosterArtUri(Uri.parse(media.cover))
+            .setPosterArtUri(Uri.parse(media.banner?:media.cover))
             .setIntent(intent)
 
         val programURI = requireContext().contentResolver.insert(TvContractCompat.PreviewPrograms.CONTENT_URI,

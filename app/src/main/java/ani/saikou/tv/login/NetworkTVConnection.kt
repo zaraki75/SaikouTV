@@ -62,6 +62,7 @@ object NetworkTVConnection {
     }
 
     fun stopListening() {
+        _isListening = false
         listeningThread?.let {
             it.interrupt()
         }

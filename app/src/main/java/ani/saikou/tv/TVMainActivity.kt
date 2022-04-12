@@ -6,8 +6,10 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.FragmentActivity
+import androidx.leanback.app.BackgroundManager
 import androidx.lifecycle.lifecycleScope
 import androidx.tvprovider.media.tv.Channel
 import androidx.tvprovider.media.tv.ChannelLogoUtils
@@ -29,6 +31,11 @@ class TVMainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.tv_activity_main)
         loadMedia = intent?.getIntExtra("media", -1)
+
+        val backgroundManager = BackgroundManager.getInstance(this)
+        backgroundManager.attach(this.window)
+
+        backgroundManager.color = ContextCompat.getColor(this, R.color.bg_black)
 
         if (!isOnline(this)) {
             //toastString("No Internet Connection")
