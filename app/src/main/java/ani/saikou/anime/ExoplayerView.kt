@@ -520,6 +520,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             return
         }
         model.setMedia(media)
+        title = media.userPreferredName
         episodes = media.anime?.episodes?:return
 
         model.watchAnimeWatchSources = if(media.isAdult) HAnimeSources else AnimeSources
@@ -699,23 +700,25 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
 
         preloading = false
-        var showProgressDialog = if(settings.askIndividual) loadData<Boolean>("${media.id}_progressDialog") != true else false
+        val showProgressDialog = if(settings.askIndividual) loadData<Boolean>("${media.id}_progressDialog")?: true else false
         if(showProgressDialog && Anilist.userid!=null && if(media.isAdult) settings.updateForH else true)
-            AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Auto Update progress on Anilist?").apply {
-                setMultiChoiceItems(arrayOf("Don't ask again for ${media.userPreferredName}"), booleanArrayOf(true)) { _, _, isChecked ->
-                    if (isChecked) {
-                        saveData("${media.id}_progressDialog", isChecked)
-                    }
-                    showProgressDialog = isChecked
-                }
+            AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Auto Update progress for ${media.userPreferredName}?").apply {
+//                setMultiChoiceItems(arrayOf("Don't ask again for "), booleanArrayOf(true)) { _, _, isChecked ->
+//                    if (isChecked) {
+//                        saveData("${media.id}_progressDialog", isChecked)
+//                    }
+//                    showProgressDialog = isChecked
+//                }
                 setOnCancelListener { hideSystemBars() }
                 setCancelable(false)
                 setPositiveButton("Yes") { dialog, _ ->
+                    saveData("${media.id}_progressDialog", false)
                     saveData("${media.id}_save_progress",true)
                     dialog.dismiss()
                     model.setEpisode(episodes[media.anime!!.selectedEpisode!!]!!,"invoke")
                 }
                 setNegativeButton("No") { dialog, _ ->
+                    saveData("${media.id}_progressDialog", false)
                     saveData("${media.id}_save_progress",false)
                     toast("You can long click List Editor button to Reset Auto Update")
                     dialog.dismiss()
@@ -1029,9 +1032,13 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 enterPipMode()
             }
-            else super.onBackPressed()
+            else {
+                super.onBackPressed()
+                finish()
+            }
         }else{
             super.onBackPressed()
+            finish()
         }
     }
 

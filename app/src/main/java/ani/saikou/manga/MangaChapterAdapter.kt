@@ -72,7 +72,17 @@ class MangaChapterAdapter(
                 val ep = arr[position]
                 setAnimation(fragment.requireContext(),holder.binding.root,fragment.uiSettings)
                 binding.itemChapterNumber.text = ep.number
-                binding.itemChapterTitle.text = ep.title
+                if(!ep.title.isNullOrEmpty()) {
+                    binding.itemChapterTitle.text = ep.title
+                    binding.itemChapterTitle.setOnClickListener {
+                        binding.itemChapterTitle.maxLines.apply {
+                            binding.itemChapterTitle.maxLines = if(this==1) 3 else 1
+                        }
+                    }
+                    binding.itemChapterTitle.visibility = View.VISIBLE
+                }
+                else binding.itemChapterTitle.visibility = View.GONE
+
                 if (media.userProgress!=null) {
                     if (ep.number.toFloatOrNull()?:9999f<=media.userProgress!!.toFloat()) {
                         binding.itemEpisodeViewedCover.visibility=View.VISIBLE
