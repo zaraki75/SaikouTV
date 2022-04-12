@@ -30,7 +30,6 @@ class TVLoginFragment() : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.text.text = "Please open Saikou on your phone and login\nOnce logged in go to \"Settings/TV Login\" and introduce this code"
-        TVAnimeFragment.shouldReload = true
 
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
