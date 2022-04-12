@@ -1,12 +1,16 @@
 package ani.saikou.tv
 
 import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
 import android.widget.ProgressBar
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.fragment.app.activityViewModels
+import androidx.leanback.app.BackgroundManager
 import androidx.leanback.app.DetailsSupportFragment
 import androidx.leanback.app.DetailsSupportFragmentBackgroundController
 import androidx.leanback.widget.*
@@ -23,6 +27,8 @@ import ani.saikou.saveData
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.tv.components.CustomListRowPresenter
 import ani.saikou.tv.components.HeaderOnlyRow
+import ani.saikou.tv.presenters.DetailActionsPresenter
+import ani.saikou.tv.presenters.DetailsDescriptionPresenter
 import ani.saikou.tv.presenters.HeaderRowPresenter
 import ani.saikou.tv.presenters.EpisodePresenter
 import com.bumptech.glide.Glide
@@ -40,7 +46,7 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
 
     private val model: MediaDetailsViewModel by activityViewModels()
     private val scope = lifecycleScope
-    val actions = ArrayObjectAdapter()
+    val actions = ArrayObjectAdapter(DetailActionsPresenter())
 
     private lateinit var media: Media
     lateinit var uiSettings: UserInterfaceSettings
@@ -63,7 +69,6 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         buildDetails()
         observeData()
     }
@@ -74,13 +79,13 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
     }
 
     private fun buildDetails() {
-        val mediaObject = activity?.intent?.getSerializableExtra("media")
+        val mediaObject = requireActivity().intent.getSerializableExtra("media")
         if (mediaObject is Int) {
             //TODO null check this monster
-            val name = activity?.intent?.getStringExtra("name")
-            val nameRomanji = activity?.intent?.getStringExtra("nameRomaji")
-            val userPreferredName = activity?.intent?.getStringExtra("userPreferredName")
-            val isAdult = activity?.intent?.getBooleanExtra("isAdult", false)
+            val name = requireActivity().intent.getStringExtra("name")
+            val nameRomanji = requireActivity().intent.getStringExtra("nameRomaji")
+            val userPreferredName = requireActivity().intent.getStringExtra("userPreferredName")
+            val isAdult = requireActivity().intent.getBooleanExtra("isAdult", false)
             media = Media(
                 id = mediaObject,
                 name = name!!,
@@ -94,9 +99,10 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
 
         media.selected = model.loadSelected(media)
 
-        initializeBackground()
         val selector = ClassPresenterSelector().apply {
             FullWidthDetailsOverviewRowPresenter(DetailsDescriptionPresenter()).also {
+                it.backgroundColor = ContextCompat.getColor(requireContext(), R.color.bg_black)
+                it.actionsBackgroundColor = ContextCompat.getColor(requireContext(), R.color.bg_black)
                 it.setOnActionClickedListener {
                     if (it.id.toInt() == 0) {
                         parentFragmentManager.beginTransaction().addToBackStack(null)
@@ -141,9 +147,8 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
                 media = it
                 media.selected = model.loadSelected(media)
 
-                finishLoadingRows()
-
                 if (!loaded) {
+                    finishLoadingRows()
                     model.watchAnimeWatchSources =
                         if (media.isAdult) HAnimeSources else AnimeSources
 
@@ -275,6 +280,7 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
     }
 
     private fun initializeBackground() {
+        detailsBackground.solidColor = ContextCompat.getColor(requireContext(), R.color.bg_black)
         detailsBackground.enableParallax()
         Glide.with(this)
             .asBitmap()
@@ -317,16 +323,4 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
         }
     }
 
-}
-
-class DetailsDescriptionPresenter : AbstractDetailsDescriptionPresenter() {
-
-    override fun onBindDescription(viewHolder: ViewHolder, itemData: Any) {
-        val details = itemData as Media
-        viewHolder.apply {
-            title.text = details.name
-            subtitle.text = details.userPreferredName
-            body.text = details.description
-        }
-    }
 }

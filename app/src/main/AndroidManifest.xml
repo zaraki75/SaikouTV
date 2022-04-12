@@ -4,6 +4,7 @@
     package="ani.saikou">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
@@ -123,16 +124,6 @@
                 <data android:pathPrefix="/anime" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name="ani.saikou.tv.TVMainActivity"
-            android:exported="true"
-            android:theme="@style/Theme.SaikouTV">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-            </intent-filter>
-        </activity>
         
         <activity
             android:name=".MainActivity"
@@ -145,6 +136,18 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".settings.TVConnectionActivity"
+            android:exported="true" />
+
+        <activity
+            android:name="ani.saikou.tv.TVMainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.SaikouTV">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name="ani.saikou.tv.TVAnimeDetailActivity"
             android:exported="true"

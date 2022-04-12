@@ -6,8 +6,10 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.FragmentActivity
+import androidx.leanback.app.BackgroundManager
 import androidx.lifecycle.lifecycleScope
 import androidx.tvprovider.media.tv.Channel
 import androidx.tvprovider.media.tv.ChannelLogoUtils
@@ -29,6 +31,11 @@ class TVMainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.tv_activity_main)
         loadMedia = intent?.getIntExtra("media", -1)
+
+        val backgroundManager = BackgroundManager.getInstance(this)
+        backgroundManager.attach(this.window)
+
+        backgroundManager.color = ContextCompat.getColor(this, R.color.bg_black)
 
         if (!isOnline(this)) {
             //toastString("No Internet Connection")
@@ -106,6 +113,14 @@ class TVMainActivity : FragmentActivity() {
                 ChannelLogoUtils.storeChannelLogo(this, channelID, getDrawable(R.drawable.saikouflush)!!.toBitmap())
                 TvContractCompat.requestChannelBrowsable(this, channelID)
             }
+        }
+    }
+
+    private fun saveToken(token: String) {
+        Anilist.token = token
+        val filename = "anilistToken"
+        openFileOutput(filename, Context.MODE_PRIVATE).use {
+            it.write(token.toByteArray())
         }
     }
 

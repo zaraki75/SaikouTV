@@ -33,6 +33,7 @@ import kotlinx.coroutines.withContext
 import nl.joery.animatedbottombar.AnimatedBottomBar
 import java.io.Serializable
 
+
 class MainActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainBinding
     private val scope = lifecycleScope
@@ -165,6 +166,7 @@ class MainActivity : AppCompatActivity() {
 
         Handler(Looper.getMainLooper()).postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
     }
+
 
     //ViewPager
     private class ViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) : FragmentStateAdapter(fragmentManager, lifecycle) {

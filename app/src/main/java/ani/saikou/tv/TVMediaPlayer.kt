@@ -4,25 +4,27 @@ import android.content.ComponentName
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.viewModels
 import androidx.leanback.app.VideoSupportFragment
 import androidx.leanback.app.VideoSupportFragmentGlueHost
 import androidx.leanback.media.PlaybackGlue
 import androidx.media.session.MediaButtonReceiver
+import ani.saikou.*
+import ani.saikou.anilist.Anilist
 import ani.saikou.anime.Episode
 import ani.saikou.anime.VideoCache
 import ani.saikou.anime.source.AnimeSources
 import ani.saikou.anime.source.HAnimeSources
-import ani.saikou.ignoreAllSSLErrors
-import ani.saikou.loadData
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
-import ani.saikou.saveData
 import ani.saikou.settings.PlayerSettings
 import ani.saikou.settings.UserInterfaceSettings
+import ani.saikou.tv.utils.VideoPlayerGlue
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackParameters
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.leanback.LeanbackPlayerAdapter
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource
@@ -31,9 +33,14 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
+import kotlin.math.roundToInt
 
-class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedListener {
+class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedListener, Player.Listener {
 
     private lateinit var media: Media
     private lateinit var exoPlayer: ExoPlayer
@@ -41,12 +48,17 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
     private lateinit var playbackParameters: PlaybackParameters
     private lateinit var trackSelector: DefaultTrackSelector
     private lateinit var mediaItem : MediaItem
+    private var interacted = false
+    private var currentEpisodeIndex = 0
+    private var isInitialized = false
+    private lateinit var episodeArr: List<String>
 
     private lateinit var episode: Episode
     private lateinit var episodes: MutableMap<String,Episode>
     private lateinit var playerGlue : VideoPlayerGlue
 
     private val model: MediaDetailsViewModel by viewModels()
+    private var episodeLength: Float = 0f
 
     private var settings = PlayerSettings()
     private var uiSettings = UserInterfaceSettings()
@@ -72,6 +84,20 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
             }
         }
 
+        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if(isInitialized)
+                    progress {
+                        isEnabled = false
+                        activity?.onBackPressed()
+                    }
+                else {
+                    isEnabled = false
+                    activity?.onBackPressed()
+                }
+            }
+        })
+
         surfaceView.keepScreenOn = true
 
         episodeObserverRunnable.run()
@@ -85,7 +111,8 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
 
         //Set Episode, to invoke getEpisode() at Start
         model.setEpisode(episodes[media.anime!!.selectedEpisode!!]!!,"invoke")
-
+        episodeArr = episodes.keys.toList()
+        currentEpisodeIndex = episodeArr.indexOf(media.anime!!.selectedEpisode!!)
     }
 
     fun initVideo() {
@@ -137,6 +164,8 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
                 prepare()
             }
 
+        isInitialized = true
+        exoPlayer.addListener(this)
         val mediaButtonReceiver = ComponentName(requireActivity(), MediaButtonReceiver::class.java)
         MediaSessionCompat(requireContext(), "Player", mediaButtonReceiver, null).let { media ->
             val mediaSessionConnector = MediaSessionConnector(media)
@@ -165,7 +194,88 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
         super.onPause()
         exoPlayer.pause()
     }
-    override fun onPrevious() {}
 
-    override fun onNext() {}
+
+
+    override fun onPrevious() {
+        if(currentEpisodeIndex>0) {
+            //change(currentEpisodeIndex - 1)
+        }
+    }
+
+    override fun onNext() {
+        if(isInitialized) {
+            //nextEpisode{ i-> progress { change(currentEpisodeIndex + i) } }
+        }
+    }
+
+    private fun nextEpisode(runnable: ((Int)-> Unit) ){
+        var isFiller = true
+        var i=1
+        while (isFiller) {
+            if (episodeArr.size > currentEpisodeIndex + i) {
+                isFiller = if (settings.autoSkipFiller) episodes[episodeArr[currentEpisodeIndex + i]]?.filler?:false else false
+                if (!isFiller) runnable.invoke(i)
+                i++
+            }
+            else {
+                isFiller = false
+            }
+        }
+    }
+
+    fun change(index:Int){
+        if(isInitialized) {
+            //changingServer = false
+            saveData(
+                "${media.id}_${episodeArr[currentEpisodeIndex]}",
+                exoPlayer.currentPosition,
+                requireActivity()
+            )
+            val prev = episodeArr[currentEpisodeIndex]
+            episodeLength= 0f
+            media.anime!!.selectedEpisode = episodeArr[index]
+            model.setMedia(media)
+            model.epChanged.postValue(false)
+            model.setEpisode(episodes[media.anime!!.selectedEpisode!!]!!,"change")
+            model.onEpisodeClick(
+                media, media.anime!!.selectedEpisode!!, requireActivity().supportFragmentManager,
+                false,
+                prev)
+        }
+    }
+    override fun onPlaybackStateChanged(playbackState: Int) {
+        if (playbackState == ExoPlayer.STATE_READY) {
+            exoPlayer.play()
+            if (episodeLength == 0f) {
+                episodeLength = exoPlayer.duration.toFloat()
+            }
+        }
+        if(playbackState == Player.STATE_ENDED && settings.autoPlay){
+            if(interacted)
+                onNext()
+        }
+        super.onPlaybackStateChanged(playbackState)
+    }
+
+    private fun progress(runnable: Runnable){
+        if (exoPlayer.currentPosition / episodeLength > settings.watchPercentage && Anilist.userid != null) {
+            if(loadData<Boolean>("${media.id}_save_progress")!=false)
+                updateAnilist(media.id, media.anime!!.selectedEpisode!!)
+            runnable.run()
+        } else {
+            runnable.run()
+        }
+    }
+
+    private fun updateAnilist(id: Int, number: String){
+        if(Anilist.userid!=null) {
+            TVAnimeFragment.shouldReload = true
+            CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
+                val a = number.toFloatOrNull()?.roundToInt()
+                Anilist.mutation.editList(id, a, status = "CURRENT")
+                Refresh.all()
+            }
+        }
+    }
 }

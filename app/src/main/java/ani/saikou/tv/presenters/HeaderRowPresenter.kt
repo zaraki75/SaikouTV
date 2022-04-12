@@ -4,12 +4,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.leanback.widget.RowPresenter
-import ani.saikou.databinding.TvHeaderRowBinding
+import ani.saikou.databinding.TvProgressRowHeaderBinding
 import ani.saikou.tv.components.HeaderOnlyRow
 
 class HeaderRowPresenter: RowPresenter() {
     override fun createRowViewHolder(parent: ViewGroup?): ViewHolder {
-        return HeaderRowViewholder(TvHeaderRowBinding.inflate(LayoutInflater.from(parent?.context), parent, false))
+        return HeaderRowViewholder(TvProgressRowHeaderBinding.inflate(LayoutInflater.from(parent?.context), parent, false))
     }
 
     override fun isUsingDefaultSelectEffect(): Boolean {
@@ -28,5 +28,5 @@ class HeaderRowPresenter: RowPresenter() {
         }
     }
 
-    inner class HeaderRowViewholder(val binding: TvHeaderRowBinding) : ViewHolder(binding.root) {}
+    inner class HeaderRowViewholder(val binding: TvProgressRowHeaderBinding) : ViewHolder(binding.root) {}
 }

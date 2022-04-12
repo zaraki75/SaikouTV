@@ -56,22 +56,11 @@ class AnimePresenter(var type: Int,
                     b.itemCompactScore.text = ((if (media.userScore == 0) (media.meanScore ?: 0) else media.userScore) / 10.0).toString()
                     b.itemCompactScoreBG.background = ContextCompat.getDrawable(b.root.context, (if (media.userScore != 0) R.drawable.item_user_score else R.drawable.item_score))
                     b.itemCompactUserProgress.text = (media.userProgress ?: "~").toString()
-                    if (media.relation != null) {
-                        b.itemCompactRelation.text = "${media.relation}  "
-                        b.itemCompactType.visibility = View.VISIBLE
-                    } else {
-                        b.itemCompactType.visibility = View.GONE
-                    }
+
                     if (media.anime != null) {
-                        if (media.relation != null) b.itemCompactTypeImage.setImageDrawable(AppCompatResources.getDrawable(activity,
-                            R.drawable.ic_round_movie_filter_24
-                        ))
                         b.itemCompactTotal.text = " | ${if (media.anime.nextAiringEpisode != null) (media.anime.nextAiringEpisode.toString() + " | " + (media.anime.totalEpisodes ?: "~").toString()) else (media.anime.totalEpisodes ?: "~").toString()}"
                     }
                     else if (media.manga != null) {
-                        if (media.relation != null) b.itemCompactTypeImage.setImageDrawable(AppCompatResources.getDrawable(activity,
-                            R.drawable.ic_round_import_contacts_24
-                        ))
                         b.itemCompactTotal.text = " | ${media.manga.totalChapters ?: "~"}"
                     }
                 }

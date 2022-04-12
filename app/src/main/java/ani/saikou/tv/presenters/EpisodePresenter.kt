@@ -63,7 +63,7 @@ class EpisodePresenter(
                         binding.itemEpisodeViewedCover.visibility= View.GONE
                         binding.itemEpisodeViewed.visibility = View.GONE
                         binding.itemEpisodeCont.setOnLongClickListener{
-                            updateAnilistProgress(media.id, ep.number)
+                            updateAnilistProgress(media, ep.number)
                             true
                         }
                     }

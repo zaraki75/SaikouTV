@@ -13,7 +13,6 @@ import ani.saikou.px
 import ani.saikou.tv.TVSearchActivity
 
 class GenresPresenter(
-    private val type: String,
     private val big:Boolean = false): Presenter() {
 
     override fun onCreateViewHolder(parent: ViewGroup?): ViewHolder {
