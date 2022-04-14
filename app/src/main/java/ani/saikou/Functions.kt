@@ -824,6 +824,7 @@ fun toastString(s: String?,activity: Activity?=null){
                 }
                 snackBar.view.setOnLongClickListener {
                     copyToClipboard(s,false)
+                    toast("Copied to Clipboard")
                     true
                 }
                 snackBar.show()

@@ -65,7 +65,8 @@ class Gogo(private val dub:Boolean=false, override val name: String = "gogoanime
                             if(directLinks != null){linkForVideos[name] = directLinks}
                         }
                 }
-            }}catch (e:Exception){
+            }
+        }catch (e:Exception){
                 toastString(e.toString())
             }
             return@runBlocking (linkForVideos)
