@@ -12,7 +12,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
-import okhttp3.FormBody
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -24,17 +24,18 @@ val httpClient =  OkHttpClient()
 
 fun executeQuery(query:String, variables:String="",force:Boolean=false,useToken:Boolean=true,show:Boolean=false): JsonObject? {
     try {
-        val formBody: RequestBody = FormBody.Builder()
-            .add("query", query)
-            .add("variables", variables)
+        val formBody: RequestBody = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+            .addFormDataPart("query", query)
+            .addFormDataPart("variables", variables)
             .build()
 
         val request = Request.Builder()
             .url("https://graphql.anilist.co/")
-            .header("Content-Type", "application/json")
-            .header("Accept", "application/json")
+            .addHeader("Content-Type", "application/json")
+            .addHeader("Accept", "application/json")
+            .addHeader("user-agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36")
             .post(formBody)
-
 
         if (Anilist.token!=null || force) {
             if (Anilist.token!=null && useToken) request.header("Authorization", "Bearer ${Anilist.token}")
@@ -46,7 +47,7 @@ fun executeQuery(query:String, variables:String="",force:Boolean=false,useToken:
         }
     } catch (e:Exception){
         if(e is UnknownHostException) toastString("Network error, please Retry.")
-        else toastString("$e")
+//        else toastString("$e")
     }
     return null
 }
@@ -226,6 +227,7 @@ class AnilistQueries{
                                     }
                                 }
                             }
+                            media.relations!!.sortBy { it.popularity }
                         }
                         if (it.jsonObject["recommendations"] != JsonNull) {
                             media.recommendations = arrayListOf()

@@ -83,10 +83,10 @@ class GogoCDN : Extractor() {
 
     //KR(animdl) lord & saviour
     private fun cryptoHandler(string:String,encrypt:Boolean=true) : String {
-        val key = "63976882873559819639988080820907".toByteArray()
+        val key = "63976882873536819639922083275907".toByteArray()
         val secretKey =  SecretKeySpec(key, "AES")
 
-        val iv = "4770478969418267".toByteArray()
+        val iv = "4786443969418267".toByteArray()
         val ivParameterSpec =  IvParameterSpec(iv)
 
         val padding = byteArrayOf(0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8)

@@ -10,6 +10,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
 import androidx.core.view.updateLayoutParams
 import ani.saikou.*
@@ -49,10 +50,25 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(Intent(this, PlayerSettingsActivity::class.java))
         }
 
+        binding.settingsDownloadInSd.isChecked = loadData("sd_dl")?:false
+        binding.settingsDownloadInSd.setOnCheckedChangeListener { _, isChecked ->
+            if(isChecked){
+                val arrayOfFiles = ContextCompat.getExternalFilesDirs(this, null)
+                if(arrayOfFiles.size > 1 && arrayOfFiles[1] != null){
+                    saveData("sd_dl",true)
+                }else {
+                    binding.settingsDownloadInSd.isChecked = false
+                    saveData("sd_dl",false)
+                    toastString(getString(R.string.noSdFound))
+                }
+            }else saveData("sd_dl",false)
+        }
+
         binding.settingsRecentlyListOnly.isChecked = loadData("recently_list_only")?:false
         binding.settingsRecentlyListOnly.setOnCheckedChangeListener { _, isChecked ->
             saveData("recently_list_only",isChecked)
         }
+
 
         binding.mangaSource.setText(MangaSources.names[loadData("settings_default_manga_source") ?: 0],false)
         binding.mangaSource.setAdapter(ArrayAdapter(this, R.layout.item_dropdown, MangaSources.names))

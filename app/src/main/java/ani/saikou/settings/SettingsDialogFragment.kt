@@ -3,10 +3,12 @@ package ani.saikou.settings
 import android.app.DownloadManager
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import ani.saikou.*
 import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.BottomSheetSettingsBinding
@@ -53,9 +55,14 @@ class SettingsDialogFragment : BottomSheetDialogFragment() {
 
         binding.settingsDownloads.setSafeOnClickListener {
             try {
-                startActivity(Intent(DownloadManager.ACTION_VIEW_DOWNLOADS))
+                val arrayOfFiles = ContextCompat.getExternalFilesDirs(requireContext(),null)
+                startActivity(if (loadData<Boolean>("sd_dl") == true && arrayOfFiles.size > 1 && arrayOfFiles[0] != null && arrayOfFiles[1] != null) {
+                    val parentDirectory = arrayOfFiles[1].toString()
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.setDataAndType(Uri.parse(parentDirectory), "resource/folder")
+                }else Intent(DownloadManager.ACTION_VIEW_DOWNLOADS))
             }catch (e:ActivityNotFoundException){
-                toastString("Couldn't find any File Manager to open Downloads Folder")
+                toast("Couldn't find any File Manager to open SD card")
             }
             dismiss()
         }
