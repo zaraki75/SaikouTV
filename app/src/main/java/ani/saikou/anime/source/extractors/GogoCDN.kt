@@ -13,6 +13,8 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import javax.crypto.Cipher
@@ -29,12 +31,12 @@ class GogoCDN : Extractor() {
                 .get()
         if(url.contains("streaming.php")) {
             response.select("script[data-name=\"episode\"]").attr("data-value").also {
-                val id = cryptoHandler(cryptoHandler(it,false).findBetween("","&")!!,true)
+                val id = cryptoHandler(cryptoHandler(it,false)?.findBetween("","&")?:return@also,true)
                 Jsoup.connect("https://${Uri.parse(url).host}/encrypt-ajax.php?id=$id")
                 .ignoreHttpErrors(true).ignoreContentType(true)
                 .header("X-Requested-With", "XMLHttpRequest").get().body().toString().apply {
                     cryptoHandler(this.findBetween("""{"data":"""","\"}")?:return@apply,false)
-                    .replace("""o"<P{#meme":""","""e":[{"file":""").apply{
+                    ?.replace("""o"<P{#meme":""","""e":[{"file":""")?.apply{
                         val json = this.dropLast(this.length-this.lastIndexOf('}')-1)
                         val a = arrayListOf<Deferred<*>>()
                         runBlocking {
@@ -82,12 +84,10 @@ class GogoCDN : Extractor() {
     }
 
     //KR(animdl) lord & saviour
-    private fun cryptoHandler(string:String,encrypt:Boolean=true) : String {
-        val key = "63976882873536819639922083275907".toByteArray()
-        val secretKey =  SecretKeySpec(key, "AES")
-
-        val iv = "4786443969418267".toByteArray()
-        val ivParameterSpec =  IvParameterSpec(iv)
+    private fun cryptoHandler(string:String,encrypt:Boolean=true) : String? {
+        val keys = getKeyAndIv()?:return null
+        val secretKey =  SecretKeySpec(keys.first.toByteArray(), "AES")
+        val ivParameterSpec =  IvParameterSpec(keys.second.toByteArray())
 
         val padding = byteArrayOf(0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8)
 
@@ -100,5 +100,16 @@ class GogoCDN : Extractor() {
             cipher.init(Cipher.ENCRYPT_MODE,secretKey,ivParameterSpec)
             Base64.encodeToString(cipher.doFinal(string.toByteArray()+padding),Base64.NO_WRAP)
         }
+    }
+
+    companion object {
+        private var keyAndIv:Pair<String,String>?=null
+        fun getKeyAndIv(): Pair<String,String>? =
+            if(keyAndIv!=null) keyAndIv else let {
+                val keys = OkHttpClient().newCall(Request.Builder().url("https://raw.githubusercontent.com/saikou-app/mal-id-filler-list/main/xstreamcdnkeys.txt").build()).execute().body?.string()?.split("\n")?:return null
+                keyAndIv = keys[0] to keys[1]
+                println("got $keyAndIv")
+                return keyAndIv
+            }
     }
 }
