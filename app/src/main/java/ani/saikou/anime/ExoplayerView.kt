@@ -823,11 +823,15 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             }
         playerView.player = exoPlayer
 
-        val mediaButtonReceiver = ComponentName(this, MediaButtonReceiver::class.java)
-        MediaSessionCompat(this, "Player", mediaButtonReceiver, null).let { media ->
-            val mediaSessionConnector = MediaSessionConnector(media)
-            mediaSessionConnector.setPlayer(exoPlayer)
-            media.isActive = true
+        try{
+            val mediaButtonReceiver = ComponentName(this, MediaButtonReceiver::class.java)
+            MediaSessionCompat(this, "Player", mediaButtonReceiver, null).let { media ->
+                val mediaSessionConnector = MediaSessionConnector(media)
+                mediaSessionConnector.setPlayer(exoPlayer)
+                media.isActive = true
+            }
+        }catch (e:Exception){
+            toast(e.toString())
         }
 
         exoPlayer.addListener(this)
@@ -883,7 +887,6 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
     override fun onStop() {
         playerView.player?.pause()
-        releasePlayer()
         super.onStop()
     }
 
@@ -1027,10 +1030,12 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
     override fun onDestroy() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        VideoCache.release()
+
         if(isInitialized) {
             updateAniProgress()
+            releasePlayer()
         }
+
         super.onDestroy()
         finishAndRemoveTask()
     }
@@ -1105,6 +1110,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
     private fun cast(){
         val stream = episode.streamLinks[episode.selectedStream]?:return
+        if(episode.selectedQuality >= stream.quality.size) return
         val videoURL = stream.quality[episode.selectedQuality].url
         val shareVideo = Intent(Intent.ACTION_VIEW)
         shareVideo.setDataAndType(Uri.parse(videoURL), "video/*")
