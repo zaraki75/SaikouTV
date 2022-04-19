@@ -1,5 +1,7 @@
 package ani.saikou.settings
 
+import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -24,6 +26,10 @@ class TVConnectionActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = FragmentTvConnectionBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        if(!isOnWifi()) {
+            toastString("You need to be connected on the same wifi network as your TV device")
+        }
 
         binding.connectButton.setOnClickListener {
             val fieldText: String? = binding.ipField.text.toString()
@@ -55,5 +61,11 @@ class TVConnectionActivity: AppCompatActivity() {
                 toastString("Please input the number shown on TV")
             }
         }
+    }
+
+    fun isOnWifi(): Boolean {
+        val mWifi = (getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+        return mWifi?.isConnected() ?: false
     }
 }

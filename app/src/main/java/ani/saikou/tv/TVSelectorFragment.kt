@@ -6,44 +6,35 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.leanback.app.ProgressBarManager
 import androidx.leanback.app.VerticalGridSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.Presenter
 import androidx.leanback.widget.VerticalGridPresenter
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
+import ani.saikou.*
 import ani.saikou.anime.Episode
 import ani.saikou.databinding.ItemUrlBinding
 import ani.saikou.databinding.TvItemUrlBinding
-import ani.saikou.download
-import ani.saikou.loadData
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
-import ani.saikou.toastString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.DecimalFormat
 
-class TVSelectorFragment: VerticalGridSupportFragment() {
+class TVSelectorFragment(var media: Media): VerticalGridSupportFragment() {
 
-    val model : MediaDetailsViewModel by activityViewModels()
-    private var scope: CoroutineScope = lifecycleScope
-    private var media: Media? = null
-    private var episode: Episode? = null
-    private var prevEpisode: Episode? = null
-    private var makeDefault = false
+    lateinit var links: MutableMap<String, Episode.StreamLinks?>
     private var selected:String?=null
-    private var launch:Boolean?=null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
             selected = it.getString("server")
-            launch = it.getBoolean("launch",true)
-            prevEpisode = it.getSerializable("prev") as? Episode
         }
 
         title = "Select quality"
@@ -53,108 +44,45 @@ class TVSelectorFragment: VerticalGridSupportFragment() {
         val presenter = VerticalGridPresenter()
         presenter.numberOfColumns = 1
         gridPresenter = presenter
+
+        if(this::links.isInitialized) {
+            setStreamLinks(links)
+        }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        model.getMedia().observe(viewLifecycleOwner) { m ->
-            media = m
-            if (media != null) {
-                episode = media?.anime?.episodes?.get(media?.anime?.selectedEpisode)
-                if(episode!=null){
-                    if (selected != null) {
+    fun setStreamLinks(streamLinks: MutableMap<String, Episode.StreamLinks?>) {
+        links = streamLinks
+        if(gridPresenter == null)
+            return
 
-                        fun fail() {
-                           cancel()
-                        }
+        val linkList = mutableListOf<Episode.StreamLinks>()
 
-                        fun load() {
-                            if (episode?.streamLinks?.containsKey(selected) == true) {
-                                if (episode!!.streamLinks[selected]!!.quality.size >= media!!.selected!!.quality) {
-                                    media!!.anime!!.episodes?.get(media!!.anime!!.selectedEpisode!!)?.selectedStream =
-                                        selected
-                                    media!!.anime!!.episodes?.get(media!!.anime!!.selectedEpisode!!)?.selectedQuality =
-                                        media!!.selected!!.quality
-                                    startExoplayer(media!!)
-                                } else fail()
-                            } else fail()
-                        }
-                        if (episode?.streamLinks?.isEmpty() == true) {
-                            model.getEpisode().observe(viewLifecycleOwner) {
-                                if (it != null) {
-                                    episode = it
-                                    load()
-                                }
-                            }
-                            scope.launch {
-                                if (withContext(Dispatchers.IO){ !model.loadEpisodeStream(episode!!, media!!.selected!!) }) fail()
-                            }
-                        } else load()
-                    }
-                    else {
-                        makeDefault = loadData("make_default") ?:true
-
-                        fun load() {
-                            media!!.anime?.episodes?.set(media!!.anime?.selectedEpisode?:"",
-                                episode!!
-                            )
-
-                            val links = episode!!.streamLinks
-                            val linkList = mutableListOf<Episode.StreamLinks>()
-
-                            links.keys.toList().forEach { key ->
-                                links[key]?.let { links ->
-                                    links.quality.forEach {
-                                        linkList.add(Episode.StreamLinks(links.server, listOf(it), links.headers, links.subtitles))
-                                    }
-                                }
-                            }
-
-                            val arrayAdapter = ArrayObjectAdapter(StreamAdapter())
-                            arrayAdapter.addAll(0, linkList)
-                            adapter = arrayAdapter
-                            progressBarManager.hide()
-                        }
-                        if (episode!!.streamLinks.isEmpty() || !episode!!.allStreams) {
-                            model.getEpisode().observe(viewLifecycleOwner) {
-                                if (it != null) {
-                                    episode = it
-                                    load()
-                                }
-                            }
-                            scope.launch(Dispatchers.IO) {
-                                model.loadEpisodeStreams(episode!!, media!!.selected!!.source)
-                            }
-                        } else load()
-                    }
+        links.keys.toList().forEach { key ->
+            links[key]?.let { links ->
+                links.quality.forEach {
+                    linkList.add(Episode.StreamLinks(links.server, listOf(it), links.headers, links.subtitles))
                 }
             }
         }
 
-        super.onViewCreated(view, savedInstanceState)
+        val arrayAdapter = ArrayObjectAdapter(StreamAdapter())
+        arrayAdapter.addAll(0, linkList)
+        adapter = arrayAdapter
+        progressBarManager.hide()
     }
 
     fun startExoplayer(media: Media){
-        model.epChanged.postValue(true)
-        if (launch!!) {
-            val intent = Intent(activity, TVVideoActivity::class.java).apply {
-                putExtra("media", media)
-            }
-            startActivity(intent)
-        }
-        else{
-            model.setEpisode(media.anime!!.episodes!![media.anime.selectedEpisode!!]!!,"startExo no launch")
-        }
+        requireActivity().supportFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVMediaPlayer(media)).commit()
     }
 
     fun cancel() {
         media!!.selected!!.stream = null
-        model.saveSelected(media!!.id, media!!.selected!!, requireActivity())
         requireActivity().supportFragmentManager.popBackStack()
     }
 
     companion object {
-        fun newInstance(server:String?=null,la:Boolean=true,prev:Episode?=null): TVSelectorFragment =
-            TVSelectorFragment().apply {
+        fun newInstance(media: Media, server:String?=null, la:Boolean=true, prev:Episode?=null): TVSelectorFragment =
+            TVSelectorFragment(media).apply {
                 arguments = Bundle().apply {
                     putString("server",server)
                     putBoolean("launch",la)
@@ -164,7 +92,6 @@ class TVSelectorFragment: VerticalGridSupportFragment() {
     }
 
     private inner class StreamAdapter : Presenter() {
-        val links = episode!!.streamLinks
 
         private inner class UrlViewHolder(val binding: TvItemUrlBinding) : Presenter.ViewHolder(binding.root) {}
 
@@ -181,12 +108,6 @@ class TVSelectorFragment: VerticalGridSupportFragment() {
                 holder.view.setOnClickListener {
                     media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedStream = server
                     media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedQuality = qualityPos
-                    if(makeDefault){
-                        media!!.selected!!.stream = server
-                        media!!.selected!!.quality = qualityPos
-                        model.saveSelected(media!!.id,media!!.selected!!,requireActivity())
-                    }
-                    cancel()
                     startExoplayer(media!!)
                 }
 

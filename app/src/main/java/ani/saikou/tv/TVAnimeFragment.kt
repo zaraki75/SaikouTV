@@ -7,9 +7,12 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.leanback.app.BackgroundManager
 import androidx.leanback.app.BrowseSupportFragment
 import androidx.leanback.widget.*
 import androidx.lifecycle.MutableLiveData
@@ -20,6 +23,7 @@ import ani.saikou.*
 import ani.saikou.R
 import ani.saikou.anilist.*
 import ani.saikou.media.Media
+import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.tv.components.ButtonListRow
 import ani.saikou.tv.components.CustomListRowPresenter
 import ani.saikou.tv.login.TVLoginFragment
@@ -43,9 +47,9 @@ class TVAnimeFragment: BrowseSupportFragment()  {
     }
     private val PAGING_THRESHOLD = 15
 
-    val homeModel: AnilistHomeViewModel by activityViewModels()
-    val model: AnilistAnimeViewModel by activityViewModels()
-    val genresModel: GenresViewModel by activityViewModels()
+    private val homeModel: AnilistHomeViewModel by activityViewModels()
+    private val model: AnilistAnimeViewModel by activityViewModels()
+    private val genresModel: GenresViewModel by activityViewModels()
 
     //TODO Sketchy handling here
     var nCallbacks: Int = 0
@@ -203,7 +207,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                 rowAdapter.add(ButtonListRow("Login", object : ButtonListRow.OnClickListener {
                     override fun onClick() {
                         requireActivity().supportFragmentManager.beginTransaction()
-                            .replace(R.id.main_browse_fragment, TVLoginFragment()).addToBackStack(null)
+                            .replace(R.id.main_tv_fragment, TVLoginFragment()).addToBackStack("home")
                             .commit()
                     }
                 }))
@@ -287,24 +291,19 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         })
 
         setOnSearchClickedListener {
-            val intent = Intent(requireActivity().applicationContext, TVSearchActivity::class.java)
-            startActivity(intent)
+            parentFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVSearchFragment("ANIME")).commit()
         }
 
         setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
 
             if (item is Media) {
-                val intent =
-                    Intent(requireActivity().applicationContext, TVAnimeDetailActivity::class.java)
-                intent.putExtra("media", item as Media)
-                startActivity(intent)
+                parentFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVAnimeDetailFragment(item)).commit()
             } else if (item is Pair<*,*>) {
-                ContextCompat.startActivity(requireContext(), Intent(requireContext(), TVSearchActivity::class.java).putExtra("type","ANIME").putExtra("genre",item.first as String).putExtra("sortBy","Trending").also {
+                parentFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVSearchFragment("ANIME", item.first as String, "Trending")).commit()
                     //TODO deal with this when we have settings on TV
                     /* if(item.lowercase()=="hentai") {
                         it.putExtra("hentai", true)
                     }*/
-                },null)
             }
         }
 

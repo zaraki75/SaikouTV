@@ -1,11 +1,9 @@
 package ani.saikou.tv.login
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -38,7 +36,7 @@ class TVLoginFragment: VerticalGridSupportFragment() {
         val key = 6818
         if(method.id == 0){
             requireActivity().supportFragmentManager.beginTransaction().addToBackStack(null)
-                .replace(R.id.main_browse_fragment, TVNetworkLoginFragment())
+                .replace(R.id.main_tv_fragment, TVNetworkLoginFragment())
                 .commit()
         } else {
             openBrowser("https://anilist.co/api/v2/oauth/authorize?client_id=$key&response_type=token")

@@ -52,7 +52,7 @@ class AnimePresenter(var type: Int,
 
                     b.itemCompactImage.loadImage(media.cover)
                     b.itemCompactOngoing.visibility = if (media.status == "RELEASING") View.VISIBLE else View.GONE
-                    b.itemCompactTitle.text = media.userPreferredName
+                    b.itemCompactTitle.text = media.getMainName()
                     b.itemCompactScore.text = ((if (media.userScore == 0) (media.meanScore ?: 0) else media.userScore) / 10.0).toString()
                     b.itemCompactScoreBG.background = ContextCompat.getDrawable(b.root.context, (if (media.userScore != 0) R.drawable.item_user_score else R.drawable.item_score))
                     b.itemCompactUserProgress.text = (media.userProgress ?: "~").toString()
@@ -79,7 +79,7 @@ class AnimePresenter(var type: Int,
                     b.itemCompactImage.loadImage(media.cover)
                     b.itemCompactBanner.loadImage(media.banner?:media.cover,400)
                     b.itemCompactOngoing.visibility = if (media.status=="RELEASING")  View.VISIBLE else View.GONE
-                    b.itemCompactTitle.text = media.userPreferredName
+                    b.itemCompactTitle.text = media.getMainName()
                     b.itemCompactScore.text = ((if(media.userScore==0) (media.meanScore?:0) else media.userScore)/10.0).toString()
                     b.itemCompactScoreBG.background = ContextCompat.getDrawable(b.root.context,(if (media.userScore!=0) R.drawable.item_user_score else R.drawable.item_score))
                     if (media.anime!=null){

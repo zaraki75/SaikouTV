@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import android.view.View
 import androidx.activity.OnBackPressedCallback
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.leanback.app.VideoSupportFragment
 import androidx.leanback.app.VideoSupportFragmentGlueHost
@@ -40,9 +41,8 @@ import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import kotlin.math.roundToInt
 
-class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedListener, Player.Listener {
+class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.OnActionClickedListener, Player.Listener {
 
-    private lateinit var media: Media
     private lateinit var exoPlayer: ExoPlayer
     private lateinit var cacheFactory : CacheDataSource.Factory
     private lateinit var playbackParameters: PlaybackParameters
@@ -89,11 +89,16 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
                 if(isInitialized)
                     progress {
                         isEnabled = false
-                        activity?.onBackPressed()
+                        isInitialized = false
+                        exoPlayer.stop()
+                        exoPlayer.release()
+                        VideoCache.release()
+                        requireActivity().supportFragmentManager.popBackStack("detail", FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     }
                 else {
                     isEnabled = false
-                    activity?.onBackPressed()
+                    isInitialized = false
+                    requireActivity().supportFragmentManager.popBackStack("detail", FragmentManager.POP_BACK_STACK_INCLUSIVE)
                 }
             }
         })
@@ -103,7 +108,6 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
         episodeObserverRunnable.run()
 
         //Handle Media
-        media = requireActivity().intent.getSerializableExtra("media")!! as Media
         model.setMedia(media)
         episodes = media.anime!!.episodes!!
 
@@ -183,19 +187,6 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
             }
         })
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        exoPlayer.release()
-        VideoCache.release()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        exoPlayer.pause()
-    }
-
-
 
     override fun onPrevious() {
         if(currentEpisodeIndex>0) {

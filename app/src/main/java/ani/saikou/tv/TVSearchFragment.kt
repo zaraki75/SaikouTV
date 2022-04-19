@@ -38,7 +38,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import java.util.*
 
-class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProvider {
+class TVSearchFragment(var type: String, var genre: String? = null, var sortBy: String? = null): SearchFragment(), SearchSupportFragment.SearchResultProvider {
 
     private val PAGING_THRESHOLD = 40
 
@@ -46,11 +46,8 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
     private val scope = lifecycleScope
 
     val model: AnilistSearch by viewModels()
-    var type = "ANIME"
 
     var searchText: String? = null
-    var genre: String? = null
-    var sortBy: String? = null
     var _tag: String? = null
     var adult = false
     var listOnly :Boolean?= null
@@ -62,17 +59,12 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
         super.setSearchResultProvider(this)
 
         val intent = requireActivity().intent
-        type = intent.getStringExtra("type") ?: type
-        genre = intent.getStringExtra("genre")
-        sortBy = intent.getStringExtra("sortBy")
         //style = loadData<Int>("searchStyle") ?: 0
         adult = if (Anilist.adult) intent.getBooleanExtra("hentai", false) else false
         listOnly = intent.getBooleanExtra("listOnly",false)
 
         setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
-            val intent = Intent(requireActivity().applicationContext, TVAnimeDetailActivity::class.java)
-            intent.putExtra("media", item as Media)
-            startActivity(intent)
+            parentFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVAnimeDetailFragment(item as Media)).commit()
         }
 
         setOnItemViewSelectedListener { itemViewHolder, item, rowViewHolder, row ->

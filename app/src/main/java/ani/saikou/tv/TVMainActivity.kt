@@ -18,6 +18,7 @@ import ani.saikou.*
 import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistHomeViewModel
 import ani.saikou.media.MediaDetailsActivity
+import ani.saikou.others.AppUpdater
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -54,12 +55,7 @@ class TVMainActivity : FragmentActivity() {
                                     )
                                 }
                                 if (media != null) {
-                                    startActivity(
-                                        Intent(
-                                            this@TVMainActivity,
-                                            TVAnimeDetailActivity::class.java
-                                        ).putExtra("media", media as Serializable)
-                                    )
+                                    supportFragmentManager.beginTransaction().replace(R.id.main_tv_fragment, TVAnimeDetailFragment(media))
                                 } else {
                                     //toastString("Seems like that wasn't found on Anilist.")
                                 }
@@ -77,13 +73,13 @@ class TVMainActivity : FragmentActivity() {
                 Anilist.getSavedToken(this)
                 scope.launch(Dispatchers.IO) {
                     model.genres.postValue(Anilist.query.getGenresAndTags(this@TVMainActivity))
-                    //AppUpdater.check(this@MainActivity)
+                    AppUpdater.check(this@TVMainActivity)
                 }
                 load = true
             }
 
             supportFragmentManager.beginTransaction()
-                .replace(R.id.main_browse_fragment, TVAnimeFragment())
+                .add(R.id.main_tv_fragment, TVAnimeFragment())
                 .commitNow()
         }
         createHomeTVChannel()
@@ -113,14 +109,6 @@ class TVMainActivity : FragmentActivity() {
                 ChannelLogoUtils.storeChannelLogo(this, channelID, getDrawable(R.drawable.saikouflush)!!.toBitmap())
                 TvContractCompat.requestChannelBrowsable(this, channelID)
             }
-        }
-    }
-
-    private fun saveToken(token: String) {
-        Anilist.token = token
-        val filename = "anilistToken"
-        openFileOutput(filename, Context.MODE_PRIVATE).use {
-            it.write(token.toByteArray())
         }
     }
 

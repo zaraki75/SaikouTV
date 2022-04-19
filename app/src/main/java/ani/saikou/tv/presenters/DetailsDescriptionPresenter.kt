@@ -17,11 +17,12 @@ class DetailsDescriptionPresenter: Presenter() {
         (viewHolder as AnimeDetailViewHolder)?.let { vh ->
             (item as? Media)?.let {
                 vh.binding.title.text = it.getMainName()
+                vh.binding.altTitle.text = it.nameRomaji
                 vh.binding.status.text = it.status
                 val desc = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    Html.fromHtml(it.description, Html.FROM_HTML_MODE_COMPACT)
+                    Html.fromHtml(it.description?: "", Html.FROM_HTML_MODE_COMPACT)
                 } else {
-                    Html.fromHtml(it.description)
+                    Html.fromHtml(it.description?:"")
                 }
                 vh.binding.overview.text = desc
             }

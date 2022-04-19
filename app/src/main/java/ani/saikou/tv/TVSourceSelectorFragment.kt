@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.leanback.app.VerticalGridSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.Presenter
@@ -19,11 +20,10 @@ import ani.saikou.databinding.TvItemSourceBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 
-class TVSourceSelectorFragment: VerticalGridSupportFragment() {
+class TVSourceSelectorFragment(var media: Media): VerticalGridSupportFragment() {
 
     open val watchSources: WatchSources = AnimeSources
-    val model : MediaDetailsViewModel by activityViewModels()
-    private var media: Media? = null
+    val model : MediaDetailsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +36,7 @@ class TVSourceSelectorFragment: VerticalGridSupportFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        model.getMedia().observe(viewLifecycleOwner) {
+        /*model.getMedia().observe(viewLifecycleOwner) {
             if (it != null) {
                 media = it
 
@@ -47,6 +47,14 @@ class TVSourceSelectorFragment: VerticalGridSupportFragment() {
                 adapter = objectAdapter
 
             }
+        }*/
+
+        if (media != null) {
+
+            val objectAdapter = ArrayObjectAdapter(SourceAdapter())
+            objectAdapter.addAll(0, watchSources.names)
+            adapter = objectAdapter
+
         }
 
         super.onViewCreated(view, savedInstanceState)
@@ -62,10 +70,6 @@ class TVSourceSelectorFragment: VerticalGridSupportFragment() {
         model.saveSelected(media!!.id, selected, requireActivity())
         media!!.selected = selected
         requireActivity().supportFragmentManager.popBackStack()
-    }
-
-    companion object {
-        fun newInstance(): TVSourceSelectorFragment = TVSourceSelectorFragment()
     }
 
     private inner class SourceAdapter : Presenter() {

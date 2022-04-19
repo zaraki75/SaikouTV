@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.TvNetworkLoginFragmentBinding
@@ -23,7 +24,6 @@ class TVNetworkLoginFragment() : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = TvNetworkLoginFragmentBinding.inflate(inflater)
-
         return binding.root
     }
 
@@ -52,7 +52,7 @@ class TVNetworkLoginFragment() : Fragment() {
                     MainScope().launch {
                         saveToken(tk)
                         TVAnimeFragment.shouldReload = true
-                        requireActivity().supportFragmentManager.popBackStack()
+                        requireActivity().supportFragmentManager.popBackStack("home", FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     }
                 } ?: run {
                     MainScope().launch {

@@ -5,11 +5,13 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.leanback.app.BackgroundManager
 import androidx.leanback.app.DetailsSupportFragment
 import androidx.leanback.app.DetailsSupportFragmentBackgroundController
@@ -38,17 +40,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 
-class TVAnimeDetailFragment : DetailsSupportFragment() {
+class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
 
-    private val model: MediaDetailsViewModel by activityViewModels()
+    private val model: MediaDetailsViewModel by viewModels()
     private val scope = lifecycleScope
     val actions = ArrayObjectAdapter(DetailActionsPresenter())
 
-    private lateinit var media: Media
     lateinit var uiSettings: UserInterfaceSettings
     var loaded = false
 
@@ -61,7 +63,9 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         detailsBackground = DetailsSupportFragmentBackgroundController(this)
-
+        progressBarManager.enableProgressBar()
+        progressBarManager.initialDelay =0
+        progressBarManager.show()
         uiSettings = loadData("ui_settings", toast = false)
             ?: UserInterfaceSettings().apply { saveData("ui_settings", this) }
     }
@@ -79,24 +83,6 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
     }
 
     private fun buildDetails() {
-        val mediaObject = requireActivity().intent.getSerializableExtra("media")
-        if (mediaObject is Int) {
-            //TODO null check this monster
-            val name = requireActivity().intent.getStringExtra("name")
-            val nameRomanji = requireActivity().intent.getStringExtra("nameRomaji")
-            val userPreferredName = requireActivity().intent.getStringExtra("userPreferredName")
-            val isAdult = requireActivity().intent.getBooleanExtra("isAdult", false)
-            media = Media(
-                id = mediaObject,
-                name = name!!,
-                nameRomaji = nameRomanji!!,
-                userPreferredName = userPreferredName!!,
-                isAdult = isAdult!!
-            )
-        } else {
-            media = mediaObject as Media
-        }
-
         media.selected = model.loadSelected(media)
 
         val selector = ClassPresenterSelector().apply {
@@ -107,8 +93,8 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
                     if (it.id.toInt() == 0) {
                         parentFragmentManager.beginTransaction().addToBackStack(null)
                             .replace(
-                                R.id.main_detail_fragment,
-                                TVSourceSelectorFragment.newInstance()
+                                R.id.main_tv_fragment,
+                                TVSourceSelectorFragment(media)
                             ).commit()
                     }
                 }
@@ -143,12 +129,12 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
         }
 
         model.getMedia().observe(viewLifecycleOwner) {
-            if (it != null) {
+            if (it != null && media.id == it.id) {
+                Log.d("BUG!", "got Media: "+it.getMainName())
                 media = it
                 media.selected = model.loadSelected(media)
 
                 if (!loaded) {
-                    finishLoadingRows()
                     model.watchAnimeWatchSources =
                         if (media.isAdult) HAnimeSources else AnimeSources
 
@@ -159,75 +145,97 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
                             async { model.loadKitsuEpisodes(media) },
                             async { model.loadFillerEpisodes(media) }
                         )
+                        Log.d("BUG!", "loaded episodes for: "+it.getMainName())
                         model.loadEpisodes(media, media.selected!!.source)
                     }
-                    loaded = true
+
+                    finishLoadingRows()
+                } else {
+                    adapter.notifyItemRangeChanged(0, adapter.size())
                 }
             }
         }
+        Log.d("BUG!", "setting up episodes observer")
 
         model.getEpisodes().observe(viewLifecycleOwner) { loadedEpisodes ->
             loadedEpisodes?.let { epMap ->
                 epMap[media.selected!!.source]?.let { ep ->
+                    Log.d("BUG!", "showing episodes")
                     val episodes = ep
                     media.anime?.episodes = ep
 
-                    clearEpisodes()
+                    if(loaded) {
 
-                    episodes.forEach { (i, episode) ->
-                        if (media.anime?.fillerEpisodes != null) {
-                            if (media.anime!!.fillerEpisodes!!.containsKey(i)) {
-                                episode.title = media.anime!!.fillerEpisodes!![i]?.title
-                                episode.filler =
-                                    media.anime!!.fillerEpisodes!![i]?.filler ?: false
+                        clearEpisodes()
+
+                        episodes.forEach { (i, episode) ->
+                            if (media.anime?.fillerEpisodes != null) {
+                                if (media.anime!!.fillerEpisodes!!.containsKey(i)) {
+                                    episode.title = media.anime!!.fillerEpisodes!![i]?.title
+                                    episode.filler =
+                                        media.anime!!.fillerEpisodes!![i]?.filler ?: false
+                                }
+                            }
+                            if (media.anime?.kitsuEpisodes != null) {
+                                if (media.anime!!.kitsuEpisodes!!.containsKey(i)) {
+                                    episode.desc = media.anime!!.kitsuEpisodes!![i]?.desc
+                                    episode.title = media.anime!!.kitsuEpisodes!![i]?.title
+                                    episode.thumb =
+                                        media.anime!!.kitsuEpisodes!![i]?.thumb ?: media.cover
+                                }
                             }
                         }
-                        if (media.anime?.kitsuEpisodes != null) {
-                            if (media.anime!!.kitsuEpisodes!!.containsKey(i)) {
-                                episode.desc = media.anime!!.kitsuEpisodes!![i]?.desc
-                                episode.title = media.anime!!.kitsuEpisodes!![i]?.title
-                                episode.thumb =
-                                    media.anime!!.kitsuEpisodes!![i]?.thumb ?: media.cover
-                            }
+
+                        //CHIP GROUP
+                        val total = episodes.size
+                        val divisions = total.toDouble() / 10
+                        val limit = when {
+                            (divisions < 25) -> 25
+                            (divisions < 50) -> 50
+                            else -> 100
                         }
-                    }
 
-                    //CHIP GROUP
-                    val total = episodes.size
-                    val divisions = total.toDouble() / 10
-                    val limit = when {
-                        (divisions < 25) -> 25
-                        (divisions < 50) -> 50
-                        else -> 100
-                    }
-
-                    if (total == 0) {
-                        rowsAdapter.removeItems(1, rowsAdapter.size() - 1)
-                        rowsAdapter.add(HeaderOnlyRow("No episodes found, try another source"))
-                    } else if (total > limit) {
-                        val arr = episodes.keys.toList()
-                        val numberOfChips = ceil((total).toDouble() / limit).toInt()
+                        if (total == 0) {
+                            rowsAdapter.removeItems(1, rowsAdapter.size() - 1)
+                            rowsAdapter.add(HeaderOnlyRow("No episodes found, try another source"))
+                        } else if (total > limit) {
+                            val arr = episodes.keys.toList()
+                            val numberOfChips = ceil((total).toDouble() / limit).toInt()
 
 
-                        for (index in 0..numberOfChips - 1) {
-                            val last =
-                                if (index + 1 == numberOfChips) total else (limit * (index + 1))
-                            val startIndex = limit * (index)
-                            val start = arr[startIndex]
-                            val end = arr[last - 1]
-                            createEpisodePresenter("Episodes ${start} - ${end}").addAll(
+                            for (index in 0..numberOfChips - 1) {
+                                val last =
+                                    if (index + 1 == numberOfChips) total else (limit * (index + 1))
+                                val startIndex = limit * (index)
+                                val start = arr[startIndex]
+                                val end = arr[last - 1]
+                                createEpisodePresenter("Episodes ${start} - ${end}").addAll(
+                                    0,
+                                    episodes.values.toList().subList(
+                                        startIndex,
+                                        min(startIndex + limit, episodes.values.size)
+                                    )
+                                )
+                            }
+
+                        } else {
+                            createEpisodePresenter("Episodes").addAll(
                                 0,
-                                episodes.values.toList().subList(startIndex, min(startIndex+limit,episodes.values.size))
+                                episodes.values.toList()
                             )
                         }
-
-                    } else {
-                        createEpisodePresenter("Episodes").addAll(
-                            0,
-                            episodes.values.toList()
-                        )
                     }
                 }
+            }
+        }
+
+        model.getEpisode().observe(viewLifecycleOwner) {
+            if (it != null){
+                val selector = TVSelectorFragment.newInstance(media)
+                selector.setStreamLinks(it.streamLinks)
+                parentFragmentManager.beginTransaction().addToBackStack("detail")
+                    .replace(R.id.main_tv_fragment, selector)
+                    .commit()
             }
         }
 
@@ -245,7 +253,8 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
     fun onEpisodeClick(i: String) {
         model.continueMedia = false
 
-        if (media.anime?.episodes?.get(i) != null) {
+        val episode = media.anime?.episodes?.get(i)
+        if (episode != null) {
             media.anime!!.selectedEpisode = i
         } else {
             return
@@ -253,12 +262,8 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
 
         media.selected = model.loadSelected(media)
         media.selected?.let {
-            val selector = TVSelectorFragment.newInstance(it.stream, true)
-            parentFragmentManager.beginTransaction().addToBackStack(null)
-                .replace(R.id.main_detail_fragment, selector)
-                .commit()
+            model.loadEpisodeStreams(episode, it.source)
         }
-
     }
 
     private fun createEpisodePresenter(title: String): ArrayObjectAdapter {
@@ -276,7 +281,8 @@ class TVAnimeDetailFragment : DetailsSupportFragment() {
     private fun finishLoadingRows() {
         rowsAdapter.add(detailsOverview)
         rowsAdapter.add(HeaderOnlyRow(null))
-        requireActivity().findViewById<ProgressBar>(R.id.progress).visibility = View.GONE
+        progressBarManager.hide()
+        loaded = true
     }
 
     private fun initializeBackground() {
