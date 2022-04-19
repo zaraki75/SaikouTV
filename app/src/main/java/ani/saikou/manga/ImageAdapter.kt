@@ -14,7 +14,6 @@ import ani.saikou.databinding.ItemImageBinding
 import ani.saikou.px
 import ani.saikou.settings.CurrentReaderSettings
 import ani.saikou.settings.UserInterfaceSettings
-import ani.saikou.toastString
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.request.target.CustomViewTarget
@@ -59,14 +58,14 @@ private val uiSettings: UserInterfaceSettings
         val progress = parent.findViewById<View>(R.id.imgProgProgress)
         imageView.recycle()
         imageView.visibility= View.GONE
-
+        if(images[position].isEmpty()) return
         Glide.with(imageView).download(GlideUrl(images[position]){chapter.headers?: mutableMapOf()})
             .override(Target.SIZE_ORIGINAL)
             .apply{
                 val target = object : CustomViewTarget<SubsamplingScaleImageView, File>(imageView) {
                     override fun onLoadFailed(errorDrawable: Drawable?) {
                         progress.visibility= View.GONE
-                        toastString("Failed to load Page ${position+1}, Long Click to reload")
+//                        toastString("Failed to load Page ${position+1}, Long Click to reload")
                     }
                     override fun onResourceCleared(placeholder: Drawable?) {}
 

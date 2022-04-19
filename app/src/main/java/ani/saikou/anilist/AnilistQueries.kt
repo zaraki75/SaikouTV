@@ -469,26 +469,33 @@ class AnilistQueries{
         return responseArray
     }
     private fun bannerImage(type: String): String? {
-        val image = loadData<MutableMap<String,BannerImage>>(type)?: mutableMapOf()
-        if(image.checkBannerTime(type)){
+        var image = loadData<BannerImage>("banner_$type")
+        if(image==null || image.checkTime()){
             val response = executeQuery("""{ MediaListCollection(userId: ${Anilist.userid}, type: $type, chunk:1,perChunk:25, sort: [SCORE_DESC,UPDATED_TIME_DESC]) { lists { entries{ media { bannerImage } } } } } """)
             val data = if (response!=null) response["data"] else null
             if(data!=null && data!=JsonNull) {
                 val mediaListCollection = if(data.jsonObject["MediaListCollection"]!=JsonNull) data.jsonObject["MediaListCollection"] else null
-                val list = mediaListCollection?.jsonObject?.get("lists")?.jsonArray
-                if (list != null && list.isNotEmpty()) {
-                    val entriesList = list[Random.nextInt(0, list.size)].jsonObject["entries"]
-                    val imageUrl = entriesList?.jsonArray?.get(Random.nextInt(0, entriesList.jsonArray.size))?.jsonObject?.get("media")?.jsonObject?.get("bannerImage")?.toString()?.trim('"')?:return null
-                    image[type] = BannerImage(
-                        imageUrl,
+
+                val allImages = arrayListOf<String>()
+                mediaListCollection?.jsonObject?.get("lists")?.jsonArray?.forEach {
+                    it.jsonObject["entries"]?.jsonArray?.forEach { entry ->
+                        val imageUrl = entry.jsonObject["media"]?.jsonObject?.get("bannerImage")?.toString()?.trim('"')
+                        if(imageUrl!=null && imageUrl!="null") allImages.add(imageUrl)
+                    }
+                }
+
+                if (allImages.isNotEmpty()) {
+                    val rand = Random.nextInt(0, allImages.size)
+                    image = BannerImage(
+                        allImages[rand],
                         System.currentTimeMillis()
                     )
-                    saveData(type,image)
-                    return if (imageUrl != "null") imageUrl else null
+                    saveData("banner_$type", image)
+                    return image.url
                 }
             }
         }else{
-            return image[type]?.url
+            return image.url
         }
         return null
     }
@@ -641,7 +648,7 @@ class AnilistQueries{
     private fun getGenreThumbnail(genre:String):Genre?{
         val genres = loadData<MutableMap<String,Genre>>("genre_thumb")?: mutableMapOf()
         if(genres.checkGenreTime(genre)){
-//            try {
+            try {
                 val genreQuery = """{ Page(perPage: 10){media(genre:"$genre", sort: TRENDING_DESC, type: ANIME, countryOfOrigin:"JP") {id bannerImage } } }"""
                 val response = executeQuery(genreQuery, force = true)!!["data"]!!.jsonObject["Page"]!!
                 if (response.jsonObject["media"] != JsonNull) {
@@ -659,9 +666,9 @@ class AnilistQueries{
                         }
                     }
                 }
-//            } catch (e: Exception) {
-//                toastString(e.toString())
-//            }
+            } catch (e: Exception) {
+                toastString(e.toString())
+            }
         }else{
             return genres[genre]!!
         }
@@ -740,7 +747,7 @@ query (${"$"}page: Int = 1, ${"$"}id: Int, ${"$"}type: MediaType, ${"$"}isAdult:
             val a = if(response["data"]!=JsonNull) response["data"] else null
             val pag = a?.jsonObject?.get("Page") ?:return null
             val responseArray = arrayListOf<Media>()
-            if(pag.jsonObject["media"]!= JsonNull) pag.jsonObject["media"]?.jsonArray?.forEach { i ->
+            if(pag != JsonNull) pag.jsonObject["media"]?.jsonArray?.forEach { i ->
                 val userStatus = if (i.jsonObject["mediaListEntry"] != JsonNull) i.jsonObject["mediaListEntry"]!!.jsonObject["status"].toString().trim('"') else null
                 val genresArr = arrayListOf<String>()
                 if (i.jsonObject["genres"]!! != JsonNull) {

@@ -45,11 +45,16 @@ object AppUpdater {
                     setPositiveButton("Let's Go") { _: DialogInterface, _: Int ->
                         if(!BuildConfig.DEBUG) {
                             MainScope().launch(Dispatchers.IO){
+
+                                try{
                                 OkHttpClient().newCall(Request.Builder().url("https://api.github.com/repos/Diegopyl1209/saikouSP/releases/tags/v$version"+"SP").build()).execute().body?.string()?.apply {
                                     substringAfter("\"browser_download_url\":\"").substringBefore('"').apply {
                                         if (endsWith("apk")) activity.downloadUpdate(this)
                                         else openLinkInBrowser("https://github.com/Diegopyl1209/saikouSP/releases/")
+                                        }
                                     }
+                                }catch (e:Exception){
+                                    toastString(e.toString())
                                 }
                             }
                         }
