@@ -39,8 +39,6 @@ class TVSelectorFragment(var media: Media): VerticalGridSupportFragment() {
 
         title = "Select quality"
 
-        progressBarManager.initialDelay = 0
-        progressBarManager.show()
         val presenter = VerticalGridPresenter()
         presenter.numberOfColumns = 1
         gridPresenter = presenter
@@ -48,6 +46,13 @@ class TVSelectorFragment(var media: Media): VerticalGridSupportFragment() {
         if(this::links.isInitialized) {
             setStreamLinks(links)
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        progressBarManager.setRootView(this.view as ViewGroup)
+        progressBarManager.initialDelay = 0
+        progressBarManager.show()
     }
 
     fun setStreamLinks(streamLinks: MutableMap<String, Episode.StreamLinks?>) {

@@ -85,6 +85,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         initAdapters()
 
+        genresAdapter.clear()
         genresModel.genres?.let {
             it.forEach {
                 genresAdapter.add(it.toPair())
@@ -122,6 +123,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         model.getTrending().observe(viewLifecycleOwner) {
             if (it != null) {
                 updateHomeTVChannel(it)
+                trendingAdapter.clear()
                 trendingAdapter.addAll(0, it)
                 checkLoadingState()
             }
@@ -129,6 +131,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         model.getUpdated().observe(viewLifecycleOwner) {
             if (it != null) {
+                updatedAdapter.clear()
                 updatedAdapter.addAll(0, it)
                 checkLoadingState()
             }
@@ -136,6 +139,8 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         model.getPopular().observe(viewLifecycleOwner) {
             if (it != null) {
+                if(!loading)
+                    popularAdapter.clear()
                 loading = false
                 model.searchResults = it
                 popularAdapter.addAll(popularAdapter.size(), it.results)
@@ -145,6 +150,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         homeModel.getAnimeContinue().observe(viewLifecycleOwner) {
             if (it != null) {
+                continueAdapter.clear()
                 continueAdapter.addAll(0, it)
                 if(it.isEmpty()) {
                     rowAdapter.remove(continueRow)
@@ -155,6 +161,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         homeModel.getRecommendation().observe(viewLifecycleOwner) {
             if (it != null) {
+                recommendedAdapter.clear()
                 recommendedAdapter.addAll(0, it.filter { it.relation == "ANIME" })
                 if(it.isEmpty()) {
                     rowAdapter.remove(recommendedRow)

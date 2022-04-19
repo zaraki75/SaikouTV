@@ -261,7 +261,6 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
 
     private fun updateAnilist(id: Int, number: String){
         if(Anilist.userid!=null) {
-            TVAnimeFragment.shouldReload = true
             CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
                 val a = number.toFloatOrNull()?.roundToInt()
                 Anilist.mutation.editList(id, a, status = "CURRENT")

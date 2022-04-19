@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
@@ -17,9 +18,11 @@ import androidx.leanback.app.DetailsSupportFragment
 import androidx.leanback.app.DetailsSupportFragmentBackgroundController
 import androidx.leanback.widget.*
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import ani.saikou.R
 import ani.saikou.Refresh
+import ani.saikou.anime.Episode
 import ani.saikou.anime.source.AnimeSources
 import ani.saikou.anime.source.HAnimeSources
 import ani.saikou.loadData
@@ -36,10 +39,7 @@ import ani.saikou.tv.presenters.EpisodePresenter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.selects.select
 import kotlin.math.ceil
 import kotlin.math.max
@@ -50,10 +50,18 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
     private val model: MediaDetailsViewModel by viewModels()
     private val scope = lifecycleScope
     val actions = ArrayObjectAdapter(DetailActionsPresenter())
-
     lateinit var uiSettings: UserInterfaceSettings
     var loaded = false
 
+    private var linkSelector: TVSelectorFragment? = null
+
+    private var episodeObserver = Observer<Episode?> {
+        if (it != null){
+            MainScope().launch {
+                linkSelector?.setStreamLinks(it.streamLinks)
+            }
+        }
+    }
     private lateinit var detailsBackground: DetailsSupportFragmentBackgroundController
 
     private lateinit var rowsAdapter: ArrayObjectAdapter
@@ -63,15 +71,15 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         detailsBackground = DetailsSupportFragmentBackgroundController(this)
-        progressBarManager.enableProgressBar()
-        progressBarManager.initialDelay =0
-        progressBarManager.show()
         uiSettings = loadData("ui_settings", toast = false)
             ?: UserInterfaceSettings().apply { saveData("ui_settings", this) }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        progressBarManager.setRootView(this.view as ViewGroup)
+        progressBarManager.initialDelay =0
+        progressBarManager.show()
 
         buildDetails()
         observeData()
@@ -130,7 +138,6 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
 
         model.getMedia().observe(viewLifecycleOwner) {
             if (it != null && media.id == it.id) {
-                Log.d("BUG!", "got Media: "+it.getMainName())
                 media = it
                 media.selected = model.loadSelected(media)
 
@@ -145,7 +152,6 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
                             async { model.loadKitsuEpisodes(media) },
                             async { model.loadFillerEpisodes(media) }
                         )
-                        Log.d("BUG!", "loaded episodes for: "+it.getMainName())
                         model.loadEpisodes(media, media.selected!!.source)
                     }
 
@@ -155,12 +161,10 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
                 }
             }
         }
-        Log.d("BUG!", "setting up episodes observer")
 
         model.getEpisodes().observe(viewLifecycleOwner) { loadedEpisodes ->
             loadedEpisodes?.let { epMap ->
                 epMap[media.selected!!.source]?.let { ep ->
-                    Log.d("BUG!", "showing episodes")
                     val episodes = ep
                     media.anime?.episodes = ep
 
@@ -218,26 +222,20 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
                                 )
                             }
 
+                            focusLastViewedEpisode()
                         } else {
                             createEpisodePresenter("Episodes").addAll(
                                 0,
                                 episodes.values.toList()
                             )
+                            focusLastViewedEpisode()
                         }
                     }
                 }
             }
         }
 
-        model.getEpisode().observe(viewLifecycleOwner) {
-            if (it != null){
-                val selector = TVSelectorFragment.newInstance(media)
-                selector.setStreamLinks(it.streamLinks)
-                parentFragmentManager.beginTransaction().addToBackStack("detail")
-                    .replace(R.id.main_tv_fragment, selector)
-                    .commit()
-            }
-        }
+        model.getEpisode().observeForever(episodeObserver)
 
         val live = Refresh.activity.getOrPut(this.hashCode()) { MutableLiveData(true) }
         live.observe(requireActivity()) {
@@ -248,6 +246,10 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
                 }
             }
         }
+    }
+
+    fun focusLastViewedEpisode() {
+        //TODO Implement this
     }
 
     fun onEpisodeClick(i: String) {
@@ -261,9 +263,15 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
         }
 
         media.selected = model.loadSelected(media)
-        media.selected?.let {
-            model.loadEpisodeStreams(episode, it.source)
+        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
+            media.selected?.let {
+                model.loadEpisodeStreams(episode, it.source)
+            }
         }
+        linkSelector = TVSelectorFragment.newInstance(media)
+        parentFragmentManager.beginTransaction().addToBackStack("detail")
+            .replace(R.id.main_tv_fragment, linkSelector!!)
+            .commit()
     }
 
     private fun createEpisodePresenter(title: String): ArrayObjectAdapter {
@@ -283,6 +291,11 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
         rowsAdapter.add(HeaderOnlyRow(null))
         progressBarManager.hide()
         loaded = true
+    }
+
+    override fun onDestroy() {
+        model.getEpisode().removeObserver(episodeObserver)
+        super.onDestroy()
     }
 
     private fun initializeBackground() {
