@@ -47,6 +47,7 @@ import ani.saikou.databinding.ItemCountDownBinding
 import ani.saikou.media.Media
 import ani.saikou.media.Source
 import ani.saikou.settings.UserInterfaceSettings
+import ani.saikou.tv.TVMainActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
@@ -241,9 +242,25 @@ fun isOnline(context: Context): Boolean {
     return false
 }
 
-fun startMainActivity(activity: Activity){
-    activity.finishAffinity()
-    activity.startActivity(Intent(activity, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK))
+fun startMainActivity(activity: Activity) {
+    val uiModeManager = activity.getSystemService(UI_MODE_SERVICE) as UiModeManager
+    if (uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_TELEVISION) {
+        activity.finishAffinity()
+        activity.startActivity(
+            Intent(
+                activity,
+                TVMainActivity::class.java
+            ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
+    } else {
+        activity.startActivity(
+            Intent(
+                activity,
+                MainActivity::class.java
+            ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
+
+    }
 }
 
 data class FuzzyDate(
