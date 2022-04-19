@@ -3,16 +3,13 @@ package ani.saikou.tv
 import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
-import androidx.leanback.app.BackgroundManager
 import androidx.leanback.app.BrowseSupportFragment
 import androidx.leanback.widget.*
 import androidx.lifecycle.MutableLiveData
@@ -26,6 +23,7 @@ import ani.saikou.media.Media
 import ani.saikou.tv.components.ButtonListRow
 import ani.saikou.tv.components.CustomListRowPresenter
 import ani.saikou.tv.login.TVLoginFragment
+import ani.saikou.tv.login.TVNetworkLoginFragment
 import ani.saikou.tv.presenters.AnimePresenter
 import ani.saikou.tv.presenters.ButtonListRowPresenter
 import ani.saikou.tv.presenters.GenresPresenter
@@ -161,12 +159,13 @@ class TVAnimeFragment: BrowseSupportFragment()  {
             }
         }
         val scope = viewLifecycleOwner.lifecycleScope
-        val live = Refresh.activity.getOrPut(this.hashCode()) { MutableLiveData(true) }
+        val live = Refresh.activity.getOrPut(this.hashCode()) { MutableLiveData(false) }
         live.observe(viewLifecycleOwner) {
             if (it) {
                 scope.launch {
                     withContext(Dispatchers.IO) {
                         model.loaded = true
+                        homeModel.loaded = true
                         loading = false
 
                         if (Anilist.userid == null) {
@@ -182,7 +181,6 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                                 genresAdapter.add(it)
                             }
                         }
-                        homeModel.loaded = true
                         homeModel.setListImages()
                         homeModel.setAnimeContinue()
                         homeModel.setRecommendation()
@@ -253,6 +251,8 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         super.onResume()
         if(shouldReload) {
             reloadScreen()
+        } else {
+            if (!model.loaded) Refresh.activity[this.hashCode()]!!.postValue(true)
         }
     }
 
@@ -316,7 +316,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                         model.loadNextPage(model.searchResults)
                     }
                 }
-                //TODO find a way of properly showing this image
+                //TODO find a way to properly show this image
                 /*if (it is Media && !it.banner.isNullOrEmpty()) {
                     Glide.with(requireContext())
                         .asDrawable()
