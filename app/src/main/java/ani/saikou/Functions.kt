@@ -244,7 +244,7 @@ fun isOnline(context: Context): Boolean {
 
 fun startMainActivity(activity: Activity) {
     val uiModeManager = activity.getSystemService(UI_MODE_SERVICE) as UiModeManager
-    if (uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_TELEVISION) {
+    if (uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION) {
         activity.finishAffinity()
         activity.startActivity(
             Intent(
@@ -253,6 +253,7 @@ fun startMainActivity(activity: Activity) {
             ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
         )
     } else {
+        activity.finishAffinity()
         activity.startActivity(
             Intent(
                 activity,

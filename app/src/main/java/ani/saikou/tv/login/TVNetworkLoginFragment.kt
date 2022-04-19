@@ -52,7 +52,7 @@ class TVNetworkLoginFragment() : Fragment() {
                     MainScope().launch {
                         saveToken(tk)
                         TVAnimeFragment.shouldReload = true
-                        requireActivity().supportFragmentManager.popBackStack("home", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        parentFragmentManager.popBackStack("home", FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     }
                 } ?: run {
                     MainScope().launch {

@@ -29,6 +29,12 @@ class TVConnectionActivity: AppCompatActivity() {
 
         if(!isOnWifi()) {
             toastString("You need to be connected on the same wifi network as your TV device")
+            onBackPressed()
+        }
+
+        if(Anilist.token.isNullOrEmpty()) {
+            toastString("You need to be logged in")
+            onBackPressed()
         }
 
         binding.connectButton.setOnClickListener {
