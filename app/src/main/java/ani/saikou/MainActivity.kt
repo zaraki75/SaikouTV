@@ -44,6 +44,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        if(isOnTV(this))
+            startMainActivity(this)
+
         DisableFirebase.handle()
 
         binding = ActivityMainBinding.inflate(layoutInflater)

@@ -249,25 +249,13 @@ fun isOnline(context: Context): Boolean {
 }
 
 fun startMainActivity(activity: Activity) {
-    val uiModeManager = activity.getSystemService(UI_MODE_SERVICE) as UiModeManager
-    if (uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION) {
-        activity.finishAffinity()
-        activity.startActivity(
-            Intent(
-                activity,
-                TVMainActivity::class.java
-            ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-        )
-    } else {
-        activity.finishAffinity()
-        activity.startActivity(
-            Intent(
-                activity,
-                MainActivity::class.java
-            ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-        )
-
-    }
+    activity.finishAffinity()
+    activity.startActivity(
+        Intent(
+            activity,
+            if (isOnTV(activity)) TVMainActivity::class.java else MainActivity::class.java
+        ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+    )
 }
 
 
@@ -847,8 +835,7 @@ fun toast(string: String?, activity: Activity? = null) {
 fun toastString(s: String?,activity: Activity?=null){
         if(s!=null) {
             (activity?:currActivity())?.apply{
-                val uiModeManager = getSystemService(UI_MODE_SERVICE) as UiModeManager
-                if (uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_TELEVISION) {
+                if (isOnTV(this)) {
                     runOnUiThread {
                         val snackBar = Snackbar.make(
                             window.decorView.findViewById(android.R.id.content),
@@ -979,3 +966,8 @@ fun brightnessConverter(it: Float, fromLog: Boolean) =
             if (fromLog) log2((it * 256f)) * 12.5f / 100f else 2f.pow(it * 100f / 12.5f) / 256f
         else it, 0.001f, 1f
     )
+
+fun isOnTV(activity: Activity): Boolean {
+    val uiModeManager = activity.getSystemService(UI_MODE_SERVICE) as UiModeManager
+    return uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+}

@@ -18,21 +18,21 @@ import okhttp3.Request
 import java.io.File
 
 object AppUpdater {
-    fun check(activity: Activity) {
-        try {
+    fun check(activity: Activity){
+        try{
             val version =
-            if(!BuildConfig.DEBUG)
-                OkHttpClient().newCall(Request.Builder().url("https://raw.githubusercontent.com/Nanoc6/SaikouTV/main/stable.txt").build()).execute().body?.string()?.replace("\n","")?:return
-            else {
-                OkHttpClient().newCall(
-                    Request.Builder()
-                        .url("https://raw.githubusercontent.com/Nanoc6/SaikouTV/main/app/build.gradle")
-                        .build()
-                ).execute().body?.string()?.substringAfter("versionName \"")?.substringBefore('"') ?: return
-            }
+                if(!BuildConfig.DEBUG)
+                    OkHttpClient().newCall(Request.Builder().url("https://raw.githubusercontent.com/Nanoc6/SaikouTV/main/stable.txt").build()).execute().body?.string()?.replace("\n","")?:return
+                else {
+                    OkHttpClient().newCall(
+                        Request.Builder()
+                            .url("https://raw.githubusercontent.com/Nanoc6/SaikouTV/main/app/build.gradle")
+                            .build()
+                    ).execute().body?.string()?.substringAfter("versionName \"")?.substringBefore('"') ?: return
+                }
             val dontShow = loadData("dont_ask_for_update_$version")?:false
             if(compareVersion(version) && !dontShow && !activity.isDestroyed) activity.runOnUiThread {
-                AlertDialog.Builder(activity, R.style.DialogTheme)
+                AlertDialog.Builder(activity, if(isOnTV(activity)) R.style.TVDialogTheme else R.style.DialogTheme)
                     .setTitle("A new update is available, do you want to check it out?").apply {
                         setMultiChoiceItems(
                             arrayOf("Don't show again for version $version"),
@@ -42,39 +42,37 @@ object AppUpdater {
                                 saveData("dont_ask_for_update_$version", isChecked)
                             }
                         }
-                    }
-                    setPositiveButton("Let's Go") { _: DialogInterface, _: Int ->
-                        if(!BuildConfig.DEBUG) {
-                            MainScope().launch(Dispatchers.IO){
+                        setPositiveButton("Let's Go") { _: DialogInterface, _: Int ->
+                            if(!BuildConfig.DEBUG) {
+                                MainScope().launch(Dispatchers.IO){
 
-                                try{
-                                OkHttpClient().newCall(Request.Builder().url("https://api.github.com/repos/Nanoc6/SaikouTV/releases/tags/v$version"+"-tv").build()).execute().body?.string()?.apply {
-                                    substringAfter("\"browser_download_url\":\"").substringBefore('"').apply {
-                                        if (endsWith("apk")) activity.downloadUpdate(this)
-                                        else openLinkInBrowser("https://github.com/Nanoc6/SaikouTV/releases/")
+                                    try{
+                                        OkHttpClient().newCall(Request.Builder().url("https://api.github.com/repos/Nanoc6/SaikouTV/releases/tags/v$version"+"-tv").build()).execute().body?.string()?.apply {
+                                            substringAfter("\"browser_download_url\":\"").substringBefore('"').apply {
+                                                if (endsWith("apk")) activity.downloadUpdate(this)
+                                                else openLinkInBrowser("https://github.com/Nanoc6/SaikouTV/releases/")
+                                            }
                                         }
-                                    } catch (e: Exception) {
+                                    }catch (e:Exception){
                                         toastString(e.toString())
                                     }
                                 }
-                            } else openLinkInBrowser("https://discord.com/channels/902174389351620629/946852010198728704")
+                            }
+                            else openLinkInBrowser( "https://discord.com/channels/902174389351620629/946852010198728704")
                         }
                         setNegativeButton("Cope") { dialogInterface: DialogInterface, _: Int ->
                             dialogInterface.dismiss()
                         }
                     }.show()
             }
-        } catch (e: Exception) {
+        }
+        catch (e:Exception){
             toastString(e.toString())
         }
     }
 
-    private fun compareVersion(version: String): Boolean {
-        return try {
-            version.replace(".", "").toInt() > BuildConfig.VERSION_NAME.replace(".", "").toInt()
-        } catch (e: Exception) {
-            false
-        }
+    private fun compareVersion(version:String):Boolean{
+        return try{ version.replace(".","").toInt() > BuildConfig.VERSION_NAME.replace(".","").toInt() } catch (e:Exception){ false }
     }
 
 
@@ -135,7 +133,7 @@ object AppUpdater {
     }
 
     fun openApk(context: Context, uri: Uri) {
-        try {
+        try{
             uri.path?.let {
                 val contentUri = FileProvider.getUriForFile(
                     context,
@@ -150,7 +148,7 @@ object AppUpdater {
                 }
                 context.startActivity(installIntent)
             }
-        } catch (e: Exception) {
+        }catch (e:Exception){
             toastString(e.toString())
         }
     }
