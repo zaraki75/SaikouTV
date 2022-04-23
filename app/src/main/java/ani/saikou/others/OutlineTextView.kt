@@ -33,10 +33,14 @@ class OutlineTextView : AppCompatTextView {
     private fun initResources(context: Context?, attrs: AttributeSet?) {
         if (attrs != null) {
             val a = context?.obtainStyledAttributes(attrs, R.styleable.OutlineTextView)
-            strokeColor = a!!.getColor(R.styleable.OutlineTextView_outlineColor,
-                currentTextColor)
-            strokeWidth = a.getFloat(R.styleable.OutlineTextView_outlineWidth,
-                defaultStrokeWidth)
+            strokeColor = a!!.getColor(
+                R.styleable.OutlineTextView_outlineColor,
+                currentTextColor
+            )
+            strokeWidth = a.getFloat(
+                R.styleable.OutlineTextView_outlineWidth,
+                defaultStrokeWidth
+            )
 
             a.recycle()
         } else {
