@@ -1,3 +1,9 @@
+@file:Suppress(
+    "LocalVariableName", "LocalVariableName", "LocalVariableName", "LocalVariableName", "LocalVariableName",
+    "LocalVariableName", "LocalVariableName", "LocalVariableName", "LocalVariableName", "LocalVariableName", "LocalVariableName",
+    "LocalVariableName", "LocalVariableName", "FunctionName", "FunctionName"
+)
+
 package ani.saikou.manga.source.parsers
 
 import android.content.Context

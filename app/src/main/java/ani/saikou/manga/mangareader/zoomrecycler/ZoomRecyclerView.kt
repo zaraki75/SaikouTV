@@ -1,4 +1,4 @@
-package ani.saikou.manga.zoomrecycler
+package ani.saikou.manga.mangareader.zoomrecycler
 
 import android.animation.AnimatorSet
 import android.animation.ValueAnimator
@@ -24,8 +24,7 @@ open class ZoomRecyclerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0
-)
-: RecyclerView(context, attrs, defStyle) {
+) : RecyclerView(context, attrs, defStyle) {
 
     private val zoomDurationTime = 200
     private val minZoom = 0.5f
@@ -179,7 +178,11 @@ open class ZoomRecyclerView @JvmOverloads constructor(
 
         setScaleRate(currentScale)
 
-        layoutParams.height = if (currentScale < 1) { (originalHeight / currentScale).toInt() } else { originalHeight }
+        layoutParams.height = if (currentScale < 1) {
+            (originalHeight / currentScale).toInt()
+        } else {
+            originalHeight
+        }
         halfHeight = layoutParams.height / 2
 
         if (currentScale != defaultZoom) {
@@ -253,7 +256,7 @@ open class ZoomRecyclerView @JvmOverloads constructor(
             val actionIndex = ev.actionIndex
 
             when (action) {
-                MotionEvent.ACTION_DOWN -> {
+                MotionEvent.ACTION_DOWN         -> {
                     scrollPointerId = ev.getPointerId(0)
                     downX = (ev.x + 0.5f).toInt()
                     downY = (ev.y + 0.5f).toInt()
@@ -263,7 +266,7 @@ open class ZoomRecyclerView @JvmOverloads constructor(
                     downX = (ev.getX(actionIndex) + 0.5f).toInt()
                     downY = (ev.getY(actionIndex) + 0.5f).toInt()
                 }
-                MotionEvent.ACTION_MOVE -> {
+                MotionEvent.ACTION_MOVE         -> {
                     if (isDoubleTapping && isQuickScaling) {
                         return true
                     }
@@ -307,7 +310,7 @@ open class ZoomRecyclerView @JvmOverloads constructor(
                         zoomScrollBy(dx, dy)
                     }
                 }
-                MotionEvent.ACTION_UP -> {
+                MotionEvent.ACTION_UP           -> {
                     if (isDoubleTapping && !isQuickScaling) {
                         listener.onDoubleTapConfirmed(ev)
                     }
@@ -315,7 +318,7 @@ open class ZoomRecyclerView @JvmOverloads constructor(
                     isDoubleTapping = false
                     isQuickScaling = false
                 }
-                MotionEvent.ACTION_CANCEL -> {
+                MotionEvent.ACTION_CANCEL       -> {
                     isZoomDragging = false
                     isDoubleTapping = false
                     isQuickScaling = false

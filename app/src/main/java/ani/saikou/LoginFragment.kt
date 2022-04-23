@@ -17,6 +17,7 @@ class LoginFragment : Fragment() {
         _binding = FragmentLoginBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.loginButton.setOnClickListener { Anilist.loginIntent(requireActivity()) }
         binding.loginDiscord.setOnClickListener { openLinkInBrowser(getString(R.string.discord)) }
