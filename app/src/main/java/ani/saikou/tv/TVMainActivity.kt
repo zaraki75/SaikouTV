@@ -59,7 +59,7 @@ class TVMainActivity : FragmentActivity() {
                                     )
                                 }
                                 if (media != null) {
-                                    supportFragmentManager.beginTransaction().replace(R.id.main_tv_fragment, TVAnimeDetailFragment(media))
+                                    supportFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVAnimeDetailFragment(media)).commit()
                                 } else {
                                     //toastString("Seems like that wasn't found on Anilist.")
                                 }
@@ -83,7 +83,7 @@ class TVMainActivity : FragmentActivity() {
             }
 
             supportFragmentManager.beginTransaction()
-                .add(R.id.main_tv_fragment, TVAnimeFragment())
+                .replace(R.id.main_tv_fragment, TVAnimeFragment())
                 .commitNow()
         }
         createHomeTVChannel()

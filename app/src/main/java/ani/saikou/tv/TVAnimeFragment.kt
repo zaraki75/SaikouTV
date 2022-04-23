@@ -375,6 +375,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         val intent = Intent(requireContext(), TVMainActivity::class.java)
         intent.putExtra("media", media.id)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
 
         val builder = PreviewProgram.Builder()
         builder.setChannelId(channelID)

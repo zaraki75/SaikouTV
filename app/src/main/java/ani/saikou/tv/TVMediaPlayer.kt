@@ -203,7 +203,12 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
         playerGlue = VideoPlayerGlue(requireActivity(), LeanbackPlayerAdapter(requireActivity(), exoPlayer, 16), this)
         playerGlue.host = VideoSupportFragmentGlueHost(this)
         playerGlue.title = media.getMainName()
-        playerGlue.subtitle = "Episode "+ episode.number + ": "+ episode.title
+
+        if(!episode.title.isNullOrEmpty())
+            playerGlue.subtitle = "Episode "+ episode.number + ": "+ episode.title
+        else
+            playerGlue.subtitle = "Episode "+ episode.number
+
         playerGlue.playWhenPrepared()
         playerGlue.host.setOnKeyInterceptListener { view, keyCode, event ->
             if (playerGlue.host.isControlsOverlayVisible) return@setOnKeyInterceptListener false
