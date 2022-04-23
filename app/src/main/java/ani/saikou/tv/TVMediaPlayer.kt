@@ -3,6 +3,7 @@ package ani.saikou.tv
 import android.content.ComponentName
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
+import android.view.KeyEvent
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.FragmentManager
@@ -10,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.leanback.app.VideoSupportFragment
 import androidx.leanback.app.VideoSupportFragmentGlueHost
 import androidx.leanback.media.PlaybackGlue
+import androidx.lifecycle.lifecycleScope
 import androidx.media.session.MediaButtonReceiver
 import ani.saikou.*
 import ani.saikou.anilist.Anilist
@@ -34,11 +36,9 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
+import java.lang.Runnable
 import kotlin.math.roundToInt
 
 class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.OnActionClickedListener, Player.Listener {
@@ -63,14 +63,22 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
     private var settings = PlayerSettings()
     private var uiSettings = UserInterfaceSettings()
 
+    private var linkSelector: TVSelectorFragment? = null
+
+    override fun onDestroy() {
+        super.onDestroy()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         settings = loadData("player_settings") ?: PlayerSettings().apply { saveData("player_settings",this) }
         uiSettings = loadData("ui_settings") ?: UserInterfaceSettings().apply { saveData("ui_settings",this) }
 
+        linkSelector = null
+
         val episodeObserverRunnable = Runnable {
-            model.getEpisode().observe(this) {
+            model.getEpisode().observe(viewLifecycleOwner) {
                 if (it != null) {
                     episode = it
                     media.selected = model.loadSelected(media)
@@ -78,9 +86,24 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
 
                     val stream = episode.streamLinks[episode.selectedStream]
                     val url = stream?.quality?.get(episode.selectedQuality)
-                    mediaItem =  MediaItem.Builder().setUri(url?.url).build()
-                    initVideo()
-                }
+                    if(url == null) {
+                        if (linkSelector == null) {
+                            linkSelector = TVSelectorFragment.newInstance(media, true)
+                            linkSelector?.setStreamLinks(episode.streamLinks)
+                            parentFragmentManager.beginTransaction().addToBackStack(null)
+                                .replace(R.id.main_tv_fragment, linkSelector!!)
+                                .commit()
+                        }
+                    } else {
+                        if(!isInitialized) {
+                            episodeArr = episodes.keys.toList()
+                            currentEpisodeIndex = episodeArr.indexOf(media.anime!!.selectedEpisode!!)
+                            mediaItem = MediaItem.Builder().setUri(url?.url).build()
+                            initVideo()
+                        }
+                    }
+                    }
+                //}
             }
         }
 
@@ -120,7 +143,6 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
     }
 
     fun initVideo() {
-
         val simpleCache = VideoCache.getInstance(requireContext())
 
         val stream = episode.streamLinks[episode.selectedStream]?: return
@@ -174,29 +196,54 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
         MediaSessionCompat(requireContext(), "Player", mediaButtonReceiver, null).let { media ->
             val mediaSessionConnector = MediaSessionConnector(media)
             mediaSessionConnector.setPlayer(exoPlayer)
+            mediaSessionConnector.setClearMediaItemsOnStop(true)
             media.isActive = true
         }
 
         playerGlue = VideoPlayerGlue(requireActivity(), LeanbackPlayerAdapter(requireActivity(), exoPlayer, 16), this)
         playerGlue.host = VideoSupportFragmentGlueHost(this)
+        playerGlue.title = media.getMainName()
+        playerGlue.subtitle = "Episode "+ episode.number + ": "+ episode.title
+        playerGlue.playWhenPrepared()
+        playerGlue.host.setOnKeyInterceptListener { view, keyCode, event ->
+            if (playerGlue.host.isControlsOverlayVisible) return@setOnKeyInterceptListener false
+
+            if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && event.action == KeyEvent.ACTION_DOWN) {
+                playerGlue.fastForward()
+                preventControlsOverlay(playerGlue)
+                return@setOnKeyInterceptListener true
+            }
+
+            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && event.action == KeyEvent.ACTION_DOWN) {
+                playerGlue.rewind()
+                preventControlsOverlay(playerGlue)
+                return@setOnKeyInterceptListener true
+            }
+
+            false
+        }
         playerGlue.addPlayerCallback(object : PlaybackGlue.PlayerCallback() {
-            override fun onPreparedStateChanged(glue: PlaybackGlue) {
-                if (glue.isPrepared()) {
-                    playerGlue.play()
-                }
+            override fun onPlayCompleted(glue: PlaybackGlue?) {
+                super.onPlayCompleted(glue)
+                onNext()
             }
         })
     }
 
+    private fun preventControlsOverlay(playerGlue: VideoPlayerGlue) = view?.postDelayed({
+        playerGlue.host.showControlsOverlay(false)
+        playerGlue.host.hideControlsOverlay(false)
+    }, 10)
+
     override fun onPrevious() {
         if(currentEpisodeIndex>0) {
-            //change(currentEpisodeIndex - 1)
+            change(currentEpisodeIndex - 1)
         }
     }
 
     override fun onNext() {
         if(isInitialized) {
-            //nextEpisode{ i-> progress { change(currentEpisodeIndex + i) } }
+            nextEpisode{ i-> progress { change(currentEpisodeIndex + i) } }
         }
     }
 
@@ -217,7 +264,11 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
 
     fun change(index:Int){
         if(isInitialized) {
-            //changingServer = false
+            exoPlayer.stop()
+            exoPlayer.release()
+            VideoCache.release()
+
+            isInitialized = false
             saveData(
                 "${media.id}_${episodeArr[currentEpisodeIndex]}",
                 exoPlayer.currentPosition,
@@ -229,12 +280,18 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
             model.setMedia(media)
             model.epChanged.postValue(false)
             model.setEpisode(episodes[media.anime!!.selectedEpisode!!]!!,"change")
-            model.onEpisodeClick(
-                media, media.anime!!.selectedEpisode!!, requireActivity().supportFragmentManager,
-                false,
-                prev)
+
+            media.anime?.episodes?.get(media.anime!!.selectedEpisode!!)?.let{ ep ->
+                media.selected = model.loadSelected(media)
+                lifecycleScope.launch {
+                    media.selected?.let {
+                        model.loadEpisodeStreams(ep, it.source)
+                    }
+                }
+            }
         }
     }
+
     override fun onPlaybackStateChanged(playbackState: Int) {
         if (playbackState == ExoPlayer.STATE_READY) {
             exoPlayer.play()

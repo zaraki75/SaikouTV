@@ -14,6 +14,7 @@ import java.net.ServerSocket
 import java.net.Socket
 import kotlin.concurrent.thread
 
+//TODO use SSL sockets
 object NetworkTVConnection {
 
     val PORT = 2413
@@ -47,8 +48,8 @@ object NetworkTVConnection {
         }
     }
 
-    fun connect(context: Context, anilistToken: String, hostIP: String, onTokenSentCallback: OnTokenSentCallback) {
-        val ip = getIpFromHost(context, hostIP)
+    fun connect(context: Context, anilistToken: String, hostIP: String, fillSubnet: Boolean, onTokenSentCallback: OnTokenSentCallback) {
+        val ip = if (fillSubnet) getIpFromHost(context, hostIP) else hostIP
         try {
             val socket = Socket(ip, PORT)
             val streamWriter = PrintWriter(socket.getOutputStream(), true)
@@ -78,6 +79,7 @@ object NetworkTVConnection {
     }
 
     private fun getLocalIP(context: Context): String? {
+        //TODO fix this for recent android versions
        /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)
             if (connectivityManager is ConnectivityManager) {

@@ -835,7 +835,7 @@ fun toast(string: String?, activity: Activity? = null) {
 fun toastString(s: String?,activity: Activity?=null){
         if(s!=null) {
             (activity?:currActivity())?.apply{
-                if (isOnTV(this)) {
+                if (!isOnTV(this)) {
                     runOnUiThread {
                         val snackBar = Snackbar.make(
                             window.decorView.findViewById(android.R.id.content),

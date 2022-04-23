@@ -22,6 +22,8 @@ class TVConnectionActivity: AppCompatActivity() {
 
     lateinit var binding: FragmentTvConnectionBinding
 
+    private var advancedMode: Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = FragmentTvConnectionBinding.inflate(layoutInflater)
@@ -37,9 +39,17 @@ class TVConnectionActivity: AppCompatActivity() {
             onBackPressed()
         }
 
+        binding.advancedButton.setOnClickListener {
+            advancedMode = true
+            binding.title.text = "Please introduce the IP of your TV device"
+            binding.ipField.text.clear()
+            binding.ipField.hint = "192.168.X.X"
+            binding.advancedButton.visibility = View.GONE
+        }
+
         binding.connectButton.setOnClickListener {
             val fieldText: String? = binding.ipField.text.toString()
-            if(fieldText != null && fieldText.isNotEmpty()) {
+            if(!fieldText.isNullOrEmpty()) {
                 binding.progressView.visibility = View.VISIBLE
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
@@ -47,6 +57,7 @@ class TVConnectionActivity: AppCompatActivity() {
                             this@TVConnectionActivity,
                             Anilist.token!!,
                             fieldText,
+                            !advancedMode,
                             object : NetworkTVConnection.OnTokenSentCallback {
                                 override fun onTokenSent(sent: Boolean) {
                                     if (sent) {
@@ -64,7 +75,7 @@ class TVConnectionActivity: AppCompatActivity() {
                     }
                 }
             } else {
-                toastString("Please input the number shown on TV")
+                toastString(if(advancedMode) "Please input the full IP of your TV device" else "Please input the number shown on TV")
             }
         }
     }

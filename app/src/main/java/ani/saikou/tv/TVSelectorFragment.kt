@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.DecimalFormat
 
-class TVSelectorFragment(var media: Media): VerticalGridSupportFragment() {
+class TVSelectorFragment(var media: Media, val fromPlayer: Boolean): VerticalGridSupportFragment() {
 
     lateinit var links: MutableMap<String, Episode.StreamLinks?>
     private var selected:String?=null
@@ -50,9 +50,11 @@ class TVSelectorFragment(var media: Media): VerticalGridSupportFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        progressBarManager.setRootView(this.view as ViewGroup)
-        progressBarManager.initialDelay = 0
-        progressBarManager.show()
+        if(!this::links.isInitialized) {
+            progressBarManager.setRootView(this.view as ViewGroup)
+            progressBarManager.initialDelay = 0
+            progressBarManager.show()
+        }
     }
 
     fun setStreamLinks(streamLinks: MutableMap<String, Episode.StreamLinks?>) {
@@ -86,14 +88,8 @@ class TVSelectorFragment(var media: Media): VerticalGridSupportFragment() {
     }
 
     companion object {
-        fun newInstance(media: Media, server:String?=null, la:Boolean=true, prev:Episode?=null): TVSelectorFragment =
-            TVSelectorFragment(media).apply {
-                arguments = Bundle().apply {
-                    putString("server",server)
-                    putBoolean("launch",la)
-                    putSerializable("prev",prev)
-                }
-            }
+        fun newInstance(media: Media, fromPlayer: Boolean = false): TVSelectorFragment =
+            TVSelectorFragment(media, fromPlayer)
     }
 
     private inner class StreamAdapter : Presenter() {
@@ -113,7 +109,10 @@ class TVSelectorFragment(var media: Media): VerticalGridSupportFragment() {
                 holder.view.setOnClickListener {
                     media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedStream = server
                     media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedQuality = qualityPos
-                    startExoplayer(media!!)
+                    if (fromPlayer)
+                        parentFragmentManager.popBackStack()
+                    else
+                        startExoplayer(media!!)
                 }
 
                 val binding = holder.binding
@@ -134,7 +133,6 @@ class TVSelectorFragment(var media: Media): VerticalGridSupportFragment() {
                         download(requireActivity(),media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!,media!!.userPreferredName)
                     }*/
                 }
-
             }
         }
 
