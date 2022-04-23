@@ -1,4 +1,4 @@
-package ani.saikou.manga.zoomrecycler
+package ani.saikou.manga.mangareader.zoomrecycler
 
 import android.content.Context
 import android.os.Handler
@@ -34,7 +34,7 @@ open class GestureDetectorWithLongTap(
 
     override fun onTouchEvent(ev: MotionEvent): Boolean {
         when (ev.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
+            MotionEvent.ACTION_DOWN                                    -> {
                 lastDownEvent?.recycle()
                 lastDownEvent = MotionEvent.obtain(ev)
 
@@ -46,12 +46,12 @@ open class GestureDetectorWithLongTap(
                     handler.postDelayed(longTapFn, longTapTime)
                 }
             }
-            MotionEvent.ACTION_MOVE -> {
+            MotionEvent.ACTION_MOVE                                    -> {
                 if (abs(ev.rawX - downX) > slop || abs(ev.rawY - downY) > slop) {
                     handler.removeCallbacks(longTapFn)
                 }
             }
-            MotionEvent.ACTION_UP -> {
+            MotionEvent.ACTION_UP                                      -> {
                 lastUp = ev.eventTime
                 handler.removeCallbacks(longTapFn)
             }

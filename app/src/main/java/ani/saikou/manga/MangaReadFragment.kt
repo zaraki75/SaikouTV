@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
 import ani.saikou.*
 import ani.saikou.databinding.FragmentAnimeWatchBinding
+import ani.saikou.manga.mangareader.MangaReaderActivity
 import ani.saikou.manga.source.HMangaSources
 import ani.saikou.manga.source.MangaParser
 import ani.saikou.manga.source.MangaReadSources
@@ -29,7 +30,7 @@ import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-open class MangaReadFragment: Fragment()  {
+open class MangaReadFragment : Fragment() {
     open val mangaReadSources: MangaReadSources = MangaSources
     private var _binding: FragmentAnimeWatchBinding? = null
     private val binding get() = _binding!!
@@ -39,7 +40,7 @@ open class MangaReadFragment: Fragment()  {
 
     private var start = 0
     private var end: Int? = null
-    private var style : Int? = null
+    private var style: Int? = null
     private var reverse = false
 
     private lateinit var headerAdapter: MangaReadAdapter
@@ -51,7 +52,7 @@ open class MangaReadFragment: Fragment()  {
     var continueEp: Boolean = false
     var loaded = false
 
-    val uiSettings = loadData("ui_settings", toast = false)?: UserInterfaceSettings().apply { saveData("ui_settings",this) }
+    val uiSettings = loadData("ui_settings", toast = false) ?: UserInterfaceSettings().apply { saveData("ui_settings", this) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -77,10 +78,10 @@ open class MangaReadFragment: Fragment()  {
                 val style = chapterAdapter.getItemViewType(position)
 
                 return when (position) {
-                    0 -> maxGridSize
+                    0    -> maxGridSize
                     else -> when (style) {
-                        0 -> maxGridSize
-                        1 -> 1
+                        0    -> maxGridSize
+                        1    -> 1
                         else -> maxGridSize
                     }
                 }
@@ -95,16 +96,16 @@ open class MangaReadFragment: Fragment()  {
                 progress = View.GONE
                 binding.mediaInfoProgressBar.visibility = progress
 
-                if(media.format=="MANGA" || media.format=="ONE_SHOT"){
+                if (media.format == "MANGA" || media.format == "ONE_SHOT") {
                     media.selected = model.loadSelected(media)
                     style = media.selected!!.recyclerStyle
                     reverse = media.selected!!.recyclerReversed
 
-                    if(!loaded) {
+                    if (!loaded) {
                         model.readMangaReadSources = if (media.isAdult) HMangaSources else MangaSources
 
                         headerAdapter = MangaReadAdapter(it, this, mangaReadSources)
-                        chapterAdapter = MangaChapterAdapter(style?:uiSettings.mangaDefaultView, media, this)
+                        chapterAdapter = MangaChapterAdapter(style ?: uiSettings.mangaDefaultView, media, this)
 
                         binding.animeSourceRecycler.adapter = ConcatAdapter(headerAdapter, chapterAdapter)
 
@@ -112,14 +113,12 @@ open class MangaReadFragment: Fragment()  {
                             model.loadMangaChapters(media, media.selected!!.source)
                         }
                         loaded = true
-                    }
-                    else{
+                    } else {
                         reload()
                     }
-                }
-                else{
+                } else {
                     binding.animeNotSupported.visibility = View.VISIBLE
-                    binding.animeNotSupported.text = getString(R.string.not_supported,media.format?:"")
+                    binding.animeNotSupported.text = getString(R.string.not_supported, media.format ?: "")
                 }
             }
         }
@@ -138,7 +137,7 @@ open class MangaReadFragment: Fragment()  {
                     val limit = when {
                         (divisions < 25) -> 25
                         (divisions < 50) -> 50
-                        else -> 100
+                        else             -> 100
                     }
                     headerAdapter.clearChips()
                     if (total > limit) {
@@ -172,7 +171,7 @@ open class MangaReadFragment: Fragment()  {
         return mangaReadSources[i]!!
     }
 
-    fun loadChapters(i:Int){
+    fun loadChapters(i: Int) {
         lifecycleScope.launch(Dispatchers.IO) { model.loadMangaChapters(media, i) }
     }
 
@@ -195,7 +194,7 @@ open class MangaReadFragment: Fragment()  {
 
     fun onMangaChapterClick(i: String) {
         model.continueMedia = false
-        if (media.manga?.chapters?.get(i)!=null) {
+        if (media.manga?.chapters?.get(i) != null) {
             media.manga?.selectedChapter = i
             val intent = Intent(activity, MangaReaderActivity::class.java).apply { putExtra("media", media) }
             startActivity(intent)
@@ -215,10 +214,10 @@ open class MangaReadFragment: Fragment()  {
                 media.manga!!.chapters!!.values.toList().slice(start..(end ?: (media.manga!!.chapters!!.size - 1)))
             )
             if (reverse)
-                arr = (arr.reversed() as? ArrayList<MangaChapter>)?:arr
+                arr = (arr.reversed() as? ArrayList<MangaChapter>) ?: arr
         }
         chapterAdapter.arr = arr
-        chapterAdapter.updateType(style?:uiSettings.mangaDefaultView)
+        chapterAdapter.updateType(style ?: uiSettings.mangaDefaultView)
         chapterAdapter.notifyItemRangeInserted(0, arr.size)
     }
 
@@ -227,7 +226,7 @@ open class MangaReadFragment: Fragment()  {
         super.onDestroy()
     }
 
-    var state: Parcelable?=null
+    var state: Parcelable? = null
     override fun onResume() {
         super.onResume()
         binding.mediaInfoProgressBar.visibility = progress

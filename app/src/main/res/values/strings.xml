@@ -188,7 +188,7 @@
     <string name="ask_update_progress_hentai">Update Progress for Hentai</string>
     <string name="very_bold">Very Bold of You sar</string>
     <string name="complete_percentage">Watch Update Percentage</string>
-    <string name="complete_percentage_info">The percentage at which your Anilist progress should be updated after watching an episode. \nThis also sets the % for when to preload links for the next episode.</string>
+    <string name="complete_percentage_info">The percentage at which your Anilist progress should be updated after watching an episode. \nThis also sets the \% for when to preload links for the next episode.</string>
 
     <string name="behaviour">Behaviour</string>
     <string name="always_continue">Always Continue from where you Left</string>

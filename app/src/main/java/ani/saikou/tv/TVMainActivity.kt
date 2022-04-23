@@ -19,6 +19,7 @@ import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistHomeViewModel
 import ani.saikou.media.MediaDetailsActivity
 import ani.saikou.others.AppUpdater
+import ani.saikou.others.DisableFirebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,6 +31,9 @@ class TVMainActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        DisableFirebase.handle()
+
         setContentView(R.layout.tv_activity_main)
         loadMedia = intent?.getIntExtra("media", -1)
 
