@@ -30,10 +30,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat.getExternalFilesDirs
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.math.MathUtils.clamp
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updateLayoutParams
+import androidx.core.view.*
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
@@ -64,17 +61,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import nl.joery.animatedbottombar.AnimatedBottomBar
-import okhttp3.OkHttpClient
-import org.jsoup.Connection
-import org.jsoup.Jsoup
 import java.io.*
 import java.lang.reflect.Field
-import java.security.SecureRandom
-import java.security.cert.X509Certificate
 import java.util.*
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 import kotlin.math.*
 
 
@@ -284,7 +273,7 @@ class InputFilterMinMax(private val min: Double, private val max: Double, privat
             val input = (dest.toString() + source.toString()).toDouble()
             if (isInRange(min, max, input)) return null
         } catch (nfe: NumberFormatException) {
-            nfe.printStackTrace()
+            logger(nfe.stackTraceToString())
         }
         return ""
     }
@@ -299,10 +288,10 @@ class InputFilterMinMax(private val min: Double, private val max: Double, privat
     }
 }
 
-fun getMalMedia(media: Media): Media {
+suspend fun getMalMedia(media: Media): Media {
     try {
         if (media.anime != null) {
-            val res = Jsoup.connect("https://myanimelist.net/anime/${media.idMAL}").ignoreHttpErrors(true).get()
+            val res = httpClient.get("https://myanimelist.net/anime/${media.idMAL}").document
             val a = res.select(".title-english").text()
             media.nameMAL = if (a != "") a else res.select(".title-name").text()
             media.typeMAL =
@@ -321,7 +310,7 @@ fun getMalMedia(media: Media): Media {
             }
 
         } else {
-            val res = Jsoup.connect("https://myanimelist.net/manga/${media.idMAL}").ignoreHttpErrors(true).get()
+            val res = httpClient.get("https://myanimelist.net/manga/${media.idMAL}").document
             val b = res.select(".title-english").text()
             val a = res.select(".h1-title").text().removeSuffix(b)
             media.nameMAL = a
@@ -493,17 +482,11 @@ fun View.setSafeOnClickListener(onSafeClick: (View) -> Unit) {
     setOnClickListener(safeClickListener)
 }
 
-fun getSize(url: String, headers: MutableMap<String, String>? = null): Double? {
+suspend fun getSize(url: String, headers: MutableMap<String, String>? = null): Double? {
     return try {
-        Jsoup.connect(url)
-            .ignoreContentType(true)
-            .ignoreHttpErrors(true).timeout(1000)
-            .followRedirects(true)
-            .headers(headers ?: mutableMapOf())
-            .method(Connection.Method.HEAD)
-            .execute().header("Content-Length")?.toDouble()?.div(1048576)
+        httpClient.head(url,headers?: mapOf(), timeout = 1000).size?.toDouble()?.div(1048576)
     } catch (e: Exception) {
-        //        logger(e)
+        logger(e)
         null
     }
 }
@@ -660,7 +643,7 @@ fun download(activity: Activity, episode: Episode, animeTitle: String) {
 
             val arrayOfFiles = getExternalFilesDirs(activity, null)
             if (loadData<Boolean>("sd_dl") == true && arrayOfFiles.size > 1 && arrayOfFiles[0] != null && arrayOfFiles[1] != null) {
-                val parentDirectory = arrayOfFiles[1].toString() + "/Anime/${aTitle}/".also { println("external $it") }
+                val parentDirectory = arrayOfFiles[1].toString() + "/Anime/${aTitle}/"
                 val direct = File(parentDirectory)
                 if (!direct.exists()) direct.mkdirs()
                 request.setDestinationUri(Uri.fromFile(File("$parentDirectory$title (${stream.quality[episode.selectedQuality].quality}).mp4")))
@@ -838,18 +821,22 @@ fun toastString(s: String?, activity: Activity? = null) {
         (activity ?: currActivity())?.apply {
             runOnUiThread {
                 val snackBar = Snackbar.make(window.decorView.findViewById(android.R.id.content), s, Snackbar.LENGTH_LONG)
-                snackBar.view.updateLayoutParams<FrameLayout.LayoutParams> {
-                    gravity = (Gravity.CENTER_HORIZONTAL or Gravity.BOTTOM)
-                    width = WRAP_CONTENT
-                }
-                snackBar.view.translationY = -(navBarHeight.dp + 32f)
-                snackBar.view.setOnClickListener {
-                    snackBar.dismiss()
-                }
-                snackBar.view.setOnLongClickListener {
-                    copyToClipboard(s, false)
-                    toast("Copied to Clipboard")
-                    true
+                snackBar.view.apply {
+                    updateLayoutParams<FrameLayout.LayoutParams> {
+                        gravity = (Gravity.CENTER_HORIZONTAL or Gravity.BOTTOM)
+                        width = WRAP_CONTENT
+                    }
+                    translationY = -(navBarHeight.dp + 32f)
+                    translationZ = 32f
+                    updatePadding(16f.px, right = 16f.px)
+                    setOnClickListener {
+                        snackBar.dismiss()
+                    }
+                    setOnLongClickListener {
+                        copyToClipboard(s, false)
+                        toast("Copied to Clipboard")
+                        true
+                    }
                 }
                 snackBar.show()
             }
@@ -895,24 +882,6 @@ class SpinnerNoSwipe : androidx.appcompat.widget.AppCompatSpinner {
         mGestureDetector!!.onTouchEvent(event)
         return true
     }
-}
-
-fun OkHttpClient.Builder.ignoreAllSSLErrors(): OkHttpClient.Builder {
-    val naiveTrustManager = @SuppressLint("CustomX509TrustManager")
-    object : X509TrustManager {
-        override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-        override fun checkClientTrusted(certs: Array<X509Certificate>, authType: String) = Unit
-        override fun checkServerTrusted(certs: Array<X509Certificate>, authType: String) = Unit
-    }
-
-    val insecureSocketFactory = SSLContext.getInstance("TLSv1.2").apply {
-        val trustAllCerts = arrayOf<TrustManager>(naiveTrustManager)
-        init(null, trustAllCerts, SecureRandom())
-    }.socketFactory
-
-    sslSocketFactory(insecureSocketFactory, naiveTrustManager)
-    hostnameVerifier { _, _ -> true }
-    return this
 }
 
 @SuppressLint("RestrictedApi")

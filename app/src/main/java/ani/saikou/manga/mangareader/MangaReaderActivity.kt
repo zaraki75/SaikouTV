@@ -62,7 +62,6 @@ class MangaReaderActivity : AppCompatActivity() {
             if (displayCutout != null) {
                 if (displayCutout.boundingRects.size > 0) {
                     notchHeight = min(displayCutout.boundingRects[0].width(), displayCutout.boundingRects[0].height())
-                    println("notch : $notchHeight")
                     checkNotch()
                 }
             }

@@ -139,10 +139,10 @@ class MainActivity : AppCompatActivity() {
             }
             //Load Data
             if (!load) {
-                Anilist.getSavedToken(this)
+
                 scope.launch(Dispatchers.IO) {
-                    AppUpdater.check(this@MainActivity)
-                    model.genres.postValue(Anilist.query.getGenresAndTags(this@MainActivity))
+                    model.loadMain(this@MainActivity)
+
                 }
                 load = true
             }
