@@ -2,22 +2,13 @@ package ani.saikou.anime.source.extractors
 
 import ani.saikou.anime.Episode
 import ani.saikou.anime.source.Extractor
-import ani.saikou.getSize
 import ani.saikou.logger
-import ani.saikou.toastString
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 import org.jsoup.Jsoup
+import ani.saikou.httpClient
 
 class OK(): Extractor() {
-    override fun getStreamLinks(name: String, url: String): Episode.StreamLinks {
-            val document = Jsoup.connect(url).get()
+    override suspend fun getStreamLinks(name: String, url: String): Episode.StreamLinks {
+            val document = httpClient.get(url).document
             val tempQuality = mutableListOf<Episode.Quality>()
             val videosString = document.select("div[data-options]").attr("data-options")
                 .substringAfter("\\\"videos\\\":[{\\\"name\\\":\\\"")
