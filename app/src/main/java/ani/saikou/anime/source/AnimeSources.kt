@@ -6,8 +6,6 @@ object AnimeSources : WatchSources() {
     override val names = arrayListOf(
         "GOGO",
         "GOGO-DUB",
-            "MONOSCHINOS",
-            "ANIMEFENIX",
         "ANIMEKISA",
         "ANIMEKISA-DUB",
         "9ANIME",
@@ -15,6 +13,8 @@ object AnimeSources : WatchSources() {
         "TENSHI",
         "ZORO",
         "TWIST",
+        "MONOSCHINOS",
+        "ANIMEFENIX",
     )
 
     val animeParsers: MutableMap<Int, AnimeParser> = mutableMapOf()
