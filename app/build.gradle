@@ -13,8 +13,8 @@ android {
         applicationId "ani.saikou"
         minSdk 21
         targetSdk 31
-        versionCode 42
-        versionName "1.2.0.1"
+        versionCode 43
+        versionName "1.2.0.2"
         signingConfig signingConfigs.debug
     }
 
@@ -27,11 +27,12 @@ android {
         viewBinding true
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = '11'
+        jvmTarget = '1.8'
+        freeCompilerArgs = ['-Xjvm-default=compatibility']
     }
 }
 

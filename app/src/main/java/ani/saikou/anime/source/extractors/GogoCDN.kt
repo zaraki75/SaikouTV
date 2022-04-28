@@ -8,6 +8,7 @@ import ani.saikou.findBetween
 import ani.saikou.getSize
 import ani.saikou.httpClient
 import ani.saikou.others.asyncEach
+import ani.saikou.others.logError
 import ani.saikou.toastString
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -93,7 +94,7 @@ class GogoCDN(val host: String) : Extractor() {
                 }
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return Episode.StreamLinks(name, list, mutableMapOf("referer" to url))
     }

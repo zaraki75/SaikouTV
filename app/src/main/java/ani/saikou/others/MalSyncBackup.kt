@@ -2,7 +2,6 @@ package ani.saikou.others
 
 import ani.saikou.httpClient
 import ani.saikou.media.Source
-import ani.saikou.toastString
 import com.fasterxml.jackson.annotation.JsonProperty
 
 object MalSyncBackup {
@@ -36,7 +35,7 @@ object MalSyncBackup {
                     }
                 }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return null
     }

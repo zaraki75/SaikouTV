@@ -5,7 +5,7 @@ import ani.saikou.findBetween
 import ani.saikou.getSize
 import ani.saikou.httpClient
 import ani.saikou.others.asyncEach
-import ani.saikou.toastString
+import ani.saikou.others.logError
 import org.jsoup.nodes.Element
 
 class Haho(name: String = "haho.moe") : Tenshi(name) {
@@ -19,7 +19,7 @@ class Haho(name: String = "haho.moe") : Tenshi(name) {
                         load(episode, it)
                 }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return episode
     }
@@ -32,7 +32,7 @@ class Haho(name: String = "haho.moe") : Tenshi(name) {
                     load(episode, it)
                 }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return episode
     }

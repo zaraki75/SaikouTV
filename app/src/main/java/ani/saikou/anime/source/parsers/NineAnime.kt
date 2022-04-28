@@ -9,6 +9,7 @@ import ani.saikou.anime.source.extractors.VizCloud
 import ani.saikou.media.Media
 import ani.saikou.media.Source
 import ani.saikou.others.MalSyncBackup
+import ani.saikou.others.logError
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.nicehttp.Requests
 import org.jsoup.Jsoup
@@ -37,7 +38,7 @@ class NineAnime(private val dub: Boolean = false, override val name: String = "9
                 }
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         episode.streamLinks = streams
         return episode
@@ -61,7 +62,7 @@ class NineAnime(private val dub: Boolean = false, override val name: String = "9
                 }
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         episode.streamLinks = streams
         return episode
@@ -95,7 +96,7 @@ class NineAnime(private val dub: Boolean = false, override val name: String = "9
             }
             if (slug != null) return getSlugEpisodes(slug.link)
         } catch (e: Exception) {
-            toastString("$e")
+            logError(e)
         }
         return mutableMapOf()
     }
@@ -116,7 +117,7 @@ class NineAnime(private val dub: Boolean = false, override val name: String = "9
                 responseArray.add(Source(link, title, cover))
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }
@@ -136,7 +137,7 @@ class NineAnime(private val dub: Boolean = false, override val name: String = "9
                     Episode(number = text, link = "${host()}/ajax/anime/servers?id=$animeId&vrf=$vrf&episode=$num")
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }

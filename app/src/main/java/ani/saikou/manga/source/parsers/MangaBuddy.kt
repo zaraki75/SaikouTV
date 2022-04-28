@@ -5,6 +5,7 @@ import ani.saikou.manga.MangaChapter
 import ani.saikou.manga.source.MangaParser
 import ani.saikou.media.Media
 import ani.saikou.media.Source
+import ani.saikou.others.logError
 
 class MangaBuddy(override val name: String = "mangabuddy.com") : MangaParser() {
 
@@ -31,7 +32,7 @@ class MangaBuddy(override val name: String = "mangabuddy.com") : MangaParser() {
                 }
             }
         } catch (e: Exception) {
-            toastString("$e")
+            logError(e)
         }
         return arr
     }
@@ -48,7 +49,7 @@ class MangaBuddy(override val name: String = "mangabuddy.com") : MangaParser() {
             }
             chapter.headers = mutableMapOf("referer" to host)
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return chapter
     }
@@ -88,7 +89,7 @@ class MangaBuddy(override val name: String = "mangabuddy.com") : MangaParser() {
                 }
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return response
     }

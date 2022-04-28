@@ -5,7 +5,7 @@ import ani.saikou.anime.source.Extractor
 import ani.saikou.getSize
 import ani.saikou.httpClient
 import ani.saikou.others.asyncEach
-import ani.saikou.toastString
+import ani.saikou.others.logError
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 
 class FPlayer(private val getSize: Boolean) : Extractor() {
@@ -29,7 +29,7 @@ class FPlayer(private val getSize: Boolean) : Extractor() {
         }
         catch (e: MismatchedInputException) {}
         catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return Episode.StreamLinks(
             name,

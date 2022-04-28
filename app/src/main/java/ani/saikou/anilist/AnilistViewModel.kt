@@ -10,7 +10,7 @@ import ani.saikou.toastString
 
 
 suspend fun getUserId(update: Runnable){
-    if (Anilist.userid == null) {
+    if (Anilist.userid == null && Anilist.token!=null) {
         if (Anilist.query.getUserData())
             update.run()
         else

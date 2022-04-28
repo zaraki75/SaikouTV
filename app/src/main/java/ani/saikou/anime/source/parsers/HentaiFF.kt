@@ -8,6 +8,7 @@ import ani.saikou.anime.source.extractors.FPlayer
 import ani.saikou.media.Media
 import ani.saikou.media.Source
 import ani.saikou.others.asyncEach
+import ani.saikou.others.logError
 
 class HentaiFF(override val name: String = "HentaiFF") : AnimeParser() {
 
@@ -18,7 +19,7 @@ class HentaiFF(override val name: String = "HentaiFF") : AnimeParser() {
             val a = httpClient.get(link).document.select("source").attr("abs:src")
             Episode.StreamLinks(name, arrayListOf(Episode.Quality(a, "Multi Quality", null)), null)
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
             null
         }
     }
@@ -38,7 +39,7 @@ class HentaiFF(override val name: String = "HentaiFF") : AnimeParser() {
                 }
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return episode
     }
@@ -58,7 +59,7 @@ class HentaiFF(override val name: String = "HentaiFF") : AnimeParser() {
                 }
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return episode
     }
@@ -94,7 +95,7 @@ class HentaiFF(override val name: String = "HentaiFF") : AnimeParser() {
                     responseArray.add(Source(link, title, cover))
                 }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }
@@ -116,7 +117,7 @@ class HentaiFF(override val name: String = "HentaiFF") : AnimeParser() {
             notRaw.map { responseArray[it.number] = it }
             logger("Response Episodes : $responseArray")
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }

@@ -6,6 +6,7 @@ import ani.saikou.anime.Episode
 import ani.saikou.anime.source.AnimeParser
 import ani.saikou.media.Media
 import ani.saikou.media.Source
+import ani.saikou.others.logError
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -77,7 +78,7 @@ class Twist(override val name: String = "twist.moe") : AnimeParser() {
                 )
             )
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return episode
     }
@@ -95,7 +96,7 @@ class Twist(override val name: String = "twist.moe") : AnimeParser() {
                 return getSlugEpisodes(source.link)
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return mutableMapOf()
     }
@@ -106,7 +107,7 @@ class Twist(override val name: String = "twist.moe") : AnimeParser() {
             arr.addAll(getSearchData().values)
             arr.sortByTitle(string)
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return arr
     }
@@ -121,7 +122,7 @@ class Twist(override val name: String = "twist.moe") : AnimeParser() {
             }
             logger("Twist Response Episodes : $responseList")
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseList
     }

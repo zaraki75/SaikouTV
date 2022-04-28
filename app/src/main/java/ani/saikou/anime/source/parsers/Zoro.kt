@@ -1,17 +1,21 @@
 package ani.saikou.anime.source.parsers
 
 import android.net.Uri
-import ani.saikou.*
 import ani.saikou.anime.Episode
 import ani.saikou.anime.source.AnimeParser
 import ani.saikou.anime.source.Extractor
 import ani.saikou.anime.source.extractors.RapidCloud
 import ani.saikou.anime.source.extractors.StreamSB
 import ani.saikou.anime.source.extractors.StreamTape
+import ani.saikou.httpClient
+import ani.saikou.loadData
+import ani.saikou.logger
 import ani.saikou.media.Media
 import ani.saikou.media.Source
 import ani.saikou.others.MalSyncBackup
 import ani.saikou.others.asyncEach
+import ani.saikou.others.logError
+import ani.saikou.saveData
 import org.jsoup.Jsoup
 import java.net.URLEncoder
 
@@ -57,7 +61,7 @@ class Zoro(override val name: String = "Zoro", override val saveStreams: Boolean
                 linkForVideos
             }
         } catch (e: Exception) {
-            toastString("$e")
+            logError(e)
         }
         return episode
     }
@@ -80,7 +84,7 @@ class Zoro(override val name: String = "Zoro", override val saveStreams: Boolean
                 linkForVideos
             }
         } catch (e: Exception) {
-            toastString("$e")
+            logError(e)
         }
         return episode
     }
@@ -119,7 +123,7 @@ class Zoro(override val name: String = "Zoro", override val saveStreams: Boolean
                 responseArray.add(Source(link, title, cover))
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }
@@ -143,7 +147,7 @@ class Zoro(override val name: String = "Zoro", override val saveStreams: Boolean
                 responseArray[num] = Episode(number = num, link = id, title = title, filler = filler, saveStreams = false)
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }

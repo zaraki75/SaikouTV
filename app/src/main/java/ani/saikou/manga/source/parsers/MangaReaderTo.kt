@@ -6,6 +6,7 @@ import ani.saikou.manga.MangaChapter
 import ani.saikou.manga.source.MangaParser
 import ani.saikou.media.Media
 import ani.saikou.media.Source
+import ani.saikou.others.logError
 import org.jsoup.Jsoup
 import java.net.URLEncoder
 
@@ -25,7 +26,7 @@ class MangaReaderTo(override val name: String = "MangaReader") : MangaParser() {
                 }
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
 
@@ -50,7 +51,7 @@ class MangaReaderTo(override val name: String = "MangaReader") : MangaParser() {
             }
 
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return chapter
     }
@@ -85,7 +86,7 @@ class MangaReaderTo(override val name: String = "MangaReader") : MangaParser() {
                 responseArray.add(Source(link, title, cover))
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }

@@ -2,17 +2,21 @@ package ani.saikou.anime.source.parsers
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import ani.saikou.*
 import ani.saikou.anime.Episode
 import ani.saikou.anime.source.AnimeParser
 import ani.saikou.anime.source.Extractor
 import ani.saikou.anime.source.extractors.FPlayer
 import ani.saikou.anime.source.extractors.GogoCDN
 import ani.saikou.anime.source.extractors.StreamSB
+import ani.saikou.httpClient
+import ani.saikou.loadData
+import ani.saikou.logger
 import ani.saikou.media.Media
 import ani.saikou.media.Source
 import ani.saikou.others.MalSyncBackup
 import ani.saikou.others.asyncEach
+import ani.saikou.others.logError
+import ani.saikou.saveData
 
 @SuppressLint("SetTextI18n")
 class Gogo(private val dub: Boolean = false, override val name: String = "gogoanime.cm") : AnimeParser() {
@@ -60,7 +64,7 @@ class Gogo(private val dub: Boolean = false, override val name: String = "gogoan
                     }
                 }
             } catch (e: Exception) {
-                toastString(e.toString())
+                logError(e)
             }
             linkForVideos
         }
@@ -84,7 +88,7 @@ class Gogo(private val dub: Boolean = false, override val name: String = "gogoan
                 linkForVideos
             }
         } catch (e: Exception) {
-            toastString("$e")
+            logError(e)
         }
         return episode
     }
@@ -117,7 +121,7 @@ class Gogo(private val dub: Boolean = false, override val name: String = "gogoan
             }
             if (slug != null) return getSlugEpisodes(slug.link)
         } catch (e: Exception) {
-            toastString("$e")
+            logError(e)
         }
         return mutableMapOf()
     }
@@ -135,7 +139,7 @@ class Gogo(private val dub: Boolean = false, override val name: String = "gogoan
                     responseArray.add(Source(link, title, cover))
                 }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }
@@ -157,7 +161,7 @@ class Gogo(private val dub: Boolean = false, override val name: String = "gogoan
             }
             logger("Response Episodes : $responseArray")
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }

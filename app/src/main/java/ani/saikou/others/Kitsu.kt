@@ -4,7 +4,6 @@ import ani.saikou.anime.Episode
 import ani.saikou.httpClient
 import ani.saikou.logger
 import ani.saikou.media.Media
-import ani.saikou.toastString
 import com.fasterxml.jackson.annotation.JsonProperty
 
 object Kitsu {
@@ -57,7 +56,7 @@ object Kitsu {
                 }
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return null
     }

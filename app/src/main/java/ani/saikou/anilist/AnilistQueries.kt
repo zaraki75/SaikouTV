@@ -9,6 +9,7 @@ import ani.saikou.anilist.api.User
 import ani.saikou.media.Character
 import ani.saikou.media.Media
 import ani.saikou.media.Studio
+import ani.saikou.others.logError
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
@@ -40,7 +41,7 @@ suspend fun executeQuery(
         }
     } catch (e: Exception) {
         if (e is UnknownHostException) toastString("Network error, please Retry.")
-        else toastString("$e")
+        else logError(e)
     }
     return null
 }
@@ -62,7 +63,6 @@ data class SearchResults(
 
 class AnilistQueries {
     suspend fun getUserData(): Boolean {
-        println(System.currentTimeMillis())
         val response =
             executeQuery("""{Viewer {name options{ displayAdultContent } avatar{medium} bannerImage id statistics{anime{episodesWatched}manga{chaptersRead}}}}""")
         val user = response?.Viewer ?: return false
@@ -74,7 +74,6 @@ class AnilistQueries {
         Anilist.episodesWatched = user.statistics?.anime?.episodesWatched
         Anilist.chapterRead = user.statistics?.manga?.chaptersRead
         Anilist.adult = user.options?.displayAdultContent ?: false
-        println(System.currentTimeMillis())
         return true
     }
 
@@ -297,7 +296,7 @@ class AnilistQueries {
                 }
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }
@@ -474,7 +473,7 @@ class AnilistQueries {
                     }
                 }
             } catch (e: Exception) {
-                toastString(e.toString())
+                logError(e)
             }
         } else {
             return genres[genre]

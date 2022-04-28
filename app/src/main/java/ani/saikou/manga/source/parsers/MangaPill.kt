@@ -1,10 +1,14 @@
 package ani.saikou.manga.source.parsers
 
-import ani.saikou.*
+import ani.saikou.httpClient
+import ani.saikou.loadData
+import ani.saikou.logger
 import ani.saikou.manga.MangaChapter
 import ani.saikou.manga.source.MangaParser
 import ani.saikou.media.Media
 import ani.saikou.media.Source
+import ani.saikou.others.logError
+import ani.saikou.saveData
 import java.net.URLEncoder
 
 @Suppress("BlockingMethodInNonBlockingContext")
@@ -16,7 +20,7 @@ class MangaPill(override val name: String = "mangapill.com") : MangaParser() {
                 chapter.images!!.add(it.attr("data-src"))
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return chapter
     }
@@ -29,7 +33,7 @@ class MangaPill(override val name: String = "mangapill.com") : MangaParser() {
                 responseArray[chap] = MangaChapter(chap, link = "https://mangapill.com"+it.attr("href"))
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }
@@ -72,7 +76,7 @@ class MangaPill(override val name: String = "mangapill.com") : MangaParser() {
                     )
                 }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return response
     }

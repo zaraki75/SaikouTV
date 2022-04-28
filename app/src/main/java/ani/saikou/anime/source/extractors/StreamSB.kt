@@ -4,6 +4,7 @@ import ani.saikou.anime.Episode
 import ani.saikou.anime.source.Extractor
 import ani.saikou.findBetween
 import ani.saikou.httpClient
+import ani.saikou.others.logError
 import ani.saikou.toastString
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -33,7 +34,7 @@ class StreamSB : Extractor() {
                 )
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return Episode.StreamLinks(name, listOf(), null)
     }

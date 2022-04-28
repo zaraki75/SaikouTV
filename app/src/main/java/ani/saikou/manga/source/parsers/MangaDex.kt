@@ -1,11 +1,15 @@
 package ani.saikou.manga.source.parsers
 
-import ani.saikou.*
+import ani.saikou.httpClient
+import ani.saikou.loadData
+import ani.saikou.logger
 import ani.saikou.manga.MangaChapter
 import ani.saikou.manga.source.MangaParser
 import ani.saikou.media.Media
 import ani.saikou.media.Source
 import ani.saikou.others.asyncEach
+import ani.saikou.others.logError
+import ani.saikou.saveData
 
 class MangaDex(override val name: String = "mangadex.org") : MangaParser() {
     private val host = "https://api.mangadex.org"
@@ -28,7 +32,7 @@ class MangaDex(override val name: String = "mangadex.org") : MangaParser() {
             }
             arr.toSortedMap()
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return arr
     }
@@ -43,7 +47,7 @@ class MangaDex(override val name: String = "mangadex.org") : MangaParser() {
                 chapter.images = images
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return chapter
     }
@@ -81,7 +85,7 @@ class MangaDex(override val name: String = "mangadex.org") : MangaParser() {
                 arr.add(Source(id, title, coverURL))
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return arr
     }

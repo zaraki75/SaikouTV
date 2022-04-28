@@ -1,10 +1,14 @@
 package ani.saikou.manga.source.parsers
 
-import ani.saikou.*
+import ani.saikou.httpClient
+import ani.saikou.loadData
+import ani.saikou.logger
 import ani.saikou.manga.MangaChapter
 import ani.saikou.manga.source.MangaParser
 import ani.saikou.media.Media
 import ani.saikou.media.Source
+import ani.saikou.others.logError
+import ani.saikou.saveData
 
 class MangaKakaLot(override val name: String = "MangaKakaLot") : MangaParser() {
     private val host = "https://mangakakalot.com"
@@ -25,7 +29,7 @@ class MangaKakaLot(override val name: String = "MangaKakaLot") : MangaParser() {
                 }
             }
         } catch (e: Exception) {
-            toastString("$e")
+            logError(e)
         }
         return arr
     }
@@ -38,7 +42,7 @@ class MangaKakaLot(override val name: String = "MangaKakaLot") : MangaParser() {
             }
             chapter.headers = mutableMapOf("referer" to host)
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return chapter
     }
@@ -78,7 +82,7 @@ class MangaKakaLot(override val name: String = "MangaKakaLot") : MangaParser() {
                     }
                 }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return response
     }

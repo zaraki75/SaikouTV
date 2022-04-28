@@ -6,6 +6,7 @@ import ani.saikou.anime.source.AnimeParser
 import ani.saikou.media.Media
 import ani.saikou.media.Source
 import ani.saikou.others.asyncEach
+import ani.saikou.others.logError
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.nicehttp.Requests
 import org.jsoup.nodes.Element
@@ -25,7 +26,7 @@ open class Tenshi(override val name: String = "tenshi.moe") : AnimeParser() {
 
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return episode
     }
@@ -40,7 +41,7 @@ open class Tenshi(override val name: String = "tenshi.moe") : AnimeParser() {
             }
 
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return episode
     }
@@ -110,7 +111,7 @@ open class Tenshi(override val name: String = "tenshi.moe") : AnimeParser() {
             }
             if (slug != null) return getSlugEpisodes(slug!!.link)
         } catch (e: Exception) {
-            toastString("$e")
+            logError(e)
         }
         return mutableMapOf()
     }
@@ -131,7 +132,7 @@ open class Tenshi(override val name: String = "tenshi.moe") : AnimeParser() {
                 )
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }
@@ -144,7 +145,7 @@ open class Tenshi(override val name: String = "tenshi.moe") : AnimeParser() {
                 responseArray[it.toString()] = Episode(it.toString(), link = "${slug}/$it")
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }

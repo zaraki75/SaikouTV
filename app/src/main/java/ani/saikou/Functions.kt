@@ -45,6 +45,7 @@ import ani.saikou.anime.Episode
 import ani.saikou.databinding.ItemCountDownBinding
 import ani.saikou.media.Media
 import ani.saikou.media.Source
+import ani.saikou.others.logError
 import ani.saikou.settings.UserInterfaceSettings
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
@@ -108,7 +109,7 @@ fun saveData(fileName: String, data: Any?, activity: Activity? = null) {
             fos.close()
         }
     } catch (e: Exception) {
-        toastString(e.toString())
+        logError(e)
     }
 }
 
@@ -233,7 +234,7 @@ fun isOnline(context: Context): Boolean {
             }
         } else return true
     } catch (e: Exception) {
-        toastString(e.toString())
+        logError(e)
     }
     return false
 }
@@ -318,7 +319,7 @@ suspend fun getMalMedia(media: Media): Media {
                 if (res.select("div.spaceit_pad > a").isNotEmpty()) res.select("div.spaceit_pad > a")[0].text() else null
         }
     } catch (e: Exception) {
-        toastString(e.message)
+        logError(e)
     }
     return media
 }
@@ -618,7 +619,7 @@ fun openLinkInBrowser(link: String?) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
         currActivity()?.startActivity(intent)
     } catch (e: Exception) {
-        toastString(e.toString())
+        logError(e)
     }
 }
 

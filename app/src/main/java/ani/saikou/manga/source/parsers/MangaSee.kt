@@ -5,6 +5,7 @@ import ani.saikou.manga.MangaChapter
 import ani.saikou.manga.source.MangaParser
 import ani.saikou.media.Media
 import ani.saikou.media.Source
+import ani.saikou.others.logError
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.nicehttp.Requests
@@ -36,7 +37,7 @@ class MangaSee(override val name: String = "MangaSee") : MangaParser() {
                 )
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }
@@ -72,7 +73,7 @@ class MangaSee(override val name: String = "MangaSee") : MangaParser() {
             for (i in 1..pages)
                 chapter.images!!.add("https://$server/manga/$slug/$chap-${"000$i".takeLast(3)}.png")
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return chapter
     }
@@ -108,7 +109,7 @@ class MangaSee(override val name: String = "MangaSee") : MangaParser() {
             )
             response.sortByTitle(string)
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return response
     }

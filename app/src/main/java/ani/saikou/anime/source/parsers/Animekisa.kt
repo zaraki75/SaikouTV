@@ -6,6 +6,7 @@ import ani.saikou.anime.source.AnimeParser
 import ani.saikou.anime.source.extractors.VizCloud
 import ani.saikou.media.Media
 import ani.saikou.media.Source
+import ani.saikou.others.logError
 import java.net.URLEncoder
 
 @Suppress("BlockingMethodInNonBlockingContext")
@@ -25,7 +26,7 @@ class Animekisa(private val dub: Boolean = false, override val name: String = "a
                 }
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         episode.streamLinks = streams
         return episode
@@ -40,7 +41,7 @@ class Animekisa(private val dub: Boolean = false, override val name: String = "a
                 streams[name] = (VizCloud(host).getStreamLinks(name, embedLink))
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         episode.streamLinks = streams
         return episode
@@ -86,7 +87,7 @@ class Animekisa(private val dub: Boolean = false, override val name: String = "a
                     responseArray.add(Source(link, title, cover))
                 }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }
@@ -103,7 +104,7 @@ class Animekisa(private val dub: Boolean = false, override val name: String = "a
             }
             logger("Response Episodes : $responseArray")
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }
