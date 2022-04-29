@@ -29,14 +29,51 @@ abstract class VideoExtractor {
 }
 
 data class Video(
-    val name: String,
-    val url: String,
+    /**
+     * Will represent quality to user in form of "${quality}p" (1080p)
+     * If quality is 0, will show "Default Quality"
+     * If isM3U8 is true, shows "Multi Quality"
+     * **/
+    val quality: Int = 0,
+
+    /**
+     * If the video is an M3U8 file, set this variable to true,
+     * This makes the app show it as a "Multi Quality" Link
+     * **/
     val isM3U8: Boolean,
+
+    /**
+     * The direct url to the Video
+     * Supports mp4,mkv & m3u8 for now, afaik
+     * **/
+    val url: String,
+    val headers: MutableMap<String,String>,
+
+    /**
+     * use getSize(url) to get this size,
+     * no need to set it on M3U8 links
+     * **/
     val size: Long? = null,
+
+    /**
+     * In case, you want to show some extra notes to the User
+     * Ex: "Backup" which could be used if the site provides some
+     * **/
     val extraNote: String? = null,
 )
 
 data class Subtitle(
+    /**
+     * Language of the Subtitle
+     * for now app will directly try to select "English".
+     * Probably in rework we can add more subtitles support
+     * **/
     val language: String,
+
+    /**
+     * The direct url to the Subtitle
+     * Supports vtt, afaik
+     * **/
     val url: String,
+    val headers: MutableMap<String,String>,
 )
