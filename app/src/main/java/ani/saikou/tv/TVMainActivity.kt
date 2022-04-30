@@ -20,6 +20,7 @@ import ani.saikou.anilist.AnilistHomeViewModel
 import ani.saikou.media.MediaDetailsActivity
 import ani.saikou.others.AppUpdater
 import ani.saikou.others.DisableFirebase
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,6 +34,9 @@ class TVMainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
 
         DisableFirebase.handle()
+
+        //For some reason reports are getting enqueued but never sent unless i call this
+        FirebaseCrashlytics.getInstance().sendUnsentReports()
 
         setContentView(R.layout.tv_activity_main)
         loadMedia = intent?.getIntExtra("media", -1)
@@ -86,7 +90,9 @@ class TVMainActivity : FragmentActivity() {
                 .replace(R.id.main_tv_fragment, TVAnimeFragment())
                 .commitNow()
         }
-        createHomeTVChannel()
+
+        //TODO Some users reported crashes related with Leanback channels
+        //createHomeTVChannel()
     }
 
     fun createHomeTVChannel() {

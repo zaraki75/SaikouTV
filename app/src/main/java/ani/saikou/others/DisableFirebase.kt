@@ -4,6 +4,6 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 
 object DisableFirebase {
     fun handle(){
-        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(false)
+        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(true)
     }
 }

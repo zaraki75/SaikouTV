@@ -122,7 +122,8 @@ class TVAnimeFragment: BrowseSupportFragment()  {
     private fun observeData() {
         model.getTrending().observe(viewLifecycleOwner) {
             if (it != null) {
-                updateHomeTVChannel(it)
+                //TODO Some users reported crashes related with Leanback channels
+                //updateHomeTVChannel(it)
                 trendingAdapter.clear()
                 trendingAdapter.addAll(0, it)
                 checkLoadingState()
@@ -298,7 +299,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         })
 
         setOnSearchClickedListener {
-            parentFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVSearchFragment("ANIME")).commit()
+           parentFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVSearchFragment("ANIME")).commit()
         }
 
         setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->

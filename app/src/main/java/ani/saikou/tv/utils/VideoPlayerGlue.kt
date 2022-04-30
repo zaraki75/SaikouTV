@@ -6,30 +6,28 @@ import androidx.leanback.widget.Action
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.PlaybackControlsRow
 import androidx.leanback.widget.PlaybackControlsRow.*
+import androidx.leanback.widget.PlaybackControlsRowPresenter
+import ani.saikou.R
 import com.google.android.exoplayer2.ext.leanback.LeanbackPlayerAdapter
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 
+class ResizeAction(context: Context?): Action(1234567891) {
+    init {
+        icon = context?.getDrawable(R.drawable.ic_round_fullscreen_24)
+        label1 = "Resize"
+    }
+}
+class QualityAction(context: Context?): Action(1234567892) {
+    init {
+        icon = context?.getDrawable(R.drawable.ic_round_high_quality_24)
+        label1 = "Quality"
+    }
+}
 
-/**
- * Manages customizing the actions in the [PlaybackControlsRow]. Adds and manages the
- * following actions to the primary and secondary controls:
- *
- *
- *  * [androidx.leanback.widget.PlaybackControlsRow.RepeatAction]
- *  * [androidx.leanback.widget.PlaybackControlsRow.ThumbsDownAction]
- *  * [androidx.leanback.widget.PlaybackControlsRow.ThumbsUpAction]
- *  * [androidx.leanback.widget.PlaybackControlsRow.SkipPreviousAction]
- *  * [androidx.leanback.widget.PlaybackControlsRow.SkipNextAction]
- *  * [androidx.leanback.widget.PlaybackControlsRow.FastForwardAction]
- *  * [androidx.leanback.widget.PlaybackControlsRow.RewindAction]
- *
- *
- * Note that the superclass, [PlaybackTransportControlGlue], manages the playback controls
- * row.
- */
 class VideoPlayerGlue(
     context: Context?,
     playerAdapter: LeanbackPlayerAdapter?,
+    val showQualityAction: Boolean,
     private val mActionListener: OnActionClickedListener
 ) : PlaybackTransportControlGlue<LeanbackPlayerAdapter?>(context, playerAdapter) {
     /** Listens for when skip to next and previous actions have been dispatched.  */
@@ -39,11 +37,18 @@ class VideoPlayerGlue(
 
         /** Skip to the next item in the queue.  */
         fun onNext()
+
+        fun onResize()
+
+        fun onQuality()
     }
 
     //private val mRepeatAction: RepeatAction
     //private val mThumbsUpAction: ThumbsUpAction
-    //private val mThumbsDownAction: ThumbsDownAction
+    private val qualityAction: QualityAction
+    var shouldShowQualityAction: Boolean = false
+    private val resizeAction: ResizeAction
+    var shouldShowResizeAction: Boolean = false
     private val mSkipPreviousAction: SkipPreviousAction
     private val mSkipNextAction: SkipNextAction
     private val mFastForwardAction: FastForwardAction
@@ -62,10 +67,23 @@ class VideoPlayerGlue(
 
     override fun onCreateSecondaryActions(adapter: ArrayObjectAdapter) {
         super.onCreateSecondaryActions(adapter)
-        //adapter.add(mThumbsDownAction)
-        //adapter.add(mThumbsUpAction)
-        //adapter.add(mRepeatAction)
+        adapter.add(resizeAction)
+        if(showQualityAction)
+            adapter.add(qualityAction)
     }
+
+    //TODO trying to draw actions only if needed
+    /*fun drawSecondaryActions() {
+        val adapter = ArrayObjectAdapter(PlaybackControlsRowPresenter())
+        if(shouldShowQualityAction) {
+            adapter.add(qualityAction)
+        }
+        if(shouldShowResizeAction) {
+            adapter.add(resizeAction)
+        }
+        controlsRow.secondaryActionsAdapter = adapter
+        controlsRow = controlsRow
+    }*/
 
     override fun onActionClicked(action: Action) {
         if (shouldDispatchAction(action)) {
@@ -78,7 +96,7 @@ class VideoPlayerGlue(
 
     // Should dispatch actions that the super class does not supply callbacks for.
     private fun shouldDispatchAction(action: Action): Boolean {
-        return action === mRewindAction || action === mFastForwardAction //|| action === mRepeatAction
+        return action === mRewindAction || action === mFastForwardAction || action === resizeAction || action === qualityAction
     }
 
     private fun dispatchAction(action: Action) {
@@ -87,6 +105,10 @@ class VideoPlayerGlue(
             rewind()
         } else if (action === mFastForwardAction) {
             fastForward()
+        } else if (action === resizeAction) {
+            mActionListener.onResize()
+        } else if (action === qualityAction) {
+            mActionListener.onQuality()
         } else if (action is MultiAction) {
             val multiAction = action
             multiAction.nextIndex()
@@ -143,10 +165,7 @@ class VideoPlayerGlue(
         mSkipNextAction = SkipNextAction(context)
         mFastForwardAction = FastForwardAction(context)
         mRewindAction = RewindAction(context)
-        /*mThumbsUpAction = ThumbsUpAction(context)
-        mThumbsUpAction.index = ThumbsUpAction.INDEX_OUTLINE
-        mThumbsDownAction = ThumbsDownAction(context)
-        mThumbsDownAction.index = ThumbsDownAction.INDEX_OUTLINE*/
-        //mRepeatAction = RepeatAction(context)
+        resizeAction = ResizeAction(context)
+        qualityAction = QualityAction(context)
     }
 }

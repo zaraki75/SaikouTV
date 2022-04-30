@@ -16,6 +16,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import ani.saikou.*
 import ani.saikou.anime.Episode
+import ani.saikou.anime.ExoplayerView
 import ani.saikou.databinding.ItemUrlBinding
 import ani.saikou.databinding.TvItemUrlBinding
 import ani.saikou.media.Media

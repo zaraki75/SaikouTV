@@ -1,16 +1,18 @@
 package ani.saikou.tv
 
+import android.app.Dialog
 import android.content.ComponentName
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
-import android.view.KeyEvent
-import android.view.View
+import android.util.DisplayMetrics
+import android.view.*
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.leanback.app.VideoSupportFragment
 import androidx.leanback.app.VideoSupportFragmentGlueHost
 import androidx.leanback.media.PlaybackGlue
+import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.lifecycle.lifecycleScope
 import androidx.media.session.MediaButtonReceiver
 import ani.saikou.*
@@ -24,21 +26,23 @@ import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.settings.PlayerSettings
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.tv.utils.VideoPlayerGlue
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.PlaybackParameters
-import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.analytics.AnalyticsListener
 import com.google.android.exoplayer2.ext.leanback.LeanbackPlayerAdapter
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.trackselection.MappingTrackSelector
+import com.google.android.exoplayer2.ui.TrackSelectionDialogBuilder
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
+import com.google.android.exoplayer2.video.VideoSize
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import java.lang.Runnable
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.OnActionClickedListener, Player.Listener {
@@ -53,6 +57,12 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
     private var isInitialized = false
     private lateinit var episodeArr: List<String>
 
+    private var originalAspectRatio: Float? = null
+    private var screenHeight: Int = 0
+    private var screenWidth: Int = 0
+    private var currentViewMode: Int = 0
+    private var playbackPosition: Long = 0
+
     private lateinit var episode: Episode
     private lateinit var episodes: MutableMap<String,Episode>
     private lateinit var playerGlue : VideoPlayerGlue
@@ -65,8 +75,21 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
 
     private var linkSelector: TVSelectorFragment? = null
 
-    override fun onDestroy() {
-        super.onDestroy()
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            val metrics: WindowMetrics = requireContext().getSystemService(WindowManager::class.java).currentWindowMetrics
+            screenHeight = metrics.bounds.height()
+            screenWidth = metrics.bounds.width()
+        } else {
+            val outMetrics = DisplayMetrics()
+            val display = requireActivity().windowManager.defaultDisplay
+            display.getMetrics(outMetrics)
+            screenHeight = outMetrics.heightPixels
+            screenWidth = outMetrics.widthPixels
+        }
+        return super.onCreateView(inflater, container, savedInstanceState)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -146,7 +169,7 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
         val simpleCache = VideoCache.getInstance(requireContext())
 
         val stream = episode.streamLinks[episode.selectedStream]?: return
-
+        originalAspectRatio = null
         val httpClient = OkHttpClient().newBuilder().ignoreAllSSLErrors().apply {
             followRedirects(true)
             followSslRedirects(true)
@@ -188,6 +211,10 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
                 this.playbackParameters = this@TVMediaPlayer.playbackParameters
                 setMediaItem(mediaItem)
                 prepare()
+                loadData<Long>("${media.id}_${media.anime!!.selectedEpisode}_max")?.apply {
+                    if (this <= playbackPosition) playbackPosition = max(0, this - 5)
+                }
+                seekTo(playbackPosition)
             }
 
         isInitialized = true
@@ -200,7 +227,16 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
             media.isActive = true
         }
 
-        playerGlue = VideoPlayerGlue(requireActivity(), LeanbackPlayerAdapter(requireActivity(), exoPlayer, 16), this)
+        exoPlayer.addAnalyticsListener(object : AnalyticsListener {
+            override fun onVideoSizeChanged(eventTime: AnalyticsListener.EventTime, videoSize: VideoSize) {
+                if (originalAspectRatio == null) {
+                    originalAspectRatio = videoSize.width.toFloat() / videoSize.height.toFloat()
+                    playerGlue.shouldShowResizeAction = (screenHeight / screenWidth.toFloat()) != originalAspectRatio
+                }
+            }
+        })
+
+        playerGlue = VideoPlayerGlue(requireActivity(), LeanbackPlayerAdapter(requireActivity(), exoPlayer, 16), episode.streamLinks[episode.selectedStream]!!.quality[episode.selectedQuality]!!.quality == "Multi Quality",this)
         playerGlue.host = VideoSupportFragmentGlueHost(this)
         playerGlue.title = media.getMainName()
 
@@ -208,6 +244,7 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
             playerGlue.subtitle = "Episode "+ episode.number + ": "+ episode.title
         else
             playerGlue.subtitle = "Episode "+ episode.number
+
 
         playerGlue.playWhenPrepared()
         playerGlue.host.setOnKeyInterceptListener { view, keyCode, event ->
@@ -227,18 +264,57 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
 
             false
         }
+
         playerGlue.addPlayerCallback(object : PlaybackGlue.PlayerCallback() {
             override fun onPlayCompleted(glue: PlaybackGlue?) {
                 super.onPlayCompleted(glue)
                 onNext()
             }
         })
+
+        adapter = ArrayObjectAdapter(playerGlue.playbackRowPresenter).apply {
+            add(playerGlue.controlsRow)
+        }
+    }
+
+    override fun onTracksInfoChanged(tracksInfo: TracksInfo) {
+        playerGlue.shouldShowQualityAction = tracksInfo.trackGroupInfos.size > 2
+        //playerGlue.drawSecondaryActions()
+    }
+
+    // QUALITY SELECTOR
+    private fun initPopupQuality(trackSelector: DefaultTrackSelector): Dialog? {
+        val mappedTrackInfo = trackSelector.currentMappedTrackInfo ?: return null
+        var videoRenderer: Int? = null
+
+        fun isVideoRenderer(mappedTrackInfo: MappingTrackSelector.MappedTrackInfo, rendererIndex: Int): Boolean {
+            if (mappedTrackInfo.getTrackGroups(rendererIndex).length == 0) return false
+            return C.TRACK_TYPE_VIDEO == mappedTrackInfo.getRendererType(rendererIndex)
+        }
+
+        for (i in 0 until mappedTrackInfo.rendererCount)
+            if (isVideoRenderer(mappedTrackInfo, i))
+                videoRenderer = i
+
+        val trackSelectionDialogBuilder =
+            TrackSelectionDialogBuilder(requireContext(), "Available Qualities", trackSelector, videoRenderer ?: return null)
+        trackSelectionDialogBuilder.setTheme(R.style.TVDialogTheme)
+        trackSelectionDialogBuilder.setTrackNameProvider {
+            if (it.frameRate > 0f) it.height.toString() + "p" else it.height.toString() + "p (fps : N/A)"
+        }
+        trackSelectionDialogBuilder.setAllowAdaptiveSelections(false)
+        return trackSelectionDialogBuilder.build()
     }
 
     private fun preventControlsOverlay(playerGlue: VideoPlayerGlue) = view?.postDelayed({
         playerGlue.host.showControlsOverlay(false)
         playerGlue.host.hideControlsOverlay(false)
     }, 10)
+
+    override fun onQuality() {
+        if(playerGlue.shouldShowQualityAction)
+            initPopupQuality(trackSelector)?.show()
+    }
 
     override fun onPrevious() {
         if(currentEpisodeIndex>0) {
@@ -250,6 +326,30 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
         if(isInitialized) {
             nextEpisode{ i-> progress { change(currentEpisodeIndex + i) } }
         }
+    }
+
+    override fun onResize() {
+        if(!playerGlue.shouldShowResizeAction) return
+
+        currentViewMode++
+        if (currentViewMode>2) currentViewMode = 0
+
+        var params = surfaceView.layoutParams
+        when(currentViewMode){
+            0 -> {  //Original
+                params.height = screenHeight
+                params.width = (screenHeight*originalAspectRatio!!).toInt()
+            }
+            1 -> {  //FitWidth
+                params.height = (screenWidth/originalAspectRatio!!).toInt()
+                params.width = screenWidth
+            }
+            2 -> {  //FitXY
+                params.height = screenHeight
+                params.width = screenWidth
+            }
+        }
+        surfaceView.layoutParams = params
     }
 
     private fun nextEpisode(runnable: ((Int)-> Unit) ){
@@ -313,19 +413,26 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
 
     private fun progress(runnable: Runnable){
         if (exoPlayer.currentPosition / episodeLength > settings.watchPercentage && Anilist.userid != null) {
-            if(loadData<Boolean>("${media.id}_save_progress")!=false)
-                updateAnilist(media.id, media.anime!!.selectedEpisode!!)
+            if(loadData<Boolean>("${media.id}_save_progress")!=false && if (media.isAdult) settings.updateForH else true)
+                updateAnilist(media, media.anime!!.selectedEpisode!!)
             runnable.run()
         } else {
             runnable.run()
         }
     }
 
-    private fun updateAnilist(id: Int, number: String){
+    private fun updateAnilist(media: Media, number: String){
         if(Anilist.userid!=null) {
             CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
                 val a = number.toFloatOrNull()?.roundToInt()
-                Anilist.mutation.editList(id, a, status = "CURRENT")
+                if (a != media.userProgress) {
+                    Anilist.mutation.editList(
+                        media.id,
+                        a,
+                        status = if (media.userStatus == "REPEATING") media.userStatus else "CURRENT"
+                    )
+                }
+                media.userProgress = a
                 Refresh.all()
             }
         }

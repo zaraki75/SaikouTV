@@ -72,7 +72,15 @@
         <item name="android:textColor">@color/bg_white</item>
     </style>
 
-    <style name="TVDialogTheme" parent="Theme.SaikouTV">
+    <style name="TVDialogTheme" parent="DialogTheme">
+        <item name="colorPrimary">@color/pink_200</item>
+        <item name="colorPrimaryVariant">@color/pink_700</item>
+        <item name="colorOnPrimary">@color/bg_black</item>
+        <item name="colorSecondary">@color/violet_400</item>
+        <item name="colorSecondaryVariant">@color/violet_400</item>
+        <item name="colorOnSecondary">@color/bg_black</item>
+        <item name="android:textColor">@color/bg_white</item>
+
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="windowActionBar">false</item>
