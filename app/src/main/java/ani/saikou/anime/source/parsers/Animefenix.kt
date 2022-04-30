@@ -21,7 +21,7 @@ class Animefenix(private val dub:Boolean=false, override val name: String = "Ani
 
     private val host = "https://www.animefenix.com"
 
-    private fun directLinkify(name: String,url: String): Episode.StreamLinks? {
+    private suspend fun directLinkify(name: String, url: String): Episode.StreamLinks? {
          return when (name) {
             "fembed", "Fembed" -> FPlayer(getSize = true).getStreamLinks("fembed","https://www.fembed.com/v/$url")
             "ru","RU" -> OK().getStreamLinks("OKru","https://ok.ru/videoembed/$url")
@@ -46,8 +46,8 @@ class Animefenix(private val dub:Boolean=false, override val name: String = "Ani
         )
     }
 
-    override fun getStream(episode: Episode,server: String): Episode {
-        episode.streamLinks = runBlocking {
+    override suspend fun getStream(episode: Episode, server: String): Episode {
+        episode.streamLinks = let {
             val linkForVideos = mutableMapOf<String,Episode.StreamLinks?>()
             try{
                 withContext(Dispatchers.Default) {
@@ -75,7 +75,7 @@ class Animefenix(private val dub:Boolean=false, override val name: String = "Ani
                 }}catch (e:Exception){
                 toastString(e.toString())
             }
-            return@runBlocking (linkForVideos)
+            linkForVideos
         }
         return episode
     }
@@ -83,9 +83,9 @@ class Animefenix(private val dub:Boolean=false, override val name: String = "Ani
 
 
 
-    override fun getStreams(episode: Episode): Episode {
+    override suspend fun getStreams(episode: Episode): Episode {
 //        try {
-        episode.streamLinks = runBlocking {
+        episode.streamLinks = let {
             val linkForVideos = mutableMapOf<String,Episode.StreamLinks?>()
             try{
                 withContext(Dispatchers.Default) {
@@ -108,12 +108,12 @@ class Animefenix(private val dub:Boolean=false, override val name: String = "Ani
                 }}catch (e:Exception){
                 toastString(e.toString())
             }
-            return@runBlocking (linkForVideos)
+            linkForVideos
         }
         return episode
     }
 
-    override fun getEpisodes(media: Media): MutableMap<String, Episode> {
+    override suspend fun getEpisodes(media: Media): MutableMap<String, Episode> {
         var slug:Source? = loadData("animefenix_${media.id}")
         if (slug==null) {
             val it = media.nameMAL?:media.nameRomaji
@@ -132,7 +132,7 @@ class Animefenix(private val dub:Boolean=false, override val name: String = "Ani
         return mutableMapOf()
     }
 
-    override fun search(string: String): ArrayList<Source> {
+    override suspend fun search(string: String): ArrayList<Source> {
         var url = URLEncoder.encode(string, "utf-8")
         if(string.startsWith("$!")){
             val a = string.replace("$!","").split(" | ")
@@ -152,7 +152,7 @@ class Animefenix(private val dub:Boolean=false, override val name: String = "Ani
     }
 
 
-    override fun getSlugEpisodes(slug:String): MutableMap<String, Episode>{
+    override suspend fun getSlugEpisodes(slug:String): MutableMap<String, Episode>{
         val responseArray = mutableMapOf<String,Episode>()
         try{
             val pageBody = Jsoup.connect(slug).get()

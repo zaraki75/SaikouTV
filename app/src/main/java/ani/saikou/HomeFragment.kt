@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistHomeViewModel
+import ani.saikou.anilist.getUserId
 import ani.saikou.databinding.FragmentHomeBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaAdaptor
@@ -28,6 +29,7 @@ import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.user.ListActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.min
@@ -250,11 +252,11 @@ class HomeFragment : Fragment() {
         }
 
         val array = arrayOf(
-            Runnable { model.setAnimeContinue() },
-            Runnable { model.setAnimeFav() },
-            Runnable { model.setMangaContinue() },
-            Runnable { model.setMangaFav() },
-            Runnable { model.setRecommendation() }
+            Runnable { runBlocking { model.setAnimeContinue() } },
+            Runnable { runBlocking { model.setAnimeFav() } },
+            Runnable { runBlocking { model.setMangaContinue() } },
+            Runnable { runBlocking { model.setMangaFav() } },
+            Runnable { runBlocking { model.setRecommendation() } }
         )
 
         val containers = arrayOf(
@@ -272,9 +274,9 @@ class HomeFragment : Fragment() {
                     uiSettings = loadData<UserInterfaceSettings>("ui_settings") ?: UserInterfaceSettings()
                     withContext(Dispatchers.IO) {
                         //Get userData First
-                        if (Anilist.userid == null)
-                            if (Anilist.query.getUserData()) load() else logger("Error loading data")
-                        else load()
+                        getUserId {
+                            load()
+                        }
                         model.loaded = true
                         model.setListImages()
                         var empty = true

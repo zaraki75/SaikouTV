@@ -359,6 +359,8 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
             if (uiSettings.bannerAnimations) binding.mediaBanner.resume()
             if (!uiSettings.immersiveMode) this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg_inv)
         }
+        if(percentage==1 && model.scrolledToTop.value != false) model.scrolledToTop.postValue(false)
+        if(percentage==0 && model.scrolledToTop.value != true) model.scrolledToTop.postValue(true)
     }
 
     inner class PopImageButton(

@@ -94,7 +94,7 @@ object AppUpdater {
         val id = try {
             downloadManager.enqueue(request)
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
             -1
         }
         if (id == -1L) return true
@@ -124,7 +124,7 @@ object AppUpdater {
                             }
                         }
                     } catch (e: Exception) {
-                        toastString(e.toString())
+                        logError(e)
                     }
                 }
             }, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)

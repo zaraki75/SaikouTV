@@ -31,6 +31,7 @@ object AnimeSources : WatchSources() {
             8    -> animeParsers.getOrPut(i) { Twist() }
             9    -> animeParsers.getOrPut(i) { Monoschinos() }
             10   -> animeParsers.getOrPut(i) { Animefenix() }
+
             else -> null
         }
         return a

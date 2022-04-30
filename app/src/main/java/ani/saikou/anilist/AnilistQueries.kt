@@ -9,23 +9,14 @@ import ani.saikou.anilist.api.User
 import ani.saikou.media.Character
 import ani.saikou.media.Media
 import ani.saikou.media.Studio
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import ani.saikou.others.logError
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
-import okhttp3.MultipartBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
 import java.io.Serializable
 import java.net.UnknownHostException
 
-
-val httpClient = OkHttpClient()
-val mapper = jacksonObjectMapper()
-
-fun executeQuery(
+suspend fun executeQuery(
     query: String,
     variables: String = "",
     force: Boolean = false,
@@ -33,32 +24,24 @@ fun executeQuery(
     show: Boolean = false
 ): Data? {
     try {
-        val formBody: RequestBody = MultipartBody.Builder()
-            .setType(MultipartBody.FORM)
-            .addFormDataPart("query", query)
-            .addFormDataPart("variables", variables)
-            .build()
-
-        val request = Request.Builder()
-            .url("https://graphql.anilist.co/")
-            .addHeader("Content-Type", "application/json")
-            .addHeader("Accept", "application/json")
-            .addHeader(
-                "user-agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36"
-            )
-            .post(formBody)
+        val data = mapOf(
+            "query" to query,
+            "variables" to variables
+        )
+        val headers = mutableMapOf(
+            "Content-Type" to "application/json",
+            "Accept" to "application/json"
+        )
 
         if (Anilist.token != null || force) {
-            if (Anilist.token != null && useToken) request.header("Authorization", "Bearer ${Anilist.token}")
-            val json = httpClient.newCall(request.build()).execute().body?.string() ?: return null
-            if (show) toastString("JSON : $json")
-
-            return mapper.readValue<Query>(json).data
+            if (Anilist.token != null && useToken) headers["Authorization"] = "Bearer ${Anilist.token}"
+            val json = httpClient.post("https://graphql.anilist.co/", headers, data = data)
+            if (show) toastString("Response : ${json.text}")
+            return json.parsed<Query>().data
         }
     } catch (e: Exception) {
         if (e is UnknownHostException) toastString("Network error, please Retry.")
-        else toastString("$e")
+        else logError(e)
     }
     return null
 }
@@ -79,27 +62,22 @@ data class SearchResults(
 ) : Serializable
 
 class AnilistQueries {
-    fun getUserData(): Boolean {
-        return try {
-            val response =
-                executeQuery("""{Viewer {name options{ displayAdultContent } avatar{medium} bannerImage id statistics{anime{episodesWatched}manga{chaptersRead}}}}""")
-            val user = response?.Viewer ?: return false
+    suspend fun getUserData(): Boolean {
+        val response =
+            executeQuery("""{Viewer {name options{ displayAdultContent } avatar{medium} bannerImage id statistics{anime{episodesWatched}manga{chaptersRead}}}}""")
+        val user = response?.Viewer ?: return false
 
-            Anilist.userid = user.id
-            Anilist.username = user.name
-            Anilist.bg = user.bannerImage
-            Anilist.avatar = user.avatar?.medium
-            Anilist.episodesWatched = user.statistics?.anime?.episodesWatched
-            Anilist.chapterRead = user.statistics?.manga?.chaptersRead
-            Anilist.adult = user.options?.displayAdultContent ?: false
-            true
-        } catch (e: Exception) {
-            logger(e)
-            false
-        }
+        Anilist.userid = user.id
+        Anilist.username = user.name
+        Anilist.bg = user.bannerImage
+        Anilist.avatar = user.avatar?.medium
+        Anilist.episodesWatched = user.statistics?.anime?.episodesWatched
+        Anilist.chapterRead = user.statistics?.manga?.chaptersRead
+        Anilist.adult = user.options?.displayAdultContent ?: false
+        return true
     }
 
-    fun getMedia(id: Int, mal: Boolean = false): Media? {
+    suspend fun getMedia(id: Int, mal: Boolean = false): Media? {
         val response = executeQuery(
             """{Media(${if (!mal) "id:" else "idMal:"}$id){id idMal status chapters episodes nextAiringEpisode{episode}type meanScore isAdult isFavourite bannerImage coverImage{large}title{english romaji userPreferred}mediaListEntry{progress score(format:POINT_100)status}}}""",
             force = true
@@ -117,12 +95,11 @@ class AnilistQueries {
                 var response = executeQuery(query, force = true)
                 if (response != null) {
                     fun parse() {
-                        val fetchedMedia = response?.Media?:return
+                        val fetchedMedia = response?.Media ?: return
 
                         media.source = fetchedMedia.source.toString()
                         media.countryOfOrigin = fetchedMedia.countryOfOrigin
                         media.format = fetchedMedia.format.toString()
-
 
                         if (fetchedMedia.genres != null) {
                             media.genres = arrayListOf()
@@ -188,7 +165,7 @@ class AnilistQueries {
                                     }
                                 }
                             }
-                            media.relations?.sortBy { it.popularity }
+                            media.relations?.sortByDescending { it.popularity }
                         }
                         if (fetchedMedia.recommendations != null) {
                             media.recommendations = arrayListOf()
@@ -274,11 +251,11 @@ class AnilistQueries {
         return media
     }
 
-    fun continueMedia(type: String): ArrayList<Media> {
+    suspend fun continueMedia(type: String): ArrayList<Media> {
         val returnArray = arrayListOf<Media>()
         val map = mutableMapOf<Int, Media>()
         val statuses = arrayOf("CURRENT", "REPEATING")
-        fun repeat(status: String) {
+        suspend fun repeat(status: String) {
             val response =
                 executeQuery(""" { MediaListCollection(userId: ${Anilist.userid}, type: $type, status: $status , sort: UPDATED_TIME ) { lists { entries { progress score(format:POINT_100) status media { id idMal type isAdult status chapters episodes nextAiringEpisode {episode} meanScore isFavourite bannerImage coverImage{large} title { english romaji userPreferred } } } } } } """)
             response?.MediaListCollection?.lists?.forEach { li ->
@@ -303,7 +280,7 @@ class AnilistQueries {
         return returnArray
     }
 
-    fun favMedia(anime: Boolean): ArrayList<Media> {
+    suspend fun favMedia(anime: Boolean): ArrayList<Media> {
         val responseArray = arrayListOf<Media>()
         try {
             val response =
@@ -319,12 +296,12 @@ class AnilistQueries {
                 }
             }
         } catch (e: Exception) {
-            toastString(e.toString())
+            logError(e)
         }
         return responseArray
     }
 
-    fun recommendations(): ArrayList<Media> {
+    suspend fun recommendations(): ArrayList<Media> {
         val response =
             executeQuery(""" { Page(page: 1, perPage:30) { pageInfo { total currentPage hasNextPage } recommendations(sort: RATING_DESC, onList: true) { rating userRating mediaRecommendation { id idMal isAdult mediaListEntry {progress score(format:POINT_100) status} chapters isFavourite episodes nextAiringEpisode {episode} meanScore isFavourite title {english romaji userPreferred } type status(version: 2) bannerImage coverImage { large } } } } } """)
         val responseArray = arrayListOf<Media>()
@@ -345,7 +322,7 @@ class AnilistQueries {
         return responseArray
     }
 
-    private fun bannerImage(type: String): String? {
+    private suspend fun bannerImage(type: String): String? {
         var image = loadData<BannerImage>("banner_$type")
         if (image == null || image.checkTime()) {
             val response =
@@ -372,14 +349,14 @@ class AnilistQueries {
         return null
     }
 
-    fun getBannerImages(): ArrayList<String?> {
+    suspend fun getBannerImages(): ArrayList<String?> {
         val default = arrayListOf<String?>(null, null)
         default[0] = bannerImage("ANIME")
         default[1] = bannerImage("MANGA")
         return default
     }
 
-    fun getMediaLists(anime: Boolean, userId: Int): MutableMap<String, ArrayList<Media>> {
+    suspend fun getMediaLists(anime: Boolean, userId: Int): MutableMap<String, ArrayList<Media>> {
         val response =
             executeQuery("""{ MediaListCollection(userId: $userId, type: ${if (anime) "ANIME" else "MANGA"}) { lists { name entries { status progress score(format:POINT_100) updatedAt media { id idMal isAdult type status chapters episodes nextAiringEpisode {episode} bannerImage meanScore isFavourite coverImage{large} title {english romaji userPreferred } } } } user { mediaListOptions { rowOrder animeList { sectionOrder } mangaList { sectionOrder } } } } }""")
         val sorted = mutableMapOf<String, ArrayList<Media>>()
@@ -438,7 +415,7 @@ class AnilistQueries {
     }
 
 
-    fun getGenresAndTags(activity: Activity): Boolean {
+    suspend fun getGenresAndTags(activity: Activity): Boolean {
         var genres: ArrayList<String>? = loadData("genres_list", activity)
         var tags: ArrayList<String>? = loadData("tags_list", activity)
 
@@ -455,7 +432,7 @@ class AnilistQueries {
             executeQuery("""{ MediaTagCollection { name isAdult } }""", force = true)?.MediaTagCollection?.apply {
                 tags = arrayListOf()
                 forEach { node ->
-                    if (node.isAdult == true) tags?.add(node.name!!)
+                    if (node.isAdult == true) tags?.add(node.name)
                 }
                 saveData("tags_list", tags)
             }
@@ -467,7 +444,7 @@ class AnilistQueries {
         } else false
     }
 
-    fun getGenres(genres: ArrayList<String>, listener: ((Pair<String, String>) -> Unit)) {
+    suspend fun getGenres(genres: ArrayList<String>, listener: ((Pair<String, String>) -> Unit)) {
         genres.forEach {
             getGenreThumbnail(it).apply {
                 if (this != null) {
@@ -477,7 +454,7 @@ class AnilistQueries {
         }
     }
 
-    private fun getGenreThumbnail(genre: String): Genre? {
+    private suspend fun getGenreThumbnail(genre: String): Genre? {
         val genres = loadData<MutableMap<String, Genre>>("genre_thumb") ?: mutableMapOf()
         if (genres.checkGenreTime(genre)) {
             try {
@@ -496,7 +473,7 @@ class AnilistQueries {
                     }
                 }
             } catch (e: Exception) {
-                toastString(e.toString())
+                logError(e)
             }
         } else {
             return genres[genre]
@@ -504,7 +481,7 @@ class AnilistQueries {
         return null
     }
 
-    fun search(
+    suspend fun search(
         type: String,
         page: Int? = null,
         perPage: Int? = null,
@@ -609,7 +586,7 @@ query (${"$"}page: Int = 1, ${"$"}id: Int, ${"$"}type: MediaType, ${"$"}isAdult:
         return null
     }
 
-    fun recentlyUpdated(): ArrayList<Media>? {
+    suspend fun recentlyUpdated(): ArrayList<Media>? {
         val query = """{
 Page(page:1,perPage:50) {
     pageInfo {
@@ -667,7 +644,7 @@ Page(page:1,perPage:50) {
         return responseArray
     }
 
-    fun getCharacterDetails(character: Character): Character {
+    suspend fun getCharacterDetails(character: Character): Character {
         val query = """ {
   Character(id: ${character.id}) {
     id
@@ -734,7 +711,7 @@ Page(page:1,perPage:50) {
         return character
     }
 
-    fun getStudioDetails(studio: Studio): Studio {
+    suspend fun getStudioDetails(studio: Studio): Studio {
         fun query(page: Int = 0) = """ {
   Studio(id: ${studio.id}) {
     media(page: $page,sort:START_DATE_DESC) {
@@ -773,7 +750,6 @@ Page(page:1,perPage:50) {
     }
   }
 }""".replace("\n", " ").replace("""  """, "")
-
         var hasNextPage = true
         val yearMedia = mutableMapOf<String, ArrayList<Media>>()
         var page = 0
@@ -804,4 +780,3 @@ Page(page:1,perPage:50) {
     }
 
 }
-
