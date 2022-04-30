@@ -13,6 +13,8 @@ object AnimeSources : WatchSources() {
         "TENSHI",
         "ZORO",
         "TWIST",
+        "ALLANIME",
+        "ALLANIME-DUB",
         "MONOSCHINOS",
         "ANIMEFENIX",
     )
@@ -29,9 +31,10 @@ object AnimeSources : WatchSources() {
             6    -> animeParsers.getOrPut(i) { Tenshi() }
             7    -> animeParsers.getOrPut(i) { Zoro() }
             8    -> animeParsers.getOrPut(i) { Twist() }
-            9    -> animeParsers.getOrPut(i) { Monoschinos() }
-            10   -> animeParsers.getOrPut(i) { Animefenix() }
-
+            9    -> animeParsers.getOrPut(i) { AllAnime() }
+            10    -> animeParsers.getOrPut(i) { AllAnime( true) }
+            11    -> animeParsers.getOrPut(i) { Monoschinos() }
+            12   -> animeParsers.getOrPut(i) { Animefenix() }
             else -> null
         }
         return a

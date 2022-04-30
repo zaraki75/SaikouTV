@@ -39,6 +39,7 @@ import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import com.google.android.exoplayer2.video.VideoSize
+import com.lagradost.nicehttp.ignoreAllSSLErrors
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import java.lang.Runnable
