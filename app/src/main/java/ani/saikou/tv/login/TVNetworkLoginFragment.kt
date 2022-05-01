@@ -34,7 +34,10 @@ class TVNetworkLoginFragment() : Fragment() {
 
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                binding.code.text = NetworkTVConnection.getLocalIPHost(requireContext()) ?: "Could not find your local IP\nUse advanced mode to connect"
+                val ipHost = NetworkTVConnection.getLocalIPHost(requireContext()) ?: "Could not find your local IP\nUse advanced mode to connect"
+                MainScope().launch {
+                    binding.code.text = ipHost
+                }
             }
         }
 
