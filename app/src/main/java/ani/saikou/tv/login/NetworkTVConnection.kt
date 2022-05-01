@@ -80,22 +80,21 @@ object NetworkTVConnection {
     }
 
     private fun getLocalIP(context: Context): String? {
-        //TODO fix this for recent android versions
-       /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)
             if (connectivityManager is ConnectivityManager) {
                 var link: LinkProperties =
                         connectivityManager.getLinkProperties(connectivityManager.activeNetwork) as LinkProperties
-                return link.linkAddresses.toString()
+                return link.linkAddresses.firstOrNull { it.prefixLength == 24 && it.address.isSiteLocalAddress }?.address?.hostAddress
             } else {
                 return null
             }
-        } else {*/
+        } else {
             val wm = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
             val longIp = wm.connectionInfo.ipAddress.toLong()
             val byteIp = BigInteger.valueOf(longIp).toByteArray().reversedArray()
             return InetAddress.getByAddress(byteIp).hostAddress
-        //}
+        }
     }
 
     interface OnTokenReceivedCallback {
