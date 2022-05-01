@@ -112,11 +112,15 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
                     val url = stream?.quality?.get(episode.selectedQuality)
                     if(url == null) {
                         if (linkSelector == null) {
-                            linkSelector = TVSelectorFragment.newInstance(media, true)
-                            linkSelector?.setStreamLinks(episode.streamLinks)
-                            parentFragmentManager.beginTransaction().addToBackStack(null)
-                                .replace(R.id.main_tv_fragment, linkSelector!!)
-                                .commit()
+                            episode.streamLinks?.let {
+                                if(it.size > 0) {
+                                    linkSelector = TVSelectorFragment.newInstance(media, true)
+                                    linkSelector?.setStreamLinks(it)
+                                    parentFragmentManager.beginTransaction().addToBackStack(null)
+                                        .replace(R.id.main_tv_fragment, linkSelector!!)
+                                        .commit()
+                                }
+                            }
                         }
                     } else {
                         if(!isInitialized) {
@@ -299,7 +303,7 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
 
         val trackSelectionDialogBuilder =
             TrackSelectionDialogBuilder(requireContext(), "Available Qualities", trackSelector, videoRenderer ?: return null)
-        trackSelectionDialogBuilder.setTheme(R.style.TVDialogTheme)
+        trackSelectionDialogBuilder.setTheme(R.style.QualitySelectorDialogTheme)
         trackSelectionDialogBuilder.setTrackNameProvider {
             if (it.frameRate > 0f) it.height.toString() + "p" else it.height.toString() + "p (fps : N/A)"
         }

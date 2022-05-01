@@ -29,7 +29,8 @@ class TVNetworkLoginFragment() : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.text.text = "Please open Saikou on your phone and login\nOnce logged in go to \"Settings/TV Login\" and introduce this code"
+        binding.text.text = "Please open Saikou on your phone and login\nOnce logged in go to \"Settings / TV Login\" and introduce this code"
+        binding.subtext.text = "You need to use SaikouTV on your phone to find the TV login option\nPlease ensure both TV and phone are connected to the same local network\nKeep TV on this screen while you connect with your phone"
 
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
@@ -40,9 +41,16 @@ class TVNetworkLoginFragment() : Fragment() {
         listen()
     }
 
-    override fun onDestroy() {
+    override fun onPause() {
+        super.onPause()
         NetworkTVConnection.stopListening()
-        super.onDestroy()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if(!NetworkTVConnection.isListening) {
+            listen()
+        }
     }
 
     private fun listen() {

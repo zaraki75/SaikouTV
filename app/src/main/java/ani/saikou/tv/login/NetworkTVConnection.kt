@@ -22,10 +22,10 @@ object NetworkTVConnection {
     private var _isListening = false
     val isListening: Boolean get() = _isListening
 
+    private var server: ServerSocket? = null
     private var listeningThread: Thread? = null
 
     fun listen(onTokenReceivedCallback: OnTokenReceivedCallback) {
-        var server: ServerSocket? = null
         listeningThread = thread(start = true) {
             try {
                 _isListening = true
@@ -43,6 +43,7 @@ object NetworkTVConnection {
                     it.close()
                 }
                 onTokenReceivedCallback?.onTokenReceived(null)
+            } finally {
                 _isListening = false
             }
         }
@@ -64,8 +65,8 @@ object NetworkTVConnection {
 
     fun stopListening() {
         _isListening = false
-        listeningThread?.let {
-            it.interrupt()
+        server?.let {
+            it.close()
         }
     }
 
