@@ -230,4 +230,9 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="current_page">Current Page</string>
+    <string name="dubbed">Dubbed</string>
+    <string name="prefer_dub">Prefer Dubbed Anime</string>
+    <string name="none">None</string>
+    <string name="selected_dns">Selected DNS</string>
+    <string name="dns_info">Change, If your ISP blocks any Source</string>
 </resources>

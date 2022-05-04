@@ -16,6 +16,7 @@ class MangaChapterAdapter(
     private val fragment: MangaReadFragment,
     var arr: ArrayList<MangaChapter> = arrayListOf(),
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
             1 -> ChapterCompactViewHolder(

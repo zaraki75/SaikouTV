@@ -1,14 +1,15 @@
 package ani.saikou.manga
 
-import com.bumptech.glide.load.Transformation
-import java.io.File
+import ani.saikou.parsers.MangaChapter
+import ani.saikou.parsers.MangaImage
 import java.io.Serializable
 
 data class MangaChapter(
     val number: String,
+    var link: String,
     var title: String? = null,
-    var link: String? = null,
-    var headers: MutableMap<String, String>? = null,
-    var transformation: Transformation<File>? = null,
-    var images: ArrayList<String>? = null
-) : Serializable
+    var description : String?= null,
+    var images: List<MangaImage>? = null
+) : Serializable {
+    constructor(chapter: MangaChapter) :this(chapter.number,chapter.link,chapter.title,chapter.description)
+}

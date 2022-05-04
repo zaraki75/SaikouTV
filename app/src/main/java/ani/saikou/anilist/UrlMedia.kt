@@ -5,7 +5,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import ani.saikou.loadIsMAL
 import ani.saikou.loadMedia
-import ani.saikou.others.logError
+import ani.saikou.logError
 import ani.saikou.startMainActivity
 
 class UrlMedia : AppCompatActivity() {

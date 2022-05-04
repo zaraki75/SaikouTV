@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         DisableFirebase.handle()
+        initializeNetwork(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

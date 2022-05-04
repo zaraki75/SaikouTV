@@ -14,9 +14,9 @@ import ani.saikou.databinding.ItemAnimeWatchBinding
 import ani.saikou.databinding.ItemChipBinding
 import ani.saikou.loadData
 import ani.saikou.loadImage
-import ani.saikou.manga.source.MangaReadSources
 import ani.saikou.media.Media
 import ani.saikou.media.SourceSearchDialogFragment
+import ani.saikou.parsers.MangaReadSources
 import ani.saikou.px
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.MainScope
@@ -42,16 +42,16 @@ class MangaReadAdapter(
 
         //Source Selection
         binding.animeSource.setText(mangaReadSources.names[media.selected!!.source])
-        mangaReadSources[media.selected!!.source]!!.apply {
-            binding.animeSourceTitle.text = text
-            textListener = { MainScope().launch { binding.animeSourceTitle.text = it } }
+        mangaReadSources[media.selected!!.source].apply {
+            binding.animeSourceTitle.text = showUserText
+            showUserTextListener = { MainScope().launch { binding.animeSourceTitle.text = it } }
         }
         binding.animeSource.setAdapter(ArrayAdapter(fragment.requireContext(), R.layout.item_dropdown, mangaReadSources.names))
         binding.animeSourceTitle.isSelected = true
         binding.animeSource.setOnItemClickListener { _, _, i, _ ->
             fragment.onSourceChange(i).apply {
-                binding.animeSourceTitle.text = text
-                textListener = { MainScope().launch { binding.animeSourceTitle.text = it } }
+                binding.animeSourceTitle.text = showUserText
+                showUserTextListener = { MainScope().launch { binding.animeSourceTitle.text = it } }
             }
             fragment.loadChapters(i)
         }
@@ -173,6 +173,9 @@ class MangaReadAdapter(
                         }
 
                     }
+                }
+                else{
+                    binding.animeSourceContinue.visibility = View.GONE
                 }
                 binding.animeSourceProgressBar.visibility = View.GONE
                 if (media.manga.chapters!!.isNotEmpty())

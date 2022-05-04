@@ -17,12 +17,12 @@ import androidx.recyclerview.widget.GridLayoutManager
 import ani.saikou.*
 import ani.saikou.databinding.FragmentAnimeWatchBinding
 import ani.saikou.manga.mangareader.MangaReaderActivity
-import ani.saikou.manga.source.HMangaSources
-import ani.saikou.manga.source.MangaParser
-import ani.saikou.manga.source.MangaReadSources
-import ani.saikou.manga.source.MangaSources
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
+import ani.saikou.parsers.HMangaSources
+import ani.saikou.parsers.MangaParser
+import ani.saikou.parsers.MangaReadSources
+import ani.saikou.parsers.MangaSources
 import ani.saikou.settings.UserInterfaceSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -101,7 +101,7 @@ open class MangaReadFragment : Fragment() {
                 progress = View.GONE
                 binding.mediaInfoProgressBar.visibility = progress
 
-                if (media.format == "MANGA" || media.format == "ONE_SHOT") {
+                if (media.format == "MANGA" || media.format == "ONE SHOT") {
                     media.selected = model.loadSelected(media)
                     style = media.selected!!.recyclerStyle
                     reverse = media.selected!!.recyclerReversed
@@ -170,10 +170,10 @@ open class MangaReadFragment : Fragment() {
         reload()
         val selected = model.loadSelected(media)
         selected.source = i
-        selected.stream = null
+        selected.server = null
         model.saveSelected(media.id, selected, requireActivity())
         media.selected = selected
-        return mangaReadSources[i]!!
+        return mangaReadSources[i]
     }
 
     fun loadChapters(i: Int) {
@@ -227,7 +227,7 @@ open class MangaReadFragment : Fragment() {
     }
 
     override fun onDestroy() {
-        mangaReadSources.flushLive()
+        mangaReadSources.flushText()
         super.onDestroy()
     }
 

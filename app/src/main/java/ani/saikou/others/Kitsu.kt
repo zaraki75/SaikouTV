@@ -1,7 +1,9 @@
 package ani.saikou.others
 
+import ani.saikou.FileUrl
 import ani.saikou.anime.Episode
-import ani.saikou.httpClient
+import ani.saikou.client
+import ani.saikou.logError
 import ani.saikou.logger
 import ani.saikou.media.Media
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -15,16 +17,16 @@ object Kitsu {
             "DNT" to "1",
             "Origin" to "https://kitsu.io"
         )
-        val json = httpClient.post("https://kitsu.io/api/graphql",headers, data = mapOf("query" to query))
+        val json = client.post("https://kitsu.io/api/graphql",headers, data = mapOf("query" to query))
         return json.parsed()
     }
 
     suspend fun getKitsuEpisodesDetails(media: Media): MutableMap<String, Episode>? {
         val print = false
-        logger("Kitsu : title=${media.getMangaName()}", print)
+        logger("Kitsu : title=${media.mainName()}", print)
         try {
             val query =
-                """query{searchAnimeByTitle(first:5,title:"${media.getMangaName()}"){nodes{id season startDate titles{localized}episodes(first:2000){nodes{number titles{canonical}description thumbnail{original{url}}}}}}}"""
+                """query{searchAnimeByTitle(first:5,title:"${media.mainName()}"){nodes{id season startDate titles{localized}episodes(first:2000){nodes{number titles{canonical}description thumbnail{original{url}}}}}}}"""
             val result = getKitsuData(query)
             logger("Kitsu : result=$result", print)
             var arr: MutableMap<String, Episode>?
@@ -46,7 +48,7 @@ object Kitsu {
                                     number = num,
                                     title = ep.titles?.canonical,
                                     desc = ep.description?.en,
-                                    thumb = ep.thumbnail?.original?.url,
+                                    thumb = FileUrl(ep.thumbnail?.original?.url?:""),
                                 )
                                 logger("Kitsu : arr[$num] = ${arr!![num]}", print)
                             }

@@ -1,7 +1,7 @@
 package ani.saikou.others
 
 import ani.saikou.anime.Episode
-import ani.saikou.httpClient
+import ani.saikou.client
 import ani.saikou.logger
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -9,7 +9,7 @@ object AnimeFillerList {
     suspend fun getFillers(malId: Int): MutableMap<String, Episode>? {
         try {
             val map = mutableMapOf<String, Episode>()
-            val json = httpClient.get("https://raw.githubusercontent.com/saikou-app/mal-id-filler-list/main/fillers/$malId.json")
+            val json = client.get("https://raw.githubusercontent.com/saikou-app/mal-id-filler-list/main/fillers/$malId.json")
             if (json.text != "404: Not Found") json.parsed<AnimeFillerListValue>().episodes?.forEach {
                 val num = it.number.toString()
                 map[num] = Episode(

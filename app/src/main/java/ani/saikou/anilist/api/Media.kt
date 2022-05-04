@@ -174,7 +174,7 @@ data class Media(
 
 data class MediaTitle(
     // The romanization of the native language title
-    var romaji: String?,
+    var romaji: String,
 
     // The official english title
     var english: String?,
@@ -183,7 +183,7 @@ data class MediaTitle(
     var native: String?,
 
     // The currently authenticated users preferred title language. Default romaji for non-authenticated
-    var userPreferred: String?,
+    var userPreferred: String,
 )
 
 enum class MediaType {
@@ -427,10 +427,6 @@ enum class MediaRelation {
 
 enum class MediaSeason {
     WINTER, SPRING, SUMMER, FALL;
-
-    override fun toString(): String {
-        return super.toString().replace("_", " ")
-    }
 }
 
 data class MediaExternalLink(

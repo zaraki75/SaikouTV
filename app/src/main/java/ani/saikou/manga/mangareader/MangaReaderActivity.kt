@@ -19,11 +19,10 @@ import ani.saikou.*
 import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.ActivityMangaReaderBinding
 import ani.saikou.manga.MangaChapter
-import ani.saikou.manga.source.HMangaSources
-import ani.saikou.manga.source.MangaSources
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
-import ani.saikou.others.logError
+import ani.saikou.parsers.HMangaSources
+import ani.saikou.parsers.MangaSources
 import ani.saikou.settings.ReaderSettings
 import ani.saikou.settings.UserInterfaceSettings
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
@@ -218,7 +217,7 @@ class MangaReaderActivity : AppCompatActivity() {
         chapter = chapters[media.manga!!.selectedChapter] ?: return
 
         model.readMangaReadSources = if (media.isAdult) HMangaSources else MangaSources
-        binding.mangaReaderSource.text = model.readMangaReadSources!!.names[media.selected!!.source]
+        binding.mangaReaderSource.text = model.readMangaReadSources.names[media.selected!!.source]
 
         binding.mangaReaderTitle.text = media.userPreferredName
 

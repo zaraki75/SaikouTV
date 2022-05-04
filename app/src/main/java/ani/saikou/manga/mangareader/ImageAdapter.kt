@@ -25,11 +25,11 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import java.io.File
 
 class ImageAdapter(
-    private val chapter: MangaChapter,
+    chapter: MangaChapter,
     private val settings: CurrentReaderSettings,
     private val uiSettings: UserInterfaceSettings
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    val images = chapter.images ?: arrayListOf()
+    val images = chapter.images!!
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
         val binding = ItemImageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -60,14 +60,15 @@ class ImageAdapter(
         val progress = parent.findViewById<View>(R.id.imgProgProgress)
         imageView.recycle()
         imageView.visibility = View.GONE
-        if (images[position].isEmpty()) return
-        Glide.with(imageView).download(GlideUrl(images[position]) { chapter.headers ?: mutableMapOf() })
+        val link = images[position].url
+        val trans = images[position].transformation
+        if (link.url.isEmpty()) return
+        Glide.with(imageView).download(GlideUrl(link.url) { link.headers })
             .override(Target.SIZE_ORIGINAL)
             .apply {
                 val target = object : CustomViewTarget<SubsamplingScaleImageView, File>(imageView) {
                     override fun onLoadFailed(errorDrawable: Drawable?) {
                         progress.visibility = View.GONE
-                        //                        toastString("Failed to load Page ${position+1}, Long Click to reload")
                     }
 
                     override fun onResourceCleared(placeholder: Drawable?) {}
@@ -83,9 +84,8 @@ class ImageAdapter(
                         progress.visibility = View.GONE
                     }
                 }
-                val transformation = chapter.transformation
-                if (transformation != null)
-                    transform(File("").javaClass, transformation).into(target)
+                if (trans != null)
+                    transform(File("").javaClass, trans).into(target)
                 else
                     into(target)
             }

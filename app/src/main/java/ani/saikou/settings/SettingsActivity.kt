@@ -14,9 +14,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
 import androidx.core.view.updateLayoutParams
 import ani.saikou.*
-import ani.saikou.anime.source.AnimeSources
 import ani.saikou.databinding.ActivitySettingsBinding
-import ani.saikou.manga.source.MangaSources
+import ani.saikou.parsers.AnimeSources
+import ani.saikou.parsers.MangaSources
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -69,6 +69,19 @@ class SettingsActivity : AppCompatActivity() {
             saveData("recently_list_only", isChecked)
         }
 
+        val dns = listOf("None", "Google", "Cloudflare", "AdGuard")
+        binding.settingsDns.setText(dns[loadData("settings_dns") ?: 0], false)
+        binding.settingsDns.setAdapter(ArrayAdapter(this, R.layout.item_dropdown, dns))
+        binding.settingsDns.setOnItemClickListener { _, _, i, _ ->
+            saveData("settings_dns", i)
+            initializeNetwork(this)
+            binding.settingsDns.clearFocus()
+        }
+
+        binding.settingsPreferDub.isChecked = loadData("settings_prefer_dub") ?: false
+        binding.settingsPreferDub.setOnCheckedChangeListener { _, isChecked ->
+            saveData("settings_prefer_dub", isChecked)
+        }
 
         binding.mangaSource.setText(MangaSources.names[loadData("settings_default_manga_source") ?: 0], false)
         binding.mangaSource.setAdapter(ArrayAdapter(this, R.layout.item_dropdown, MangaSources.names))
