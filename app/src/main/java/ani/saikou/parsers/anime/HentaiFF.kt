@@ -55,7 +55,8 @@ class HentaiFF : AnimeParser() {
     }
 
     override suspend fun search(query: String): List<ShowResponse> {
-        return client.get("${hostUrl}/?s=$query").document.body()
+        setUserText("Searching can take some while...")
+        return client.get("${hostUrl}/?s=$query", timeout = 30).document.body()
             .select(".bs>.bsx>a").map {
                 val link = it.attr("href").toString()
                 val title = it.attr("title")

@@ -1,13 +1,10 @@
 package ani.saikou
 
-import android.content.Context
+import android.app.Activity
 import com.lagradost.nicehttp.Requests
 import com.lagradost.nicehttp.addGenericDns
-import com.lagradost.nicehttp.ignoreAllSSLErrors
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import java.io.File
@@ -23,8 +20,8 @@ lateinit var cache: Cache
 lateinit var okHttpClient: OkHttpClient
 lateinit var client: Requests
 
-fun initializeNetwork(context: Context) {
-    val dns = loadData<Int>("settings_dns")
+fun initializeNetwork(context: Activity) {
+    val dns = loadData<Int>("settings_dns",context)
     cache = Cache(
         File(context.cacheDir, "http_cache"),
         50L * 1024L * 1024L // 50 MiB
@@ -32,7 +29,6 @@ fun initializeNetwork(context: Context) {
     okHttpClient = OkHttpClient.Builder()
         .followRedirects(true)
         .followSslRedirects(true)
-        .ignoreAllSSLErrors()
         .cache(cache)
         .apply {
             when (dns) {
@@ -40,7 +36,6 @@ fun initializeNetwork(context: Context) {
                 2 -> addCloudFlareDns()
                 3 -> addAdGuardDns()
             }
-
         }
         .build()
     client = Requests(
@@ -50,9 +45,9 @@ fun initializeNetwork(context: Context) {
 
 val mapper = Requests.mapper
 
-fun <K, V, R> Map<out K, V>.asyncMap(f: suspend (Map.Entry<K, V>) -> R): List<R> = runBlocking {
-    map { withContext(Dispatchers.IO) { async { f(it) } } }.map { it.await() }
-}
+//fun <K, V, R> Map<out K, V>.asyncMap(f: suspend (Map.Entry<K, V>) -> R): List<R> = runBlocking {
+//    map { withContext(Dispatchers.IO) { async { f(it) } } }.map { it.await() }
+//}
 
 fun <A, B> Collection<A>.asyncMap(f: suspend (A) -> B): List<B> = runBlocking {
     map { async { f(it) } }.map { it.await() }

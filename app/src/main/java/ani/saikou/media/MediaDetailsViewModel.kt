@@ -34,8 +34,8 @@ class MediaDetailsViewModel : ViewModel() {
     fun loadSelected(media: Media): Selected {
         return loadData<Selected>("${media.id}-select") ?: Selected().let {
             it.source = if (media.isAdult) 0 else when (media.anime != null) {
-                true -> loadData("settings_default_anime_source") ?: 0
-                else -> loadData("settings_default_manga_source") ?: 0
+                true -> loadData("settings_def_anime_source") ?: 0
+                else -> loadData("settings_def_manga_source") ?: 0
             }
             it.preferDub = loadData("settings_prefer_dub") ?: false
             it
