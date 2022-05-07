@@ -12,16 +12,16 @@ import kotlin.properties.Delegates
 abstract class AnimeParser : BaseParser() {
 
     /**
-     * Takes ShowResponse.link as an argument & gives a list of total episodes present on the site.
+     * Takes ShowResponse.link & ShowResponse.extra (if you added any) as arguments & gives a list of total episodes present on the site.
      * **/
-    abstract suspend fun loadEpisodes(animeLink: String): List<Episode>
+    abstract suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode>
 
     /**
      * Takes Episode.link as a parameter
      *
      * This returns a Map of "Video Server's Name" & "Link/Data" of all the Video Servers present on the site, which can be further used by loadVideoServers() & loadSingleVideoServer()
      * **/
-    abstract suspend fun loadVideoServers(episodeLink: String): List<VideoServer>
+    abstract suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer>
 
 
     /**
@@ -40,10 +40,10 @@ abstract class AnimeParser : BaseParser() {
      * ```
     val domain = Uri.parse(server.embed.url).host ?: ""
     val extractor: VideoExtractor? = when {
-        "fembed" in domain   -> FPlayer(server)
-        "sb" in domain       -> StreamSB(server)
-        "streamta" in domain -> StreamTape(server)
-        else                 -> null
+    "fembed" in domain   -> FPlayer(server)
+    "sb" in domain       -> StreamSB(server)
+    "streamta" in domain -> StreamTape(server)
+    else                 -> null
     }
     return extractor
     ```
@@ -57,9 +57,9 @@ abstract class AnimeParser : BaseParser() {
      *
      * Doesn't need to be overridden, if the parser is following the norm.
      * **/
-    open suspend fun loadByVideoServers(episodeUrl: String, callback: (VideoExtractor) -> Unit) {
-        loadVideoServers(episodeUrl).asyncMap {
-            tryForNetwork {
+    open suspend fun loadByVideoServers(episodeUrl: String, extra: Any?, callback: (VideoExtractor) -> Unit) {
+        loadVideoServers(episodeUrl, extra).asyncMap {
+            tryWithSuspend {
                 getVideoExtractor(it)?.apply {
                     load()
                     callback.invoke(this)
@@ -73,11 +73,11 @@ abstract class AnimeParser : BaseParser() {
      *
      * Doesn't need to be overridden, if the parser is following the norm.
      * **/
-    open suspend fun loadSingleVideoServer(serverName: String, episodeUrl: String): VideoExtractor? {
-        return tryForNetwork {
-            loadVideoServers(episodeUrl).apply {
+    open suspend fun loadSingleVideoServer(serverName: String, episodeUrl: String, extra: Any?): VideoExtractor? {
+        return tryWithSuspend {
+            loadVideoServers(episodeUrl, extra).apply {
                 find { it.name == serverName }?.also {
-                    return@tryForNetwork getVideoExtractor(it)?.apply {
+                    return@tryWithSuspend getVideoExtractor(it)?.apply {
                         load()
                     }
                 }
@@ -113,7 +113,7 @@ abstract class AnimeParser : BaseParser() {
      * **/
     override suspend fun loadSavedShowResponse(mediaId: Int): ShowResponse? {
         checkIfVariablesAreEmpty()
-        val dub = if(isDubAvailableSeparately) "_${if (selectDub) "dub" else "sub"}" else ""
+        val dub = if (isDubAvailableSeparately) "_${if (selectDub) "dub" else "sub"}" else ""
         var loaded = loadData<ShowResponse>("${saveName}${dub}_$mediaId")
         if (loaded == null && malSyncBackupName.isNotEmpty())
             loaded = MalSyncBackup.get(mediaId, malSyncBackupName, selectDub)?.also { saveShowResponse(mediaId, it, true) }
@@ -124,7 +124,7 @@ abstract class AnimeParser : BaseParser() {
         if (response != null) {
             checkIfVariablesAreEmpty()
             setUserText("${if (selected) "Selected" else "Found"} : ${response.name}")
-            val dub = if(isDubAvailableSeparately) "_${if (selectDub) "dub" else "sub"}" else ""
+            val dub = if (isDubAvailableSeparately) "_${if (selectDub) "dub" else "sub"}" else ""
             saveData("${saveName}${dub}_$mediaId", response)
         }
     }
@@ -151,14 +151,19 @@ data class Episode(
     val thumbnail: FileUrl? = null,
     val description: String? = null,
     val isFiller: Boolean = false,
+
+    /**
+     * In case, you want to pass extra data
+     * **/
+    val extra: Any? = null,
 ) {
-    constructor(number: String, link: String, title: String? = null, thumbnail: String, description: String?,
-                isFiller: Boolean = false)
-            : this(number, link, title, FileUrl(thumbnail), description, isFiller)
-
-    constructor(number: String, link: String, title: String? = null, thumbnail: String, description: String?)
-            : this(number, link, title, FileUrl(thumbnail), description)
-
-    constructor(number: String, link: String, title: String? = null, thumbnail: String)
-            : this(number, link, title, FileUrl(thumbnail))
+    constructor(
+        number: String,
+        link: String,
+        title: String? = null,
+        thumbnail: String,
+        description: String? = null,
+        isFiller: Boolean = false,
+        extra: Any? = null
+    ) : this(number, link, title,  FileUrl(thumbnail) , description, isFiller, extra)
 }

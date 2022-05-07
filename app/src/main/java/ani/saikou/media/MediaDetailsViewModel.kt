@@ -95,7 +95,7 @@ class MediaDetailsViewModel : ViewModel() {
 
     suspend fun overrideEpisodes(i: Int, source: ShowResponse, id: Int) {
         watchSources.saveResponse(i, id, source)
-        epsLoaded[i] = watchSources.loadEpisodes(i, source.link)
+        epsLoaded[i] = watchSources.loadEpisodes(i, source.link, source.extra)
         episodes.postValue(epsLoaded)
     }
 
@@ -106,7 +106,7 @@ class MediaDetailsViewModel : ViewModel() {
         val link = ep.link ?: return
         if (!ep.allStreams || ep.extractors.isNullOrEmpty()) {
             ep.extractors = mutableListOf()
-            watchSources[i].loadByVideoServers(link) {
+            watchSources[i].loadByVideoServers(link,ep.extra) {
                 ep.extractors?.add(it)
                 episode.postValue(ep)
             }
@@ -127,7 +127,7 @@ class MediaDetailsViewModel : ViewModel() {
             val server = selected.server ?: return false
             val link = ep.link ?: return false
 
-            ep.extractors = mutableListOf(watchSources[selected.source].loadSingleVideoServer(server, link) ?: return false)
+            ep.extractors = mutableListOf(watchSources[selected.source].loadSingleVideoServer(server, link, ep.extra) ?: return false)
             ep.allStreams = false
         }
         if (post) {

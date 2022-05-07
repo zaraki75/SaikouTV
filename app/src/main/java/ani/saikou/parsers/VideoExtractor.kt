@@ -47,15 +47,19 @@ abstract class VideoExtractor : Serializable {
 }
 
 /**
- * A simple class containing name & link of the embed which shows the video present on the site
+ * A simple class containing name, link & extraData(in case you want to give some to it) of the embed which shows the video present on the site
  *
  * `name` variable is used when checking if there was a Default Server Selected with the same name
+ *
+ *
  * **/
 data class VideoServer(
     val name: String,
     val embed: FileUrl,
+    val extraData : Any?=null,
 ) : Serializable {
-    constructor(name: String, embedUrl: String) : this(name, FileUrl(embedUrl))
+    constructor(name: String, embedUrl: String,extraData: Any?=null)
+            : this(name, FileUrl(embedUrl),extraData)
 }
 
 /**
@@ -132,10 +136,15 @@ data class Subtitle(
 
     /**
      * The direct url to the Subtitle
-     *
-     * Supports vtt, afaik
      * **/
     val url: FileUrl,
+
+    /**
+     * format of the Subtitle
+     *
+     * Supports vtt & ass
+     * **/
+    val type:String="vtt",
 ) : Serializable {
-    constructor(language: String, url: String) : this(language, FileUrl(url))
+    constructor(language: String, url: String,type:String="vtt") : this(language, FileUrl(url), type)
 }

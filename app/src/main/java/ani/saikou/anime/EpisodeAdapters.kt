@@ -6,11 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.recyclerview.widget.RecyclerView
-import ani.saikou.*
 import ani.saikou.databinding.ItemEpisodeCompactBinding
 import ani.saikou.databinding.ItemEpisodeGridBinding
 import ani.saikou.databinding.ItemEpisodeListBinding
+import ani.saikou.loadData
 import ani.saikou.media.Media
+import ani.saikou.setAnimation
+import ani.saikou.updateAnilistProgress
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.model.GlideUrl
 
 fun handleProgress(cont: LinearLayout, bar: View, empty: View, mediaId: Int, ep: String) {
     val curr = loadData<Long>("${mediaId}_${ep}")
@@ -66,7 +70,8 @@ class EpisodeAdapter(
                 val binding = holder.binding
                 setAnimation(fragment.requireContext(), holder.binding.root, fragment.uiSettings)
 
-                binding.itemEpisodeImage.loadImage((ep.thumb?: FileUrl(media.cover?:"")),400)
+                val thumb = ep.thumb?.let { if(it.url.isNotEmpty()) GlideUrl(it.url) { it.headers } else null }
+                Glide.with(binding.itemEpisodeImage).load(thumb?:media.cover).override(400,0).into(binding.itemEpisodeImage)
                 binding.itemEpisodeNumber.text = ep.number
                 binding.itemEpisodeTitle.text = title
 
@@ -110,7 +115,9 @@ class EpisodeAdapter(
                 val binding = holder.binding
                 setAnimation(fragment.requireContext(), holder.binding.root, fragment.uiSettings)
 
-                binding.itemEpisodeImage.loadImage((ep.thumb?: FileUrl(media.cover?:"")),400)
+                val thumb = ep.thumb?.let { if(it.url.isNotEmpty()) GlideUrl(it.url) { it.headers } else null }
+                Glide.with(binding.itemEpisodeImage).load(thumb?:media.cover).override(400,0).into(binding.itemEpisodeImage)
+
                 binding.itemEpisodeNumber.text = ep.number
                 binding.itemEpisodeTitle.text = title
                 if (ep.filler) {
