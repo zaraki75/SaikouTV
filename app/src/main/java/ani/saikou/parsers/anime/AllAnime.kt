@@ -24,7 +24,7 @@ class AllAnime : AnimeParser() {
     private val epNumRegex = Regex("/[sd]ub/(\\d+)")
 
 
-    override suspend fun loadEpisodes(animeLink: String): List<Episode> {
+    override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
         val responseArray = mutableListOf<Episode>()
         tryWithSuspend {
             val showId = idRegex.find(animeLink)?.groupValues?.get(1)
@@ -42,7 +42,7 @@ class AllAnime : AnimeParser() {
         return responseArray
     }
 
-    override suspend fun loadVideoServers(episodeLink: String): List<VideoServer> {
+    override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
         val showId = idRegex.find(episodeLink)?.groupValues?.get(1)
         val videoServers = mutableListOf<VideoServer>()
         val episodeNum = epNumRegex.find(episodeLink)?.groupValues?.get(1)

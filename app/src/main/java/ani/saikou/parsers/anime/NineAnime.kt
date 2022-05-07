@@ -33,7 +33,7 @@ class NineAnime : AnimeParser() {
         }
     }
 
-    override suspend fun loadEpisodes(animeLink: String): List<Episode> {
+    override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
         val animeId = animeLink.substringAfterLast(".")
         val vrf = encode(getVrf(animeId))
         val body = client.get("${host()}/ajax/anime/servers?id=$animeId&vrf=$vrf").parsed<Response>()
@@ -46,7 +46,7 @@ class NineAnime : AnimeParser() {
 
     private val embedHeaders = mapOf("referer" to "$hostUrl/")
 
-    override suspend fun loadVideoServers(episodeLink: String): List<VideoServer> {
+    override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
         val body = client.get(episodeLink).parsed<Response>().html
         val document = Jsoup.parse(body)
         val rawJson = document.select(".episodes li a").select(".active").attr("data-sources")

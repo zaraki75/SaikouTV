@@ -15,7 +15,7 @@ class Gogo : AnimeParser() {
     override val malSyncBackupName = "Gogoanime"
     override val isDubAvailableSeparately = true
 
-    override suspend fun loadEpisodes(animeLink: String): List<Episode> {
+    override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
         val list = mutableListOf<Episode>()
 
         val pageBody = client.get("$hostUrl/category/$animeLink").document
@@ -38,7 +38,7 @@ class Gogo : AnimeParser() {
         else text
     }
 
-    override suspend fun loadVideoServers(episodeLink: String): List<VideoServer> {
+    override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
         val list = mutableListOf<VideoServer>()
         client.get(episodeLink).document.select("div.anime_muti_link > ul > li").forEach {
             val name = it.select("a").text().replace("Choose this server", "")

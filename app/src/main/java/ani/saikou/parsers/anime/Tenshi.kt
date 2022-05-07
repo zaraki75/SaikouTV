@@ -17,7 +17,7 @@ open class Tenshi : AnimeParser() {
 
     private var cookieHeader = "Cookie" to "__ddg1_=;__ddg2_=;loop-view=thumb"
 
-    override suspend fun loadEpisodes(animeLink: String): List<Episode> {
+    override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
         val map = mutableMapOf<String, Episode>()
         val htmlResponse = client.get(animeLink, mapOf(cookieHeader)).document
         (1..htmlResponse.select(".entry-episodes > h2 > span.badge.badge-secondary.align-top").text().toInt()).forEach {
@@ -35,7 +35,7 @@ open class Tenshi : AnimeParser() {
         return map.values.toList()
     }
 
-    override suspend fun loadVideoServers(episodeLink: String): List<VideoServer> {
+    override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
         val htmlResponse = client.get(episodeLink, mapOf(cookieHeader)).document
         return htmlResponse.select("ul.dropdown-menu > li > a.dropdown-item").map {
             var server = it.text().replace(" ", "").replace("/-", "")

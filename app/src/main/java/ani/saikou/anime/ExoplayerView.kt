@@ -76,6 +76,7 @@ import kotlin.math.roundToInt
 
 @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
 class ExoplayerView : AppCompatActivity(), Player.Listener {
+
     private val resumeWindow = "resumeWindow"
     private val resumePosition = "resumePosition"
     private val playerFullscreen = "playerFullscreen"
@@ -103,6 +104,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     private lateinit var exoBrightnessCont: View
     private lateinit var exoVolumeCont: View
     private lateinit var animeTitle: TextView
+    private lateinit var videoName: TextView
     private lateinit var videoInfo: TextView
     private lateinit var serverInfo: TextView
     private lateinit var episodeTitle: Spinner
@@ -241,10 +243,10 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                 Color.TRANSPARENT,
                 EDGE_TYPE_OUTLINE,
                 Color.BLACK,
-                ResourcesCompat.getFont(this, R.font.poppins_bold)
+                ResourcesCompat.getFont(this, R.font.poppins_semi_bold)
             )
         )
-        playerView.subtitleView?.setFixedTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+        playerView.subtitleView?.setFixedTextSize(TypedValue.COMPLEX_UNIT_SP, 28f)
 
         if (savedInstanceState != null) {
             currentWindow = savedInstanceState.getInt(resumeWindow)
@@ -532,13 +534,18 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
         model.watchSources = if (media.isAdult) HAnimeSources else AnimeSources
 
+        videoName = playerView.findViewById(R.id.exo_video_name)
         videoInfo = playerView.findViewById(R.id.exo_video_info)
         serverInfo = playerView.findViewById(R.id.exo_server_info)
 
         if (!settings.videoInfo) {
+            videoName.visibility = View.GONE
             videoInfo.visibility = View.GONE
             serverInfo.visibility = View.GONE
+        } else {
+            videoName.isSelected = true
         }
+
         serverInfo.text = model.watchSources.names[media.selected!!.source]
 
         model.epChanged.observe(this) {
@@ -718,12 +725,12 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         if (showProgressDialog && Anilist.userid != null && if (media.isAdult) settings.updateForH else true)
             AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Auto Update progress for ${media.userPreferredName}?")
                 .apply {
-                    //                setMultiChoiceItems(arrayOf("Don't ask again for "), booleanArrayOf(true)) { _, _, isChecked ->
-                    //                    if (isChecked) {
-                    //                        saveData("${media.id}_progressDialog", isChecked)
-                    //                    }
-                    //                    showProgressDialog = isChecked
-                    //                }
+//                    setMultiChoiceItems(arrayOf("Don't ask again for "), booleanArrayOf(true)) { _, _, isChecked ->
+//                        if (isChecked) {
+//                            saveData("${media.id}_progressDialog", isChecked)
+//                        }
+//                        showProgressDialog = isChecked
+//                    }
                     setOnCancelListener { hideSystemBars() }
                     setCancelable(false)
                     setPositiveButton("Yes") { dialog, _ ->
@@ -792,9 +799,15 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
 
         //Subtitles
-        val sub: MediaItem.SubtitleConfiguration? = if (subtitle != null)
-            MediaItem.SubtitleConfiguration.Builder(Uri.parse(subtitle!!.url.url))
-                .setMimeType(MimeTypes.TEXT_VTT).setSelectionFlags(C.SELECTION_FLAG_FORCED)
+        val sub = if (subtitle != null)
+            MediaItem.SubtitleConfiguration
+                .Builder(Uri.parse(subtitle!!.url.url))
+                .setSelectionFlags(C.SELECTION_FLAG_FORCED)
+                .setMimeType(when(subtitle?.type.also { println("tyep : $it") }) {
+                    "vtt" -> MimeTypes.TEXT_VTT
+                    "ass","ssa" -> MimeTypes.TEXT_SSA
+                    else -> MimeTypes.TEXT_UNKNOWN
+                })
                 .build()
         else null
 
@@ -965,9 +978,9 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
 
         aspectRatio = Rational(width, height)
-        //        exoPlayer.playbackParameters = playbackParameters
 
-        videoInfo.text = "${episode.selectedServer}\n$width x $height"
+        videoName.text = episode.selectedServer
+        videoInfo.text = "$width x $height"
 
         if (exoPlayer.duration < playbackPosition)
             exoPlayer.seekTo(0)

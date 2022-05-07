@@ -1,6 +1,6 @@
 package ani.saikou
 
-import android.app.Activity
+import android.content.Context
 import com.lagradost.nicehttp.Requests
 import com.lagradost.nicehttp.addGenericDns
 import kotlinx.coroutines.async
@@ -8,7 +8,6 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import java.io.File
-import java.io.IOException
 import java.io.Serializable
 import kotlin.reflect.KFunction
 
@@ -20,7 +19,7 @@ lateinit var cache: Cache
 lateinit var okHttpClient: OkHttpClient
 lateinit var client: Requests
 
-fun initializeNetwork(context: Activity) {
+fun initializeNetwork(context: Context) {
     val dns = loadData<Int>("settings_dns",context)
     cache = Cache(
         File(context.cacheDir, "http_cache"),
@@ -55,6 +54,7 @@ fun <A, B> Collection<A>.asyncMap(f: suspend (A) -> B): List<B> = runBlocking {
 
 fun logError(e: Exception) {
     toastString(e.localizedMessage)
+    e.printStackTrace()
 }
 
 fun <T> tryWith(call: () -> T): T? {
@@ -71,16 +71,6 @@ suspend fun <T> tryWithSuspend(call: suspend () -> T): T? {
         call.invoke()
     } catch (e: Exception) {
         logError(e)
-        null
-    }
-}
-
-suspend fun <T> tryForNetwork(call: suspend () -> T): T? {
-    return try {
-        call.invoke()
-    } catch (e: IOException) {
-        logError(e)
-        e.printStackTrace()
         null
     }
 }

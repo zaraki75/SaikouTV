@@ -107,6 +107,8 @@ abstract class BaseParser {
  * A single show which contains some episodes/chapters which is sent by the site using their search function.
  *
  * You might wanna include `otherNames` & `total` too, to further improve user experience.
+ *
+ * You can also store a Map of Strings if you want to save some extra data.
  * **/
 data class ShowResponse(
     val name: String,
@@ -115,9 +117,16 @@ data class ShowResponse(
 
     //would be Useful for custom search, ig
     val otherNames: List<String> = listOf(),
+
     //Total number of Episodes/Chapters in the show.
     val total: Int? = null,
+
+    //In case you want to sent some extra data
+    val extra : Map<String,String>?=null,
 ) : Serializable {
+    constructor(name: String, link: String, coverUrl: String, otherNames: List<String> = listOf(), total: Int? = null, extra: Map<String, String>?=null)
+            : this(name, link, FileUrl(coverUrl), otherNames, total, extra)
+
     constructor(name: String, link: String, coverUrl: String, otherNames: List<String> = listOf(), total: Int? = null)
             : this(name, link, FileUrl(coverUrl), otherNames, total)
 

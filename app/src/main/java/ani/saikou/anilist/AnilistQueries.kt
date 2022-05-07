@@ -23,7 +23,7 @@ suspend fun executeQuery(
     show: Boolean = false,
     cache: Int? = null
 ): Data? {
-    return tryForNetwork {
+    return tryWithSuspend {
         val data = mapOf(
             "query" to query,
             "variables" to variables
@@ -37,7 +37,7 @@ suspend fun executeQuery(
             if (Anilist.token != null && useToken) headers["Authorization"] = "Bearer ${Anilist.token}"
             val json = client.post("https://graphql.anilist.co/", headers, data = data, cacheTime = cache ?: 10)
             if (show) toastString("Response : ${json.text}")
-            return@tryForNetwork json.parsed<Query>().data
+            json.parsed<Query>().data
         } else null
     }
 }
@@ -59,8 +59,10 @@ data class SearchResults(
 
 class AnilistQueries {
     suspend fun getUserData(): Boolean {
+        val a = System.currentTimeMillis()
         val response =
             executeQuery("""{Viewer {name options{ displayAdultContent } avatar{medium} bannerImage id statistics{anime{episodesWatched}manga{chaptersRead}}}}""", cache = 6)
+        println("Huh : ${System.currentTimeMillis()-a}")
         val user = response?.Viewer ?: return false
 
         Anilist.userid = user.id

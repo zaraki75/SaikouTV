@@ -2,11 +2,11 @@ package ani.saikou.others
 
 import ani.saikou.client
 import ani.saikou.media.Media
-import ani.saikou.tryForNetwork
+import ani.saikou.tryWithSuspend
 
 object Mal {
     suspend fun loadMedia(media: Media): Media {
-        tryForNetwork {
+        tryWithSuspend {
             if (media.anime != null) {
                 val res = client.get("https://myanimelist.net/anime/${media.idMAL}").document
                 val a = res.select(".title-english").text()

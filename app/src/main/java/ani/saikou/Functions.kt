@@ -44,6 +44,7 @@ import ani.saikou.anilist.api.FuzzyDate
 import ani.saikou.anime.Episode
 import ani.saikou.databinding.ItemCountDownBinding
 import ani.saikou.media.Media
+import ani.saikou.others.DisableFirebase
 import ani.saikou.parsers.ShowResponse
 import ani.saikou.settings.UserInterfaceSettings
 import com.bumptech.glide.Glide
@@ -96,7 +97,7 @@ fun logger(e: Any?, print: Boolean = true) {
         println(e)
 }
 
-fun saveData(fileName: String, data: Any?, activity: Activity? = null) {
+fun saveData(fileName: String, data: Any?, activity: Context? = null) {
     tryWith {
         val a = activity ?: currActivity()
         if (a != null) {
@@ -110,7 +111,7 @@ fun saveData(fileName: String, data: Any?, activity: Activity? = null) {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T> loadData(fileName: String, activity: Activity? = null, toast: Boolean = true): T? {
+fun <T> loadData(fileName: String, activity: Context? = null, toast: Boolean = true): T? {
     val a = activity ?: currActivity()
     try {
         if (a?.fileList() != null)
@@ -447,7 +448,7 @@ fun View.setSafeOnClickListener(onSafeClick: (View) -> Unit) {
 }
 
 suspend fun getSize(file: FileUrl): Double? {
-    return tryForNetwork {
+    return tryWithSuspend {
         client.head(file.url, file.headers, timeout = 1000).size?.toDouble()?.div(1024*1024)
     }
 }
@@ -472,12 +473,16 @@ class App : MultiDexApplication() {
     override fun onCreate() {
         super.onCreate()
         registerActivityLifecycleCallbacks(mFTActivityLifecycleCallbacks)
+
+        DisableFirebase.handle()
+        initializeNetwork(baseContext)
+
     }
 
     companion object {
         private var instance: App? = null
         fun currentActivity(): Activity? {
-            return instance!!.mFTActivityLifecycleCallbacks.currentActivity
+            return instance?.mFTActivityLifecycleCallbacks?.currentActivity
         }
     }
 }

@@ -2,12 +2,12 @@ package ani.saikou.others
 
 import ani.saikou.anime.Episode
 import ani.saikou.client
-import ani.saikou.logger
+import ani.saikou.tryWithSuspend
 import com.fasterxml.jackson.annotation.JsonProperty
 
 object AnimeFillerList {
     suspend fun getFillers(malId: Int): MutableMap<String, Episode>? {
-        try {
+        tryWithSuspend {
             val map = mutableMapOf<String, Episode>()
             val json = client.get("https://raw.githubusercontent.com/saikou-app/mal-id-filler-list/main/fillers/$malId.json")
             if (json.text != "404: Not Found") json.parsed<AnimeFillerListValue>().episodes?.forEach {
@@ -18,9 +18,7 @@ object AnimeFillerList {
                     filler = it.fillerBool == true
                 )
             }
-            return map
-        } catch (e: Exception) {
-            logger(e)
+            return@tryWithSuspend map
         }
         return null
     }

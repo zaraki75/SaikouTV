@@ -57,7 +57,7 @@ class MangaSee : MangaParser() {
     }
 
     companion object {
-        const val host = "https://mangasee123.com"
+        private const val host = "https://mangasee123.com"
         private var response: List<ShowResponse>? = null
         suspend fun getSearchData(): List<ShowResponse> {
             response = if (response != null) response ?: emptyList()
