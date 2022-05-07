@@ -20,7 +20,10 @@ class Monoschinos : AnimeParser() {
     override val isDubAvailableSeparately = false
     override val language = "Spanish"
 
-    override suspend fun loadEpisodes(animeLink: String): List<ani.saikou.parsers.Episode> {
+    override suspend fun loadEpisodes(
+        animeLink: String,
+        extra: Map<String, String>?
+    ): List<Episode> {
         val list = mutableListOf<ani.saikou.parsers.Episode>()
 
         val pageBody = client.get(animeLink).document
@@ -45,7 +48,7 @@ class Monoschinos : AnimeParser() {
         else text
     }
 
-    override suspend fun loadVideoServers(episodeLink: String): List<VideoServer> {
+    override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
         val list = mutableListOf<VideoServer>()
             client.get(episodeLink).document.select("ul.dropcaps li").forEach {
                     val server = it.select("a").text()

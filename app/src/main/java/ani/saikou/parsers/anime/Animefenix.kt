@@ -134,7 +134,10 @@ class Animefenix : AnimeParser() {
 
 
 
-    override suspend fun loadEpisodes(animeLink: String): List<ani.saikou.parsers.Episode> {
+    override suspend fun loadEpisodes(
+        animeLink: String,
+        extra: Map<String, String>?
+    ): List<Episode> {
         val list = mutableListOf<ani.saikou.parsers.Episode>()
 
         val pageBody = client.get(animeLink).document
@@ -156,7 +159,7 @@ class Animefenix : AnimeParser() {
         else text
     }
 
-    override suspend fun loadVideoServers(episodeLink: String): List<VideoServer> {
+    override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
         val list = mutableListOf<VideoServer>()
        val document = client.get(episodeLink).document
         document.select("ul.is-borderless.episode-page__servers-list li").forEach {
