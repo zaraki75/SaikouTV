@@ -113,20 +113,19 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
                             makeDefault = binding.selectorMakeDefault.isChecked
                             saveData("make_default", makeDefault)
                         }
-                        fun load() {
-                            media!!.anime?.episodes?.set(media!!.anime?.selectedEpisode ?: "", ep)
-
-                            binding.selectorRecyclerView.layoutManager = LinearLayoutManager(
-                                requireActivity(),
-                                LinearLayoutManager.VERTICAL,
-                                false
-                            )
-                            binding.selectorRecyclerView.adapter = ExtractorAdapter()
-                        }
+                        binding.selectorRecyclerView.layoutManager =
+                            LinearLayoutManager(requireActivity(), LinearLayoutManager.VERTICAL, false)
+                        val adapter = ExtractorAdapter()
+                        binding.selectorRecyclerView.adapter = adapter
                         if (!ep.allStreams ) {
+                            ep.extractorCallback = {
+                                scope.launch {
+                                    adapter.add(it)
+                                }
+                            }
                             model.getEpisode().observe(this) {
                                 if (it != null) {
-                                    load()
+                                    media!!.anime?.episodes?.set(media!!.anime?.selectedEpisode!!, ep)
                                 }
                             }
                             scope.launch(Dispatchers.IO) {
@@ -136,7 +135,8 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
                                 }
                             }
                         } else {
-                            load()
+                            media!!.anime?.episodes?.set(media!!.anime?.selectedEpisode!!, ep)
+                            adapter.addAll(ep.extractors)
                             binding.selectorProgressBar.visibility = View.GONE
                         }
                     }
@@ -162,18 +162,33 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
     }
 
     private inner class ExtractorAdapter : RecyclerView.Adapter<ExtractorAdapter.StreamViewHolder>() {
-        val links = episode?.extractors ?: emptyList()
+        val links = mutableListOf<VideoExtractor>()
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StreamViewHolder =
             StreamViewHolder(ItemStreamBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
         override fun onBindViewHolder(holder: StreamViewHolder, position: Int) {
             val extractor = links[position]
             holder.binding.streamName.text = extractor.server.name
-            holder.binding.streamRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-            holder.binding.streamRecyclerView.adapter = VideoAdapter(extractor)
+
+                holder.binding.streamRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+                holder.binding.streamRecyclerView.adapter = VideoAdapter(extractor)
+
         }
 
         override fun getItemCount(): Int = links.size
+
+        fun add(videoExtractor: VideoExtractor){
+            if(videoExtractor.videos.isNotEmpty()) {
+                links.add(videoExtractor)
+                notifyItemInserted(links.size - 1)
+            }
+        }
+
+        fun addAll(extractors: List<VideoExtractor>?) {
+            links.addAll(extractors?:return)
+            notifyItemRangeInserted(0,extractors.size)
+        }
+
         private inner class StreamViewHolder(val binding: ItemStreamBinding) : RecyclerView.ViewHolder(binding.root)
     }
 

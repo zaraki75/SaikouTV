@@ -13,8 +13,8 @@ android {
         applicationId "ani.saikou"
         minSdk 21
         targetSdk 31
-        versionCode 44
-        versionName "1.2.0.3"
+        versionCode 45
+        versionName "1.2.0.4"
         signingConfig signingConfigs.debug
     }
 
@@ -52,7 +52,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.13.1'
 
     implementation platform('com.google.firebase:firebase-bom:29.0.3')
-    implementation 'com.google.firebase:firebase-analytics-ktx:20.1.2'
+    implementation 'com.google.firebase:firebase-analytics-ktx:21.0.0'
     implementation 'com.google.firebase:firebase-crashlytics-ktx:18.2.10'
 
 //    Exoplayer
@@ -63,7 +63,7 @@ dependencies {
     implementation 'com.google.android.exoplayer:extension-mediasession:2.17.1'
 
 //    UI
-    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'com.google.android.material:material:1.6.0'
     implementation 'nl.joery.animatedbottombar:library:1.1.0'
     implementation "io.noties.markwon:core:4.6.2"
     implementation 'com.flaviofaria:kenburnsview:1.0.7'

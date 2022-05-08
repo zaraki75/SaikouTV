@@ -17,6 +17,7 @@ import ani.saikou.others.AnimeFillerList
 import ani.saikou.others.Kitsu
 import ani.saikou.parsers.MangaReadSources
 import ani.saikou.parsers.ShowResponse
+import ani.saikou.parsers.VideoExtractor
 import ani.saikou.parsers.WatchSources
 import ani.saikou.saveData
 import ani.saikou.toastString
@@ -105,11 +106,13 @@ class MediaDetailsViewModel : ViewModel() {
     suspend fun loadEpisodeVideos(ep: Episode, i: Int, post: Boolean = true) {
         val link = ep.link ?: return
         if (!ep.allStreams || ep.extractors.isNullOrEmpty()) {
-            ep.extractors = mutableListOf()
+            val list = mutableListOf<VideoExtractor>()
             watchSources[i].loadByVideoServers(link,ep.extra) {
-                ep.extractors?.add(it)
-                episode.postValue(ep)
+                list.add(it)
+                ep.extractorCallback?.invoke(it)
             }
+            ep.extractors = list.mapNotNull { if(it.videos.isNotEmpty()) it else null }
+            ep.extractorCallback = null
             ep.allStreams = true
         }
         if (post) {
@@ -127,7 +130,7 @@ class MediaDetailsViewModel : ViewModel() {
             val server = selected.server ?: return false
             val link = ep.link ?: return false
 
-            ep.extractors = mutableListOf(watchSources[selected.source].loadSingleVideoServer(server, link, ep.extra) ?: return false)
+            ep.extractors = listOf(watchSources[selected.source].loadSingleVideoServer(server, link, ep.extra) ?: return false)
             ep.allStreams = false
         }
         if (post) {

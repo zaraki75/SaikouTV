@@ -1,6 +1,7 @@
 package ani.saikou.parsers.anime
 
 import ani.saikou.client
+import ani.saikou.levenshtein
 import ani.saikou.parsers.*
 import com.fasterxml.jackson.annotation.JsonProperty
 import okhttp3.FormBody
@@ -14,7 +15,7 @@ class Kamyroll : AnimeParser() {
 
 
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
-        return if(extra?.get("type") =="series") {
+        return if (extra?.get("type") == "series") {
             val eps = client.get(
                 "$hostUrl/content/v1/seasons",
                 getHeaders(),
@@ -28,40 +29,55 @@ class Kamyroll : AnimeParser() {
 
             data class Temp(
                 val type: String,
-                val thumb : String?,
-                val series : MutableMap<String,String> = mutableMapOf()
+                val thumb: String?,
+                val series: MutableMap<String, String> = mutableMapOf()
             )
 
-            val epMap = mutableMapOf<Long,Temp>()
-            val dataList = (eps.items?:return emptyList()).mapNotNull { item ->
-                val tit = item.title?:return@mapNotNull null
-                (item.episodes?:return@mapNotNull null).map {
-                    Pair(it.sequenceNumber,Temp(it.type,it.images?.thumbnail?.getOrNull(5)?.source, mutableMapOf(tit to it.id)))
+            val epMap = mutableMapOf<Long, Temp>()
+            val dataList = (eps.items ?: return emptyList()).mapNotNull { item ->
+                val tit = item.title ?: return@mapNotNull null
+                (item.episodes ?: return@mapNotNull null).map {
+                    Pair(it.sequenceNumber, Temp(it.type, it.images?.thumbnail?.getOrNull(5)?.source, mutableMapOf(tit to it.id)))
                 }
             }
             dataList.flatten().forEach {
-                epMap[it.first] = epMap[it.first]?:it.second
+                epMap[it.first] = epMap[it.first] ?: it.second
                 epMap[it.first]?.series?.putAll(it.second.series)
             }
             epMap.map {
-                if(it.value.thumb!=null)
-                    Episode(it.key.toString(),it.value.type, thumbnail = it.value.thumb!!, extra = it.value.series.toMap())
+                if (it.value.thumb != null)
+                    Episode(it.key.toString(), it.value.type, thumbnail = it.value.thumb!!, extra = it.value.series.toMap())
                 else
-                    Episode(it.key.toString(),it.value.type, extra = it.value.series.toMap())
+                    Episode(it.key.toString(), it.value.type, extra = it.value.series.toMap())
             }
-        }
-        else {
-            emptyList()
+        } else {
+            val eps = client.get(
+                "$hostUrl/content/v1/movies",
+                getHeaders(),
+                params = mapOf(
+                    channel,
+                    locale,
+                    "id" to animeLink
+                ),
+                timeout = 100
+            ).parsed<MovieResponse>()
+            val ep = eps.items?.sortedByDescending { it.duration }?.get(0)?.let {
+                val thumb = it.images?.thumbnail?.getOrNull(5)?.source
+                if (thumb != null) Episode("1", it.id, thumbnail = thumb)
+                else Episode("1", it.id)
+            } ?: return emptyList()
+            listOf(ep)
         }
     }
 
     override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
-        return if (extra is Map<*,*>) {
-             extra.map {
-                 VideoServer(it.key.toString(),it.value.toString())
-             }
+        return if (extra is Map<*, *>) {
+            extra.map {
+                VideoServer(it.key.toString(), it.value.toString())
+            }
+        } else {
+            listOf(VideoServer("CR", episodeLink))
         }
-        else emptyList()
     }
 
     override suspend fun getVideoExtractor(server: VideoServer): VideoExtractor = KamyrollExtractor(server)
@@ -80,12 +96,14 @@ class Kamyroll : AnimeParser() {
                 timeout = 100
             ).parsed<StreamsResponse>()
 
-            val vid = listOf(Video(null,true,eps.streams?.find { it.hardsubLocale == "" }?.url?:return VideoContainer(listOf())))
-            val subtitle = eps.subtitles?.find { it.locale == "en-US" || it.locale == "en-GB"}.let { listOf(Subtitle("English",it?.url?:return@let null,"ass")) }
-            return VideoContainer(vid,subtitle?: emptyList())
+            val vid =
+                listOf(Video(null, true, eps.streams?.find { it.hardsubLocale == "" }?.url ?: return VideoContainer(listOf())))
+            val subtitle = eps.subtitles?.find { it.locale == "en-US" || it.locale == "en-GB" }
+                .let { listOf(Subtitle("English", it?.url ?: return@let null, "ass")) }
+            return VideoContainer(vid, subtitle ?: emptyList())
         }
 
-        private data class StreamsResponse (
+        private data class StreamsResponse(
             val subtitles: List<Subtitle>? = null,
             val streams: List<Stream>? = null
         ) {
@@ -114,7 +132,7 @@ class Kamyroll : AnimeParser() {
                 "query" to query
             )
         ).parsed<SearchResponse>()
-        return (res.items?: emptyList()).map { item ->
+        return (res.items ?: emptyList()).map { item ->
             item.items.map {
                 ShowResponse(
                     name = it.title,
@@ -123,7 +141,7 @@ class Kamyroll : AnimeParser() {
                     extra = mapOf("type" to it.type)
                 )
             }
-        }.flatten()
+        }.flatten().sortedBy { levenshtein(it.name, query) }
     }
 
     companion object {
@@ -167,11 +185,14 @@ class Kamyroll : AnimeParser() {
         )
     }
 
-    data class EpisodesResponse (
+    private data class MovieResponse(
+        val items: List<KamyEpisode>? = null,
+    )
+
+    private data class EpisodesResponse(
         val total: Long? = null,
         val items: List<Item>? = null
     ) {
-
         data class Item(
             val title: String? = null,
 
@@ -181,33 +202,36 @@ class Kamyroll : AnimeParser() {
             @JsonProperty("episode_count")
             val episodeCount: Long? = null,
 
-            val episodes: List<Episode>? = null
+            val episodes: List<KamyEpisode>? = null
         )
+    }
 
-        data class Episode(
-            val id: String,
-            val type:String,
+    data class KamyEpisode(
+        val id: String,
+        val type: String,
 
-            @JsonProperty("season_number")
-            val seasonNumber: Long? = null,
+        @JsonProperty("season_number")
+        val seasonNumber: Long? = null,
 
-            val episode: String? = null,
+        val episode: String? = null,
 
-            @JsonProperty("sequence_number")
-            val sequenceNumber: Long,
+        @JsonProperty("sequence_number")
+        val sequenceNumber: Long,
 
-            val title: String? = null,
-            val description: String? = null,
+        val title: String? = null,
+        val description: String? = null,
 
-            @JsonProperty("is_subbed")
-            val isSubbed: Boolean? = null,
+        @JsonProperty("is_subbed")
+        val isSubbed: Boolean? = null,
 
-            @JsonProperty("is_dubbed")
-            val isDubbed: Boolean? = null,
+        @JsonProperty("is_dubbed")
+        val isDubbed: Boolean? = null,
 
-            val images: Images? = null
-        )
+        val images: Images? = null,
 
+        @JsonProperty("duration_ms")
+        val duration: Long? = null,
+    ) {
         data class Images(
             val thumbnail: List<Thumbnail>? = null
         )
@@ -218,6 +242,7 @@ class Kamyroll : AnimeParser() {
             val source: String? = null
         )
     }
+
     private data class SearchResponse(
         val total: Long? = null,
         val items: List<ResponseItem>? = null
@@ -227,7 +252,7 @@ class Kamyroll : AnimeParser() {
         data class ItemItem(
             val id: String,
             @JsonProperty("media_type")
-            val type : String,
+            val type: String,
             val title: String,
             val images: Images? = null,
         )

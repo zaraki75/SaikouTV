@@ -58,8 +58,8 @@ abstract class AnimeParser : BaseParser() {
      * Doesn't need to be overridden, if the parser is following the norm.
      * **/
     open suspend fun loadByVideoServers(episodeUrl: String, extra: Any?, callback: (VideoExtractor) -> Unit) {
-        loadVideoServers(episodeUrl, extra).asyncMap {
-            tryWithSuspend {
+        tryWithSuspend {
+            loadVideoServers(episodeUrl, extra).asyncMap {
                 getVideoExtractor(it)?.apply {
                     load()
                     callback.invoke(this)
@@ -165,5 +165,5 @@ data class Episode(
         description: String? = null,
         isFiller: Boolean = false,
         extra: Any? = null
-    ) : this(number, link, title,  FileUrl(thumbnail) , description, isFiller, extra)
+    ) : this(number, link, title, FileUrl(thumbnail), description, isFiller, extra)
 }

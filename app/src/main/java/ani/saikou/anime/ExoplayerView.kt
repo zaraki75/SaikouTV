@@ -803,7 +803,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             MediaItem.SubtitleConfiguration
                 .Builder(Uri.parse(subtitle!!.url.url))
                 .setSelectionFlags(C.SELECTION_FLAG_FORCED)
-                .setMimeType(when(subtitle?.type.also { println("tyep : $it") }) {
+                .setMimeType(when(subtitle?.type) {
                     "vtt" -> MimeTypes.TEXT_VTT
                     "ass","ssa" -> MimeTypes.TEXT_SSA
                     else -> MimeTypes.TEXT_UNKNOWN
