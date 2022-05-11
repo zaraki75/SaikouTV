@@ -114,7 +114,7 @@ class AnimeWatchFragment : Fragment() {
                 if (!loaded) {
                     model.watchSources = if (media.isAdult) HAnimeSources else AnimeSources
 
-                    headerAdapter = AnimeWatchAdapter(it, this, model.watchSources)
+                    headerAdapter = AnimeWatchAdapter(it, this, model.watchSources!!)
                     episodeAdapter = EpisodeAdapter(style ?: uiSettings.animeDefaultView, media, this)
 
                     binding.animeSourceRecycler.adapter = ConcatAdapter(headerAdapter, episodeAdapter)
@@ -200,17 +200,17 @@ class AnimeWatchFragment : Fragment() {
         media.anime?.episodes = null
         reload()
         val selected = model.loadSelected(media)
-        model.watchSources[selected.source].showUserTextListener = null
+        model.watchSources?.get(selected.source)?.showUserTextListener = null
         selected.source = i
         selected.server = null
         model.saveSelected(media.id, selected, requireActivity())
         media.selected = selected
-        return model.watchSources[i]
+        return model.watchSources?.get(i)!!
     }
 
     fun onDubClicked(checked:Boolean){
         val selected = model.loadSelected(media)
-        model.watchSources[selected.source].selectDub = checked
+        model.watchSources?.get(selected.source)?.selectDub = checked
         selected.preferDub = checked
         model.saveSelected(media.id, selected, requireActivity())
         media.selected = selected
@@ -265,7 +265,7 @@ class AnimeWatchFragment : Fragment() {
     }
 
     override fun onDestroy() {
-        model.watchSources.flushText()
+        model.watchSources?.flushText()
         super.onDestroy()
     }
 

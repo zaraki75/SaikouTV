@@ -30,11 +30,10 @@ class MangaDex : MangaParser() {
                 .parsed<MangaResponse>().data?.reversed()
 
             data?.forEach {
-                if (it.attributes!!.translatedLanguage == "en") {
+                if (it.attributes.translatedLanguage == "en" && it.attributes.externalUrl == null) {
                     val chapter = (it.attributes.chapter ?: return@forEach).toString()
-                    val title = it.attributes.title ?: return@forEach
-                    val id = it.id ?: return@forEach
-                    list.add(MangaChapter(chapter, id, title))
+                    val title = it.attributes.title
+                    list.add(MangaChapter(chapter, it.id, title))
                 }
             }
         }
@@ -52,7 +51,7 @@ class MangaDex : MangaParser() {
     }
 
     override suspend fun search(query: String): List<ShowResponse> {
-        val json = client.get("$host/manga?limit=15&title=$query&order[relevance]=desc&includes[]=cover_art")
+        val json = client.get("$host/manga?limit=15&title=$query&order[followedCount]=desc&includes[]=cover_art")
             .parsed<SearchResponse>()
 
         return json.data?.mapNotNull {
@@ -100,15 +99,16 @@ class MangaDex : MangaParser() {
         val total: Long? = null
     ) {
         data class Datum(
-            val id: String? = null,
-            val attributes: Attributes? = null
+            val id: String,
+            val attributes: Attributes
         )
 
         data class Attributes(
             val volume: Any? = null,
             val chapter: Any? = null,
             val title: String? = null,
-            val translatedLanguage: String? = null
+            val translatedLanguage: String? = null,
+            val externalUrl : String? = null
         )
     }
 

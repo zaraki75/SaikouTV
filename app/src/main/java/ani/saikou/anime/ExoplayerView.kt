@@ -532,8 +532,6 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         title = media.userPreferredName
         episodes = media.anime?.episodes ?: return
 
-        model.watchSources = if (media.isAdult) HAnimeSources else AnimeSources
-
         videoName = playerView.findViewById(R.id.exo_video_name)
         videoInfo = playerView.findViewById(R.id.exo_video_info)
         serverInfo = playerView.findViewById(R.id.exo_server_info)
@@ -546,7 +544,8 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             videoName.isSelected = true
         }
 
-        serverInfo.text = model.watchSources.names[media.selected!!.source]
+        model.watchSources = if (media.isAdult) HAnimeSources else AnimeSources
+        serverInfo.text = model.watchSources!!.names[media.selected!!.source]
 
         model.epChanged.observe(this) {
             epChanging = !it

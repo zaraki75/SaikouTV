@@ -92,7 +92,7 @@ abstract class AnimeParser : BaseParser() {
      *
      * make this `true`, if they are separated else `false`
      *
-     * **NOTE : do not forget to override `dubSuffix` if the site does not support only dub search**
+     * **NOTE : do not forget to override `search` if the site does not support only dub search**
      * **/
     open val isDubAvailableSeparately by Delegates.notNull<Boolean>()
 

@@ -96,10 +96,21 @@ class Kamyroll : AnimeParser() {
                 timeout = 100
             ).parsed<StreamsResponse>()
 
-            val vid =
-                listOf(Video(null, true, eps.streams?.find { it.hardsubLocale == "" }?.url ?: return VideoContainer(listOf())))
-            val subtitle = eps.subtitles?.find { it.locale == "en-US" || it.locale == "en-GB" }
-                .let { listOf(Subtitle("English", it?.url ?: return@let null, "ass")) }
+            var findSub = false
+
+            val vid = listOf(
+                Video(
+                    null,
+                    true,
+                    eps.streams?.find { it.hardsubLocale == "en-US" }?.url
+                        ?: eps.streams?.find { it.hardsubLocale == "" }?.also {
+                            findSub = true
+                        }?.url
+                        ?: return VideoContainer(listOf())
+                )
+            )
+            val subtitle = if (findSub) eps.subtitles?.find { it.locale == "en-US" || it.locale == "en-GB" }
+                .let { listOf(Subtitle("English", it?.url ?: return@let null, "ass")) } else null
             return VideoContainer(vid, subtitle ?: emptyList())
         }
 

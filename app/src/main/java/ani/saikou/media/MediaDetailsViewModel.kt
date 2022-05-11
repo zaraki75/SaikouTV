@@ -76,7 +76,7 @@ class MediaDetailsViewModel : ViewModel() {
         if (fillerEpisodes.value == null) fillerEpisodes.postValue(AnimeFillerList.getFillers(s.idMAL ?: return))
     }
 
-    lateinit var watchSources: WatchSources
+    var watchSources: WatchSources? = null
 
     private val episodes: MutableLiveData<MutableMap<Int, MutableMap<String, Episode>>> =
         MutableLiveData<MutableMap<Int, MutableMap<String, Episode>>>(null)
@@ -84,19 +84,19 @@ class MediaDetailsViewModel : ViewModel() {
     fun getEpisodes(): LiveData<MutableMap<Int, MutableMap<String, Episode>>> = episodes
     suspend fun loadEpisodes(media: Media, i: Int) {
         if (!epsLoaded.containsKey(i)) {
-            epsLoaded[i] = watchSources.loadEpisodesFromMedia(i, media)
+            epsLoaded[i] = watchSources?.loadEpisodesFromMedia(i, media) ?: return
         }
         episodes.postValue(epsLoaded)
     }
 
-    suspend fun forceLoadEpisode(media: Media,i:Int){
-        epsLoaded[i] = watchSources.loadEpisodesFromMedia(i, media)
+    suspend fun forceLoadEpisode(media: Media, i: Int) {
+        epsLoaded[i] = watchSources?.loadEpisodesFromMedia(i, media) ?: return
         episodes.postValue(epsLoaded)
     }
 
     suspend fun overrideEpisodes(i: Int, source: ShowResponse, id: Int) {
-        watchSources.saveResponse(i, id, source)
-        epsLoaded[i] = watchSources.loadEpisodes(i, source.link, source.extra)
+        watchSources?.saveResponse(i, id, source)
+        epsLoaded[i] = watchSources?.loadEpisodes(i, source.link, source.extra) ?: return
         episodes.postValue(epsLoaded)
     }
 
@@ -107,9 +107,9 @@ class MediaDetailsViewModel : ViewModel() {
         val link = ep.link ?: return
         if (!ep.allStreams || ep.extractors.isNullOrEmpty()) {
             val list = mutableListOf<VideoExtractor>()
-            ep.extractors =list
-            watchSources[i].loadByVideoServers(link,ep.extra) {
-                if(it.videos.isNotEmpty()) {
+            ep.extractors = list
+            watchSources?.get(i)?.loadByVideoServers(link, ep.extra) {
+                if (it.videos.isNotEmpty()) {
                     list.add(it)
                     ep.extractorCallback?.invoke(it)
                 }
@@ -133,7 +133,8 @@ class MediaDetailsViewModel : ViewModel() {
             val server = selected.server ?: return false
             val link = ep.link ?: return false
 
-            ep.extractors = mutableListOf(watchSources[selected.source].loadSingleVideoServer(server, link, ep.extra) ?: return false)
+            ep.extractors =
+                mutableListOf(watchSources?.get(selected.source)?.loadSingleVideoServer(server, link, ep.extra) ?: return false)
             ep.allStreams = false
         }
         if (post) {
@@ -172,7 +173,7 @@ class MediaDetailsViewModel : ViewModel() {
 
 
     //Manga
-    lateinit var mangaReadSources: MangaReadSources
+    var mangaReadSources: MangaReadSources? = null
 
     private val mangaChapters: MutableLiveData<MutableMap<Int, MutableMap<String, MangaChapter>>> =
         MutableLiveData<MutableMap<Int, MutableMap<String, MangaChapter>>>(null)
@@ -181,21 +182,21 @@ class MediaDetailsViewModel : ViewModel() {
     suspend fun loadMangaChapters(media: Media, i: Int) {
         logger("Loading Manga Chapters : $mangaLoaded")
         if (!mangaLoaded.containsKey(i)) {
-            mangaLoaded[i] = mangaReadSources.loadChaptersFromMedia(i, media)
+            mangaLoaded[i] = mangaReadSources?.loadChaptersFromMedia(i, media) ?: return
         }
         mangaChapters.postValue(mangaLoaded)
     }
 
     suspend fun overrideMangaChapters(i: Int, source: ShowResponse, id: Int) {
-        mangaReadSources.saveResponse(i, id, source)
-        mangaLoaded[i] = mangaReadSources.loadChapters(i,source.link)
+        mangaReadSources?.saveResponse(i, id, source)
+        mangaLoaded[i] = mangaReadSources?.loadChapters(i, source.link) ?: return
         mangaChapters.postValue(mangaLoaded)
     }
 
     private val mangaChapter = MutableLiveData<MangaChapter?>(null)
     fun getMangaChapter(): LiveData<MangaChapter?> = mangaChapter
     suspend fun loadMangaChapterImages(chapter: MangaChapter, selected: Selected) {
-        chapter.images = mangaReadSources[selected.source].loadImages(chapter.link)
+        chapter.images = mangaReadSources?.get(selected.source)?.loadImages(chapter.link) ?: return
         mangaChapter.postValue(chapter)
     }
 }

@@ -107,7 +107,7 @@ open class MangaReadFragment : Fragment() {
                     if (!loaded) {
                         model.mangaReadSources = if (media.isAdult) HMangaSources else MangaSources
 
-                        headerAdapter = MangaReadAdapter(it, this, model.mangaReadSources)
+                        headerAdapter = MangaReadAdapter(it, this, model.mangaReadSources!!)
                         chapterAdapter = MangaChapterAdapter(style ?: uiSettings.mangaDefaultView, media, this)
 
                         binding.animeSourceRecycler.adapter = ConcatAdapter(headerAdapter, chapterAdapter)
@@ -167,12 +167,12 @@ open class MangaReadFragment : Fragment() {
         media.manga?.chapters = null
         reload()
         val selected = model.loadSelected(media)
-        model.mangaReadSources[selected.source].showUserTextListener = null
+        model.mangaReadSources?.get(selected.source)?.showUserTextListener = null
         selected.source = i
         selected.server = null
         model.saveSelected(media.id, selected, requireActivity())
         media.selected = selected
-        return model.mangaReadSources[i]
+        return model.mangaReadSources?.get(i)!!
     }
 
     fun loadChapters(i: Int) {
@@ -226,7 +226,7 @@ open class MangaReadFragment : Fragment() {
     }
 
     override fun onDestroy() {
-        model.mangaReadSources.flushText()
+        model.mangaReadSources?.flushText()
         super.onDestroy()
     }
 

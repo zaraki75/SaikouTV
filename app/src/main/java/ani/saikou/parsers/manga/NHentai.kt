@@ -2,78 +2,72 @@ package ani.saikou.parsers.manga
 
 import androidx.core.text.isDigitsOnly
 import ani.saikou.client
-import ani.saikou.parsers.*
+import ani.saikou.parsers.MangaChapter
+import ani.saikou.parsers.MangaImage
+import ani.saikou.parsers.MangaParser
+import ani.saikou.parsers.ShowResponse
 
 class NHentai : MangaParser() {
 
-    override val name     = "NHentai"
-    override val saveName = "nhentai_manga"
-    override val hostUrl  = "https://nhentai.net"
-    override val isNSFW   = true
+    override val name = "NHentai"
+    override val saveName = "n_hentai"
+    override val hostUrl = "https://nhentai.net"
+    override val isNSFW = true
 
     override suspend fun loadChapters(mangaLink: String): List<MangaChapter> {
-        val id   = mangaLink.substringAfter("g/")
+        val id = mangaLink.substringAfter("g/")
         val json = client.get("$hostUrl/api/gallery/$id").parsed<MangaResponse>()
         // There's really no "chapter(s)" in nhentai afaik. So here it's being returned as if it's the first chapter.
-        return arrayListOf(
+        return listOf(
             MangaChapter(
                 number = "1",
-                link   = "https://nhentai.net/g/$id",
-                title  = json.title.pretty
+                link = "https://nhentai.net/g/$id",
+                title = json.title.pretty
             )
         )
     }
 
     override suspend fun loadImages(chapterLink: String): List<MangaImage> {
-        val id   = chapterLink.substringAfter("g/")
+        val id = chapterLink.substringAfter("g/")
         val json = client.get("$hostUrl/api/gallery/$id").parsed<MangaResponse>()
-        val ext  = ext(json.images.pages[0].t)
-        val imageArr = arrayListOf<MangaImage>()
-        for (page in 1 until (json.images.pages.size - 1)) {
-            val url = "https://i.nhentai.net/galleries/${json.media_id}/$page.$ext"
-            imageArr.add(
-                MangaImage(url = url)
-            )
+        val ext = ext(json.images.pages[0].t)
+        return (1 until (json.images.pages.size - 1)).map {
+            MangaImage("https://i.nhentai.net/galleries/${json.media_id}/$it.$ext")
         }
-        return imageArr
     }
 
     override suspend fun search(query: String): List<ShowResponse> {
-        val responseArr = arrayListOf<ShowResponse>()
-        if(query.contains("#") || query.isDigitsOnly()) {
-            val id = query.replace("#","")
-            val document = client.get("https://nhentai.net/g/$id").document
-            val coverUrl = document.select("body div#content div#bigcontainer.container div#cover a img.lazyload").attr("data-src")
-            val tittle = document.select("div#content div#bigcontainer.container div#info-block div#info h1.title span.pretty").text()
-            responseArr.add(
+        return if (query.startsWith("#") || query.isDigitsOnly()) {
+            val id = query.replace("#", "")
+            val document = client.get("https://nhentai.net/g/$id").document.select("div#content div#bigcontainer.container")
+            val coverUrl = document.select("div#cover a img.lazyload").attr("data-src")
+            val title = document.select("div#info-block div#info h1.title span.pretty").text()
+            listOf(
                 ShowResponse(
-                    name = tittle,
+                    name = title,
                     link = "https://nhentai.net/g/$id",
                     coverUrl = coverUrl,
                 )
             )
-            return responseArr
-        }
-        val json = client.get("$hostUrl/api/galleries/search?query=${encode(query)}").parsed<SearchResponse>()
-        for (i in json.result) {
-            responseArr.add(
+        } else {
+            val json = client.get("$hostUrl/api/galleries/search?query=${encode(query)}").parsed<SearchResponse>()
+            json.result.map {
                 ShowResponse(
-                    name = i.title.pretty,
-                    link = "https://nhentai.net/g/${i.id}",
-                    coverUrl = "https://t.nhentai.net/galleries/${i.media_id}/cover.jpg",
+                    name = it.title.pretty,
+                    link = "https://nhentai.net/g/${it.id}",
+                    coverUrl = "https://t.nhentai.net/galleries/${it.media_id}/cover.jpg",
                 )
-            )
+            }
         }
-        return responseArr
     }
 
 
     // convert to proper extension from API
     private fun ext(t: String): String {
         return when (t) {
-            "j" -> "jpg"
-            "p" -> "png"
-            "g" -> "gif"
+            "j"  -> "jpg"
+            "p"  -> "png"
+            "g"  -> "gif"
             else -> "jpg" // unreachable anyways
         }
     }
@@ -86,7 +80,7 @@ class NHentai : MangaParser() {
             val media_id: Int,
             val title: Title,
         ) {
-             data class Title(
+            data class Title(
                 val english: String,
                 val japanese: String,
                 val pretty: String
