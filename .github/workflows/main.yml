@@ -13,11 +13,11 @@ on:
       gradle-command:
         description: What to do
         required: false
-        default: 'app'
+        default: 'assembleDebug'
       artifact-path:
         description: What to release
         required: false
-        default: 'app/build/intermediates/apk/debug/app-debug.apk'
+        default: 'app/build/outputs/apk/debug/app-debug.apk'
       artifact-name:
         description: What to call that artifact
         required: false
@@ -78,6 +78,6 @@ jobs:
           files: |
             ${{ github.event.inputs.artifact-name }}
           draft: ${{ github.event.inputs.dry-run != '' }}
-          prerelease: false
+          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
