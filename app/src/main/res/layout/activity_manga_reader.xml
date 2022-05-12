@@ -21,11 +21,9 @@
         <ani.saikou.manga.mangareader.zoomrecycler.ZoomRecyclerView
             android:id="@+id/mangaReaderRecycler"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:paddingTop="128dp"
-            android:paddingBottom="128dp"
-            tools:ignore="SpeakableTextPresentCheck"/>
+            tools:ignore="SpeakableTextPresentCheck" />
 
     </ani.saikou.manga.mangareader.zoomrecycler.ZoomFrame>
 
@@ -241,11 +239,11 @@
 
                         <ImageButton
                             android:id="@+id/mangaReaderSettings"
-                            android:layout_width="wrap_content"
+                            android:layout_width="48dp"
                             android:layout_height="48dp"
                             android:backgroundTint="#00FFFFFF"
-                            android:src="@drawable/ic_round_reader_settings"
-                            android:visibility="gone"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_round_settings_24"
                             app:tint="#fff"
                             tools:ignore="ContentDescription,SpeakableTextPresentCheck,ImageContrastCheck" />
 

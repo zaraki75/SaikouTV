@@ -12,8 +12,10 @@ import android.widget.AdapterView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.*
 import ani.saikou.anilist.Anilist
@@ -23,6 +25,9 @@ import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.parsers.HMangaSources
 import ani.saikou.parsers.MangaSources
+import ani.saikou.settings.CurrentReaderSettings.Directions.*
+import ani.saikou.settings.CurrentReaderSettings.Layouts.CONTINUOUS_PAGED
+import ani.saikou.settings.CurrentReaderSettings.Layouts.PAGED
 import ani.saikou.settings.ReaderSettings
 import ani.saikou.settings.UserInterfaceSettings
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
@@ -31,6 +36,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.math.min
 
+@SuppressLint("SetTextI18n")
 class MangaReaderActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMangaReaderBinding
     private val model: MediaDetailsViewModel by viewModels()
@@ -49,15 +55,18 @@ class MangaReaderActivity : AppCompatActivity() {
     private var maxChapterPage = 0L
     private var currentChapterPage = 0L
 
-    private var settings = ReaderSettings()
-    private var uiSettings = UserInterfaceSettings()
+    var settings = loadData("reader_settings") ?: ReaderSettings().apply { saveData("reader_settings", this) }
+    private var uiSettings = loadData("ui_settings") ?: UserInterfaceSettings().apply { saveData("ui_settings", this) }
 
-    private var notchHeight: Int = 0
+    private var notchHeight: Int? = null
 
     private var adapter: ImageAdapter? = null
 
+    var sliding = false
+    var isAnimating = false
+
     override fun onAttachedToWindow() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && settings.hideSystemBars) {
             val displayCutout = window.decorView.rootWindowInsets.displayCutout
             if (displayCutout != null) {
                 if (displayCutout.boundingRects.size > 0) {
@@ -71,92 +80,22 @@ class MangaReaderActivity : AppCompatActivity() {
 
     private fun checkNotch() {
         binding.mangaReaderTopLayout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-            topMargin = notchHeight
+            topMargin = notchHeight ?: return
         }
     }
 
-    @SuppressLint("SetTextI18n")
+    private fun hideSystemBars() {
+        if (settings.hideSystemBars) hideStatusBar()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMangaReaderBinding.inflate(layoutInflater)
         setContentView(binding.root)
         hideSystemBars()
 
-        settings = loadData("reader_settings") ?: ReaderSettings().apply { saveData("reader_settings", this) }
-        uiSettings = loadData("ui_settings") ?: UserInterfaceSettings().apply { saveData("ui_settings", this) }
-
-
         binding.mangaReaderBack.setOnClickListener {
             onBackPressed()
-        }
-
-        var sliding = false
-        var isAnimating = false
-
-        val overshoot = AccelerateDecelerateInterpolator()
-        val controllerDuration = (uiSettings.animationSpeed * 200).toLong()
-        var goneTimer = Timer()
-        fun gone() {
-            goneTimer.cancel()
-            goneTimer.purge()
-            val timerTask: TimerTask = object : TimerTask() {
-                override fun run() {
-                    if (!isContVisible) binding.mangaReaderCont.post {
-                        binding.mangaReaderCont.visibility = View.GONE
-                        isAnimating = false
-                    }
-                }
-            }
-            goneTimer = Timer()
-            goneTimer.schedule(timerTask, controllerDuration)
-        }
-
-        fun handleController(shouldShow: Boolean? = null) {
-            if (!sliding) {
-                hideSystemBars()
-                checkNotch()
-                shouldShow?.apply { isContVisible = !this }
-                if (isContVisible) {
-                    isContVisible = false
-                    if (!isAnimating) {
-                        isAnimating = true
-                        ObjectAnimator.ofFloat(binding.mangaReaderCont, "alpha", 1f, 0f).setDuration(controllerDuration).start()
-                        ObjectAnimator.ofFloat(binding.mangaReaderBottomCont, "translationY", 0f, 128f)
-                            .apply { interpolator = overshoot;duration = controllerDuration;start() }
-                        ObjectAnimator.ofFloat(binding.mangaReaderTopCont, "translationY", 0f, -128f)
-                            .apply { interpolator = overshoot;duration = controllerDuration;start() }
-                    }
-                    gone()
-                } else {
-                    isContVisible = true
-                    binding.mangaReaderCont.visibility = View.VISIBLE
-                    ObjectAnimator.ofFloat(binding.mangaReaderCont, "alpha", 0f, 1f).setDuration(controllerDuration).start()
-                    ObjectAnimator.ofFloat(binding.mangaReaderTopCont, "translationY", -128f, 0f)
-                        .apply { interpolator = overshoot;duration = controllerDuration;start() }
-                    ObjectAnimator.ofFloat(binding.mangaReaderBottomCont, "translationY", 128f, 0f)
-                        .apply { interpolator = overshoot;duration = controllerDuration;start() }
-                }
-            }
-        }
-
-        val layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
-
-        layoutManager.isItemPrefetchEnabled = true
-        layoutManager.initialPrefetchItemCount = 3
-
-        binding.mangaReaderRecycler.layoutManager = layoutManager
-
-        binding.mangaReaderRecycler.tapListener = {
-            handleController()
-        }
-        binding.mangaReaderRecycler.longTapListener = { event ->
-            binding.mangaReaderRecycler.findChildViewUnder(event.x, event.y).let { child ->
-                val image = child?.findViewById<SubsamplingScaleImageView>(R.id.imgProgImageNoGestures)
-                if (image != null) {
-                    adapter?.loadImage(image, binding.mangaReaderRecycler.getChildAdapterPosition(child), child)
-                    true
-                } else false
-            }
         }
 
         var pageSliderTimer = Timer()
@@ -182,27 +121,6 @@ class MangaReaderActivity : AppCompatActivity() {
                 pageSliderHide()
             }
         }
-
-        fun updatePageNumber(page: Long) {
-            if (currentChapterPage != page) {
-                currentChapterPage = page
-                saveData("${media.id}_${chapter.number}", page, this)
-                binding.mangaReaderPageNumber.text = "${currentChapterPage}/$maxChapterPage"
-                if (!sliding) binding.mangaReaderPageSlider.value = currentChapterPage.toFloat()
-            }
-        }
-
-        binding.mangaReaderRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(v: RecyclerView, dx: Int, dy: Int) {
-
-                if (!v.canScrollVertically(-1) || !v.canScrollVertically(1)) {
-                    handleController(true)
-                } else handleController(false)
-
-                updatePageNumber(layoutManager.findLastVisibleItemPosition().toLong() + 1)
-                super.onScrolled(v, dx, dy)
-            }
-        })
 
         media = if (model.getMedia().value == null)
             try {
@@ -269,6 +187,10 @@ class MangaReaderActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
+        binding.mangaReaderSettings.setSafeOnClickListener {
+            ReaderSettingsDialogFragment(this).show(supportFragmentManager, "settings")
+        }
+
         //Next Chapter
         binding.mangaReaderNextChapter.setOnClickListener {
             if (chaptersArr.size > currentChapterIndex + 1) progress { change(currentChapterIndex + 1) }
@@ -282,7 +204,7 @@ class MangaReaderActivity : AppCompatActivity() {
 
         val chapterObserverRunnable = Runnable {
             model.getMangaChapter().observe(this) {
-                hideSystemBars()
+                applySettings()
                 if (it != null) {
                     chapter = it
                     media.selected = model.loadSelected(media)
@@ -319,6 +241,137 @@ class MangaReaderActivity : AppCompatActivity() {
         chapterObserverRunnable.run()
 
         scope.launch(Dispatchers.IO) { model.loadMangaChapterImages(chapter, media.selected!!) }
+    }
+
+    private val snapHelper = LinearSnapHelper()
+
+    fun applySettings() {
+        saveData("reader_settings", settings)
+        hideSystemBars()
+
+        if (settings.default.layout != PAGED) {
+
+            binding.mangaReaderRecycler.visibility = View.VISIBLE
+            binding.mangaReaderPager.visibility = View.GONE
+            binding.mangaReaderRecycler.clearOnScrollListeners()
+
+            val layoutManager = LinearLayoutManager(
+                this,
+                if (settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == BOTTOM_TO_TOP) RecyclerView.VERTICAL
+                else RecyclerView.HORIZONTAL,
+                !(settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == LEFT_TO_RIGHT)
+            )
+            layoutManager.isItemPrefetchEnabled = true
+            layoutManager.initialPrefetchItemCount = 3
+
+            binding.mangaReaderRecycler.layoutManager = layoutManager
+
+            binding.mangaReaderRecycler.tapListener = {
+                handleController()
+            }
+            binding.mangaReaderRecycler.longTapListener = { event ->
+                binding.mangaReaderRecycler.findChildViewUnder(event.x, event.y).let { child ->
+                    val image = child?.findViewById<SubsamplingScaleImageView>(R.id.imgProgImageNoGestures)
+                    if (image != null) {
+                        adapter?.loadImage(image, binding.mangaReaderRecycler.getChildAdapterPosition(child), child)
+                        true
+                    } else false
+                }
+            }
+
+            binding.mangaReaderRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(v: RecyclerView, dx: Int, dy: Int) {
+                    if (
+                        (
+                                (settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == BOTTOM_TO_TOP)
+                                        &&
+                                        (!v.canScrollVertically(-1) || !v.canScrollVertically(1))
+                                )
+                        ||
+                        (
+                                (settings.default.direction == LEFT_TO_RIGHT || settings.default.direction == RIGHT_TO_LEFT)
+                                        &&
+                                        (!v.canScrollHorizontally(-1) || !v.canScrollHorizontally(1))
+                                )
+                    ) {
+                        handleController(true)
+                    } else handleController(false)
+
+                    updatePageNumber(layoutManager.findLastVisibleItemPosition().toLong() + 1)
+                    super.onScrolled(v, dx, dy)
+                }
+            })
+
+            if ((settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == BOTTOM_TO_TOP))
+                binding.mangaReaderRecycler.updatePadding(0, 128f.px, 0, 128f.px)
+            else
+                binding.mangaReaderRecycler.updatePadding(128f.px, 0, 128f.px, 0)
+
+            snapHelper.attachToRecyclerView(
+                if (settings.default.layout == CONTINUOUS_PAGED) binding.mangaReaderRecycler
+                else null
+            )
+        } else {
+            binding.mangaReaderRecycler.visibility = View.GONE
+            binding.mangaReaderPager.visibility = View.VISIBLE
+        }
+    }
+
+    private val overshoot = AccelerateDecelerateInterpolator()
+    private val controllerDuration = (uiSettings.animationSpeed * 200).toLong()
+    private var goneTimer = Timer()
+    fun gone() {
+        goneTimer.cancel()
+        goneTimer.purge()
+        val timerTask: TimerTask = object : TimerTask() {
+            override fun run() {
+                if (!isContVisible) binding.mangaReaderCont.post {
+                    binding.mangaReaderCont.visibility = View.GONE
+                    isAnimating = false
+                }
+            }
+        }
+        goneTimer = Timer()
+        goneTimer.schedule(timerTask, controllerDuration)
+    }
+
+    fun handleController(shouldShow: Boolean? = null) {
+        if (!sliding) {
+            if (settings.hideSystemBars) {
+                hideSystemBars()
+                checkNotch()
+            }
+            shouldShow?.apply { isContVisible = !this }
+            if (isContVisible) {
+                isContVisible = false
+                if (!isAnimating) {
+                    isAnimating = true
+                    ObjectAnimator.ofFloat(binding.mangaReaderCont, "alpha", 1f, 0f).setDuration(controllerDuration).start()
+                    ObjectAnimator.ofFloat(binding.mangaReaderBottomCont, "translationY", 0f, 128f)
+                        .apply { interpolator = overshoot;duration = controllerDuration;start() }
+                    ObjectAnimator.ofFloat(binding.mangaReaderTopCont, "translationY", 0f, -128f)
+                        .apply { interpolator = overshoot;duration = controllerDuration;start() }
+                }
+                gone()
+            } else {
+                isContVisible = true
+                binding.mangaReaderCont.visibility = View.VISIBLE
+                ObjectAnimator.ofFloat(binding.mangaReaderCont, "alpha", 0f, 1f).setDuration(controllerDuration).start()
+                ObjectAnimator.ofFloat(binding.mangaReaderTopCont, "translationY", -128f, 0f)
+                    .apply { interpolator = overshoot;duration = controllerDuration;start() }
+                ObjectAnimator.ofFloat(binding.mangaReaderBottomCont, "translationY", 128f, 0f)
+                    .apply { interpolator = overshoot;duration = controllerDuration;start() }
+            }
+        }
+    }
+
+    fun updatePageNumber(page: Long) {
+        if (currentChapterPage != page) {
+            currentChapterPage = page
+            saveData("${media.id}_${chapter.number}", page, this)
+            binding.mangaReaderPageNumber.text = "${currentChapterPage}/$maxChapterPage"
+            if (!sliding) binding.mangaReaderPageSlider.value = currentChapterPage.toFloat()
+        }
     }
 
     private fun progress(runnable: Runnable) {

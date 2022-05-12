@@ -9,6 +9,7 @@ import okhttp3.Cache
 import okhttp3.OkHttpClient
 import java.io.File
 import java.io.Serializable
+import java.util.concurrent.*
 import kotlin.reflect.KFunction
 
 val defaultHeaders = mapOf(
@@ -39,6 +40,8 @@ fun initializeNetwork(context: Context) {
         .build()
     client = Requests(
         okHttpClient,
+        defaultCacheTime = 6,
+        defaultCacheTimeUnit = TimeUnit.HOURS,
         defaultHeaders =  defaultHeaders)
 }
 

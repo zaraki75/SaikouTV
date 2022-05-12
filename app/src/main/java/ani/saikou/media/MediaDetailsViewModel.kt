@@ -7,11 +7,10 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import ani.saikou.*
 import ani.saikou.anilist.Anilist
 import ani.saikou.anime.Episode
 import ani.saikou.anime.SelectorDialogFragment
-import ani.saikou.loadData
-import ani.saikou.logger
 import ani.saikou.manga.MangaChapter
 import ani.saikou.others.AnimeFillerList
 import ani.saikou.others.Kitsu
@@ -19,8 +18,6 @@ import ani.saikou.parsers.MangaReadSources
 import ani.saikou.parsers.ShowResponse
 import ani.saikou.parsers.VideoExtractor
 import ani.saikou.parsers.WatchSources
-import ani.saikou.saveData
-import ani.saikou.toastString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -181,22 +178,26 @@ class MediaDetailsViewModel : ViewModel() {
     fun getMangaChapters(): LiveData<MutableMap<Int, MutableMap<String, MangaChapter>>> = mangaChapters
     suspend fun loadMangaChapters(media: Media, i: Int) {
         logger("Loading Manga Chapters : $mangaLoaded")
-        if (!mangaLoaded.containsKey(i)) {
-            mangaLoaded[i] = mangaReadSources?.loadChaptersFromMedia(i, media) ?: return
+        if (!mangaLoaded.containsKey(i)) tryWithSuspend{
+            mangaLoaded[i] = mangaReadSources?.loadChaptersFromMedia(i, media) ?: return@tryWithSuspend
         }
         mangaChapters.postValue(mangaLoaded)
     }
 
     suspend fun overrideMangaChapters(i: Int, source: ShowResponse, id: Int) {
         mangaReadSources?.saveResponse(i, id, source)
-        mangaLoaded[i] = mangaReadSources?.loadChapters(i, source.link) ?: return
+        tryWithSuspend{
+            mangaLoaded[i] = mangaReadSources?.loadChapters(i, source.link) ?: return@tryWithSuspend
+        }
         mangaChapters.postValue(mangaLoaded)
     }
 
     private val mangaChapter = MutableLiveData<MangaChapter?>(null)
     fun getMangaChapter(): LiveData<MangaChapter?> = mangaChapter
     suspend fun loadMangaChapterImages(chapter: MangaChapter, selected: Selected) {
-        chapter.images = mangaReadSources?.get(selected.source)?.loadImages(chapter.link) ?: return
-        mangaChapter.postValue(chapter)
+        tryWithSuspend{
+            chapter.images = mangaReadSources?.get(selected.source)?.loadImages(chapter.link) ?: return@tryWithSuspend
+            mangaChapter.postValue(chapter)
+        }
     }
 }

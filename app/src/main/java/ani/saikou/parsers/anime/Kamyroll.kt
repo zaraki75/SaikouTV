@@ -4,7 +4,6 @@ import ani.saikou.client
 import ani.saikou.levenshtein
 import ani.saikou.parsers.*
 import com.fasterxml.jackson.annotation.JsonProperty
-import okhttp3.FormBody
 
 class Kamyroll : AnimeParser() {
 
@@ -162,14 +161,6 @@ class Kamyroll : AnimeParser() {
         private val locale = "locale" to "en-US"
         private val type = "type" to "adaptive_hls"
 
-        private fun makeBody(vararg data: Pair<String, String>): FormBody {
-            val body = FormBody.Builder()
-            data.forEach {
-                body.add(it.first, it.second)
-            }
-            return body.build()
-        }
-
         suspend fun getHeaders(): Map<String, String> {
             headers = headers ?: let {
                 val res = client.post(
@@ -177,7 +168,7 @@ class Kamyroll : AnimeParser() {
                     mapOf(
                         "authorization" to "Basic BCoB9f4m4lSlo+fp05PjlwWcplxQXDT+N+1FfvsyoF41YSy8nH+kuJBQowYrVkiZq6PvTvjFEoQQvzJOt3pJZA=="
                     ),
-                    data = makeBody(
+                    data = mapOf(
                         "refresh_token" to "oI1F8udW1uidoJDXn4qPu6vddl546+pLjjIhXnY1bWByOWcAT1HBjehn1HD847EQ2ue8Tl2qPk0FP7mgnS9U4yGP8OZp/ehMZ6rxx7Nx7OgD/Qrl8eMxPNsG3Q864MBMa/ZaWPl+tS4vc4NQ+rR36fWxoTMglxuFOKj4hDKHxGanNpHj7iR0XsgmZX9Fy967BSn9XhO9G7S+Ag7qE3Z7rcJiZOJfh3s4zyRPW7wXYVrEq3UTYQx2oZm2g4Efb7Gm",
                         "grant_type" to "refresh_token",
                         "scope" to "offline_access",

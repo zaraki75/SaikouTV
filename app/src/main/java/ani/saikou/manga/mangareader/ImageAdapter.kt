@@ -7,13 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
-import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.R
 import ani.saikou.databinding.ItemImageBinding
 import ani.saikou.manga.MangaChapter
 import ani.saikou.px
 import ani.saikou.settings.CurrentReaderSettings
+import ani.saikou.settings.CurrentReaderSettings.Directions.*
+import ani.saikou.settings.CurrentReaderSettings.Layouts.PAGED
 import ani.saikou.settings.UserInterfaceSettings
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
@@ -44,9 +45,14 @@ class ImageAdapter(
         if (holder is ImageViewHolder) {
             val binding = holder.binding
 
-            val imageView: SubsamplingScaleImageView = if (settings.layout != CurrentReaderSettings.Layouts.PAGED) {
+            val imageView: SubsamplingScaleImageView = if (settings.layout != PAGED) {
                 if (settings.padding) {
-                    binding.root.updatePadding(bottom = 16f.px)
+                    when (settings.direction) {
+                        TOP_TO_BOTTOM -> binding.root.setPadding(0,0,0,16f.px)
+                        LEFT_TO_RIGHT -> binding.root.setPadding(0,0,16f.px,0)
+                        BOTTOM_TO_TOP -> binding.root.setPadding(0,16f.px,0,0)
+                        RIGHT_TO_LEFT -> binding.root.setPadding(16f.px,0,0,0)
+                    }
                 }
                 binding.imgProgImageNoGestures
             } else binding.imgProgImageGestures
@@ -62,6 +68,20 @@ class ImageAdapter(
         imageView.visibility = View.GONE
         val link = images[position].url
         val trans = images[position].transformation
+
+        if (settings.layout != PAGED) {
+            parent.updateLayoutParams {
+                if (settings.direction != LEFT_TO_RIGHT && settings.direction != RIGHT_TO_LEFT) {
+                    width = ViewGroup.LayoutParams.MATCH_PARENT
+                    height = 480f.px
+                }
+                else {
+                    width = 480f.px
+                    height = ViewGroup.LayoutParams.MATCH_PARENT
+                }
+            }
+        }
+
         if (link.url.isEmpty()) return
         Glide.with(imageView).download(GlideUrl(link.url) { link.headers })
             .override(Target.SIZE_ORIGINAL)
@@ -75,9 +95,14 @@ class ImageAdapter(
 
                     override fun onResourceReady(resource: File, transition: Transition<in File>?) {
                         imageView.visibility = View.VISIBLE
-                        if (settings.layout != CurrentReaderSettings.Layouts.PAGED) parent.updateLayoutParams {
-                            height = ViewGroup.LayoutParams.WRAP_CONTENT
-                        }
+                        if (settings.layout != PAGED)
+                            parent.updateLayoutParams {
+                                if (settings.direction != LEFT_TO_RIGHT && settings.direction != RIGHT_TO_LEFT)
+                                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                                else
+                                    width = ViewGroup.LayoutParams.WRAP_CONTENT
+
+                            }
                         view.setImage(ImageSource.uri(Uri.fromFile(resource)))
                         ObjectAnimator.ofFloat(parent, "alpha", 0f, 1f).setDuration((400 * uiSettings.animationSpeed).toLong())
                             .start()

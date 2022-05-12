@@ -234,4 +234,8 @@
     <string name="none">None</string>
     <string name="selected_dns">Selected DNS</string>
     <string name="dns_info">Change, If your ISP blocks any Source</string>
+    <string name="keep_screen_on">Keep Screen On</string>
+    <string name="layout">Layout</string>
+    <string name="spaced_pages">Spaced Pages</string>
+    <string name="direction">Direction</string>
 </resources>

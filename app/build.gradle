@@ -33,6 +33,7 @@ android {
     kotlinOptions {
         jvmTarget = '11'
     }
+    namespace 'ani.saikou'
 }
 
 dependencies {
@@ -45,7 +46,7 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.multidex:multidex:2.0.1'
 
-    implementation 'com.github.Blatzar:NiceHttp:0.1.9'
+    implementation 'com.github.Blatzar:NiceHttp:0.2.0'
 
     implementation 'com.github.bumptech.glide:glide:4.13.1'
     kapt 'com.github.bumptech.glide:compiler:4.13.1'
