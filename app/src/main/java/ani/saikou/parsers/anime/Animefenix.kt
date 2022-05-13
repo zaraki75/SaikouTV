@@ -134,35 +134,22 @@ class Animefenix : AnimeParser() {
 
 
 
-    override suspend fun loadEpisodes(
-        animeLink: String,
-        extra: Map<String, String>?
-    ): List<Episode> {
-        val list = mutableListOf<ani.saikou.parsers.Episode>()
-
+    override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
         val pageBody = client.get(animeLink).document
-        val thumbUrl = thumbResolver(
-            pageBody.select("ul.anime-page__episode-list.is-size-6 li a").first()?.attr("href").toString())
-        pageBody.select("ul.anime-page__episode-list.is-size-6 li").reversed().forEach { it ->
+        val thumbUrl = thumbResolver(pageBody.select("ul.anime-page__episode-list.is-size-6 li a").first()?.attr("href").toString())
+
+        return pageBody.select("ul.anime-page__episode-list.is-size-6 li").reversed().map { it ->
             val epNum = it.select("a span").text().replace("Episodio", "")
             val url = it.select("a").attr("href")
 
-            list.add(ani.saikou.parsers.Episode(number = epNum,link = url,thumbnail = thumbUrl))
+            ani.saikou.parsers.Episode(number = epNum,link = url,thumbnail = thumbUrl)
         }
-        return list
     }
 
-
-
-    private fun httpsIfy(text: String): String {
-        return if (text.take(2) == "//") "https:$text"
-        else text
-    }
 
     override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
-        val list = mutableListOf<VideoServer>()
-       val document = client.get(episodeLink).document
-        document.select("ul.is-borderless.episode-page__servers-list li").forEach {
+        val document = client.get(episodeLink).document
+        return document.select("ul.is-borderless.episode-page__servers-list li").map {
             val serverName = it.select("a").attr("title")
             val serverId = it.select("a").attr("href").replace("#vid", "").toInt()
             val serverCode =
@@ -180,34 +167,30 @@ class Animefenix : AnimeParser() {
             if(serverName == "AmazonEs" || serverName == "AMAZONES" || serverName == "amazones" ) url = "https://www.animefenix.com/stream/amz.php?v=$serverCode&ext=es"
 
             val embed = FileUrl(url,mapOf("referer" to hostUrl))
-            list.add(VideoServer(serverName,embed))
+            VideoServer(serverName,embed)
 
         }
-        return list
     }
 
     override suspend fun getVideoExtractor(server: VideoServer): VideoExtractor? {
         val domain = Uri.parse(server.embed.url).host ?: return null
         val extractor: VideoExtractor? = when {
-            "fembed" in domain -> FPlayer(server)
-            "ok" in domain      -> OK(server)
+            "fembed" in domain     -> FPlayer(server)
+            "ok" in domain         -> OK(server)
             "animefenix" in domain -> amazonExtractor(server)
-
-            else                -> null
+             else  -> null
         }
         return extractor
     }
 
     override suspend fun search(query: String): List<ShowResponse> {
         val encoded = encode(query + if(selectDub) " (Sub)" else "")
-        val list = mutableListOf<ShowResponse>()
-        client.get("$hostUrl/animes?q=$encoded").document
-            .select("div.container div.container div.list-series article.serie-card").forEach {
+        return client.get("$hostUrl/animes?q=$encoded").document
+               .select("div.container div.container div.list-series article.serie-card").map {
                 val link = it.select("figure.image a").attr("href")
                 val title = it.select("div.title h3 a").text()
                 val cover = it.select("figure.image a img").attr("src")
-                list.add(ShowResponse(title, link, cover))
+                ShowResponse(title, link, cover)
             }
-        return list
     }
 }
