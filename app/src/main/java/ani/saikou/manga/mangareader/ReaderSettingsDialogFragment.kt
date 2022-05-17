@@ -37,6 +37,7 @@ class ReaderSettingsDialogFragment(val activity: MangaReaderActivity) : BottomSh
             binding.readerContinuous
         )
 
+        binding.readerPadding.isEnabled = settings.layout.ordinal!=0
         fun paddingAvailable(enable:Boolean){
             binding.readerPadding.isEnabled = enable
         }

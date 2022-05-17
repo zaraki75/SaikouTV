@@ -185,6 +185,7 @@
             android:drawableStart="@drawable/ic_baseline_screen_lock_portrait_24"
             android:drawablePadding="16dp"
             android:elegantTextHeight="true"
+            android:enabled="false"
             android:fontFamily="@font/poppins_bold"
             android:minHeight="64dp"
             android:text="@string/keep_screen_on"

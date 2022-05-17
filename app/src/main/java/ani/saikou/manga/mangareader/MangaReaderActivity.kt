@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
 import ani.saikou.*
 import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.ActivityMangaReaderBinding
@@ -56,11 +57,11 @@ class MangaReaderActivity : AppCompatActivity() {
     private var currentChapterPage = 0L
 
     var settings = loadData("reader_settings") ?: ReaderSettings().apply { saveData("reader_settings", this) }
-    private var uiSettings = loadData("ui_settings") ?: UserInterfaceSettings().apply { saveData("ui_settings", this) }
+    var uiSettings = loadData("ui_settings") ?: UserInterfaceSettings().apply { saveData("ui_settings", this) }
 
     private var notchHeight: Int? = null
 
-    private var adapter: ImageAdapter? = null
+    private var imageAdapter: ImageAdapter? = null
 
     var sliding = false
     var isAnimating = false
@@ -117,7 +118,10 @@ class MangaReaderActivity : AppCompatActivity() {
         binding.mangaReaderPageSlider.addOnChangeListener { _, value, fromUser ->
             if (fromUser) {
                 sliding = true
-                binding.mangaReaderRecycler.smoothScrollToPosition(value.toInt() - 1)
+                if (settings.default.layout != PAGED)
+                    binding.mangaReaderRecycler.smoothScrollToPosition(value.toInt() - 1)
+                else
+                    binding.mangaReaderPager.currentItem = value.toInt() - 1
                 pageSliderHide()
             }
         }
@@ -150,22 +154,21 @@ class MangaReaderActivity : AppCompatActivity() {
 
         showProgressDialog = if (settings.askIndividual) loadData<Boolean>("${media.id}_progressDialog") != true else false
         progressDialog =
-            if (showProgressDialog && Anilist.userid != null && if (media.isAdult) settings.updateForH else true) AlertDialog.Builder(
-                this,
-                R.style.DialogTheme
-            ).setTitle("Update progress on anilist?").apply {
-                setMultiChoiceItems(
-                    arrayOf("Don't ask again for ${media.userPreferredName}"),
-                    booleanArrayOf(false)
-                ) { _, _, isChecked ->
-                    if (isChecked) {
-                        saveData("${media.id}_progressDialog", isChecked)
-                        progressDialog = null
+            if (showProgressDialog && Anilist.userid != null && if (media.isAdult) settings.updateForH else true)
+                AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Update progress on anilist?").apply {
+                    setMultiChoiceItems(
+                        arrayOf("Don't ask again for ${media.userPreferredName}"),
+                        booleanArrayOf(false)
+                    ) { _, _, isChecked ->
+                        if (isChecked) {
+                            saveData("${media.id}_progressDialog", isChecked)
+                            progressDialog = null
+                        }
+                        showProgressDialog = isChecked
                     }
-                    showProgressDialog = isChecked
+                    setOnCancelListener { hideSystemBars() }
                 }
-                setOnCancelListener { hideSystemBars() }
-            } else null
+            else null
 
         //Chapter Change
         fun change(index: Int) {
@@ -217,9 +220,11 @@ class MangaReaderActivity : AppCompatActivity() {
                         maxChapterPage = chapImages.size.toLong()
                         saveData("${media.id}_${it.number}_max", maxChapterPage)
 
-                        adapter = ImageAdapter(chapter, settings.default, uiSettings)
-                        binding.mangaReaderRecycler.adapter = adapter
-
+                        imageAdapter = ImageAdapter(this, chapter)
+                        if (settings.default.layout != PAGED)
+                            binding.mangaReaderRecycler.adapter = imageAdapter
+                        else
+                            binding.mangaReaderPager.adapter = imageAdapter
                         if (chapImages.size > 1) {
                             binding.mangaReaderOnePage.visibility = View.GONE
                             binding.mangaReaderPageSlider.apply {
@@ -233,7 +238,10 @@ class MangaReaderActivity : AppCompatActivity() {
                         }
                         binding.mangaReaderPageNumber.text = "${currentChapterPage}/$maxChapterPage"
 
-                        binding.mangaReaderRecycler.scrollToPosition(currentChapterPage.toInt() - 1)
+                        if (settings.default.layout == PAGED)
+                            binding.mangaReaderPager.currentItem = currentChapterPage.toInt() - 1
+                        else
+                            binding.mangaReaderRecycler.scrollToPosition(currentChapterPage.toInt() - 1)
                     }
                 }
             }
@@ -248,7 +256,8 @@ class MangaReaderActivity : AppCompatActivity() {
     fun applySettings() {
         saveData("reader_settings", settings)
         hideSystemBars()
-
+        binding.mangaReaderPager.unregisterOnPageChangeCallback(pageChangeCallback)
+        val currentPage = currentChapterPage.toInt()
         if (settings.default.layout != PAGED) {
 
             binding.mangaReaderRecycler.visibility = View.VISIBLE
@@ -273,11 +282,13 @@ class MangaReaderActivity : AppCompatActivity() {
                 binding.mangaReaderRecycler.findChildViewUnder(event.x, event.y).let { child ->
                     val image = child?.findViewById<SubsamplingScaleImageView>(R.id.imgProgImageNoGestures)
                     if (image != null) {
-                        adapter?.loadImage(image, binding.mangaReaderRecycler.getChildAdapterPosition(child), child)
+                        imageAdapter?.loadImage(image, binding.mangaReaderRecycler.getChildAdapterPosition(child), child)
                         true
                     } else false
                 }
             }
+
+            binding.mangaReaderRecycler.adapter = imageAdapter
 
             binding.mangaReaderRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(v: RecyclerView, dx: Int, dy: Int) {
@@ -286,9 +297,7 @@ class MangaReaderActivity : AppCompatActivity() {
                                 (settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == BOTTOM_TO_TOP)
                                         &&
                                         (!v.canScrollVertically(-1) || !v.canScrollVertically(1))
-                                )
-                        ||
-                        (
+                                ) || (
                                 (settings.default.direction == LEFT_TO_RIGHT || settings.default.direction == RIGHT_TO_LEFT)
                                         &&
                                         (!v.canScrollHorizontally(-1) || !v.canScrollHorizontally(1))
@@ -311,9 +320,30 @@ class MangaReaderActivity : AppCompatActivity() {
                 if (settings.default.layout == CONTINUOUS_PAGED) binding.mangaReaderRecycler
                 else null
             )
+            binding.mangaReaderRecycler.scrollToPosition(currentPage - 1)
         } else {
             binding.mangaReaderRecycler.visibility = View.GONE
-            binding.mangaReaderPager.visibility = View.VISIBLE
+            binding.mangaReaderPager.apply{
+                visibility = View.VISIBLE
+                adapter = imageAdapter
+                layoutDirection = if(settings.default.direction != LEFT_TO_RIGHT && settings.default.direction != TOP_TO_BOTTOM ) View.LAYOUT_DIRECTION_LTR else View.LAYOUT_DIRECTION_RTL
+                orientation = if((settings.default.direction == LEFT_TO_RIGHT || settings.default.direction == RIGHT_TO_LEFT)) ViewPager2.ORIENTATION_HORIZONTAL else ViewPager2.ORIENTATION_VERTICAL
+                registerOnPageChangeCallback(pageChangeCallback)
+                setOnClickListener {
+                    handleController()
+                }
+                setCurrentItem(currentPage-1,false)
+            }
+
+        }
+
+    }
+
+    private val pageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
+        override fun onPageSelected(position: Int) {
+            updatePageNumber(position.toLong() + 1)
+            handleController(position == 0 || position + 1 >= maxChapterPage)
+            super.onPageSelected(position)
         }
     }
 
