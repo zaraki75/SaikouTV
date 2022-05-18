@@ -159,13 +159,14 @@ class Animefenix : AnimeParser() {
                     .substringAfter("code=")
                     .substringBefore("&amp")
 
-            var url = ""
-
-            if(serverName == "fembed" || serverName == "Fembed" ) url = "https://www.fembed.com/v/$serverCode"
-            if(serverName == "ru" || serverName == "RU" ) url = "https://ok.ru/videoembed/$serverCode"
-            if(serverName == "Amazon" || serverName == "AMAZON" || serverName == "amazon" ) url = "https://www.animefenix.com/stream/amz.php?v=$serverCode"
-            if(serverName == "AmazonEs" || serverName == "AMAZONES" || serverName == "amazones" ) url = "https://www.animefenix.com/stream/amz.php?v=$serverCode&ext=es"
-
+            var url = when(serverName.lowercase){
+               "fembed" -> "https://www.fembed.com/v/$serverCode"
+               "ru" -> "https://ok.ru/videoembed/$serverCode"
+               "amazon" -> "https://www.animefenix.com/stream/amz.php?v=$serverCode"
+               "amazones" -> "https://www.animefenix.com/stream/amz.php?v=$serverCode&ext=es"
+               else -> ""
+            }
+            
             val embed = FileUrl(url,mapOf("referer" to hostUrl))
             VideoServer(serverName,embed)
 
