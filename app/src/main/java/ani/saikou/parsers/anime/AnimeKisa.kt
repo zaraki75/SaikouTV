@@ -6,6 +6,7 @@ import ani.saikou.media.Media
 import ani.saikou.parsers.*
 import ani.saikou.parsers.anime.extractors.VizCloud
 import ani.saikou.sortByTitle
+import ani.saikou.tryWithSuspend
 
 class AnimeKisa : AnimeParser() {
 
@@ -66,5 +67,18 @@ class AnimeKisa : AnimeParser() {
             saveShowResponse(mediaObj.id, response)
         }
         return response
+    }
+
+    override suspend fun loadByVideoServers(episodeUrl: String, extra: Any?, callback: (VideoExtractor) -> Unit) {
+        tryWithSuspend {
+            loadVideoServers(episodeUrl, extra).forEach {
+                tryWithSuspend {
+                    getVideoExtractor(it).apply {
+                        load()
+                        callback.invoke(this)
+                    }
+                }
+            }
+        }
     }
 }

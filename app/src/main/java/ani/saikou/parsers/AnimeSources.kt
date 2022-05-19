@@ -10,8 +10,9 @@ object AnimeSources : WatchSources() {
         ::Gogo,
         ::Zoro,
         ::Tenshi,
+        ::Kamyroll,
         ::AllAnime,
-        ::AnimeKisa,
+        ::9Anime Backup,
         ::Monoschinos,
         ::Animefenix,
         ::Kamyroll,
@@ -22,8 +23,9 @@ object AnimeSources : WatchSources() {
         "Gogo",
         "Zoro",
         "Tenshi",
+        "Kamyroll",
         "AllAnime",
-        "AnimeKisa",
+        "9Anime Backup",
         "Monoschinos",
         "Animefenix",
         "Kamyroll"
@@ -39,8 +41,9 @@ object HAnimeSources : WatchSources() {
         ::Gogo,
         ::Zoro,
         ::Tenshi,
+        ::Kamyroll,
         ::AllAnime,
-        ::AnimeKisa,
+        ::9Anime Backup,
         ::Monoschinos,
         ::Animefenix
     )
@@ -52,8 +55,9 @@ object HAnimeSources : WatchSources() {
         "Gogo",
         "Zoro",
         "Tenshi",
+        "Kamyroll",
         "AllAnime",
-        "AnimeKisa",
+        "9Anime Backup",
         "Monoschinos",
         "Animefenix"
     )

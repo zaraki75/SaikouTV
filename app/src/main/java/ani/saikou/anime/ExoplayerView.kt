@@ -763,7 +763,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         extractor?.onVideoStopped(video)
 
         extractor = episode.extractors?.find { it.server.name == episode.selectedServer } ?: return
-        video = extractor?.videos?.get(episode.selectedVideo) ?: return
+        video = extractor?.videos?.getOrNull(episode.selectedVideo) ?: return
         subtitle = extractor?.subtitles?.find { it.language == "English" }
 
         extractor?.onVideoPlayed(video)

@@ -47,7 +47,7 @@ class MangaDex : MangaParser() {
         val res = client.get("$host/at-home/server/${chapterLink}").parsed<ChapterResponse>().chapter
         return res?.data?.map {
             MangaImage("https://uploads.mangadex.org/data/${res.hash}/${it}")
-        } ?: emptyList()
+        } ?: listOf()
     }
 
     override suspend fun search(query: String): List<ShowResponse> {
@@ -60,7 +60,7 @@ class MangaDex : MangaParser() {
             val coverName = it.relationships?.find { i -> i.type == "cover_art" }?.attributes?.fileName
             val coverURL = if (coverName != null) "https://uploads.mangadex.org/covers/$id/$coverName.256.jpg" else ""
             ShowResponse(title, id, coverURL)
-        } ?: emptyList()
+        } ?: listOf()
     }
 
     private data class SearchResponse(

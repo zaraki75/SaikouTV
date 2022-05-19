@@ -21,7 +21,7 @@ class Zoro : AnimeParser() {
 
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
         val res = client.get("$hostUrl/ajax/v2/episode/list/$animeLink").parsed<HtmlResponse>()
-        val element = Jsoup.parse(res.html ?: return emptyList())
+        val element = Jsoup.parse(res.html ?: return listOf())
         return element.select(".detail-infor-content > div > a").map {
             val title = it.attr("title")
             val num = it.attr("data-number").replace("\n", "")
@@ -36,7 +36,7 @@ class Zoro : AnimeParser() {
 
     override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
         val res = client.get("$hostUrl/ajax/v2/episode/servers?episodeId=$episodeLink").parsed<HtmlResponse>()
-        val element = Jsoup.parse(res.html ?: return emptyList())
+        val element = Jsoup.parse(res.html ?: return listOf())
 
         return element.select("div.server-item").asyncMap {
             val serverName = "${it.attr("data-type").uppercase()} - ${it.text()}"

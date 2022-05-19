@@ -24,11 +24,11 @@ class FPlayer(override val server: VideoServer) : VideoExtractor() {
                         it.file,
                         getSize(it.file)
                     )
-                }?: emptyList())
+                }?: listOf())
             }
 
         } catch (e: MismatchedInputException) {}
-        return VideoContainer(emptyList())
+        return VideoContainer(listOf())
     }
 
     private data class Data(

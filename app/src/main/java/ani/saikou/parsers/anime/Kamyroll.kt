@@ -33,7 +33,7 @@ class Kamyroll : AnimeParser() {
             )
 
             val epMap = mutableMapOf<Long, Temp>()
-            val dataList = (eps.items ?: return emptyList()).mapNotNull { item ->
+            val dataList = (eps.items ?: return listOf()).mapNotNull { item ->
                 val tit = item.title ?: return@mapNotNull null
                 (item.episodes ?: return@mapNotNull null).map {
                     Pair(it.sequenceNumber, Temp(it.type, it.images?.thumbnail?.getOrNull(5)?.source, mutableMapOf(tit to it.id)))
@@ -64,7 +64,7 @@ class Kamyroll : AnimeParser() {
                 val thumb = it.images?.thumbnail?.getOrNull(5)?.source
                 if (thumb != null) Episode("1", it.id, thumbnail = thumb)
                 else Episode("1", it.id)
-            } ?: return emptyList()
+            } ?: return listOf()
             listOf(ep)
         }
     }
@@ -110,7 +110,7 @@ class Kamyroll : AnimeParser() {
             )
             val subtitle = if (findSub) eps.subtitles?.find { it.locale == "en-US" || it.locale == "en-GB" }
                 .let { listOf(Subtitle("English", it?.url ?: return@let null, "ass")) } else null
-            return VideoContainer(vid, subtitle ?: emptyList())
+            return VideoContainer(vid, subtitle ?: listOf())
         }
 
         private data class StreamsResponse(
@@ -142,7 +142,7 @@ class Kamyroll : AnimeParser() {
                 "query" to query
             )
         ).parsed<SearchResponse>()
-        return (res.items ?: emptyList()).map { item ->
+        return (res.items ?: listOf()).map { item ->
             item.items.map {
                 ShowResponse(
                     name = it.title,

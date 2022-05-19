@@ -46,20 +46,22 @@ class MangaReaderTo : MangaParser() {
         val id = client.get(chapterLink).document.select("#wrapper").attr("data-reading-id")
 
         val res = client.get("$hostUrl/ajax/image/list/chap/$id?mode=vertical&quality=high&hozPageSize=1")
-                .parsed<HtmlResponse>().html ?: return emptyList()
+                .parsed<HtmlResponse>().html ?: return listOf()
 
         return Jsoup.parse(res).select(".iv-card").map {
             val link = it.attr("data-url")
-            val trans = if (it.hasClass("shuffled")) transformation else null
+            val trans = it.hasClass("shuffled")
             MangaImage(link, trans)
         }
 
     }
 
+    override fun getTransformation(): Transformation<File> = transformation
+
     override suspend fun search(query: String): List<ShowResponse> {
 
         val res = client.get("$hostUrl/ajax/manga/search/suggest?keyword=${encode(query)}")
-            .parsed<HtmlResponse>().html ?: return emptyList()
+            .parsed<HtmlResponse>().html ?: return listOf()
 
         return Jsoup.parse(res).select("a:not(.nav-bottom)").map {
             val link = hostUrl + it.attr("href")

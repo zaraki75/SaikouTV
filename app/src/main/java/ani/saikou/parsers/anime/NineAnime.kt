@@ -8,6 +8,9 @@ import ani.saikou.parsers.anime.extractors.StreamTape
 import ani.saikou.parsers.anime.extractors.VizCloud
 import ani.saikou.tryWithSuspend
 import com.fasterxml.jackson.module.kotlin.readValue
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.jsoup.Jsoup
 import java.net.URLDecoder
 
@@ -72,12 +75,34 @@ class NineAnime : AnimeParser() {
 
     override suspend fun search(query: String): List<ShowResponse> {
         val vrf = getVrf(query)
-        val searchLink = "${host()}/filter?language%5B%5D=${if (selectDub) "dubbed" else "subbed"}&keyword=${encode(query)}&vrf=${encode(vrf)}&page=1"
+        val searchLink =
+            "${host()}/filter?language%5B%5D=${if (selectDub) "dubbed" else "subbed"}&keyword=${encode(query)}&vrf=${encode(vrf)}&page=1"
         return client.get(searchLink).document.select("ul.anime-list li").map {
             val link = it.select("a.name").attr("href")
             val title = it.select("a.name").text()
             val cover = it.select("a.poster img").attr("src")
             ShowResponse(title, link, cover)
+        }
+    }
+
+    override suspend fun loadByVideoServers(episodeUrl: String, extra: Any?, callback: (VideoExtractor) -> Unit) {
+        tryWithSuspend {
+            val servers = loadVideoServers(episodeUrl, extra).map { getVideoExtractor(it) }
+            val mutex = Mutex()
+            servers.forEach {
+                tryWithSuspend {
+                    it?.apply {
+                        if (this is VizCloud) mutex.withLock {
+                            load()
+                            callback.invoke(this)
+                        } else {
+                            load()
+                            callback.invoke(this)
+                        }
+                    }
+                }
+                delay(1000)
+            }
         }
     }
 

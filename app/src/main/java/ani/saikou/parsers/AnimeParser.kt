@@ -61,7 +61,9 @@ abstract class AnimeParser : BaseParser() {
         tryWithSuspend {
             loadVideoServers(episodeUrl, extra).asyncMap {
                 getVideoExtractor(it)?.apply {
-                    load()
+                    tryWithSuspend {
+                        load()
+                    }
                     callback.invoke(this)
                 }
             }
