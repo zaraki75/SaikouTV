@@ -44,7 +44,7 @@ class MangaBuddy : MangaParser() {
         val cdn = res.findBetween("var mainServer = \"", "\";")
         val arr = res.findBetween("var chapImages = ", "\n")?.trim('\'')?.split(",")
 
-        return (arr ?: return emptyList()).map {
+        return (arr ?: return listOf()).map {
             val link = FileUrl("https:$cdn$it", headers)
             MangaImage(link)
         }

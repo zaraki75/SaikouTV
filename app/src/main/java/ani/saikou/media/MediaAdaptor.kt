@@ -61,7 +61,7 @@ class MediaAdaptor(
             0 -> {
                 val b = (holder as MediaViewHolder).binding
                 setAnimation(activity, b.root, uiSettings)
-                val media = mediaList?.get(position)
+                val media = mediaList?.getOrNull(position)
                 if (media != null) {
                     b.itemCompactImage.loadImage(media.cover)
                     b.itemCompactOngoing.visibility = if (media.status == "RELEASING") View.VISIBLE else View.GONE

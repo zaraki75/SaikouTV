@@ -20,7 +20,7 @@ class MangaSee : MangaParser() {
     override suspend fun loadChapters(mangaLink: String): List<MangaChapter> {
 
         val json = client.get("$hostUrl/manga/$mangaLink").document.select("script")
-            .lastOrNull()?.toString()?.findBetween("vm.Chapters = ", ";")?: return emptyList()
+            .lastOrNull()?.toString()?.findBetween("vm.Chapters = ", ";")?: return listOf()
 
         return mapper.readValue<List<MangaResponse>>(json).reversed().map {
             val chap = it.chapter
@@ -32,11 +32,11 @@ class MangaSee : MangaParser() {
 
     override suspend fun loadImages(chapterLink: String): List<MangaImage> {
         val res = client.get(chapterLink).document.select("script").lastOrNull()
-        val str = res?.toString() ?: return emptyList()
-        val server = str.findBetween("vm.CurPathName = ", ";")?.trim('"') ?: return emptyList()
-        val slug = str.findBetween("vm.IndexName = ", ";")?.trim('"') ?: return emptyList()
+        val str = res?.toString() ?: return listOf()
+        val server = str.findBetween("vm.CurPathName = ", ";")?.trim('"') ?: return listOf()
+        val slug = str.findBetween("vm.IndexName = ", ";")?.trim('"') ?: return listOf()
         val json = mapper.readValue<ChapterResponse>(
-            str.findBetween("vm.CurChapter = ", ";") ?: return emptyList()
+            str.findBetween("vm.CurChapter = ", ";") ?: return listOf()
         )
         val id = json.chapter
         val chap = chapChop(id, 1) + chapChop(id, 2) + chapChop(id, 0)
@@ -60,7 +60,7 @@ class MangaSee : MangaParser() {
         private const val host = "https://mangasee123.com"
         private var response: List<ShowResponse>? = null
         suspend fun getSearchData(): List<ShowResponse> {
-            response = if (response != null) response ?: emptyList()
+            response = if (response != null) response ?: listOf()
             else {
                 val json = client.get("$host/search/").document.select("script").last().toString()
                     .findBetween("vm.Directory = ", "\n")!!.replace(";", "")
@@ -72,7 +72,7 @@ class MangaSee : MangaParser() {
                     )
                 }
             }
-            return response ?: emptyList()
+            return response ?: listOf()
         }
     }
 

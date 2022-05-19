@@ -3,6 +3,7 @@ package ani.saikou
 import android.content.Context
 import com.lagradost.nicehttp.Requests
 import com.lagradost.nicehttp.addGenericDns
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import okhttp3.Cache
@@ -21,7 +22,7 @@ lateinit var okHttpClient: OkHttpClient
 lateinit var client: Requests
 
 fun initializeNetwork(context: Context) {
-    val dns = loadData<Int>("settings_dns",context)
+    val dns = loadData<Int>("settings_dns", context)
     cache = Cache(
         File(context.cacheDir, "http_cache"),
         50L * 1024L * 1024L // 50 MiB
@@ -42,7 +43,8 @@ fun initializeNetwork(context: Context) {
         okHttpClient,
         defaultCacheTime = 6,
         defaultCacheTimeUnit = TimeUnit.HOURS,
-        defaultHeaders =  defaultHeaders)
+        defaultHeaders = defaultHeaders
+    )
 }
 
 val mapper = Requests.mapper
@@ -74,6 +76,8 @@ suspend fun <T> tryWithSuspend(call: suspend () -> T): T? {
         call.invoke()
     } catch (e: Exception) {
         logError(e)
+        null
+    } catch (e: CancellationException) {
         null
     }
 }

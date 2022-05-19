@@ -197,7 +197,14 @@ class MediaDetailsViewModel : ViewModel() {
     suspend fun loadMangaChapterImages(chapter: MangaChapter, selected: Selected) {
         tryWithSuspend{
             chapter.images = mangaReadSources?.get(selected.source)?.loadImages(chapter.link) ?: return@tryWithSuspend
+            loadTransformation(chapter,selected.source)
             mangaChapter.postValue(chapter)
+        }
+    }
+
+    private fun loadTransformation(chapter: MangaChapter,source:Int){
+        chapter.images?.forEach {
+            if(it.useTransformation) it.transformation = mangaReadSources?.get(source)?.getTransformation()
         }
     }
 }

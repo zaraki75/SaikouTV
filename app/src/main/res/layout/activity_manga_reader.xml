@@ -35,10 +35,14 @@
         tools:visibility="visible">
 
         <FrameLayout
-            android:id="@+id/mangaReaderBottomCont"
+            android:id="@+id/mangaReaderSliderVertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom">
+            android:layout_gravity="bottom"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="96dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="80dp">
 
             <ImageView
                 android:layout_width="match_parent"
@@ -46,9 +50,51 @@
                 app:srcCompat="@drawable/rounded_top_nav"
                 tools:ignore="ContentDescription,ImageContrastCheck" />
 
-            <LinearLayout
+            <com.google.android.material.slider.Slider
+                android:id="@+id/mangaReaderPageSlider"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="@string/current_page"
+                android:stepSize="1"
+                android:valueFrom="1.0"
+                android:valueTo="100.0"
+                app:labelBehavior="floating"
+                app:labelStyle="@style/fontTooltip"
+                app:thumbRadius="8dp"
+                app:tickColor="#0000"
+                app:trackColorInactive="@color/bg_white"
+                app:trackHeight="2dp" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/mangaReaderBottomCont"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom">
+
+            <ImageView
+                android:id="@+id/imageView3"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:srcCompat="@drawable/linear_gradient_black"
+                tools:ignore="ContentDescription" />
+
+            <ImageView
+                android:id="@+id/imageView4"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:srcCompat="@drawable/linear_gradient_black"
+                tools:ignore="ContentDescription" />
+
+            <LinearLayout
+                android:id="@+id/mangaReaderBottomLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="8dp"
                 android:orientation="horizontal"
                 android:padding="8dp">
 
@@ -72,54 +118,46 @@
 
                 </androidx.cardview.widget.CardView>
 
-                <com.google.android.material.slider.Slider
-                    android:id="@+id/mangaReaderPageSlider"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:contentDescription="@string/current_page"
-                    android:stepSize="1"
-                    android:valueFrom="1.0"
-                    android:valueTo="100.0"
-                    app:labelBehavior="floating"
-                    app:labelStyle="@style/fontTooltip"
-                    app:thumbRadius="8dp"
-                    app:tickColor="#0000"
-                    app:trackColorInactive="@color/bg_white"
-                    app:trackHeight="2dp" />
-
                 <LinearLayout
-                    android:id="@+id/mangaReaderOnePage"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
+                    android:layout_margin="8dp"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
+                    android:orientation="vertical">
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:id="@+id/mangaReaderPrevChap"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:elegantTextHeight="true"
                         android:ellipsize="end"
                         android:fontFamily="@font/poppins_bold"
-                        android:text="@string/previous"
+                        android:maxLines="1"
                         android:textColor="#fff"
                         tools:ignore="NestedWeights" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="8dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:id="@+id/mangaReaderNextChap"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:elegantTextHeight="true"
                         android:ellipsize="end"
                         android:fontFamily="@font/poppins_bold"
-                        android:text="@string/next"
-                        android:textAlignment="textEnd"
-                        android:textColor="#fff" />
+                        android:maxLines="1"
+                        android:textAlignment="viewEnd"
+                        android:textColor="#fff"
+                        tools:ignore="NestedWeights"
+                        tools:text="Chapter 200" />
                 </LinearLayout>
 
                 <androidx.cardview.widget.CardView

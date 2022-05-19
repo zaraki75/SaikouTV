@@ -10,12 +10,12 @@ abstract class MangaParser : BaseParser() {
     /**
      * Takes ShowResponse.link as an argument & gives a list of total chapters present on the site.
      * **/
-    abstract suspend fun loadChapters(mangaLink:String) : List<MangaChapter>
+    abstract suspend fun loadChapters(mangaLink: String): List<MangaChapter>
 
     /**
      * Takes MangaChapter.link as an argument & returns a list of MangaImages with their Url (with headers & transformations, if needed)
      * **/
-    abstract suspend fun loadImages(chapterLink:String) : List<MangaImage>
+    abstract suspend fun loadImages(chapterLink: String): List<MangaImage>
 
     override suspend fun autoSearch(mediaObj: Media): ShowResponse? {
         var response = loadSavedShowResponse(mediaObj.id)
@@ -33,6 +33,8 @@ abstract class MangaParser : BaseParser() {
         }
         return response
     }
+
+    open fun getTransformation():Transformation<File>? = null
 }
 
 data class MangaChapter(
@@ -61,13 +63,9 @@ data class MangaImage(
      * **/
     val url: FileUrl,
 
-    /**
-     * Use this when paranoid fuckers try to jumble their images,
-     *
-     * & try to make us their puzzle
-     * **/
-    val transformation: Transformation<File>? = null
-){
-    constructor(url:String,transformation: Transformation<File>?=null)
-            : this(FileUrl(url),transformation)
+    val useTransformation: Boolean = false,
+    @Transient var transformation: Transformation<File>? = null
+) {
+    constructor(url: String,useTransformation: Boolean=false)
+            : this(FileUrl(url),useTransformation)
 }
