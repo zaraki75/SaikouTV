@@ -12,7 +12,7 @@ object AnimeSources : WatchSources() {
         ::Tenshi,
         ::Kamyroll,
         ::AllAnime,
-        ::9Anime Backup,
+        ::AnimeKisa,
         ::Monoschinos,
         ::Animefenix,
         ::Kamyroll,
@@ -43,7 +43,7 @@ object HAnimeSources : WatchSources() {
         ::Tenshi,
         ::Kamyroll,
         ::AllAnime,
-        ::9Anime Backup,
+        ::AnimeKisa,
         ::Monoschinos,
         ::Animefenix
     )
