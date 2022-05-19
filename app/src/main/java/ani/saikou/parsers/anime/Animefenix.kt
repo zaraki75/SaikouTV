@@ -15,81 +15,6 @@ import ani.saikou.parsers.anime.extractors.StreamSB
 
 
 
-   /* override suspend fun getStream(episode: Episode, server: String): Episode {
-        episode.streamLinks = let {
-            val linkForVideos = mutableMapOf<String,Episode.StreamLinks?>()
-            try{
-                withContext(Dispatchers.Default) {
-                    val document = Jsoup.connect(episode.link!!).ignoreHttpErrors(true).get()
-                    document.select("ul.is-borderless.episode-page__servers-list li").forEach { it ->
-                        launch {
-                            val serverName = it.select("a").attr("title")
-                            val serverId = it.select("a").attr("href").replace("#vid", "").toInt()
-                            val serverCode =
-                                document.select("div.player-container script").toString()
-                                    .substringAfter("tabsArray['$serverId'] =")
-                                    .substringBefore("&amp;thumbnail")
-                                    .substringAfter("code=")
-                                    .substringBefore("&amp")
-
-
-
-                            val directLinks = directLinkify(serverName, serverCode)
-                            if(serverName==server){
-                                if(directLinks != null){linkForVideos[directLinks.server] = directLinks}
-                        }
-
-                    }}
-
-                }}catch (e:Exception){
-                toastString(e.toString())
-            }
-            linkForVideos
-        }
-        return episode
-    }
-
-
-
-
-    override suspend fun getStreams(episode: Episode): Episode {
-//        try {
-        episode.streamLinks = let {
-            val linkForVideos = mutableMapOf<String,Episode.StreamLinks?>()
-            try{
-                withContext(Dispatchers.Default) {
-                    val document = Jsoup.connect(episode.link!!).ignoreHttpErrors(true).get()
-                    document.select("ul.is-borderless.episode-page__servers-list li").forEach { it ->
-                        launch {
-                            val serverName = it.select("a").attr("title")
-                            val serverId = it.select("a").attr("href").replace("#vid", "").toInt()
-                            val serverCode =
-                                document.select("div.player-container script").toString()
-                                    .substringAfter("tabsArray['$serverId'] =")
-                                    .substringBefore("&amp;thumbnail")
-                                    .substringAfter("code=")
-                                    .substringBefore("&amp")
-                            val thumb = document.select("div.player-container script").toString()
-                                .substringAfter("&amp;thumbnail")
-                                .substringBefore("")
-                            val directLinks = directLinkify(serverName, serverCode)
-                            if(directLinks != null){linkForVideos[directLinks.server] = directLinks}
-
-                        }}
-
-                }}catch (e:Exception){
-                toastString(e.toString())
-            }
-            linkForVideos
-        }
-        return episode
-    }
-
-
-
-*/
-
-
 class Animefenix : AnimeParser() {
     override val name = "Animefenix"
     override val saveName = "animefenix"
@@ -159,7 +84,7 @@ class Animefenix : AnimeParser() {
                     .substringAfter("code=")
                     .substringBefore("&amp")
 
-            var url = when(serverName.lowercase){
+            var url = when(serverName.lowercase()){
                "fembed" -> "https://www.fembed.com/v/$serverCode"
                "ru" -> "https://ok.ru/videoembed/$serverCode"
                "amazon" -> "https://www.animefenix.com/stream/amz.php?v=$serverCode"
