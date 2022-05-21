@@ -91,7 +91,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         binding.settingsReader.setOnClickListener {
-            toastString("Warks in Porgassss", this)
+            startActivity(Intent(this, ReaderSettingsActivity::class.java))
         }
 
         val uiSettings: UserInterfaceSettings =

@@ -3,10 +3,12 @@ package ani.saikou.settings
 import java.io.Serializable
 
 data class ReaderSettings(
-    var askIndividual: Boolean = true,
-    var updateForH: Boolean = false,
-    var readPercentage: Int = 1,
-    var hideSystemBars : Boolean = true,
+    var showSource: Boolean = true,
+    var showSystemBars: Boolean = false,
 
-    var default: CurrentReaderSettings = CurrentReaderSettings()
+    var autoDetectWebtoon: Boolean = true,
+    var default: CurrentReaderSettings = CurrentReaderSettings(),
+
+    var askIndividual: Boolean = true,
+    var updateForH: Boolean = false
 ) : Serializable

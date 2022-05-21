@@ -27,6 +27,9 @@
         tools:ignore="AllowBackup"
         tools:targetApi="m">
         <activity
+            android:name=".settings.ReaderSettingsActivity"
+            android:exported="true" />
+        <activity
             android:name=".settings.UserInterfaceSettingsActivity"
             android:exported="false" />
         <activity

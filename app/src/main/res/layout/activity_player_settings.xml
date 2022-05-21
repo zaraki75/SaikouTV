@@ -360,7 +360,7 @@
                 android:minHeight="64dp"
                 android:paddingStart="32dp"
                 android:paddingEnd="32dp"
-                android:text="@string/ask_update_progress"
+                android:text="@string/ask_update_progress_anime"
                 android:textAlignment="viewStart"
                 android:textColor="@color/bg_opp"
                 app:cornerRadius="0dp"
@@ -378,7 +378,7 @@
                 android:fontFamily="@font/poppins_family"
                 android:paddingStart="32dp"
                 android:paddingEnd="32dp"
-                android:text="@string/ask_update_progress_info"
+                android:text="@string/ask_update_progress_info_ep"
                 android:textSize="14sp" />
 
             <com.google.android.material.switchmaterial.SwitchMaterial
@@ -412,7 +412,7 @@
                 android:fontFamily="@font/poppins_bold"
                 android:paddingStart="32dp"
                 android:paddingEnd="32dp"
-                android:text="@string/complete_percentage"
+                android:text="@string/watch_complete_percentage"
                 app:drawableStartCompat="@drawable/ic_round_sync_24"
                 app:drawableTint="?attr/colorPrimary" />
 
@@ -441,7 +441,7 @@
                 android:fontFamily="@font/poppins_family"
                 android:paddingStart="32dp"
                 android:paddingEnd="32dp"
-                android:text="@string/complete_percentage_info"
+                android:text="@string/watch_complete_percentage_info"
                 android:textSize="14sp" />
 
             <TextView

@@ -45,6 +45,7 @@ class ImageAdapter(
 
     inner class ImageViewHolder(val binding: ItemImageBinding) : RecyclerView.ViewHolder(binding.root)
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is ImageViewHolder) {
             val binding = holder.binding
@@ -59,13 +60,24 @@ class ImageAdapter(
                     }
                 }
                 binding.imgProgImageNoGestures
-            } else binding.imgProgImageGestures
+            } else {
+                val detector = GestureDetectorCompat(binding.root.context, object : DoubleClickListener() {
+                    override fun onSingleClick(event: MotionEvent?) = activity.handleController()
+                    override fun onDoubleClick(event: MotionEvent?) {}
+                    override fun onLongClick(event: MotionEvent?) =
+                        loadImage(binding.imgProgImageGestures, holder.bindingAdapterPosition, binding.root)
+                })
+                binding.imgProgImageGestures.setOnTouchListener { _, event ->
+                    detector.onTouchEvent(event)
+                    false
+                }
+                binding.imgProgImageGestures
+            }
 
             loadImage(imageView, position, binding.root)
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     fun loadImage(imageView: SubsamplingScaleImageView, position: Int, parent: View) {
 
         val progress = parent.findViewById<View>(R.id.imgProgProgress)
@@ -83,15 +95,6 @@ class ImageAdapter(
                     width = 480f.px
                     height = ViewGroup.LayoutParams.MATCH_PARENT
                 }
-            }
-        } else {
-            val detector = GestureDetectorCompat(imageView.context, object : DoubleClickListener() {
-                override fun onSingleClick(event: MotionEvent?) = activity.handleController()
-                override fun onDoubleClick(event: MotionEvent?) {}
-            })
-            imageView.setOnTouchListener { _, event ->
-                detector.onTouchEvent(event)
-                false
             }
         }
 

@@ -67,7 +67,7 @@ class MangaReaderActivity : AppCompatActivity() {
     var isAnimating = false
 
     override fun onAttachedToWindow() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && settings.hideSystemBars) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !settings.showSystemBars) {
             val displayCutout = window.decorView.rootWindowInsets.displayCutout
             if (displayCutout != null) {
                 if (displayCutout.boundingRects.size > 0) {
@@ -86,7 +86,7 @@ class MangaReaderActivity : AppCompatActivity() {
     }
 
     private fun hideBars() {
-        if (settings.hideSystemBars) hideSystemBars()
+        if (!settings.showSystemBars) hideSystemBars()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -223,8 +223,8 @@ class MangaReaderActivity : AppCompatActivity() {
                     saveData("${media.id}_current_chp", it.number, this)
                     currentChapterIndex = chaptersArr.indexOf(it.number)
                     binding.mangaReaderChapterSelect.setSelection(currentChapterIndex)
-                    binding.mangaReaderNextChap.text = chaptersTitleArr.getOrNull(currentChapterIndex+1) ?: ""
-                    binding.mangaReaderPrevChap.text = chaptersTitleArr.getOrNull(currentChapterIndex-1) ?: ""
+                    binding.mangaReaderNextChap.text = chaptersTitleArr.getOrNull(currentChapterIndex + 1) ?: ""
+                    binding.mangaReaderPrevChap.text = chaptersTitleArr.getOrNull(currentChapterIndex - 1) ?: ""
 
                     currentChapterPage = loadData("${media.id}_${it.number}", this) ?: 1
                     val chapImages = chapter.images
@@ -279,7 +279,7 @@ class MangaReaderActivity : AppCompatActivity() {
                 this,
                 if (settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == BOTTOM_TO_TOP) RecyclerView.VERTICAL
                 else RecyclerView.HORIZONTAL,
-                !(settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == RIGHT_TO_LEFT)
+                !(settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == LEFT_TO_RIGHT)
             )
             layoutManager.isItemPrefetchEnabled = true
             layoutManager.initialPrefetchItemCount = 3
@@ -338,9 +338,13 @@ class MangaReaderActivity : AppCompatActivity() {
                 visibility = View.VISIBLE
                 adapter = imageAdapter
                 layoutDirection =
-                    if (settings.default.direction == BOTTOM_TO_TOP || settings.default.direction == RIGHT_TO_LEFT) View.LAYOUT_DIRECTION_LTR else View.LAYOUT_DIRECTION_RTL
+                    if (settings.default.direction == BOTTOM_TO_TOP || settings.default.direction == RIGHT_TO_LEFT)
+                        View.LAYOUT_DIRECTION_LTR
+                    else View.LAYOUT_DIRECTION_RTL
                 orientation =
-                    if (settings.default.direction == LEFT_TO_RIGHT || settings.default.direction == RIGHT_TO_LEFT) ViewPager2.ORIENTATION_HORIZONTAL else ViewPager2.ORIENTATION_VERTICAL
+                    if (settings.default.direction == LEFT_TO_RIGHT || settings.default.direction == RIGHT_TO_LEFT)
+                        ViewPager2.ORIENTATION_VERTICAL
+                    else ViewPager2.ORIENTATION_HORIZONTAL
                 registerOnPageChangeCallback(pageChangeCallback)
                 setOnClickListener {
                     handleController()
@@ -380,7 +384,7 @@ class MangaReaderActivity : AppCompatActivity() {
 
     fun handleController(shouldShow: Boolean? = null) {
         if (!sliding) {
-            if (settings.hideSystemBars) {
+            if (!settings.showSystemBars) {
                 hideBars()
                 checkNotch()
             }
@@ -415,10 +419,17 @@ class MangaReaderActivity : AppCompatActivity() {
             binding.mangaReaderPageNumber.text = "${currentChapterPage}/$maxChapterPage"
             if (!sliding) binding.mangaReaderPageSlider.value = currentChapterPage.toFloat()
         }
+        if (maxChapterPage - currentChapterPage <= 1) scope.launch(Dispatchers.IO) {
+            model.loadMangaChapterImages(
+                chapters[chaptersArr.getOrNull(currentChapterIndex + 1) ?: return@launch]!!,
+                media.selected!!,
+                false
+            )
+        }
     }
 
     private fun progress(runnable: Runnable) {
-        if (maxChapterPage - currentChapterPage <= settings.readPercentage && Anilist.userid != null) {
+        if (maxChapterPage - currentChapterPage <= 1 && Anilist.userid != null) {
             if (showProgressDialog && progressDialog != null) {
                 progressDialog?.setCancelable(false)
                     ?.setPositiveButton("Yes") { dialog, _ ->

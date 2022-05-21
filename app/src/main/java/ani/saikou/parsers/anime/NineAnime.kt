@@ -5,6 +5,7 @@ import ani.saikou.client
 import ani.saikou.mapper
 import ani.saikou.parsers.*
 import ani.saikou.parsers.anime.extractors.StreamTape
+import ani.saikou.parsers.anime.extractors.VidVard
 import ani.saikou.parsers.anime.extractors.VizCloud
 import ani.saikou.tryWithSuspend
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -21,20 +22,6 @@ class NineAnime : AnimeParser() {
     override val hostUrl = "https://$defaultHost"
     override val malSyncBackupName = "9anime"
     override val isDubAvailableSeparately = true
-
-    companion object {
-        private const val defaultHost = "9anime.pl"
-        private var host: String? = null
-        suspend fun host(): String {
-            host =
-                if (host != null) host ?: defaultHost
-                else {
-                    client.get("https://raw.githubusercontent.com/saikou-app/mal-id-filler-list/main/nine.txt")
-                        .text.replace("\n", "")
-                }
-            return "https://$host"
-        }
-    }
 
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
         val animeId = animeLink.substringAfterLast(".")
@@ -67,6 +54,7 @@ class NineAnime : AnimeParser() {
         val extractor: VideoExtractor? = when (server.name) {
             "Vidstream"  -> VizCloud(server)
             "MyCloud"    -> VizCloud(server)
+            "VideoVard"  -> VidVard(server)
             "Streamtape" -> StreamTape(server)
             else         -> null
         }
@@ -113,106 +101,120 @@ class NineAnime : AnimeParser() {
         return tryWithSuspend { client.get("${host()}/ajax/anime/episode?id=${source.replace("\"", "")}").parsed() }
     }
 
-    //The code below is fully taken from
-    //https://github.com/jmir1/aniyomi-extensions/blob/master/src/en/nineanime/src/eu/kanade/tachiyomi/animeextension/en/nineanime/NineAnime.kt
-
-    private val key = "0wMrYU+ixjJ4QdzgfN2HlyIVAt3sBOZnCT9Lm7uFDovkb/EaKpRWhqXS5168ePcG"
-
     private fun getVrf(id: String): String {
-        val reversed = ue(encode(id) + "0000000").slice(0..5).reversed()
-        return reversed + ue(je(reversed, encode(id))).replace("""=+$""".toRegex(), "")
+        val reversed = encrypt(encode(id) + "0000000").slice(0..5).reversed()
+        return reversed + encrypt(cipher(reversed, encode(id))).replace("""=+$""".toRegex(), "")
     }
 
     private fun getLink(url: String): String {
         val i = url.slice(0..5)
         val n = url.slice(6..url.lastIndex)
-        return decode(je(i, ze(n)))
+        return decode(cipher(i, decrypt(n)))
     }
 
-
-    private fun ue(input: String): String {
-        if (input.any { it.code >= 256 }) throw Exception("illegal characters!")
-        var output = ""
-        for (i in input.indices step 3) {
-            val a = intArrayOf(-1, -1, -1, -1)
-            a[0] = input[i].code shr 2
-            a[1] = (3 and input[i].code) shl 4
-            if (input.length > i + 1) {
-                a[1] = a[1] or (input[i + 1].code shr 4)
-                a[2] = (15 and input[i + 1].code) shl 2
-            }
-            if (input.length > i + 2) {
-                a[2] = a[2] or (input[i + 2].code shr 6)
-                a[3] = 63 and input[i + 2].code
-            }
-            for (n in a) {
-                if (n == -1) output += "="
+    companion object {
+        private const val defaultHost = "9anime.pl"
+        private var host: String? = null
+        suspend fun host(): String {
+            host =
+                if (host != null) host ?: defaultHost
                 else {
-                    if (n in 0..63) output += key[n]
+                    client.get("https://raw.githubusercontent.com/saikou-app/mal-id-filler-list/main/nine.txt")
+                        .text.replace("\n", "")
+                }
+            return "https://$host"
+        }
+
+        //The code below is fully taken from
+        //https://github.com/jmir1/aniyomi-extensions/blob/master/src/en/nineanime/src/eu/kanade/tachiyomi/animeextension/en/nineanime/NineAnime.kt
+
+        private const val key = "0wMrYU+ixjJ4QdzgfN2HlyIVAt3sBOZnCT9Lm7uFDovkb/EaKpRWhqXS5168ePcG"
+
+        fun encrypt(input: String): String {
+            if (input.any { it.code >= 256 }) throw Exception("illegal characters!")
+            var output = ""
+            for (i in input.indices step 3) {
+                val a = intArrayOf(-1, -1, -1, -1)
+                a[0] = input[i].code shr 2
+                a[1] = (3 and input[i].code) shl 4
+                if (input.length > i + 1) {
+                    a[1] = a[1] or (input[i + 1].code shr 4)
+                    a[2] = (15 and input[i + 1].code) shl 2
+                }
+                if (input.length > i + 2) {
+                    a[2] = a[2] or (input[i + 2].code shr 6)
+                    a[3] = 63 and input[i + 2].code
+                }
+                for (n in a) {
+                    if (n == -1) output += "="
+                    else {
+                        if (n in 0..63) output += key[n]
+                    }
                 }
             }
+            return output
         }
-        return output
-    }
 
-    private fun je(inputOne: String, inputTwo: String): String {
-        val arr = IntArray(256) { it }
-        var output = ""
-        var u = 0
-        var r: Int
-        for (a in arr.indices) {
-            u = (u + arr[a] + inputOne[a % inputOne.length].code) % 256
-            r = arr[a]
-            arr[a] = arr[u]
-            arr[u] = r
+        fun cipher(key: String, text: String): String {
+            val arr = IntArray(256) { it }
+            var output = ""
+            var u = 0
+            var r: Int
+            for (a in arr.indices) {
+                u = (u + arr[a] + key[a % key.length].code) % 256
+                r = arr[a]
+                arr[a] = arr[u]
+                arr[u] = r
+            }
+            u = 0
+            var c = 0
+            for (f in text.indices) {
+                c = (c + f) % 256
+                u = (u + arr[c]) % 256
+                r = arr[c]
+                arr[c] = arr[u]
+                arr[u] = r
+                output += (text[f].code xor arr[(arr[c] + arr[u]) % 256]).toChar()
+            }
+            return output
         }
-        u = 0
-        var c = 0
-        for (f in inputTwo.indices) {
-            c = (c + f) % 256
-            u = (u + arr[c]) % 256
-            r = arr[c]
-            arr[c] = arr[u]
-            arr[u] = r
-            output += (inputTwo[f].code xor arr[(arr[c] + arr[u]) % 256]).toChar()
-        }
-        return output
-    }
 
-    private fun ze(input: String): String {
-        val t = if (input.replace("""[\t\n\f\r]""".toRegex(), "").length % 4 == 0) {
-            input.replace("""==?$""".toRegex(), "")
-        } else input
-        if (t.length % 4 == 1 || t.contains("""[^+/0-9A-Za-z]""".toRegex())) throw Exception("bad input")
-        var i: Int
-        var r = ""
-        var e = 0
-        var u = 0
-        for (o in t.indices) {
-            e = e shl 6
-            i = key.indexOf(t[o])
-            e = e or i
-            u += 6
-            if (24 == u) {
-                r += ((16711680 and e) shr 16).toChar()
-                r += ((65280 and e) shr 8).toChar()
-                r += (255 and e).toChar()
-                e = 0
-                u = 0
+        fun decrypt(input: String): String {
+            val t = if (input.replace("""[\t\n\f\r]""".toRegex(), "").length % 4 == 0) {
+                input.replace("""==?$""".toRegex(), "")
+            } else input
+            if (t.length % 4 == 1 || t.contains("""[^+/0-9A-Za-z]""".toRegex())) throw Exception("bad input")
+            var i: Int
+            var r = ""
+            var e = 0
+            var u = 0
+            for (o in t.indices) {
+                e = e shl 6
+                i = key.indexOf(t[o])
+                e = e or i
+                u += 6
+                if (24 == u) {
+                    r += ((16711680 and e) shr 16).toChar()
+                    r += ((65280 and e) shr 8).toChar()
+                    r += (255 and e).toChar()
+                    e = 0
+                    u = 0
+                }
+            }
+            return if (12 == u) {
+                e = e shr 4
+                r + e.toChar()
+            } else {
+                if (18 == u) {
+                    e = e shr 2
+                    r += ((65280 and e) shr 8).toChar()
+                    r += (255 and e).toChar()
+                }
+                r
             }
         }
-        return if (12 == u) {
-            e = e shr 4
-            r + e.toChar()
-        } else {
-            if (18 == u) {
-                e = e shr 2
-                r += ((65280 and e) shr 8).toChar()
-                r += (255 and e).toChar()
-            }
-            r
-        }
+
+        private fun decode(input: String): String = URLDecoder.decode(input, "utf-8")
     }
 
-    private fun decode(input: String): String = URLDecoder.decode(input, "utf-8")
 }
