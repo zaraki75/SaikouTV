@@ -45,7 +45,8 @@ object HAnimeSources : WatchSources() {
         ::AllAnime,
         ::AnimeKisa,
         ::Monoschinos,
-        ::Animefenix
+        ::Animefenix,
+        ::HentaiMama,
     )
 
     override val names: List<String> = listOf(
@@ -59,6 +60,7 @@ object HAnimeSources : WatchSources() {
         "AllAnime",
         "9Anime Backup",
         "Monoschinos",
-        "Animefenix"
+        "Animefenix",
+        "HentaiMama"
     )
 }
