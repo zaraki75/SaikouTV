@@ -62,7 +62,9 @@ class HentaiMama : AnimeParser() {
             )
 
             return VideoContainer(json.map {
-                Video(null, it.type == "hls", it.file)
+                (it.type == "hls").let { m3u8 ->
+                    Video(null, m3u8, it.file, if (!m3u8) getSize(it.file) else null)
+                }
             })
         }
 

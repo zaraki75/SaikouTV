@@ -19,8 +19,10 @@ class Zoro : AnimeParser() {
     override val hostUrl: String = "https://zoro.to"
     override val isDubAvailableSeparately: Boolean = false
 
+    private val header = mapOf("X-Requested-With" to "XMLHttpRequest", "referer" to hostUrl)
+
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
-        val res = client.get("$hostUrl/ajax/v2/episode/list/$animeLink").parsed<HtmlResponse>()
+        val res = client.get("$hostUrl/ajax/v2/episode/list/$animeLink",header).parsed<HtmlResponse>()
         val element = Jsoup.parse(res.html ?: return listOf())
         return element.select(".detail-infor-content > div > a").map {
             val title = it.attr("title")
@@ -35,12 +37,12 @@ class Zoro : AnimeParser() {
     private val embedHeaders = mapOf("referer" to "$hostUrl/")
 
     override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
-        val res = client.get("$hostUrl/ajax/v2/episode/servers?episodeId=$episodeLink").parsed<HtmlResponse>()
+        val res = client.get("$hostUrl/ajax/v2/episode/servers?episodeId=$episodeLink",header).parsed<HtmlResponse>()
         val element = Jsoup.parse(res.html ?: return listOf())
 
         return element.select("div.server-item").asyncMap {
             val serverName = "${it.attr("data-type").uppercase()} - ${it.text()}"
-            val link = client.get("$hostUrl/ajax/v2/episode/sources?id=${it.attr("data-id")}").parsed<SourceResponse>().link
+            val link = client.get("$hostUrl/ajax/v2/episode/sources?id=${it.attr("data-id")}",header).parsed<SourceResponse>().link
             VideoServer(serverName, FileUrl(link,embedHeaders))
         }
     }

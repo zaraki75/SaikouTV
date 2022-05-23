@@ -19,18 +19,15 @@ import java.io.File
 
 object AppUpdater {
     suspend fun check(activity: Activity) {
+        val repo = activity.getString(R.string.repo)
         tryWithSuspend {
-            val version =
-                if (!BuildConfig.DEBUG)
-                    client.get("https://raw.githubusercontent.com/Diegopyl1209/saikouSP/main/stableVersion.txt").text.replace("\n", "")
-                else {
-                    client.get("https://raw.githubusercontent.com/Diegopyl1209/saikouSP/main/app/build.gradle").text.substringAfter("versionName \"").substringBefore('"')
-                }
+            val md = client.get("https://raw.githubusercontent.com/$repo/${if (!BuildConfig.DEBUG) "stable" else "beta"}.md").text
+            val version = md.substringAfter("# ").substringBefore("\n")
             logger("Git Version : $version")
             val dontShow = loadData("dont_ask_for_update_$version") ?: false
             if (compareVersion(version) && !dontShow && !activity.isDestroyed) activity.runOnUiThread {
                 AlertDialog.Builder(activity, R.style.DialogTheme)
-                    .setTitle("A new update is available, do you want to check it out?").apply {
+                    .setTitle("Update Available").apply {
                         setMultiChoiceItems(
                             arrayOf("Don't show again for version $version"),
                             booleanArrayOf(false)

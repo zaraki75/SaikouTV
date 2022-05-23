@@ -50,7 +50,6 @@
             android:exported="true" />
         <activity
             android:name=".manga.mangareader.MangaReaderActivity"
-            android:configChanges="orientation|screenSize|layoutDirection"
             android:exported="true" />
         <activity
             android:name=".GenreActivity"

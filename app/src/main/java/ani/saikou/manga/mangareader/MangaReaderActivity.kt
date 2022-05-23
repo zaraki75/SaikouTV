@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.view.animation.OvershootInterpolator
 import android.widget.AdapterView
 import androidx.activity.viewModels
@@ -260,6 +261,9 @@ class MangaReaderActivity : AppCompatActivity() {
             if (settings.default.trueColors) Bitmap.Config.ARGB_8888
             else Bitmap.Config.RGB_565
         )
+
+        if (settings.default.keepScreenOn) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         binding.mangaReaderPager.unregisterOnPageChangeCallback(pageChangeCallback)
 
