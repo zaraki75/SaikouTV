@@ -414,7 +414,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             }
 
             //FastRewind (Left Panel)
-            val fastRewindDetector = GestureDetector(this, object : DoubleClickListener() {
+            val fastRewindDetector = GestureDetector(this, object : GesturesListener() {
                 override fun onDoubleClick(event: MotionEvent?) {
                     if (!locked && isInitialized && settings.doubleTap) {
                         exoPlayer.seekTo(exoPlayer.currentPosition - settings.seekTime * 1000)
@@ -470,7 +470,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             }
 
             //FastForward (Right Panel)
-            val fastForwardDetector = GestureDetector(this, object : DoubleClickListener() {
+            val fastForwardDetector = GestureDetector(this, object : GesturesListener() {
                 override fun onDoubleClick(event: MotionEvent?) {
                     if (!locked && isInitialized && settings.doubleTap) {
                         exoPlayer.seekTo(exoPlayer.currentPosition + settings.seekTime * 1000)

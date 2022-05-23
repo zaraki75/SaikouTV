@@ -64,6 +64,38 @@ class ReaderSettingsDialogFragment(val activity: MangaReaderActivity) : BottomSh
             }
         }
 
+        val dualList = listOf(
+            binding.readerDualNo,
+            binding.readerDualAuto,
+            binding.readerDualForce
+        )
+
+        binding.readerDualPageText.text = settings.dualPageMode.toString()
+        var selectedDual = dualList[settings.dualPageMode.ordinal]
+        selectedDual.alpha = 1f
+
+        dualList.forEachIndexed { index, imageButton ->
+            imageButton.setOnClickListener {
+                selectedDual.alpha = 0.33f
+                selectedDual = imageButton
+                selectedDual.alpha = 1f
+                settings.dualPageMode = CurrentReaderSettings.DualPageModes[index] ?: CurrentReaderSettings.DualPageModes.Automatic
+                binding.readerDualPageText.text = settings.dualPageMode.toString()
+                activity.applySettings()
+            }
+        }
+        binding.readerTrueColors.isChecked = settings.trueColors
+        binding.readerTrueColors.setOnCheckedChangeListener { _, isChecked ->
+            settings.trueColors = isChecked
+            activity.applySettings()
+        }
+
+        binding.readerHorizontalScrollBar.isChecked = settings.horizontalScrollBar
+        binding.readerHorizontalScrollBar.setOnCheckedChangeListener { _, isChecked ->
+            settings.horizontalScrollBar = isChecked
+            activity.applySettings()
+        }
+
         binding.readerKeepScreenOn.isChecked = settings.keepScreenOn
         binding.readerKeepScreenOn.setOnCheckedChangeListener { _,isChecked ->
             settings.keepScreenOn = isChecked

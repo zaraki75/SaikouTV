@@ -155,7 +155,7 @@ class Kamyroll : AnimeParser() {
     }
 
     companion object {
-        const val apiUrl = "https://api.kamyroll.tech"
+        const val apiUrl = "https://api-kamyroll.herokuapp.com"
         private var headers: Map<String, String>? = null
         private val channel = "channel_id" to "crunchyroll"
         private val locale = "locale" to "en-US"

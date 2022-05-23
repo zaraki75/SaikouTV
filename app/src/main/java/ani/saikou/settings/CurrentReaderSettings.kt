@@ -6,6 +6,7 @@ data class CurrentReaderSettings(
     var direction: Directions = Directions.TOP_TO_BOTTOM,
     var layout: Layouts = Layouts.CONTINUOUS,
     var dualPageMode: DualPageModes = DualPageModes.Automatic,
+    var trueColors : Boolean = false,
     var padding: Boolean = true,
     var horizontalScrollBar: Boolean = true,
     var keepScreenOn: Boolean = false,

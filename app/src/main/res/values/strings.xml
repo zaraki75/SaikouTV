@@ -250,5 +250,8 @@
     <string name="default_settings">Default Settings</string>
     <string name="horizontal_scroll_bar">Horizontal Scroll Bar</string>
     <string name="dual_page">Dual Page</string>
+    <string name="dual_page_info">Shows 2 Images in 1 page, will look weird if the images aren\'t the same size</string>
+    <string name="true_colors">True Colors</string>
+    <string name="true_colors_info">(32-bit color Mode) Reduces Banding on the images, may affect performance.</string>
 
 </resources>

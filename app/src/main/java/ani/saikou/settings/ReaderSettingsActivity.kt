@@ -97,7 +97,12 @@ class ReaderSettingsActivity : AppCompatActivity() {
                 saveData(reader, settings)
             }
         }
-        
+        binding.readerSettingsTrueColors.isChecked = settings.default.trueColors
+        binding.readerSettingsTrueColors.setOnCheckedChangeListener { _, isChecked ->
+            settings.default.trueColors = isChecked
+            saveData(reader, settings)
+        }
+
         binding.readerSettingsHorizontalScrollBar.isChecked = settings.default.horizontalScrollBar
         binding.readerSettingsHorizontalScrollBar.setOnCheckedChangeListener { _, isChecked ->
             settings.default.horizontalScrollBar = isChecked

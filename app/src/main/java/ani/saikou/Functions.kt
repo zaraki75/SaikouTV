@@ -519,7 +519,7 @@ class ExtendedTimeBar(
     }
 }
 
-abstract class DoubleClickListener : GestureDetector.SimpleOnGestureListener() {
+abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
     private var timer: Timer? = null //at class level;
     private val delay: Long = 200
 
@@ -574,7 +574,7 @@ abstract class DoubleClickListener : GestureDetector.SimpleOnGestureListener() {
     }
 
     open fun onSingleClick(event: MotionEvent?) {}
-    abstract fun onDoubleClick(event: MotionEvent?)
+    open fun onDoubleClick(event: MotionEvent?) {}
     open fun onScrollYClick(y: Float) {}
     open fun onLongClick(event: MotionEvent?) {}
 }

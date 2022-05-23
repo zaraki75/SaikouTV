@@ -10,8 +10,8 @@ import java.io.Serializable
  * **/
 abstract class VideoExtractor : Serializable {
     abstract val server: VideoServer
-    lateinit var videos: List<Video>
-    lateinit var subtitles: List<Subtitle>
+    var videos: List<Video> = listOf()
+    var subtitles: List<Subtitle> = listOf()
 
     /**
      * Extracts videos & subtitles from the `embed`

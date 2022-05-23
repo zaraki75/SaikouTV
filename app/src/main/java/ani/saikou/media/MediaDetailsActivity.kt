@@ -101,7 +101,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         binding.mediaCoverImage.loadImage(media.cover)
         binding.mediaCoverImage.setOnLongClickListener { openLinkInBrowser(media.cover);true }
         banner.loadImage(media.banner ?: media.cover, 400)
-        val gestureDetector = GestureDetector(this, object : DoubleClickListener() {
+        val gestureDetector = GestureDetector(this, object : GesturesListener() {
             override fun onDoubleClick(event: MotionEvent?) {
                 if (!uiSettings.bannerAnimations)
                     toastString("Try Enabling Banner Animations from Settings")

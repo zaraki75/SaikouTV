@@ -5,18 +5,16 @@ import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
-import ani.saikou.DoubleClickListener
 import ani.saikou.R
 import ani.saikou.databinding.ItemImageBinding
 import ani.saikou.manga.MangaChapter
 import ani.saikou.px
-import ani.saikou.settings.CurrentReaderSettings.Directions.*
+import ani.saikou.settings.CurrentReaderSettings.Directions.LEFT_TO_RIGHT
+import ani.saikou.settings.CurrentReaderSettings.Directions.RIGHT_TO_LEFT
 import ani.saikou.settings.CurrentReaderSettings.Layouts.PAGED
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
@@ -29,62 +27,29 @@ import java.io.File
 
 
 class ImageAdapter(
-    private val activity: MangaReaderActivity,
+    activity: MangaReaderActivity,
     chapter: MangaChapter
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    val images = chapter.images!!
-    val settings = activity.settings.default
-    val uiSettings = activity.uiSettings
+) : BaseImageAdapter(activity, chapter) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
         val binding = ItemImageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ImageViewHolder(binding)
     }
 
-    override fun getItemCount(): Int = images.size
-
-    inner class ImageViewHolder(val binding: ItemImageBinding) : RecyclerView.ViewHolder(binding.root)
+    inner class ImageViewHolder(binding: ItemImageBinding) : RecyclerView.ViewHolder(binding.root)
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder is ImageViewHolder) {
-            val binding = holder.binding
-
-            val imageView: SubsamplingScaleImageView = if (settings.layout != PAGED) {
-                if (settings.padding) {
-                    when (settings.direction) {
-                        TOP_TO_BOTTOM -> binding.root.setPadding(0, 0, 0, 16f.px)
-                        LEFT_TO_RIGHT -> binding.root.setPadding(0, 0, 16f.px, 0)
-                        BOTTOM_TO_TOP -> binding.root.setPadding(0, 16f.px, 0, 0)
-                        RIGHT_TO_LEFT -> binding.root.setPadding(16f.px, 0, 0, 0)
-                    }
-                }
-                binding.imgProgImageNoGestures
-            } else {
-                val detector = GestureDetectorCompat(binding.root.context, object : DoubleClickListener() {
-                    override fun onSingleClick(event: MotionEvent?) = activity.handleController()
-                    override fun onDoubleClick(event: MotionEvent?) {}
-                    override fun onLongClick(event: MotionEvent?) =
-                        loadImage(binding.imgProgImageGestures, holder.bindingAdapterPosition, binding.root)
-                })
-                binding.imgProgImageGestures.setOnTouchListener { _, event ->
-                    detector.onTouchEvent(event)
-                    false
-                }
-                binding.imgProgImageGestures
-            }
-
-            loadImage(imageView, position, binding.root)
-        }
+        applyChangesTo(holder)
     }
 
-    fun loadImage(imageView: SubsamplingScaleImageView, position: Int, parent: View) {
-
-        val progress = parent.findViewById<View>(R.id.imgProgProgress)
+    override fun loadImage(position: Int, parent: View): Boolean {
+        val imageView = parent.findViewById<SubsamplingScaleImageView>(
+            if(settings.layout!=PAGED) R.id.imgProgImageNoGestures else R.id.imgProgImageGestures
+        ) ?: return false
+        val progress = parent.findViewById<View>(R.id.imgProgProgress) ?: return false
         imageView.recycle()
         imageView.visibility = View.GONE
-        val link = images[position].url
-        val trans = images[position].transformation
 
         if (settings.layout != PAGED) {
             parent.updateLayoutParams {
@@ -98,7 +63,10 @@ class ImageAdapter(
             }
         }
 
-        if (link.url.isEmpty()) return
+        val link = images[position].url
+        val trans = images[position].transformation
+
+        if (link.url.isEmpty()) return false
         Glide.with(imageView).download(GlideUrl(link.url) { link.headers })
             .override(Target.SIZE_ORIGINAL)
             .apply {
@@ -130,5 +98,8 @@ class ImageAdapter(
                 else
                     into(target)
             }
+        return true
     }
+
+    override fun getItemCount(): Int = images.size
 }
