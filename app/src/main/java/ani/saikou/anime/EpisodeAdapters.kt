@@ -21,7 +21,7 @@ fun handleProgress(cont: LinearLayout, bar: View, empty: View, mediaId: Int, ep:
     val max = loadData<Long>("${mediaId}_${ep}_max")
     if (curr != null && max != null) {
         cont.visibility = View.VISIBLE
-        val div = curr.toFloat() / max
+        val div = curr.toFloat() / max.toFloat()
         val barParams = bar.layoutParams as LinearLayout.LayoutParams
         barParams.weight = div
         bar.layoutParams = barParams
@@ -86,7 +86,7 @@ class EpisodeAdapter(
                 binding.itemEpisodeDesc.text = ep.desc ?: ""
 
                 if (media.userProgress != null) {
-                    if (ep.number.toFloatOrNull() ?: 9999f <= media.userProgress!!.toFloat()) {
+                    if ((ep.number.toFloatOrNull() ?: 9999f) <= media.userProgress!!.toFloat()) {
                         binding.itemEpisodeViewedCover.visibility = View.VISIBLE
                         binding.itemEpisodeViewed.visibility = View.VISIBLE
                     } else {
@@ -128,7 +128,7 @@ class EpisodeAdapter(
                     binding.itemEpisodeFillerView.visibility = View.GONE
                 }
                 if (media.userProgress != null) {
-                    if (ep.number.toFloatOrNull() ?: 9999f <= media.userProgress!!.toFloat()) {
+                    if ((ep.number.toFloatOrNull() ?: 9999f) <= media.userProgress!!.toFloat()) {
                         binding.itemEpisodeViewedCover.visibility = View.VISIBLE
                         binding.itemEpisodeViewed.visibility = View.VISIBLE
                     } else {
@@ -158,7 +158,7 @@ class EpisodeAdapter(
                 binding.itemEpisodeNumber.text = ep.number
                 binding.itemEpisodeFillerView.visibility = if (ep.filler) View.VISIBLE else View.GONE
                 if (media.userProgress != null) {
-                    if (ep.number.toFloatOrNull() ?: 9999f <= media.userProgress!!.toFloat())
+                    if ((ep.number.toFloatOrNull() ?: 9999f) <= media.userProgress!!.toFloat())
                         binding.itemEpisodeViewedCover.visibility = View.VISIBLE
                     else {
                         binding.itemEpisodeViewedCover.visibility = View.GONE

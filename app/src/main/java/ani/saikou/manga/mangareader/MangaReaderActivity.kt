@@ -7,40 +7,44 @@ import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
+import android.view.*
 import android.view.animation.OvershootInterpolator
 import android.widget.AdapterView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.math.MathUtils.clamp
+import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.LinearSnapHelper
+import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import ani.saikou.*
 import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.ActivityMangaReaderBinding
-import ani.saikou.manga.DualPageAdapter
 import ani.saikou.manga.MangaChapter
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.parsers.HMangaSources
+import ani.saikou.parsers.MangaImage
 import ani.saikou.parsers.MangaSources
+import ani.saikou.settings.CurrentReaderSettings.Companion.applyWebtoon
 import ani.saikou.settings.CurrentReaderSettings.Directions.*
 import ani.saikou.settings.CurrentReaderSettings.DualPageModes.*
 import ani.saikou.settings.CurrentReaderSettings.Layouts.CONTINUOUS_PAGED
 import ani.saikou.settings.CurrentReaderSettings.Layouts.PAGED
 import ani.saikou.settings.ReaderSettings
 import ani.saikou.settings.UserInterfaceSettings
+import com.alexvasilkov.gestures.views.GestureFrameLayout
+import com.bumptech.glide.load.Transformation
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.*
 import kotlin.math.min
+import kotlin.properties.Delegates
 
 @SuppressLint("SetTextI18n")
 class MangaReaderActivity : AppCompatActivity() {
@@ -61,8 +65,8 @@ class MangaReaderActivity : AppCompatActivity() {
     private var maxChapterPage = 0L
     private var currentChapterPage = 0L
 
-    var settings = loadData("reader_settings") ?: ReaderSettings().apply { saveData("reader_settings", this) }
-    var uiSettings = loadData("ui_settings") ?: UserInterfaceSettings().apply { saveData("ui_settings", this) }
+    lateinit var settings: ReaderSettings
+    lateinit var uiSettings: UserInterfaceSettings
 
     private var notchHeight: Int? = null
 
@@ -98,11 +102,16 @@ class MangaReaderActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMangaReaderBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        hideBars()
 
         binding.mangaReaderBack.setOnClickListener {
             onBackPressed()
         }
+
+        settings = loadData("reader_settings", this) ?: ReaderSettings().apply { saveData("reader_settings", this) }
+        uiSettings = loadData("ui_settings", this) ?: UserInterfaceSettings().apply { saveData("ui_settings", this) }
+        controllerDuration = (uiSettings.animationSpeed * 200).toLong()
+
+        hideBars()
 
         var pageSliderTimer = Timer()
         fun pageSliderHide() {
@@ -120,7 +129,7 @@ class MangaReaderActivity : AppCompatActivity() {
             pageSliderTimer.schedule(timerTask, 3000)
         }
 
-        binding.mangaReaderPageSlider.addOnChangeListener { _, value, fromUser ->
+        binding.mangaReaderSlider.addOnChangeListener { _, value, fromUser ->
             if (fromUser) {
                 sliding = true
                 if (settings.default.layout != PAGED)
@@ -141,12 +150,14 @@ class MangaReaderActivity : AppCompatActivity() {
         else model.getMedia().value ?: return
         model.setMedia(media)
 
-        settings = loadData("${media.id}_reader_settings") ?: settings
+        if (settings.autoDetectWebtoon && media.countryOfOrigin != "JP") applyWebtoon(settings.default)
+        settings.default = loadData("${media.id}_current_settings") ?: settings.default
 
         chapters = media.manga?.chapters ?: return
         chapter = chapters[media.manga!!.selectedChapter] ?: return
 
         model.mangaReadSources = if (media.isAdult) HMangaSources else MangaSources
+        binding.mangaReaderSource.visibility = if (settings.showSource) View.VISIBLE else View.GONE
         binding.mangaReaderSource.text = model.mangaReadSources!!.names[media.selected!!.source]
 
         binding.mangaReaderTitle.text = media.userPreferredName
@@ -199,7 +210,7 @@ class MangaReaderActivity : AppCompatActivity() {
         }
 
         binding.mangaReaderSettings.setSafeOnClickListener {
-            ReaderSettingsDialogFragment(this).show(supportFragmentManager, "settings")
+            ReaderSettingsDialogFragment.newInstance().show(supportFragmentManager, "settings")
         }
 
         //Next Chapter
@@ -239,7 +250,7 @@ class MangaReaderActivity : AppCompatActivity() {
         scope.launch(Dispatchers.IO) { model.loadMangaChapterImages(chapter, media.selected!!) }
     }
 
-    private val snapHelper = LinearSnapHelper()
+    private val snapHelper = PagerSnapHelper()
 
     private fun <T> dualPage(callback: () -> T): T? {
         return when (settings.default.dualPageMode) {
@@ -253,15 +264,18 @@ class MangaReaderActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     fun applySettings() {
-        saveData("${media.id}_reader_settings", settings)
+        saveData("${media.id}_current_settings", settings.default)
         hideBars()
 
+        //true colors
         SubsamplingScaleImageView.setPreferredBitmapConfig(
             if (settings.default.trueColors) Bitmap.Config.ARGB_8888
             else Bitmap.Config.RGB_565
         )
 
+        //keep screen On
         if (settings.default.keepScreenOn) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
@@ -276,13 +290,13 @@ class MangaReaderActivity : AppCompatActivity() {
             imageAdapter = dualPage { DualPageAdapter(this, chapter) } ?: ImageAdapter(this, chapter)
 
             if (chapImages.size > 1) {
-                binding.mangaReaderPageSlider.apply {
+                binding.mangaReaderSlider.apply {
                     visibility = View.VISIBLE
-                    value = currentChapterPage.toFloat()
                     valueTo = maxChapterPage.toFloat()
+                    value = clamp(currentChapterPage.toFloat(),1f,valueTo)
                 }
             } else {
-                binding.mangaReaderPageSlider.visibility = View.GONE
+                binding.mangaReaderSlider.visibility = View.GONE
             }
             binding.mangaReaderPageNumber.text = "${currentChapterPage}/$maxChapterPage"
 
@@ -291,48 +305,60 @@ class MangaReaderActivity : AppCompatActivity() {
         val currentPage = currentChapterPage.toInt()
         if (settings.default.layout != PAGED) {
 
-            binding.mangaReaderRecycler.visibility = View.VISIBLE
+            binding.mangaReaderRecyclerContainer.visibility = View.VISIBLE
+            binding.mangaReaderRecyclerContainer.controller.settings.isRotationEnabled = settings.default.rotation
+
             binding.mangaReaderPager.visibility = View.GONE
             binding.mangaReaderRecycler.clearOnScrollListeners()
 
-            val layoutManager = LinearLayoutManager(
+            val layoutManager = PreloadLinearLayoutManager(
                 this,
                 if (settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == BOTTOM_TO_TOP) RecyclerView.VERTICAL
                 else RecyclerView.HORIZONTAL,
                 !(settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == LEFT_TO_RIGHT)
             )
-            layoutManager.isItemPrefetchEnabled = true
-            layoutManager.initialPrefetchItemCount = 3
+            layoutManager.preloadItemCount = 5
 
             binding.mangaReaderRecycler.layoutManager = layoutManager
 
-            binding.mangaReaderRecycler.tapListener = {
-                handleController()
-            }
-            binding.mangaReaderRecycler.longTapListener = { event ->
-                binding.mangaReaderRecycler.findChildViewUnder(event.x, event.y).let { child ->
-                    child ?: return@let false
-                    imageAdapter?.loadImage(binding.mangaReaderRecycler.getChildAdapterPosition(child), child) ?: false
+            val detector = GestureDetectorCompat(this, object : GesturesListener() {
+                override fun onLongPress(e: MotionEvent?) {
+                    e ?: return
+                    if (binding.mangaReaderRecycler.findChildViewUnder(e.x, e.y).let { child ->
+                            child ?: return@let false
+                            imageAdapter?.loadImage(
+                                binding.mangaReaderRecycler.getChildAdapterPosition(child),
+                                child as GestureFrameLayout
+                            ) == true
+                        }) binding.mangaReaderRecycler.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                    super.onLongPress(e)
                 }
+
+                override fun onSingleClick(event: MotionEvent?) {
+                    handleController()
+                }
+            })
+
+            binding.mangaReaderRecycler.setOnTouchListener { _, event ->
+                detector.onTouchEvent(event)
             }
 
             binding.mangaReaderRecycler.adapter = imageAdapter
 
             binding.mangaReaderRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(v: RecyclerView, dx: Int, dy: Int) {
-                    if (
-                        (
-                                (settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == BOTTOM_TO_TOP)
-                                        &&
-                                        (!v.canScrollVertically(-1) || !v.canScrollVertically(1))
-                                ) || (
-                                (settings.default.direction == LEFT_TO_RIGHT || settings.default.direction == RIGHT_TO_LEFT)
-                                        &&
-                                        (!v.canScrollHorizontally(-1) || !v.canScrollHorizontally(1))
-                                )
-                    ) {
-                        handleController(true)
-                    } else handleController(false)
+                    settings.default.apply {
+                        if (
+                            ((direction == TOP_TO_BOTTOM || direction == BOTTOM_TO_TOP)
+                                    && (!v.canScrollVertically(-1) || !v.canScrollVertically(1)))
+                            ||
+                            ((direction == LEFT_TO_RIGHT || direction == RIGHT_TO_LEFT)
+                                    && (!v.canScrollHorizontally(-1) || !v.canScrollHorizontally(1)))
+                        ) {
+                            handleController(true)
+                        } else handleController(false)
+
+                    }
 
                     updatePageNumber(layoutManager.findLastVisibleItemPosition().toLong() * (dualPage { 2 } ?: 1) + 1)
                     super.onScrolled(v, dx, dy)
@@ -350,22 +376,21 @@ class MangaReaderActivity : AppCompatActivity() {
             )
             binding.mangaReaderRecycler.scrollToPosition(currentPage - 1)
         } else {
-            binding.mangaReaderRecycler.visibility = View.GONE
+            binding.mangaReaderRecyclerContainer.visibility = View.GONE
             binding.mangaReaderPager.apply {
                 visibility = View.VISIBLE
                 adapter = imageAdapter
                 layoutDirection =
                     if (settings.default.direction == BOTTOM_TO_TOP || settings.default.direction == RIGHT_TO_LEFT)
-                        View.LAYOUT_DIRECTION_LTR
-                    else View.LAYOUT_DIRECTION_RTL
+                        View.LAYOUT_DIRECTION_RTL
+                    else View.LAYOUT_DIRECTION_LTR
                 orientation =
                     if (settings.default.direction == LEFT_TO_RIGHT || settings.default.direction == RIGHT_TO_LEFT)
                         ViewPager2.ORIENTATION_HORIZONTAL
                     else ViewPager2.ORIENTATION_VERTICAL
                 registerOnPageChangeCallback(pageChangeCallback)
-                setOnClickListener {
-                    handleController()
-                }
+                offscreenPageLimit = 5
+
                 setCurrentItem(currentPage - 1, false)
             }
 
@@ -382,7 +407,7 @@ class MangaReaderActivity : AppCompatActivity() {
     }
 
     private val overshoot = OvershootInterpolator(1.4f)
-    private val controllerDuration = (uiSettings.animationSpeed * 200).toLong()
+    private var controllerDuration by Delegates.notNull<Long>()
     private var goneTimer = Timer()
     fun gone() {
         goneTimer.cancel()
@@ -405,6 +430,37 @@ class MangaReaderActivity : AppCompatActivity() {
                 hideBars()
                 checkNotch()
             }
+            //horizontal scrollbar
+            if (settings.default.horizontalScrollBar) {
+                binding.mangaReaderSliderContainer.updateLayoutParams {
+                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                    width = ViewGroup.LayoutParams.WRAP_CONTENT
+                }
+
+                binding.mangaReaderSlider.apply {
+                    updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                        width = ViewGroup.LayoutParams.MATCH_PARENT
+                    }
+                    rotation = 0f
+                }
+
+            } else {
+                binding.mangaReaderSliderContainer.updateLayoutParams {
+                    height = ViewGroup.LayoutParams.MATCH_PARENT
+                    width = 48f.px
+                }
+
+                binding.mangaReaderSlider.apply {
+                    updateLayoutParams {
+                        width = binding.mangaReaderSliderContainer.height - 16f.px
+                    }
+                    rotation = 90f
+                }
+            }
+            binding.mangaReaderSlider.layoutDirection =
+                if (settings.default.direction == RIGHT_TO_LEFT || settings.default.direction == BOTTOM_TO_TOP)
+                    View.LAYOUT_DIRECTION_RTL
+                else View.LAYOUT_DIRECTION_LTR
             shouldShow?.apply { isContVisible = !this }
             if (isContVisible) {
                 isContVisible = false
@@ -434,7 +490,9 @@ class MangaReaderActivity : AppCompatActivity() {
             currentChapterPage = page
             saveData("${media.id}_${chapter.number}", page, this)
             binding.mangaReaderPageNumber.text = "${currentChapterPage}/$maxChapterPage"
-            if (!sliding) binding.mangaReaderPageSlider.value = currentChapterPage.toFloat()
+            if (!sliding) binding.mangaReaderSlider.apply {
+                value = clamp(currentChapterPage.toFloat(),1f,valueTo)
+            }
         }
         if (maxChapterPage - currentChapterPage <= 1) scope.launch(Dispatchers.IO) {
             model.loadMangaChapterImages(
@@ -469,6 +527,10 @@ class MangaReaderActivity : AppCompatActivity() {
         } else {
             runnable.run()
         }
+    }
+
+    fun getTransformation(mangaImage: MangaImage): Transformation<File>? {
+        return model.loadTransformation(mangaImage, media.selected!!.source)
     }
 
     override fun onBackPressed() {

@@ -3,16 +3,19 @@ package ani.saikou.manga.mangareader
 import android.annotation.SuppressLint
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.view.GestureDetectorCompat
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.GesturesListener
 import ani.saikou.R
 import ani.saikou.manga.MangaChapter
 import ani.saikou.px
 import ani.saikou.settings.CurrentReaderSettings
+import com.alexvasilkov.gestures.views.GestureFrameLayout
 
 abstract class BaseImageAdapter(
-    private val activity: MangaReaderActivity,
+    val activity: MangaReaderActivity,
     chapter: MangaChapter
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val settings = activity.settings.default
@@ -20,8 +23,14 @@ abstract class BaseImageAdapter(
     val images = chapter.images!!
 
     @SuppressLint("ClickableViewAccessibility")
-    fun applyChangesTo(holder: RecyclerView.ViewHolder){
-        val view = holder.itemView
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val view = holder.itemView as GestureFrameLayout
+        view.controller.also {
+            if (settings.layout == CurrentReaderSettings.Layouts.PAGED) {
+                it.settings.enableGestures()
+            }
+            it.settings.isRotationEnabled = settings.rotation
+        }
         if (settings.layout != CurrentReaderSettings.Layouts.PAGED) {
             if (settings.padding) {
                 when (settings.direction) {
@@ -29,6 +38,15 @@ abstract class BaseImageAdapter(
                     CurrentReaderSettings.Directions.LEFT_TO_RIGHT -> view.setPadding(0, 0, 16f.px, 0)
                     CurrentReaderSettings.Directions.BOTTOM_TO_TOP -> view.setPadding(0, 16f.px, 0, 0)
                     CurrentReaderSettings.Directions.RIGHT_TO_LEFT -> view.setPadding(16f.px, 0, 0, 0)
+                }
+            }
+            view.updateLayoutParams {
+                if (settings.direction != CurrentReaderSettings.Directions.LEFT_TO_RIGHT && settings.direction != CurrentReaderSettings.Directions.RIGHT_TO_LEFT) {
+                    width = ViewGroup.LayoutParams.MATCH_PARENT
+                    height = 480f.px
+                } else {
+                    width = 480f.px
+                    height = ViewGroup.LayoutParams.MATCH_PARENT
                 }
             }
         } else {
@@ -41,12 +59,12 @@ abstract class BaseImageAdapter(
                     false
                 }
                 setOnLongClickListener {
-                    loadImage(holder.bindingAdapterPosition,view)
+                    loadImage(holder.bindingAdapterPosition, view)
                 }
             }
         }
-        loadImage(holder.bindingAdapterPosition,view)
+        loadImage(holder.bindingAdapterPosition, view)
     }
-    
-    abstract fun loadImage(position: Int, parent: View) : Boolean
+
+    abstract fun loadImage(position: Int, parent: View): Boolean
 }

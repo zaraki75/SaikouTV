@@ -6,15 +6,13 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.ScrollView
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.setPadding
 import androidx.core.view.updateLayoutParams
 import ani.saikou.*
 import ani.saikou.databinding.ActivitySettingsBinding
+import ani.saikou.others.CustomBottomDialog
 import ani.saikou.parsers.AnimeSources
 import ani.saikou.parsers.MangaSources
 
@@ -244,16 +242,17 @@ class SettingsActivity : AppCompatActivity() {
             DevelopersDialogFragment().show(supportFragmentManager, "dialog")
         }
         binding.settingsDisclaimer.setOnClickListener {
-            AlertDialog.Builder(this, R.style.DialogTheme).apply {
-                setTitle(R.string.disclaimer)
-                setView(ScrollView(context).apply {
-                    isVerticalScrollBarEnabled = true
-                    addView(TextView(context).apply {
-                        setPadding(32f.px)
-                        setText(R.string.full_disclaimer)
-                    })
-                })
-                show()
+            val title = getString(R.string.disclaimer)
+            val text = TextView(this)
+            text.setText(R.string.full_disclaimer)
+
+            CustomBottomDialog.newInstance().apply {
+                setTitleText(title)
+                addView(text)
+                setNegativeButton("Close"){
+                    dismiss()
+                }
+                show(supportFragmentManager, "dialog")
             }
         }
     }

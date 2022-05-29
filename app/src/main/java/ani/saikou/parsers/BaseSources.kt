@@ -60,7 +60,7 @@ abstract class MangaReadSources : BaseSources() {
 abstract class BaseSources {
     abstract val list: List<Lazier<BaseParser>>
 
-    abstract val names: List<String>
+    val names: List<String> get() = list.map { it.name }
 
     fun flushText() {
         list.forEach {

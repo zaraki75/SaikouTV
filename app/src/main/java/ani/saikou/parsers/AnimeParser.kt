@@ -53,6 +53,12 @@ abstract class AnimeParser : BaseParser() {
     abstract suspend fun getVideoExtractor(server: VideoServer): VideoExtractor?
 
     /**
+     * If the Video Servers support preloading links for the videos
+     * typically depends on what Video Extractor is being used
+     * **/
+    open val allowsPreloading = true
+
+    /**
      * This Function used when there "isn't" a default Server set by the user, or when user wants to switch the Server
      *
      * Doesn't need to be overridden, if the parser is following the norm.

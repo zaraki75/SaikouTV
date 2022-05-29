@@ -6,21 +6,18 @@ import ani.saikou.tryWithSuspend
 import com.fasterxml.jackson.annotation.JsonProperty
 
 object AnimeFillerList {
-    suspend fun getFillers(malId: Int): MutableMap<String, Episode>? {
-        tryWithSuspend {
-            val map = mutableMapOf<String, Episode>()
+    suspend fun getFillers(malId: Int): Map<String, Episode>? {
+        return tryWithSuspend {
             val json = client.get("https://raw.githubusercontent.com/saikou-app/mal-id-filler-list/main/fillers/$malId.json")
-            if (json.text != "404: Not Found") json.parsed<AnimeFillerListValue>().episodes?.forEach {
+            return@tryWithSuspend if (json.text != "404: Not Found") json.parsed<AnimeFillerListValue>().episodes?.associate {
                 val num = it.number.toString()
-                map[num] = Episode(
+                num to Episode(
                     num,
                     it.title,
                     filler = it.fillerBool == true
                 )
-            }
-            return@tryWithSuspend map
+            } else null
         }
-        return null
     }
     data class AnimeFillerListValue (
         @JsonProperty("MAL-id")

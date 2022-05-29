@@ -145,11 +145,11 @@
     <string name="disclaimer">Disclaimer</string>
     <string name="full_disclaimer">
          - Saikou only scrapes links from various websites and makes it easier for users to find anime and manga.
-        \n - Saikou or any of its developer/staff doesn\'t host any of the contents found inside Saikou. Any and all images and anime/manga information found in the app are taken from various public APIs (AniList, MyAnimeList, Kitsu).
-        \n - Furthermore, all of the anime/manga links found in Saikou are taken from various 3rd party anime hosting websites.
-        \n - Saikou or it\'s owners aren\'t liable for any misuse of any of the contents found inside or outside of the app and cannot be held accountable for the distribution of any of the contents found inside the app.
-        \n - By using Saikou, you comply to the fact that the developer of the app is not responsible for any of the contents found in the app; nonetheless they may or may not be from their legitimate sources.
-        \n - If the internet infringement issues are involved, please contact the source website. The developer does not assume any legal responsibility.
+        \n\n - Saikou or any of its developer/staff doesn\'t host any of the contents found inside Saikou. Any and all images and anime/manga information found in the app are taken from various public APIs (AniList, MyAnimeList, Kitsu).
+        \n\n - Furthermore, all of the anime/manga links found in Saikou are taken from various 3rd party anime hosting websites.
+        \n\n - Saikou or it\'s owners aren\'t liable for any misuse of any of the contents found inside or outside of the app and cannot be held accountable for the distribution of any of the contents found inside the app.
+        \n\n - By using Saikou, you comply to the fact that the developer of the app is not responsible for any of the contents found in the app; nonetheless they may or may not be from their legitimate sources.
+        \n\n - If the internet infringement issues are involved, please contact the source website. The developer does not assume any legal responsibility.
     </string>
     <string name="version_current">Version %1$s</string>
     <string-array name="tips">
@@ -257,5 +257,6 @@
     <string name="dual_page_info">Shows 2 Images in 1 page, will look weird if the images aren\'t the same size</string>
     <string name="true_colors">True Colors</string>
     <string name="true_colors_info">(32-bit color Mode) Reduces Banding on the images, may affect performance.</string>
+    <string name="image_rotation">Image Rotation</string>
 
 </resources>

@@ -193,7 +193,7 @@ class AnimeWatchAdapter(
                         }
                     }
                     val ep = media.anime.episodes!![continueEp]!!
-                    binding.itemEpisodeImage.loadImage(ep.thumb?:FileUrl(media.banner?:media.cover?:""),0)
+                    binding.itemEpisodeImage.loadImage(ep.thumb?:FileUrl[media.banner?:media.cover],0)
                     if (ep.filler) binding.itemEpisodeFillerView.visibility = View.VISIBLE
                     binding.animeSourceContinueText.text =
                         "Continue : Episode ${ep.number}${if (ep.filler) " - Filler" else ""}${if (ep.title != null) "\n${ep.title}" else ""}"

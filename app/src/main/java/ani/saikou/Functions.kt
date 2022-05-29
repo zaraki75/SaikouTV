@@ -125,6 +125,7 @@ fun <T> loadData(fileName: String, activity: Context? = null, toast: Boolean = t
             }
     } catch (e: Exception) {
         if (toast) toastString("Error loading data $fileName")
+        e.printStackTrace()
     }
     return null
 }
@@ -415,8 +416,8 @@ fun ImageView.loadImage(url: String?, size: Int = 0) {
     }
 }
 
-fun ImageView.loadImage(file: FileUrl, size: Int = 0) {
-    if (file.url.isNotEmpty()) {
+fun ImageView.loadImage(file: FileUrl?, size: Int = 0) {
+    if (file?.url?.isNotEmpty() == true) {
         tryWith {
             val glideUrl = GlideUrl(file.url) { file.headers }
             Glide.with(this.context).load(glideUrl).transition(withCrossFade()).override(size).into(this)

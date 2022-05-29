@@ -9,7 +9,7 @@ import ani.saikou.databinding.BottomSheetCurrentReaderSettingsBinding
 import ani.saikou.settings.CurrentReaderSettings
 import ani.saikou.settings.CurrentReaderSettings.Directions
 
-class ReaderSettingsDialogFragment(val activity: MangaReaderActivity) : BottomSheetDialogFragment() {
+class ReaderSettingsDialogFragment : BottomSheetDialogFragment() {
     private var _binding: BottomSheetCurrentReaderSettingsBinding? = null
     private val binding get() = _binding!!
 
@@ -20,6 +20,7 @@ class ReaderSettingsDialogFragment(val activity: MangaReaderActivity) : BottomSh
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val activity = requireActivity() as MangaReaderActivity
         val settings = activity.settings.default
 
         binding.readerDirectionText.text = settings.direction.toString()
@@ -90,6 +91,12 @@ class ReaderSettingsDialogFragment(val activity: MangaReaderActivity) : BottomSh
             activity.applySettings()
         }
 
+        binding.readerImageRotation.isChecked = settings.rotation
+        binding.readerImageRotation.setOnCheckedChangeListener { _, isChecked ->
+            settings.rotation = isChecked
+            activity.applySettings()
+        }
+
         binding.readerHorizontalScrollBar.isChecked = settings.horizontalScrollBar
         binding.readerHorizontalScrollBar.setOnCheckedChangeListener { _, isChecked ->
             settings.horizontalScrollBar = isChecked
@@ -106,5 +113,9 @@ class ReaderSettingsDialogFragment(val activity: MangaReaderActivity) : BottomSh
     override fun onDestroy() {
         _binding = null
         super.onDestroy()
+    }
+
+    companion object{
+        fun newInstance() = ReaderSettingsDialogFragment()
     }
 }

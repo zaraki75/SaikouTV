@@ -1,19 +1,16 @@
 package ani.saikou.parsers.anime
 
-import ani.saikou.FileUrl
-import ani.saikou.client
-import ani.saikou.mapper
+import ani.saikou.*
 import ani.saikou.parsers.*
 import ani.saikou.parsers.anime.extractors.StreamTape
-import ani.saikou.parsers.anime.extractors.VidVard
+import ani.saikou.parsers.anime.extractors.VideoVard
 import ani.saikou.parsers.anime.extractors.VizCloud
-import ani.saikou.tryWithSuspend
 import com.fasterxml.jackson.module.kotlin.readValue
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jsoup.Jsoup
-import java.net.URLDecoder
+import java.net.URLDecoder.decode
+import java.net.URLEncoder.encode
 
 class NineAnime : AnimeParser() {
 
@@ -37,24 +34,31 @@ class NineAnime : AnimeParser() {
     private val embedHeaders = mapOf("referer" to "$hostUrl/")
 
     override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
+        val list = mutableListOf<VideoServer>()
         val body = client.get(episodeLink).parsed<Response>().html
         val document = Jsoup.parse(body)
         val rawJson = document.select(".episodes li a").select(".active").attr("data-sources")
         val dataSources = mapper.readValue<Map<String, String>>(rawJson)
 
-        return document.select(".tabs span").mapNotNull {
+        var videoVardDownload: VideoServer?=null
+
+        list.addAll(document.select(".tabs span").mapNotNull {
             val name = it.text()
             val encodedStreamUrl = getEpisodeLinks(dataSources[it.attr("data-id")].toString())?.url ?: return@mapNotNull null
             val realLink = FileUrl(getLink(encodedStreamUrl), embedHeaders)
+            if(name=="VideoVard") videoVardDownload = VideoServer("$name Mp4", realLink)
             VideoServer(name, realLink)
-        }
+        })
+        videoVardDownload?.also { list.add(it) }
+        return list
     }
 
     override suspend fun getVideoExtractor(server: VideoServer): VideoExtractor? {
         val extractor: VideoExtractor? = when (server.name) {
             "Vidstream"  -> VizCloud(server)
             "MyCloud"    -> VizCloud(server)
-            "VideoVard"  -> VidVard(server)
+            "VideoVard"  -> VideoVard(server)
+            "VideoVard Mp4"  -> VideoVard(server,true)
             "Streamtape" -> StreamTape(server)
             else         -> null
         }
@@ -77,19 +81,20 @@ class NineAnime : AnimeParser() {
         tryWithSuspend {
             val servers = loadVideoServers(episodeUrl, extra).map { getVideoExtractor(it) }
             val mutex = Mutex()
-            servers.forEach {
+            servers.asyncMap {
                 tryWithSuspend {
                     it?.apply {
-                        if (this is VizCloud) mutex.withLock {
-                            load()
-                            callback.invoke(this)
-                        } else {
+                        if (this is VizCloud) {
+                            mutex.withLock {
+                                load()
+                                callback.invoke(this)
+                            }
+                        }else {
                             load()
                             callback.invoke(this)
                         }
                     }
                 }
-                delay(1000)
             }
         }
     }
@@ -101,16 +106,6 @@ class NineAnime : AnimeParser() {
         return tryWithSuspend { client.get("${host()}/ajax/anime/episode?id=${source.replace("\"", "")}").parsed() }
     }
 
-    private fun getVrf(id: String): String {
-        val reversed = encrypt(encode(id) + "0000000").slice(0..5).reversed()
-        return reversed + encrypt(cipher(reversed, encode(id))).replace("""=+$""".toRegex(), "")
-    }
-
-    private fun getLink(url: String): String {
-        val i = url.slice(0..5)
-        val n = url.slice(6..url.lastIndex)
-        return decode(cipher(i, decrypt(n)))
-    }
 
     companion object {
         private const val defaultHost = "9anime.pl"
@@ -125,12 +120,24 @@ class NineAnime : AnimeParser() {
             return "https://$host"
         }
 
-        //The code below is fully taken from
+        //thanks to @Modder4869 for key
+        private const val nineAnimeKey = "c/aUAorINHBLxWTy3uRiPt8J+vjsOheFG1E0q2X9CYwDZlnmd4Kb5M6gSVzfk7pQ"
+
+        //The code below is taken from
         //https://github.com/jmir1/aniyomi-extensions/blob/master/src/en/nineanime/src/eu/kanade/tachiyomi/animeextension/en/nineanime/NineAnime.kt
 
-        private const val key = "0wMrYU+ixjJ4QdzgfN2HlyIVAt3sBOZnCT9Lm7uFDovkb/EaKpRWhqXS5168ePcG"
+        private fun getVrf(id: String): String {
+            val reversed = encrypt(Companion.encode(id) + "0000000", nineAnimeKey).slice(0..5).reversed()
+            return reversed + encrypt(cipher(reversed, Companion.encode(id)), nineAnimeKey).replace("""=+$""".toRegex(), "")
+        }
 
-        fun encrypt(input: String): String {
+        private fun getLink(url: String): String {
+            val i = url.slice(0..5)
+            val n = url.slice(6..url.lastIndex)
+            return decode(cipher(i, decrypt(n, nineAnimeKey)))
+        }
+
+        fun encrypt(input: String,key:String): String {
             if (input.any { it.code >= 256 }) throw Exception("illegal characters!")
             var output = ""
             for (i in input.indices step 3) {
@@ -179,7 +186,8 @@ class NineAnime : AnimeParser() {
             return output
         }
 
-        fun decrypt(input: String): String {
+        @Suppress("SameParameterValue")
+        private fun decrypt(input: String, key:String): String {
             val t = if (input.replace("""[\t\n\f\r]""".toRegex(), "").length % 4 == 0) {
                 input.replace("""==?$""".toRegex(), "")
             } else input
@@ -214,7 +222,9 @@ class NineAnime : AnimeParser() {
             }
         }
 
-        private fun decode(input: String): String = URLDecoder.decode(input, "utf-8")
+        private fun encode(input: String): String = encode(input, "utf-8").replace("+", "%20")
+
+        private fun decode(input: String): String = decode(input, "utf-8")
     }
 
 }

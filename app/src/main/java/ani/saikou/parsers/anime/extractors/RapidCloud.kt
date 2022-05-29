@@ -36,19 +36,19 @@ class RapidCloud(override val server: VideoServer) : VideoExtractor() {
                 val json = client.get(jsonLink).parsed<SourceResponse>()
 
                 json.sources?.forEach {
-                    videos.add(Video(0,true, FileUrl(it.file?:return@forEach)))
+                    videos.add(Video(0, true, FileUrl(it.file ?: return@forEach)))
                 }
                 json.sourcesBackup?.forEach {
-                    videos.add(Video(0,true, FileUrl(it.file?:return@forEach), extraNote = "Backup"))
+                    videos.add(Video(0, true, FileUrl(it.file ?: return@forEach), extraNote = "Backup"))
                 }
                 json.tracks?.forEach {
-                    if(it.kind=="captions" && it.label!=null && it.file!=null)
+                    if (it.kind == "captions" && it.label != null && it.file != null)
                         subtitles.add(Subtitle(it.label, it.file))
                 }
             }
         }
 
-        return VideoContainer(videos,subtitles)
+        return VideoContainer(videos, subtitles)
     }
 
     private suspend fun captcha(url: String, key: String): String? {
@@ -98,20 +98,21 @@ class RapidCloud(override val server: VideoServer) : VideoExtractor() {
     }
 
     override fun onVideoStopped(video: Video?) {
-        webSocket?.close(4969,"Just got Saikou-ed")
+        webSocket?.close(4969, "Just got Saikou-ed")
     }
 
-    private data class SourceResponse (
+    private data class SourceResponse(
         val sources: List<Source>? = null,
         val sourcesBackup: List<Source>? = null,
         val tracks: List<Source>? = null
     ) {
         data class Source(
-            val file: String?=null,
+            val file: String? = null,
             val label: String? = null,
-            val kind:  String? = null
+            val kind: String? = null
         )
     }
+
     object SocketHandler {
         var webSocket: WebSocket? = null
     }

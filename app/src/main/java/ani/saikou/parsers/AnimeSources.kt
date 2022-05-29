@@ -6,63 +6,27 @@ import ani.saikou.parsers.anime.*
 
 object AnimeSources : WatchSources() {
     override val list: List<Lazier<BaseParser>> = lazyList(
-        ::Gogo,
-        ::AllAnime,
-        ::NineAnime,
-        ::Zoro,
-        ::Tenshi,
-        ::Kamyroll,
-        ::AnimeKisa,
-        ::Monoschinos,
-        ::Animefenix,
-        ::Kamyroll,
-
-    )
-    override val names: List<String> = listOf(
-        "Gogo",
-        "AllAnime",
-        "9Anime",
-        "Zoro",
-        "Tenshi",
-        "Kamyroll",
-        "9Anime Backup",
-        "Monoschinos",
-        "Animefenix",
-        "Kamyroll"
+        "Gogo" to ::Gogo,
+        "9Anime" to ::NineAnime,
+        "AllAnime" to ::AllAnime,
+        "Zoro" to ::Zoro,
+        "Tenshi" to ::Tenshi,
+        "Kamyroll" to ::Kamyroll,
+        "9Anime Backup" to ::AnimeKisa,
+        "Monoschinos" to ::Monoschinos,
+        "Animefenix" to ::Animefenix,
     )
 }
 
 object HAnimeSources : WatchSources() {
-
-    override val list: List<Lazier<BaseParser>> = lazyList(
-        ::Haho,
-        ::HentaiMama,
-        ::HentaiStream,
-        ::HentaiFF,
-        ::NineAnime,
-        ::Gogo,
-        ::Zoro,
-        ::Tenshi,
-        ::Kamyroll,
-        ::AllAnime,
-        ::AnimeKisa,
-        ::Monoschinos,
-        ::Animefenix,
+    val aList: List<Lazier<BaseParser>>  = lazyList(
+        "HentaiMama" to ::HentaiMama,
+        "Haho" to ::Haho,
+        "HentaiStream" to ::HentaiStream,
+        "HentaiFF" to ::HentaiFF,
+        "Monoschinos" to ::Monoschinos,
+        "Animefenix" to ::Animefenix,
     )
 
-    override val names: List<String> = listOf(
-        "Haho",
-        "HentaiMama",
-        "HentaiStream",
-        "HentaiFF",
-        "9Anime",
-        "Gogo",
-        "Zoro",
-        "Tenshi",
-        "Kamyroll",
-        "AllAnime",
-        "9Anime Backup",
-        "Monoschinos",
-        "Animefenix",
-    )
+    override val list = listOf(aList,AnimeSources.list).flatten()
 }

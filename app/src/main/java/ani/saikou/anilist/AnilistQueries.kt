@@ -59,10 +59,8 @@ data class SearchResults(
 
 class AnilistQueries {
     suspend fun getUserData(): Boolean {
-        val a = System.currentTimeMillis()
         val response =
             executeQuery("""{Viewer {name options{ displayAdultContent } avatar{medium} bannerImage id statistics{anime{episodesWatched}manga{chaptersRead}}}}""", cache = 6)
-        println("Huh : ${System.currentTimeMillis()-a}")
         val user = response?.Viewer ?: return false
 
         Anilist.userid = user.id
@@ -124,7 +122,7 @@ class AnilistQueries {
                         fetchedMedia.tags?.apply {
                             media.tags = arrayListOf()
                             this.forEach { i ->
-                                if (i.isMediaSpoiler == true)
+                                if (i.isMediaSpoiler == false)
                                     media.tags.add("${i.name} : ${i.rank.toString()}%")
                             }
                         }
@@ -153,10 +151,10 @@ class AnilistQueries {
                                 val m = Media(mediaEdge)
                                 media.relations?.add(m)
                                 if (m.relation == "SEQUEL") {
-                                    media.sequel = if (media.sequel?.popularity ?: 0 < m.popularity ?: 0) m else media.sequel
+                                    media.sequel = if ((media.sequel?.popularity ?: 0) < (m.popularity ?: 0)) m else media.sequel
 
                                 } else if (m.relation == "PREQUEL") {
-                                    media.prequel = if (media.prequel?.popularity ?: 0 < m.popularity ?: 0) m else media.prequel
+                                    media.prequel = if ((media.prequel?.popularity ?: 0) < (m.popularity ?: 0)) m else media.prequel
                                 }
                             }
                             media.relations?.sortByDescending { it.popularity }

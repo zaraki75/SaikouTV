@@ -1,11 +1,5 @@
-# 1.2.0.8
+# 1.2.0.12
 
-- New Source HentaiStream
-- New Source Hentaimama @Diegopyl1209
-- Fix some HentaiFF
-- Add True Color Toggle
-- Autoload next chapter when on last page
-- Fixed 9anime's VizCloud
-- Implemented ReaderSettings.kt
-- Added long click to reload image on paged layout 
-- Fix episode thumbnail being too big
+- Fixed Some Crashes
+- Fix #216 (Zoro giving source exception after going to next episode)
+- Fix #215 (made 9anime keys dynamic, we wont stop scraping you 9anime)

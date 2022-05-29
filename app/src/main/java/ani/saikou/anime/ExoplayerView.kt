@@ -1212,15 +1212,16 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration?) {
         playerView.useController = !isInPictureInPictureMode
-        saveData("${media.id}_${episode.number}", exoPlayer.currentPosition, this)
         if (isInPictureInPictureMode) {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             orientationListener?.disable()
         } else {
             orientationListener?.enable()
         }
-        if (isInitialized) exoPlayer.play()
-        saveData("${media.id}_${episode.number}", exoPlayer.currentPosition, this)
+        if (isInitialized) {
+            saveData("${media.id}_${episode.number}", exoPlayer.currentPosition, this)
+            exoPlayer.play()
+        }
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
     }
 

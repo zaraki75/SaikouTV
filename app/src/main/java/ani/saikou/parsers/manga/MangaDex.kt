@@ -43,7 +43,6 @@ class MangaDex : MangaParser() {
     }
 
     override suspend fun loadImages(chapterLink: String): List<MangaImage> {
-        println("$host/at-home/server/${chapterLink}")
         val res = client.get("$host/at-home/server/${chapterLink}").parsed<ChapterResponse>().chapter
         return res?.data?.map {
             MangaImage("https://uploads.mangadex.org/data/${res.hash}/${it}")

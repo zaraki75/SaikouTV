@@ -36,7 +36,6 @@ class HentaiMama : AnimeParser() {
         ).parsed<List<String>>()
         return json.mapIndexed { i, it ->
             val url = it.substringAfter("src=\"").substringBefore("\"")
-            println("url : $url")
             VideoServer("Mirror $i", url)
         }
 

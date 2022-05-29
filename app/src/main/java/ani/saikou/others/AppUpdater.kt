@@ -2,64 +2,71 @@ package ani.saikou.others
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.AlertDialog
 import android.app.DownloadManager
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import android.os.Environment
+import android.widget.TextView
 import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
+import androidx.fragment.app.FragmentActivity
 import ani.saikou.*
+import com.fasterxml.jackson.annotation.JsonProperty
+import io.noties.markwon.Markwon
+import io.noties.markwon.SoftBreakAddsNewLinePlugin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.io.File
 
 object AppUpdater {
-    suspend fun check(activity: Activity) {
+    suspend fun check(activity: FragmentActivity) {
         val repo = activity.getString(R.string.repo)
         tryWithSuspend {
-            val md = client.get("https://raw.githubusercontent.com/$repo/${if (!BuildConfig.DEBUG) "stable" else "beta"}.md").text
+            val md =
+                client.get("https://raw.githubusercontent.com/$repo/main/${if (!BuildConfig.DEBUG) "stable" else "beta"}.md").text
+
             val version = md.substringAfter("# ").substringBefore("\n")
             logger("Git Version : $version")
             val dontShow = loadData("dont_ask_for_update_$version") ?: false
             if (compareVersion(version) && !dontShow && !activity.isDestroyed) activity.runOnUiThread {
-                AlertDialog.Builder(activity, R.style.DialogTheme)
-                    .setTitle("Update Available").apply {
-                        setMultiChoiceItems(
-                            arrayOf("Don't show again for version $version"),
-                            booleanArrayOf(false)
-                        ) { _, _, isChecked ->
-                            if (isChecked) {
-                                saveData("dont_ask_for_update_$version", isChecked)
+                CustomBottomDialog.newInstance().apply {
+                    setTitleText("${if (!BuildConfig.DEBUG) "" else "Beta "}Update Available")
+                    addView(
+                        TextView(activity).apply {
+                            val markWon = Markwon.builder(activity).usePlugin(SoftBreakAddsNewLinePlugin.create()).build()
+                            markWon.setMarkdown(this, md)
+                        }
+                    )
+
+                    setCheck("Don't show again for version $version", false) { isChecked ->
+                        if (isChecked) {
+                            saveData("dont_ask_for_update_$version", isChecked)
+                        }
+                    }
+                    setPositiveButton("Let's Go") {
+                        MainScope().launch(Dispatchers.IO) {
+                            try {
+                                client.get("https://api.github.com/repos/$repo/releases/tags/v$version").parsed<GithubResponse>().assets?.find {
+                                    it.browserDownloadURL.endsWith("apk")
+                                }?.browserDownloadURL.apply {
+                                    if(this!=null) activity.downloadUpdate(version,this)
+                                    else openLinkInBrowser("https://github.com/repos/$repo/releases/tag/v$version")
+                                }
+                            } catch (e: Exception) {
+                                logError(e)
                             }
                         }
-                        setPositiveButton("Let's Go") { _: DialogInterface, _: Int ->
-                            if (!BuildConfig.DEBUG) {
-                                MainScope().launch(Dispatchers.IO) {
-                                    try {
-                                        OkHttpClient().newCall(
-                                            Request.Builder()
-                                                .url("https://api.github.com/repos/Diegopyl1209/saikouSP/releases/tags/v$version\"+\"SP")
-                                                .build()
-                                        ).execute().body?.string()?.apply {
-                                            substringAfter("\"browser_download_url\":\"").substringBefore('"').apply {
-                                                if (endsWith("apk")) activity.downloadUpdate(this)
-                                                else openLinkInBrowser("https://github.com/Diegopyl1209/saikouSP/releases/")
-                                            }
-                                        }
-                                    } catch (e: Exception) {
-                                        logError(e)
-                                    }
-                                }
-                            } else openLinkInBrowser("https://discordapp.com/channels/902174389351620629/902238613029412865/942687552731746305")
-                        }
-                        setNegativeButton("Cope") { dialogInterface: DialogInterface, _: Int ->
-                            dialogInterface.dismiss()
-                        }
-                    }.show()
+                        dismiss()
+                    }
+                    setNegativeButton("Cope") {
+                        dismiss()
+                    }
+                    show(activity.supportFragmentManager, "dialog")
+                }
             }
         }
     }
@@ -74,15 +81,18 @@ object AppUpdater {
 
 
     //Blatantly kanged from https://github.com/LagradOst/CloudStream-3/blob/master/app/src/main/java/com/lagradost/cloudstream3/utils/InAppUpdater.kt
-    private fun Activity.downloadUpdate(url: String): Boolean {
+    private fun Activity.downloadUpdate(version:String,url: String): Boolean {
+
+        toast("Downloading Update $version")
+
         val downloadManager = this.getSystemService<DownloadManager>()!!
 
         val request = DownloadManager.Request(Uri.parse(url))
             .setMimeType("application/vnd.android.package-archive")
-            .setTitle("Saikou Update")
+            .setTitle("Downloading Saikou $version")
             .setDestinationInExternalPublicDir(
                 Environment.DIRECTORY_DOWNLOADS,
-                "Saikou.apk"
+                "Saikou $version.apk"
             )
             .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
             .setAllowedOverRoaming(true)
@@ -148,5 +158,13 @@ object AppUpdater {
         } catch (e: Exception) {
             logError(e)
         }
+    }
+    data class GithubResponse (
+        val assets: List<Asset>? = null
+    ) {
+        data class Asset(
+            @JsonProperty("browser_download_url")
+            val browserDownloadURL: String
+        )
     }
 }

@@ -103,6 +103,12 @@ class ReaderSettingsActivity : AppCompatActivity() {
             saveData(reader, settings)
         }
 
+        binding.readerSettingsImageRotation.isChecked = settings.default.rotation
+        binding.readerSettingsImageRotation.setOnCheckedChangeListener { _, isChecked ->
+            settings.default.rotation = isChecked
+            saveData(reader, settings)
+        }
+
         binding.readerSettingsHorizontalScrollBar.isChecked = settings.default.horizontalScrollBar
         binding.readerSettingsHorizontalScrollBar.setOnCheckedChangeListener { _, isChecked ->
             settings.default.horizontalScrollBar = isChecked

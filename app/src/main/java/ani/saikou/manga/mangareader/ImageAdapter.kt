@@ -1,7 +1,6 @@
 package ani.saikou.manga.mangareader
 
 import android.animation.ObjectAnimator
-import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.LayoutInflater
@@ -12,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.R
 import ani.saikou.databinding.ItemImageBinding
 import ani.saikou.manga.MangaChapter
-import ani.saikou.px
 import ani.saikou.settings.CurrentReaderSettings.Directions.LEFT_TO_RIGHT
 import ani.saikou.settings.CurrentReaderSettings.Directions.RIGHT_TO_LEFT
 import ani.saikou.settings.CurrentReaderSettings.Layouts.PAGED
@@ -38,33 +36,14 @@ class ImageAdapter(
 
     inner class ImageViewHolder(binding: ItemImageBinding) : RecyclerView.ViewHolder(binding.root)
 
-    @SuppressLint("ClickableViewAccessibility")
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        applyChangesTo(holder)
-    }
-
     override fun loadImage(position: Int, parent: View): Boolean {
-        val imageView = parent.findViewById<SubsamplingScaleImageView>(
-            if(settings.layout!=PAGED) R.id.imgProgImageNoGestures else R.id.imgProgImageGestures
-        ) ?: return false
+        val imageView = parent.findViewById<SubsamplingScaleImageView>(R.id.imgProgImageNoGestures) ?: return false
         val progress = parent.findViewById<View>(R.id.imgProgProgress) ?: return false
         imageView.recycle()
         imageView.visibility = View.GONE
 
-        if (settings.layout != PAGED) {
-            parent.updateLayoutParams {
-                if (settings.direction != LEFT_TO_RIGHT && settings.direction != RIGHT_TO_LEFT) {
-                    width = ViewGroup.LayoutParams.MATCH_PARENT
-                    height = 480f.px
-                } else {
-                    width = 480f.px
-                    height = ViewGroup.LayoutParams.MATCH_PARENT
-                }
-            }
-        }
-
         val link = images[position].url
-        val trans = images[position].transformation
+        val trans = activity.getTransformation(images[position])
 
         if (link.url.isEmpty()) return false
         Glide.with(imageView).download(GlideUrl(link.url) { link.headers })
@@ -94,7 +73,7 @@ class ImageAdapter(
                     }
                 }
                 if (trans != null)
-                    transform(File("").javaClass, trans).into(target)
+                    transform(File::class.java, trans).into(target)
                 else
                     into(target)
             }

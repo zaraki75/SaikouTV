@@ -26,13 +26,10 @@ object MalSyncBackup {
             if (json.text != "404: Not Found")
                 json.parsed<MalBackUpSync>().pages?.get(name)?.forEach {
                     val page = it.value
-                    val slug = if (dub)
-                        if (page.title.lowercase().endsWith("(dub)")) {
-                            page.identifier
-                        } else null
-                    else page.identifier
-                    if(slug!=null && page.active==true){
-                        return ShowResponse(page.title,slug,page.image?:"")
+                    val isDub = page.title.lowercase().replace(" ", "").endsWith("(dub)")
+                    val slug = if (dub == isDub) page.identifier else null
+                    if (slug != null && page.active == true) {
+                        return ShowResponse(page.title, slug, page.image ?: "")
                     }
                 }
         } catch (e: Exception) {

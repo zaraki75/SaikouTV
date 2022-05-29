@@ -139,17 +139,15 @@ class AnimeWatchFragment : Fragment() {
                     episodes.forEach { (i, episode) ->
                         if (media.anime?.fillerEpisodes != null) {
                             if (media.anime!!.fillerEpisodes!!.containsKey(i)) {
-                                episode.title = media.anime!!.fillerEpisodes!![i]?.title
-                                episode.filler =
-                                    media.anime!!.fillerEpisodes!![i]?.filler ?: false
+                                episode.title = episode.title ?: media.anime!!.fillerEpisodes!![i]?.title
+                                episode.filler = media.anime!!.fillerEpisodes!![i]?.filler ?: false
                             }
                         }
                         if (media.anime?.kitsuEpisodes != null) {
                             if (media.anime!!.kitsuEpisodes!!.containsKey(i)) {
-                                episode.desc = media.anime!!.kitsuEpisodes!![i]?.desc
-                                episode.title = media.anime!!.kitsuEpisodes!![i]?.title
-                                episode.thumb =
-                                    media.anime!!.kitsuEpisodes!![i]?.thumb ?: FileUrl(media.cover?:"")
+                                episode.desc = episode.desc ?: media.anime!!.kitsuEpisodes!![i]?.desc
+                                episode.title = episode.title ?: media.anime!!.kitsuEpisodes!![i]?.title
+                                episode.thumb = episode.thumb?: media.anime!!.kitsuEpisodes!![i]?.thumb ?: FileUrl[media.cover]
                             }
                         }
                     }
