@@ -1,5 +1,6 @@
-# 1.2.0.12
+# 1.2.0.13
 
-- Fixed Some Crashes
-- Fix #216 (Zoro giving source exception after going to next episode)
-- Fix #215 (made 9anime keys dynamic, we wont stop scraping you 9anime)
+- Beta version will now be a separate app, Can uninstall old one
+- Splash Screen for below android 12, Fix #233
+- Remove scrolling animation in manga reader
+- Fix 9anime (Fix #232)

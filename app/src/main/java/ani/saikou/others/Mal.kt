@@ -8,7 +8,7 @@ object Mal {
     suspend fun loadMedia(media: Media): Media {
         tryWithSuspend {
             if (media.anime != null) {
-                val res = client.get("https://myanimelist.net/anime/${media.idMAL}").document
+                val res = client.get("https://myanimelist.net/anime/${media.idMAL}", timeout = 5).document
                 val a = res.select(".title-english").text()
                 media.nameMAL = if (a != "") a else res.select(".title-name").text()
                 media.typeMAL =
@@ -27,7 +27,7 @@ object Mal {
                 }
 
             } else {
-                val res = client.get("https://myanimelist.net/manga/${media.idMAL}").document
+                val res = client.get("https://myanimelist.net/manga/${media.idMAL}", timeout = 300).document
                 val b = res.select(".title-english").text()
                 val a = res.select(".h1-title").text().removeSuffix(b)
                 media.nameMAL = a

@@ -38,14 +38,7 @@ suspend inline fun <reified T : Any> executeQuery(
 
             val json = client.post("https://graphql.anilist.co/", headers, data = data, cacheTime = cache ?: 10)
             if (show) toastString("Response : ${json.text}")
-            if(show) {
-                var a : T
-                measureTimeMillis {
-                    a = json.parsed()
-                }.also { println("parse time : $it") }
-                a
-            }
-            else json.parsed()
+            json.parsed()
         } else null
     }
 }
@@ -67,11 +60,12 @@ data class SearchResults(
 
 class AnilistQueries {
     suspend fun getUserData(): Boolean {
-        val response : Query.Viewer?
+        val response: Query.Viewer?
         measureTimeMillis {
-            response = executeQuery("""{Viewer {name options{ displayAdultContent } avatar{medium} bannerImage id statistics{anime{episodesWatched}manga{chaptersRead}}}}""", show = true)
+            response =
+                executeQuery("""{Viewer {name options{ displayAdultContent } avatar{medium} bannerImage id statistics{anime{episodesWatched}manga{chaptersRead}}}}""")
         }.also { println("time : $it") }
-        val user = response?.data?.user?: return false
+        val user = response?.data?.user ?: return false
 
         Anilist.userid = user.id
         Anilist.username = user.name
@@ -164,7 +158,8 @@ class AnilistQueries {
                                     media.sequel = if ((media.sequel?.popularity ?: 0) < (m.popularity ?: 0)) m else media.sequel
 
                                 } else if (m.relation == "PREQUEL") {
-                                    media.prequel = if ((media.prequel?.popularity ?: 0) < (m.popularity ?: 0)) m else media.prequel
+                                    media.prequel =
+                                        if ((media.prequel?.popularity ?: 0) < (m.popularity ?: 0)) m else media.prequel
                                 }
                             }
                             media.relations?.sortByDescending { it.popularity }
@@ -261,7 +256,7 @@ class AnilistQueries {
         val statuses = arrayOf("CURRENT", "REPEATING")
         suspend fun repeat(status: String) {
             val response =
-                executeQuery<Query.MediaListCollection>(""" { MediaListCollection(userId: ${Anilist.userid}, type: $type, status: $status , sort: UPDATED_TIME ) { lists { entries { progress score(format:POINT_100) status media { id idMal type isAdult status chapters episodes nextAiringEpisode {episode} meanScore isFavourite bannerImage coverImage{large} title { english romaji userPreferred } } } } } } """, show = true)
+                executeQuery<Query.MediaListCollection>(""" { MediaListCollection(userId: ${Anilist.userid}, type: $type, status: $status , sort: UPDATED_TIME ) { lists { entries { progress score(format:POINT_100) status media { id idMal type isAdult status chapters episodes nextAiringEpisode {episode} meanScore isFavourite bannerImage coverImage{large} title { english romaji userPreferred } } } } } } """)
             response?.data?.mediaListCollection?.lists?.forEach { li ->
                 li.entries?.reversed()?.forEach {
                     val m = Media(it)
@@ -346,26 +341,21 @@ class AnilistQueries {
         if (image == null || image.checkTime()) {
             val response =
                 executeQuery<Query.MediaListCollection>("""{ MediaListCollection(userId: ${Anilist.userid}, type: $type, chunk:1,perChunk:25, sort: [SCORE_DESC,UPDATED_TIME_DESC]) { lists { entries{ media { bannerImage } } } } } """)
-            val mediaListCollection = response?.data?.mediaListCollection ?: return null
-            val allImages = arrayListOf<String>()
-            mediaListCollection.lists?.forEach {
-                it.entries?.forEach { entry ->
+            val random = response?.data?.mediaListCollection?.lists?.mapNotNull {
+                it.entries?.mapNotNull { entry ->
                     val imageUrl = entry.media?.bannerImage
-                    if (imageUrl != null && imageUrl != "null") allImages.add(imageUrl)
+                    if (imageUrl != null && imageUrl != "null") imageUrl
+                    else null
                 }
-            }
+            }?.flatten()?.randomOrNull() ?: return null
 
-            if (allImages.isNotEmpty()) {
-                val rand = kotlin.random.Random.nextInt(0, allImages.size)
-                image = BannerImage(
-                    allImages[rand],
-                    System.currentTimeMillis()
-                )
-                saveData("banner_$type", image)
-                return image.url
-            }
+            image = BannerImage(
+                random,
+                System.currentTimeMillis()
+            )
+            saveData("banner_$type", image)
+            return image.url
         } else return image.url
-        return null
     }
 
     suspend fun getBannerImages(): ArrayList<String?> {
@@ -439,7 +429,11 @@ class AnilistQueries {
         var tags: ArrayList<String>? = loadData("tags_list", activity)
 
         if (genres == null) {
-            executeQuery<Query.GenreCollection>("""{GenreCollection}""", force = true, useToken = false)?.data?.genreCollection?.apply {
+            executeQuery<Query.GenreCollection>(
+                """{GenreCollection}""",
+                force = true,
+                useToken = false
+            )?.data?.genreCollection?.apply {
                 genres = arrayListOf()
                 forEach {
                     genres?.add(it)
@@ -448,7 +442,10 @@ class AnilistQueries {
             }
         }
         if (tags == null) {
-            executeQuery<Query.MediaTagCollection>("""{ MediaTagCollection { name isAdult } }""", force = true)?.data?.mediaTagCollection?.apply {
+            executeQuery<Query.MediaTagCollection>(
+                """{ MediaTagCollection { name isAdult } }""",
+                force = true
+            )?.data?.mediaTagCollection?.apply {
                 tags = arrayListOf()
                 forEach { node ->
                     if (node.isAdult == true) tags?.add(node.name)

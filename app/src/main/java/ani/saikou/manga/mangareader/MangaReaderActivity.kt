@@ -133,7 +133,7 @@ class MangaReaderActivity : AppCompatActivity() {
             if (fromUser) {
                 sliding = true
                 if (settings.default.layout != PAGED)
-                    binding.mangaReaderRecycler.smoothScrollToPosition((value.toInt() - 1) / (dualPage { 2 } ?: 1))
+                    binding.mangaReaderRecycler.scrollToPosition((value.toInt() - 1) / (dualPage { 2 } ?: 1))
                 else
                     binding.mangaReaderPager.currentItem = (value.toInt() - 1) / (dualPage { 2 } ?: 1)
                 pageSliderHide()

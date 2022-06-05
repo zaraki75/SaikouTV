@@ -13,14 +13,14 @@ android {
         applicationId "ani.saikou"
         minSdk 21
         targetSdk 31
-        versionCode 53
-        versionName "1.2.0.12"
+        versionCode 54
+        versionName "1.2.0.13"
         signingConfig signingConfigs.debug
     }
 
     buildTypes {
         debug {
-            applicationIdSuffix ".debug"
+            applicationIdSuffix ".beta"
         }
         release {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'

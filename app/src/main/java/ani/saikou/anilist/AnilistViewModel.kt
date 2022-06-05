@@ -4,18 +4,13 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import ani.saikou.anilist.api.Query
-import ani.saikou.mapper
 import ani.saikou.media.Media
 import ani.saikou.others.AppUpdater
 import ani.saikou.toastString
-import com.fasterxml.jackson.module.kotlin.readValue
-import kotlin.system.measureTimeMillis
 
 
 suspend fun getUserId(update: Runnable){
     if (Anilist.userid == null && Anilist.token!=null) {
-        measureTimeMillis{ mapper.readValue<Query.Viewer>("{}") }.also { println("init time : $it") }
         if (Anilist.query.getUserData())
             update.run()
         else
