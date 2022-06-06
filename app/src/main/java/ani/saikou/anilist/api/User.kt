@@ -8,7 +8,7 @@ data class User(
     var id: Int,
 
     // The name of the user
-    var name: String,
+    var name: String?,
 
     // The bio written by user (Markdown)
 //    var about: String?,
@@ -32,7 +32,7 @@ data class User(
     // var bans: Json?,
 
     // The user's general options
-    var options: UserOptions,
+    var options: UserOptions?,
 
     // The user's media list options
     var mediaListOptions: MediaListOptions?,
@@ -75,7 +75,7 @@ data class UserOptions(
     // var titleLanguage: UserTitleLanguage?,
 
     // Whether the user has enabled viewing of 18+ content
-    var displayAdultContent: Boolean,
+    var displayAdultContent: Boolean?,
 
     // Whether the user receives notifications when a show they are watching aires
 //    var airingNotifications: Boolean?,
@@ -186,4 +186,8 @@ data class MediaListTypeOptions(
 //
 //    // If advanced scoring is enabled
 //    var advancedScoringEnabled: Boolean?,
+)
+
+data class Viewer(
+    var user: User?
 )

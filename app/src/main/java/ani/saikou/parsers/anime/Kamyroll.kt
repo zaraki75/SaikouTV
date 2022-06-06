@@ -1,7 +1,9 @@
 package ani.saikou.parsers.anime
 
+import ani.saikou.FileUrl
 import ani.saikou.client
 import ani.saikou.levenshtein
+import ani.saikou.media.Media
 import ani.saikou.parsers.*
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -12,23 +14,23 @@ class Kamyroll : AnimeParser() {
     override val hostUrl: String = apiUrl
     override val isDubAvailableSeparately: Boolean = false
 
-
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
         return if (extra?.get("type") == "series") {
+            val idHeader = "id" to animeLink
+            val filter = extra["filter"]
             val eps = client.get(
                 "$hostUrl/content/v1/seasons",
                 getHeaders(),
-                params = mapOf(
-                    channel,
-                    locale,
-                    "id" to animeLink
-                ),
+                params = if (filter == null) mapOf(channelHeader, localeHeader, idHeader)
+                else mapOf(channelHeader, localeHeader, idHeader, "filter" to filter),
                 timeout = 100
             ).parsed<EpisodesResponse>()
 
             data class Temp(
                 val type: String,
                 val thumb: String?,
+                val title: String?,
+                val description: String?,
                 val series: MutableMap<String, String> = mutableMapOf()
             )
 
@@ -36,16 +38,25 @@ class Kamyroll : AnimeParser() {
             val dataList = (eps.items ?: return listOf()).mapNotNull { item ->
                 val tit = item.title ?: return@mapNotNull null
                 (item.episodes ?: return@mapNotNull null).map {
-                    Pair(it.sequenceNumber, Temp(it.type, it.images?.thumbnail?.getOrNull(5)?.source, mutableMapOf(tit to it.id)))
+                    Pair(
+                        it.sequenceNumber,
+                        Temp(
+                            it.type,
+                            it.images?.thumbnail?.getOrNull(6)?.source,
+                            it.title,
+                            it.description,
+                            mutableMapOf(tit to it.id)
+                        )
+                    )
                 }
-            }
-            dataList.flatten().forEach {
+            }.flatten()
+            dataList.forEach {
                 epMap[it.first] = epMap[it.first] ?: it.second
                 epMap[it.first]?.series?.putAll(it.second.series)
             }
             epMap.map {
                 if (it.value.thumb != null)
-                    Episode(it.key.toString(), it.value.type, thumbnail = it.value.thumb!!, extra = it.value.series.toMap())
+                    Episode(it.key.toString(),it.value.type,it.value.title,it.value.thumb!!,it.value.description, false,it.value.series.toMap())
                 else
                     Episode(it.key.toString(), it.value.type, extra = it.value.series.toMap())
             }
@@ -54,8 +65,8 @@ class Kamyroll : AnimeParser() {
                 "$hostUrl/content/v1/movies",
                 getHeaders(),
                 params = mapOf(
-                    channel,
-                    locale,
+                    channelHeader,
+                    localeHeader,
                     "id" to animeLink
                 ),
                 timeout = 100
@@ -75,7 +86,7 @@ class Kamyroll : AnimeParser() {
                 VideoServer(it.key.toString(), it.value.toString())
             }
         } else {
-            listOf(VideoServer("CR", episodeLink))
+            listOf(VideoServer(channel, episodeLink))
         }
     }
 
@@ -87,28 +98,27 @@ class Kamyroll : AnimeParser() {
                 "$apiUrl/videos/v1/streams",
                 getHeaders(),
                 params = mapOf(
-                    channel,
-                    locale,
-                    type,
-                    "id" to server.embed.url
+                    channelHeader,
+                    "id" to server.embed.url,
+                    localeHeader,
+                    "type" to "adaptive_hls",
+                    "format" to "vtt",
+                    "service" to service,
                 ),
-                timeout = 100
+                timeout = 60
             ).parsed<StreamsResponse>()
 
-            var findSub = false
-
-            val vid = listOf(
-                Video(
-                    null,
-                    true,
-                    eps.streams?.find { it.hardsubLocale == "en-US" }?.url
-                        ?: eps.streams?.find { it.hardsubLocale == "" }?.also {
-                            findSub = true
-                        }?.url
-                        ?: return VideoContainer(listOf())
-                )
+            var foundSub = false
+            val link = FileUrl(
+                eps.streams?.find {
+                    it.hardsubLocale == locale
+                }?.url ?: eps.streams?.find {
+                    it.hardsubLocale == ""
+                }?.also { foundSub = true }?.url ?: return VideoContainer(listOf()),
+                mapOf("accept" to "*/*")
             )
-            val subtitle = if (findSub) eps.subtitles?.find { it.locale == "en-US" || it.locale == "en-GB" }
+            val vid = listOf(Video(null, true, link))
+            val subtitle = if (foundSub) eps.subtitles?.find { it.locale == locale || it.locale == "en-GB" }
                 .let { listOf(Subtitle("English", it?.url ?: return@let null, "ass")) } else null
             return VideoContainer(vid, subtitle ?: listOf())
         }
@@ -131,45 +141,77 @@ class Kamyroll : AnimeParser() {
         }
     }
 
+    override suspend fun autoSearch(mediaObj: Media): ShowResponse? {
+        var response = loadSavedShowResponse(mediaObj.id)
+        if (response != null) {
+            saveShowResponse(mediaObj.id, response, true)
+        } else {
+            response = if (mediaObj.crunchySlug != null || mediaObj.vrvId != null) ShowResponse(
+                "Automatically",
+                mediaObj.vrvId ?: mediaObj.crunchySlug!!,
+                "",
+                extra = mapOf(
+                    "type" to if (mediaObj.format == "TV") "series" else "",
+                    "filter" to (mediaObj.alName())
+                )
+            ) else null
+            if (response == null) {
+                setUserText("Searching : ${mediaObj.mainName()}")
+                response = search("$" + mediaObj.mainName()).let { if (it.isNotEmpty()) it[0] else null }
+            }
+            if (response == null) {
+                setUserText("Searching : ${mediaObj.nameRomaji}")
+                response = search("$" + mediaObj.nameRomaji).let { if (it.isNotEmpty()) it[0] else null }
+            }
+            saveShowResponse(mediaObj.id, response)
+        }
+        return response
+    }
+
     override suspend fun search(query: String): List<ShowResponse> {
         val res = client.get(
             "$hostUrl/content/v1/search",
             getHeaders(),
             params = mapOf(
-                channel,
-                locale,
+                channelHeader,
+                localeHeader,
                 "limit" to "25",
                 "query" to query
             )
         ).parsed<SearchResponse>()
         return (res.items ?: listOf()).map { item ->
+            val filter = if (query.startsWith("$")) query.substringAfter("$") else null
             item.items.map {
+                val type = "type" to it.type
                 ShowResponse(
                     name = it.title,
                     link = it.id,
                     coverUrl = it.images?.posterTall?.getOrNull(5)?.source ?: "",
-                    extra = mapOf("type" to it.type)
+                    extra = if (filter == null) mapOf(type) else mapOf(type, "filter" to filter)
                 )
             }
         }.flatten().sortedBy { levenshtein(it.name, query) }
     }
 
     companion object {
-        const val apiUrl = "https://api-kamyroll.herokuapp.com"
+        private const val apiUrl = "https://beta-kamyroll.herokuapp.com"
+        private const val channel = "crunchyroll"
+        private const val locale = "en-US"
+        private const val service = "google"
+
         private var headers: Map<String, String>? = null
-        private val channel = "channel_id" to "crunchyroll"
-        private val locale = "locale" to "en-US"
-        private val type = "type" to "adaptive_hls"
+        private val channelHeader = "channel_id" to channel
+        private val localeHeader = "locale" to locale
 
         suspend fun getHeaders(): Map<String, String> {
             headers = headers ?: let {
                 val res = client.post(
                     "$apiUrl/auth/v1/token",
                     mapOf(
-                        "authorization" to "Basic BCoB9f4m4lSlo+fp05PjlwWcplxQXDT+N+1FfvsyoF41YSy8nH+kuJBQowYrVkiZq6PvTvjFEoQQvzJOt3pJZA=="
+                        "authorization" to "Basic vrvluizpdr2eby+RjSKM17dOLacExxq1HAERdxQDO6+2pHvFHTKKnByPD7b6kZVe1dJXifb6SG5NWMz49ABgJA=="
                     ),
                     data = mapOf(
-                        "refresh_token" to "oI1F8udW1uidoJDXn4qPu6vddl546+pLjjIhXnY1bWByOWcAT1HBjehn1HD847EQ2ue8Tl2qPk0FP7mgnS9U4yGP8OZp/ehMZ6rxx7Nx7OgD/Qrl8eMxPNsG3Q864MBMa/ZaWPl+tS4vc4NQ+rR36fWxoTMglxuFOKj4hDKHxGanNpHj7iR0XsgmZX9Fy967BSn9XhO9G7S+Ag7qE3Z7rcJiZOJfh3s4zyRPW7wXYVrEq3UTYQx2oZm2g4Efb7Gm",
+                        "refresh_token" to "BhETbpDeWFU9hh7awo640SIDo+Jwl7HgUiyoxnizZyldtMmlB4VmJGA4XH3v6ux3kgprIm2zLCQFhmTUjNvqF6Nw5bZk7dqYbu0QWxW5k8f8dtqcW2xiK1fCQpUdbwPFv9vr5WM3Jq3AlBB82127/iHN+Ndzo0msCYWrF94yrX86lsm3V8EESBYfXhdaTibJnBZlfFCvDtn66CtnBqlnIhJrn1LkSdeY5rm8QaqOyS0r75KfOwCEVBv/vZ1VgU76fWzjm4DlSPtDjRTS0UUn2BuA/by0xTaV6H3RJxw13kIdp3hraoNPk79A4NpCgc7PNJ+9+P9kSU4eq07P0o+WEw==",
                         "grant_type" to "refresh_token",
                         "scope" to "offline_access",
                     )

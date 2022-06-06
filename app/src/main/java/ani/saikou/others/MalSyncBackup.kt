@@ -1,8 +1,8 @@
 package ani.saikou.others
 
 import ani.saikou.client
-import ani.saikou.logError
 import ani.saikou.parsers.ShowResponse
+import ani.saikou.tryWithSuspend
 import com.fasterxml.jackson.annotation.JsonProperty
 
 object MalSyncBackup {
@@ -20,7 +20,7 @@ object MalSyncBackup {
     )
 
     suspend fun get(id: Int, name: String, dub: Boolean = false): ShowResponse? {
-        try {
+        return tryWithSuspend {
             val json =
                 client.get("https://raw.githubusercontent.com/MALSync/MAL-Sync-Backup/master/data/anilist/anime/$id.json")
             if (json.text != "404: Not Found")
@@ -29,12 +29,10 @@ object MalSyncBackup {
                     val isDub = page.title.lowercase().replace(" ", "").endsWith("(dub)")
                     val slug = if (dub == isDub) page.identifier else null
                     if (slug != null && page.active == true) {
-                        return ShowResponse(page.title, slug, page.image ?: "")
+                        return@tryWithSuspend ShowResponse(page.title, slug, page.image ?: "")
                     }
                 }
-        } catch (e: Exception) {
-            logError(e)
+            return@tryWithSuspend null
         }
-        return null
     }
 }

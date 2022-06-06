@@ -37,6 +37,7 @@ suspend inline fun <reified T : Any> executeQuery(
             if (Anilist.token != null && useToken) headers["Authorization"] = "Bearer ${Anilist.token}"
 
             val json = client.post("https://graphql.anilist.co/", headers, data = data, cacheTime = cache ?: 10)
+            if(!json.text.startsWith("{")) throw Exception("Seems like Anilist is down, maybe try using a VPN or you can wait for it to comeback.")
             if (show) toastString("Response : ${json.text}")
             json.parsed()
         } else null
@@ -73,7 +74,7 @@ class AnilistQueries {
         Anilist.avatar = user.avatar?.medium
         Anilist.episodesWatched = user.statistics?.anime?.episodesWatched
         Anilist.chapterRead = user.statistics?.manga?.chaptersRead
-        Anilist.adult = user.options.displayAdultContent
+        Anilist.adult = user.options?.displayAdultContent ?: false
         return true
     }
 
@@ -219,8 +220,10 @@ class AnilistQueries {
                             media.anime.nextAiringEpisodeTime = fetchedMedia.nextAiringEpisode?.airingAt?.toLong()
 
                             fetchedMedia.externalLinks?.forEach { i ->
-                                if (i.site == "YouTube") {
-                                    media.anime.youtube = i.url
+                                when (i.site) {
+                                    "Youtube" -> media.anime.youtube = i.url
+                                    "Crunchyroll" -> media.crunchySlug = i.url?.split("/")?.getOrNull(3)
+                                    "VRV" -> media.vrvId = i.url?.split("/")?.getOrNull(4)
                                 }
                             }
                         } else if (media.manga != null) {

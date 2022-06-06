@@ -1,6 +1,8 @@
-# 1.2.0.13
+# 1.2.0.14
 
-- Beta version will now be a separate app, Can uninstall old one
-- Splash Screen for below android 12, Fix #233
-- Remove scrolling animation in manga reader
-- Fix 9anime (Fix #232)
+- Fix long loading time in media info
+- Fix Json Errors, (Fix #236)
+- Update Kamyroll, tweaks to make experience better (clear data recommended) 
+  - tries to automatically load the correct season
+  - use wrong title if selected wrong
+  - now title & description are from crunchyroll

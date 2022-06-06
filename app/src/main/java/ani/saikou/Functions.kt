@@ -41,7 +41,6 @@ import androidx.viewpager2.widget.ViewPager2
 import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.Genre
 import ani.saikou.anilist.api.FuzzyDate
-import ani.saikou.anilist.api.Query
 import ani.saikou.anime.Episode
 import ani.saikou.databinding.ItemCountDownBinding
 import ani.saikou.media.Media
@@ -52,7 +51,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.android.exoplayer2.ui.DefaultTimeBar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -67,7 +65,6 @@ import java.io.*
 import java.lang.reflect.Field
 import java.util.*
 import kotlin.math.*
-import kotlin.system.measureTimeMillis
 
 
 var statusBarHeight = 0

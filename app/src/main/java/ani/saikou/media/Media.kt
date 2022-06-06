@@ -59,6 +59,9 @@ data class Media(
     var relations: ArrayList<Media>? = null,
     var recommendations: ArrayList<Media>? = null,
 
+    var vrvId : String? = null,
+    var crunchySlug: String? = null,
+
     var nameMAL: String? = null,
     var shareLink: String? = null,
     var selected: Selected? = null,
@@ -101,5 +104,6 @@ data class Media(
     }
 
     fun mainName() = nameMAL ?: name ?: nameRomaji
+    fun alName() = name ?: nameRomaji
     fun mangaName() = if (countryOfOrigin != "JP") mainName() else nameRomaji
 }
