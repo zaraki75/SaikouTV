@@ -52,7 +52,6 @@ class VideoVard(override val server: VideoServer, private val download:Boolean=f
                         "hash" to (hash.hash ?: return@tryWithSuspend null)
                     )
                 ).parsed<SetupResponse>()
-                println("aa $res")
                 val m3u8 = FileUrl(decode(res.src?:return@tryWithSuspend null, res.seed), headers)
                 Video(null, true, m3u8)
             }

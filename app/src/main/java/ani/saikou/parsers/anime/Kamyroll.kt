@@ -56,7 +56,15 @@ class Kamyroll : AnimeParser() {
             }
             epMap.map {
                 if (it.value.thumb != null)
-                    Episode(it.key.toString(),it.value.type,it.value.title,it.value.thumb!!,it.value.description, false,it.value.series.toMap())
+                    Episode(
+                        it.key.toString(),
+                        it.value.type,
+                        it.value.title,
+                        it.value.thumb!!,
+                        it.value.description,
+                        false,
+                        it.value.series.toMap()
+                    )
                 else
                     Episode(it.key.toString(), it.value.type, extra = it.value.series.toMap())
             }
@@ -102,7 +110,7 @@ class Kamyroll : AnimeParser() {
                     "id" to server.embed.url,
                     localeHeader,
                     "type" to "adaptive_hls",
-                    "format" to "vtt",
+                    "format" to "srt",
                     "service" to service,
                 ),
                 timeout = 60
@@ -115,11 +123,12 @@ class Kamyroll : AnimeParser() {
                 }?.url ?: eps.streams?.find {
                     it.hardsubLocale == ""
                 }?.also { foundSub = true }?.url ?: return VideoContainer(listOf()),
-                mapOf("accept" to "*/*")
+                mapOf("accept" to "*/*", "accept-encoding" to "gzip")
             )
             val vid = listOf(Video(null, true, link))
             val subtitle = if (foundSub) eps.subtitles?.find { it.locale == locale || it.locale == "en-GB" }
                 .let { listOf(Subtitle("English", it?.url ?: return@let null, "ass")) } else null
+            println("vid: $vid \nsub: $subtitle")
             return VideoContainer(vid, subtitle ?: listOf())
         }
 
@@ -142,30 +151,32 @@ class Kamyroll : AnimeParser() {
     }
 
     override suspend fun autoSearch(mediaObj: Media): ShowResponse? {
-        var response = loadSavedShowResponse(mediaObj.id)
-        if (response != null) {
-            saveShowResponse(mediaObj.id, response, true)
-        } else {
-            response = if (mediaObj.crunchySlug != null || mediaObj.vrvId != null) ShowResponse(
-                "Automatically",
-                mediaObj.vrvId ?: mediaObj.crunchySlug!!,
-                "",
-                extra = mapOf(
-                    "type" to if (mediaObj.format == "TV") "series" else "",
-                    "filter" to (mediaObj.alName())
-                )
-            ) else null
-            if (response == null) {
-                setUserText("Searching : ${mediaObj.mainName()}")
-                response = search("$" + mediaObj.mainName()).let { if (it.isNotEmpty()) it[0] else null }
+        if (channel == "crunchyroll") {
+            var response = loadSavedShowResponse(mediaObj.id)
+            if (response != null) {
+                saveShowResponse(mediaObj.id, response, true)
+            } else {
+                response = if (mediaObj.crunchySlug != null || mediaObj.vrvId != null) ShowResponse(
+                    "Automatically",
+                    mediaObj.vrvId ?: mediaObj.crunchySlug!!,
+                    "",
+                    extra = mapOf(
+                        "type" to if (mediaObj.format != "MOVIE") "series" else "",
+                        "filter" to (mediaObj.alName())
+                    )
+                ) else null
+                if (response == null) {
+                    setUserText("Searching : ${mediaObj.mainName()}")
+                    response = search("$" + mediaObj.mainName()).let { if (it.isNotEmpty()) it[0] else null }
+                }
+                if (response == null) {
+                    setUserText("Searching : ${mediaObj.nameRomaji}")
+                    response = search("$" + mediaObj.nameRomaji).let { if (it.isNotEmpty()) it[0] else null }
+                }
+                saveShowResponse(mediaObj.id, response)
             }
-            if (response == null) {
-                setUserText("Searching : ${mediaObj.nameRomaji}")
-                response = search("$" + mediaObj.nameRomaji).let { if (it.isNotEmpty()) it[0] else null }
-            }
-            saveShowResponse(mediaObj.id, response)
-        }
-        return response
+            return response
+        } else return super.autoSearch(mediaObj)
     }
 
     override suspend fun search(query: String): List<ShowResponse> {
@@ -194,7 +205,7 @@ class Kamyroll : AnimeParser() {
     }
 
     companion object {
-        private const val apiUrl = "https://beta-kamyroll.herokuapp.com"
+        private const val apiUrl = "https://kamyroll.herokuapp.com"
         private const val channel = "crunchyroll"
         private const val locale = "en-US"
         private const val service = "google"
@@ -211,7 +222,7 @@ class Kamyroll : AnimeParser() {
                         "authorization" to "Basic vrvluizpdr2eby+RjSKM17dOLacExxq1HAERdxQDO6+2pHvFHTKKnByPD7b6kZVe1dJXifb6SG5NWMz49ABgJA=="
                     ),
                     data = mapOf(
-                        "refresh_token" to "BhETbpDeWFU9hh7awo640SIDo+Jwl7HgUiyoxnizZyldtMmlB4VmJGA4XH3v6ux3kgprIm2zLCQFhmTUjNvqF6Nw5bZk7dqYbu0QWxW5k8f8dtqcW2xiK1fCQpUdbwPFv9vr5WM3Jq3AlBB82127/iHN+Ndzo0msCYWrF94yrX86lsm3V8EESBYfXhdaTibJnBZlfFCvDtn66CtnBqlnIhJrn1LkSdeY5rm8QaqOyS0r75KfOwCEVBv/vZ1VgU76fWzjm4DlSPtDjRTS0UUn2BuA/by0xTaV6H3RJxw13kIdp3hraoNPk79A4NpCgc7PNJ+9+P9kSU4eq07P0o+WEw==",
+                        "refresh_token" to "IV+FtTI+SYR0d5CQy2KOc6Q06S6aEVPIjZdWA6mmO7nDWrMr04cGjSkk4o6urP/6yDmE4yzccSX/rP/OIgDgK4ildzNf2G/pPS9Ze1XbEyJAEUyN+oKT7Gs1PhVTFdz/vYXvxp/oZmLWQGoGgSQLwgoRqnJddWjqk0ageUbgT1FwLazdL3iYYKdNN98BqGFbs/baeqqa8aFre5SzF/4G62y201uLnsElgd07OAh1bnJOy8PTNHpGqEBxxbo1VENqtYilG9ZKY18nEz8vLPQBbin/IIEjKITjSa+LvSDQt/0AaxCkhClNDUX2uUZ8q7fKuSDisJtEyIFDXtuZGFhaaA==",
                         "grant_type" to "refresh_token",
                         "scope" to "offline_access",
                     )
