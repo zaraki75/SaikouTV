@@ -56,11 +56,13 @@ class Jkanime : AnimeParser() {
                     url = script.data().substringAfter("video[$serverId] = '<iframe class=\"player_conte\" src=\"")
                         .substringBefore("\"")
 
-                    if(url.contains(".php?u=") and !url.contains("php?u=stream")){
-                        url = client.get(url).document.select("iframe").attr("src")
-                    }
+
                 }
             }
+            if(!url.contains("jk.php") && url.contains(".php?u")){
+                url = client.get(url).document.select("iframe").attr("src")
+            }
+            Log.i("bruh",url)
             VideoServer(server,url)
 
         }
