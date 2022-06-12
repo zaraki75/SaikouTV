@@ -15,6 +15,7 @@ object AnimeSources : WatchSources() {
         "9Anime Backup" to ::AnimeKisa,
         "Monoschinos" to ::Monoschinos,
         "Animefenix" to ::Animefenix,
+        "Jkanime" to ::Jkanime
     )
 }
 
@@ -26,6 +27,7 @@ object HAnimeSources : WatchSources() {
         "HentaiFF" to ::HentaiFF,
         "Monoschinos" to ::Monoschinos,
         "Animefenix" to ::Animefenix,
+        "Jkanime" to ::Jkanime,
     )
 
     override val list = listOf(aList,AnimeSources.list).flatten()
