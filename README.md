@@ -40,43 +40,49 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 
 * **Available Anime sources:-**
 
-| SITE                       | STATUS  | DOWNLOADS |
-|:--------------------------:|:-------:|:---------:|
-| [Gogo](https://gogoanime.cm)       | WORKING | SOME      |
-| [Zoro](https://zoro.to)            | WORKING | NO        |
-| [9Anime](https://animekisa.in) 😮  | WORKING | NO        |
-| [Tenshi](https://tenshi.moe)       | WORKING | YES       |
-| [AllAnime](https://allanime.site)         | WORKING | YES       |
+| SITE                                      | STATUS  | DOWNLOADS |
+|:-----------------------------------------:|:-------:|:---------:|
+| [9Anime](https://9anime.pl)               | WORKING | SOME |
+| [Gogo](https://gogoanime.cm)              | WORKING | SOME |
+| [AllAnime](https://allanime.site)         | WORKING | SOME |
+| [Zoro](https://zoro.to)                   | WORKING | SOME |
+| [Tenshi](https://tenshi.moe)              | WORKING | YES  |
+| [Kamyroll](https://kamyroll.herokuapp.com)| WORKING | NO   |
+| [9Anime Backup](https://animekisa.in)     | WORKING | NO   |
+| [Haho (18+)](https://haho.moe)                  | WORKING | YES  |
+| [HentaiMama (18+)](https://hentaimama.io)       | WORKING | SOME |
+| [HentaiStream (18+)](https://hentaistream.com)  | WORKING | YES  |
+| [HentaiFF (18+)](https://hentaiff.com)          | WORKING | SOME |
 
 
 * **Available Manga sources:-**
 
-| SITE                                  | STATUS  |
-|:-------------------------------------:|:-------:|
-| [MangaBuddy](https://mangabuddy.com/) | WORKING |
-| [MangaSee](https://mangasee123.com/)  | WORKING |
-| [MangaPill](https://mangapill.com/)   | WORKING |
-| [MangaDex](https://mangadex.org/)     | WORKING |
-| [MangaReaderTo](https://mangareader.to/)     | WORKING |
+| SITE                                     | STATUS  |
+|:----------------------------------------:|:-------:|
+| [MangaKakalot](https://mangakakalot.com/)| WORKING |
+| [MangaBuddy](https://mangabuddy.com/)    | WORKING |
+| [MangaSee](https://mangasee123.com/)     | SEMI-WORKING |
+| [MangaPill](https://mangapill.com/)      | WORKING |
+| [MangaDex](https://mangadex.org/)        | WORKING |
+| [MangaReaderTo](https://mangareader.to/) | WORKING |
+| [AllAnime](https://allanime.site)        | WORKING |
 
 ## Planned Stuff
 
-- Rework Manga Reader #18  
+- Rework Search & Anime schedule page
 
 - User Profile
-  
-- Downloads for Manga
-  
-- source subscribe (will notify when new chapter/ep is released)
-  
-- Add novel sources (1lib.in)
-  
-- Add new anime sources (All anime, animepahe, Real 9anime ) & (hentaihaven)
-  
-- Add new manga sources (mangakakalot) & (nhentai)
-  
-- anime schedule page
 
+- Offline Video Player & Reader
+
+- Source Subscribe (will notify when new chapter/ep is released)
+  
+  - setting to change time in hrs to check for new episode/chapter/notification
+
+- Add new manga sources (toonily & comick.fun)
+
+- Add novel sources (1lib.in)?? Dk
+ 
 
 ## Rejected Stuff
 
@@ -95,8 +101,6 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 ## Help wanted for:
 
 - TV support
-  
-- PiP
   
 - Multi Quality Download
 
@@ -124,7 +128,7 @@ https://telegram.me/saikou_app
 
 ### VISIT FOR MORE INFORMATION:-
 
-https://saikou-app.github.io/
+https://saikou.me/
 
 ## DISCLAIMER
 
