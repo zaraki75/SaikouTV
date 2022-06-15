@@ -76,14 +76,14 @@ class Jkanime : AnimeParser() {
             val serverId = it.attr("data-id")
             client.get(episodeLink).document.select("script").forEach{script ->
                 if(script.data().contains("var video = [];")){
-                    url = script.data().substringAfter("video[$serverId] = '<iframe class=\"player_conte\" src=\"")
+                    url = hostUrl + script.data().substringAfter("video[$serverId] = '<iframe class=\"player_conte\" src=\"")
                         .substringBefore("\"")
 
 
                 }
             }
             if(!url.contains("jk.php") && url.contains(".php?u")){
-                url = client.get(url).document.select("iframe").attr("src")
+                url = client.get(hostUrl+url).document.select("iframe").attr("src")
             }
             Log.i("bruh",url)
             VideoServer(server,url)
