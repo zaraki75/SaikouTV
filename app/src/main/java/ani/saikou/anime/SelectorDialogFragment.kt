@@ -248,6 +248,12 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
                     }
                     startExoplayer(media!!)
                 }
+                itemView.setOnLongClickListener {
+                    val video = extractor.videos[position]
+                    copyToClipboard(video.url.url, false)
+                    if (video.isM3U8) toast("Copied m3u8 URL to clipboard")
+                    else toast("Copied video URL to clipboard"); true
+                }
             }
         }
     }
