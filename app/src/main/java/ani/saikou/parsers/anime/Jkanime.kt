@@ -6,6 +6,7 @@ import ani.saikou.*
 import ani.saikou.parsers.*
 import ani.saikou.parsers.anime.extractors.FPlayer
 import ani.saikou.parsers.anime.extractors.OK
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.readValue
 
 class Jkanime : AnimeParser() {
@@ -26,15 +27,17 @@ class Jkanime : AnimeParser() {
     private suspend fun episodesParser(animeLink: String, animeId:String):List<Episode>{
         val pageBody = client.get(animeLink).document
         val episodes = mutableListOf<Episode>()
-        val lastPage = pageBody.select("div.anime__pagination a").last()?.attr("href")
+        val pageNumber = pageBody.select("div.anime__pagination a")
+        val lastPage = pageNumber.last()?.attr("href")
             ?.replace("#pag","")
-        val firstPage = pageBody.select("div.anime__pagination a").first()?.attr("href")
+        val firstPage = pageNumber.first()?.attr("href")
             ?.replace("#pag","")
 
-
+        //probably exists a better way to implement this
+        //note: every 12 eps. the page get from the api the next eps. this is separately by pages and not is included in the html
         if(firstPage != lastPage) {
-                var checkLast = 0;
-                for (i in 1 until lastPage?.toInt()!!) {
+                var checkLast = 0
+            for (i in 1 until lastPage?.toInt()!!) {
                     for (j in 1..12){
                         Log.i("bruh",(j + checkLast).toString())
                         episodes.add(
@@ -53,7 +56,6 @@ class Jkanime : AnimeParser() {
         }
         if(firstPage == lastPage){
             client.get("https://jkanime.net/ajax/pagination_episodes/$animeId/$lastPage").parsed<List<ResponseElement>>().forEach{
-                Log.i("bruh",it.number)
                 episodes.add(Episode(it.number,"$animeLink/${it.number}"))
             }
         }
@@ -70,26 +72,80 @@ class Jkanime : AnimeParser() {
 
 
     override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
-        return client.get(episodeLink).document.select("div.col-lg-12.rounded.bg-servers.text-white.p-3.mt-2 a").map{ it ->
+        val videos = mutableListOf<VideoServer>()
+          client.get(episodeLink).document.select("div.col-lg-12.rounded.bg-servers.text-white.p-3.mt-2 a").forEach{ it ->
             val server = it.text()
-            var url = ""
             val serverId = it.attr("data-id")
-            client.get(episodeLink).document.select("script").forEach{script ->
+             client.get(episodeLink).document.select("script").forEach{script ->
                 if(script.data().contains("var video = [];")){
-                    url = script.data().substringAfter("video[$serverId] = '<iframe class=\"player_conte\" src=\"")
+                    val url = hostUrl + script.data().substringAfter("video[$serverId] = '<iframe class=\"player_conte\" src=\"")
                         .substringBefore("\"")
+                        .replace("$hostUrl/jkfembed.php?u=","https://fembed.com/v/")
+                        .replace("$hostUrl/jkokru.php?u=","http://ok.ru/videoembed/")
+                        .replace("$hostUrl/jkvmixdrop.php?u=","https://mixdrop.co/e/")
+                        .replace("$hostUrl/jk.php?u=","$hostUrl/")
+                    if(url.contains("um2")){
+                        val doc = client.get(url, referer = episodeLink).document
+                        val dataKey = doc.select("form input[value]").attr("value")
+                        Log.i("bruh","Data: $dataKey")
+                        client.post("$hostUrl/gsplay/redirect_post.php",
+                        headers = mapOf(
+                            "Host" to "jkanime.net",
+                            "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                            "Accept-Language" to "en-US,en;q=0.5",
+                            "Referer" to episodeLink,
+                            "Content-Type" to "application/x-www-form-urlencoded",
+                            "Origin" to "https://jkanime.net",
+                            "DNT" to "1",
+                            "Connection" to "keep-alive",
+                            "Upgrade-Insecure-Requests" to "1",
+                            "Sec-Fetch-Dest" to "iframe",
+                            "Sec-Fetch-Mode" to "navigate",
+                            "Sec-Fetch-Site" to "same-origin",
+                            "TE" to "trailers",
+                            "Pragma" to "no-cache",
+                            "Cache-Control" to "no-cache",),
+                        data = mapOf(Pair("data",dataKey)),
+                        allowRedirects = false).okhttpResponse.headers.values("location").map{loc ->
+                            val postkey = loc.replace("/gsplay/player.html#","")
+                            val nozomitext = client.post("$hostUrl/gsplay/api.php",
+                                headers = mapOf(
+                                    "Host" to "jkanime.net",
+                                    "Accept" to "application/json, text/javascript, */*; q=0.01",
+                                    "Accept-Language" to "en-US,en;q=0.5",
+                                    "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
+                                    "X-Requested-With" to "XMLHttpRequest",
+                                    "Origin" to "https://jkanime.net",
+                                    "DNT" to "1",
+                                    "Connection" to "keep-alive",
+                                    "Sec-Fetch-Dest" to "empty",
+                                    "Sec-Fetch-Mode" to "cors",
+                                    "Sec-Fetch-Site" to "same-origin",),
+                                data = mapOf(Pair("v",postkey)),
+                                allowRedirects = false
+                            ).parsed<Nozomi>()
+                            val nozomiurl = listOf(nozomitext.file)
+                            nozomiurl.forEach{
+                                val serverName = "nozomi"
+                                if (it != null) {
+                                    videos.add(VideoServer(serverName,it))
+                                }
+                            }
 
 
+                        }
+                    }
+                    videos.add(VideoServer(server,url))
                 }
             }
-            if(!url.contains("jk.php") && url.contains(".php?u")){
-                url = client.get(url).document.select("iframe").attr("src")
-            }
-            Log.i("bruh",url)
-            VideoServer(server,url)
-
         }
+        return videos
     }
+
+    data class Nozomi (
+        @JsonProperty("file") val file: String?
+    )
+
 
 
 
@@ -98,7 +154,7 @@ class Jkanime : AnimeParser() {
         val extractor: VideoExtractor? = when {
             "fembed" in domain  -> FPlayer(server)
             "ok" in domain      -> OK(server)
-            "jkanime" in domain -> jkanimeExtractor(server)
+            "jkanime" in domain -> JkanimeExtractor(server)
             else                -> null
         }
         return extractor
@@ -116,7 +172,7 @@ class Jkanime : AnimeParser() {
 }
 
 
-class jkanimeExtractor(override val server: VideoServer): VideoExtractor() {
+class JkanimeExtractor(override val server: VideoServer): VideoExtractor() {
     override suspend fun extract(): VideoContainer {
         val videos = mutableListOf<Video>()
         val url = server.embed.url.replace("um2","um")
