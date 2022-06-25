@@ -9,9 +9,9 @@ import java.io.Serializable
 abstract class MangaParser : BaseParser() {
 
     /**
-     * Takes ShowResponse.link as an argument & gives a list of total chapters present on the site.
+     * Takes ShowResponse.link and ShowResponse.extra (if any) as arguments & gives a list of total chapters present on the site.
      * **/
-    abstract suspend fun loadChapters(mangaLink: String): List<MangaChapter>
+    abstract suspend fun loadChapters(mangaLink: String, extra: Map<String, String>?): List<MangaChapter>
 
     /**
      * Takes MangaChapter.link as an argument & returns a list of MangaImages with their Url (with headers & transformations, if needed)
