@@ -6,6 +6,7 @@ import ani.saikou.parsers.MangaChapter
 import ani.saikou.parsers.MangaImage
 import ani.saikou.parsers.MangaParser
 import ani.saikou.parsers.ShowResponse
+import com.google.gson.annotations.SerializedName
 
 class NHentai : MangaParser() {
 
@@ -74,32 +75,32 @@ class NHentai : MangaParser() {
     }
 
     private data class SearchResponse(
-        val result: List<Result>,
+        @SerializedName("result") val result: List<Result>,
     ) {
         data class Result(
-            val id: Int,
-            val media_id: Int,
-            val title: Title,
+            @SerializedName("id") val id: Int,
+            @SerializedName("media_id") val media_id: Int,
+            @SerializedName("title") val title: Title,
         ) {
             data class Title(
-                val english: String,
-                val japanese: String,
-                val pretty: String
+                @SerializedName("english") val english: String,
+                @SerializedName("japanese") val japanese: String,
+                @SerializedName("pretty") val pretty: String
             )
         }
     }
 
     private data class MangaResponse(
-        val media_id: Int,
-        val title: Title,
-        val images: Pages
+        @SerializedName("media_id") val media_id: Int,
+        @SerializedName("title") val title: Title,
+        @SerializedName("images") val images: Pages
     ) {
-        data class Title(val pretty: String)
-        data class Pages(val pages: List<Page>) {
+        data class Title(@SerializedName("pretty") val pretty: String)
+        data class Pages(@SerializedName("pages") val pages: List<Page>) {
             data class Page(
-                val t: String, // extension
-                val w: Int,    // width
-                val h: Int     // height
+                @SerializedName("t") val t: String, // extension
+                @SerializedName("w") val w: Int,    // width
+                @SerializedName("h") val h: Int     // height
             )
         }
     }

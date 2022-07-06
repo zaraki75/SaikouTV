@@ -13,7 +13,7 @@ object MangaSources : MangaReadSources() {
         "MangaDex" to ::MangaDex,
         "MangaReaderTo" to ::MangaReaderTo,
         "AllAnime" to ::AllAnime,
-        "Comickfun" to ::Comickfun,
+        "Comickfun" to ::ComickFun,
     )
 }
 

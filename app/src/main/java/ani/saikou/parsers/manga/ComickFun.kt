@@ -6,10 +6,11 @@ import ani.saikou.parsers.MangaImage
 import ani.saikou.parsers.MangaParser
 import ani.saikou.parsers.ShowResponse
 import ani.saikou.toast
+import com.google.gson.annotations.SerializedName
 
-class Comickfun : MangaParser() {
+class ComickFun : MangaParser() {
 
-    override val name = "Comickfun"
+    override val name = "ComickFun"
     override val saveName = "comick_fun"
     override val hostUrl = "https://api.comick.fun"
 
@@ -61,42 +62,40 @@ class Comickfun : MangaParser() {
 
     }
 
-}
+    private data class WeirdUrlData(@SerializedName("pageProps") val pageProps: Data) {
+        data class Data(@SerializedName("chapters") val chapters: List<Chapter>) {
+            data class Chapter(
+                @SerializedName("chap") val chap: String?, // chapter number
+                @SerializedName("hid") val hid: String,
+            )
+        }
+    }
 
-// --- dataclasses --- //
-
-private data class WeirdUrlData(val pageProps: Data) {
-    data class Data(val chapters: List<Chapter>) {
-        data class Chapter(
-            val chap: String?, // chapter number
-            val hid: String,
+    private data class SearchData(
+        @SerializedName("title") val title: String,
+        @SerializedName("id") val id: Int,
+        @SerializedName("slug") val slug: String,
+        @SerializedName("md_titles") val md_titles: List<MdTitles>, // other titles
+        @SerializedName("cover_url") val cover_url: String,
+    ) {
+        data class MdTitles(
+            @SerializedName("title") val title: String,
         )
     }
-}
 
-private data class SearchData(
-    val title: String,
-    val id: Int,
-    val slug: String,
-    val md_titles: List<MdTitles>, // other titles
-    val cover_url: String,
-) {
-    data class MdTitles(
-        val title: String,
-    )
-}
-
-private data class MangaChapterData(val chapters: List<Chapter>) {
-    data class Chapter(
-        val chap: String?,  // chapter number
-        val title: String?,
-        val lang: String?,  // may contain other lang too, so filter "en" using this
-        val hid: String,
-    )
-}
-
-private data class MangaImageData(val chapter: Chapter) {
-    data class Chapter(val images: List<Image>) {
-        data class Image(val url: String)
+    private data class MangaChapterData(@SerializedName("chapters") val chapters: List<Chapter>) {
+        data class Chapter(
+            @SerializedName("chap") val chap: String?,  // chapter number
+            @SerializedName("title") val title: String?,
+            @SerializedName("lang") val lang: String?,  // may contain other lang too, so filter "en" using this
+            @SerializedName("hid") val hid: String,
+        )
     }
+
+    private data class MangaImageData(@SerializedName("chapter") val chapter: Chapter) {
+        data class Chapter(@SerializedName("images") val images: List<Image>) {
+            data class Image(@SerializedName("url") val url: String)
+        }
+    }
+
 }

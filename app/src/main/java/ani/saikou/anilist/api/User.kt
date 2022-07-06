@@ -1,193 +1,187 @@
 package ani.saikou.anilist.api
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.google.gson.annotations.SerializedName
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+
 data class User(
     // The id of the user
-    var id: Int,
+    @SerializedName("id") var id: Int,
 
     // The name of the user
-    var name: String?,
+    @SerializedName("name") var name: String?,
 
     // The bio written by user (Markdown)
-//    var about: String?,
+    //    @SerializedName("about") var about: String?,
 
     // The user's avatar images
-    var avatar: UserAvatar?,
+    @SerializedName("avatar") var avatar: UserAvatar?,
 
     // The user's banner images
-    var bannerImage: String?,
+    @SerializedName("bannerImage") var bannerImage: String?,
 
     // If the authenticated user if following this user
-//    var isFollowing: Boolean?,
+    //    @SerializedName("isFollowing") var isFollowing: Boolean?,
 
     // If this user if following the authenticated user
-//    var isFollower: Boolean?,
+    //    @SerializedName("isFollower") var isFollower: Boolean?,
 
     // If the user is blocked by the authenticated user
-//    var isBlocked: Boolean?,
+    //    @SerializedName("isBlocked") var isBlocked: Boolean?,
 
     // FIXME: No documentation is provided for "Json"
-    // var bans: Json?,
+    // @SerializedName("bans") var bans: Json?,
 
     // The user's general options
-    var options: UserOptions?,
+    @SerializedName("options") var options: UserOptions?,
 
     // The user's media list options
-    var mediaListOptions: MediaListOptions?,
+    @SerializedName("mediaListOptions") var mediaListOptions: MediaListOptions?,
 
     // The users favourites
-    var favourites: Favourites?,
+    @SerializedName("favourites") var favourites: Favourites?,
 
     // The users anime & manga list statistics
-    var statistics: UserStatisticTypes?,
+    @SerializedName("statistics") var statistics: UserStatisticTypes?,
 
     // The number of unread notifications the user has
-//    var unreadNotificationCount: Int?,
+    //    @SerializedName("unreadNotificationCount") var unreadNotificationCount: Int?,
 
     // The url for the user page on the AniList website
-//    var siteUrl: String?,
+    //    @SerializedName("siteUrl") var siteUrl: String?,
 
     // The donation tier of the user
-//    var donatorTier: Int?,
+    //    @SerializedName("donatorTier") var donatorTier: Int?,
 
     // Custom donation badge text
-//    var donatorBadge: String?,
+    //    @SerializedName("donatorBadge") var donatorBadge: String?,
 
     // The user's moderator roles if they are a site moderator
-    // var moderatorRoles: List<ModRole>?,
+    // @SerializedName("moderatorRoles") var moderatorRoles: List<ModRole>?,
 
     // When the user's account was created. (Does not exist for accounts created before 2020)
-//    var createdAt: Int?,
+    //    @SerializedName("createdAt") var createdAt: Int?,
 
     // When the user's data was last updated
-//    var updatedAt: Int?,
+    //    @SerializedName("updatedAt") var updatedAt: Int?,
 
     // The user's previously used names.
-    // var previousNames: List<UserPreviousName>?,
+    // @SerializedName("previousNames") var previousNames: List<UserPreviousName>?,
 
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class UserOptions(
     // The language the user wants to see media titles in
-    // var titleLanguage: UserTitleLanguage?,
+    // @SerializedName("titleLanguage") var titleLanguage: UserTitleLanguage?,
 
     // Whether the user has enabled viewing of 18+ content
-    var displayAdultContent: Boolean?,
+    @SerializedName("displayAdultContent") var displayAdultContent: Boolean?,
 
     // Whether the user receives notifications when a show they are watching aires
-//    var airingNotifications: Boolean?,
-//
-//    // Profile highlight color (blue, purple, pink, orange, red, green, gray)
-//    var profileColor: String?,
-//
-//    // Notification options
-//    // var notificationOptions: List<NotificationOption>?,
-//
-//    // The user's timezone offset (Auth user only)
-//    var timezone: String?,
-//
-//    // Minutes between activity for them to be merged together. 0 is Never, Above 2 weeks (20160 mins) is Always.
-//    var activityMergeTime: Int?,
-//
-//    // The language the user wants to see staff and character names in
-//    // var staffNameLanguage: UserStaffNameLanguage?,
-//
-//    // Whether the user only allow messages from users they follow
-//    var restrictMessagesToFollowing: Boolean?,
+    //    @SerializedName("airingNotifications") var airingNotifications: Boolean?,
+    //
+    //    // Profile highlight color (blue, purple, pink, orange, red, green, gray)
+    //    @SerializedName("profileColor") var profileColor: String?,
+    //
+    //    // Notification options
+    //    // @SerializedName("notificationOptions") var notificationOptions: List<NotificationOption>?,
+    //
+    //    // The user's timezone offset (Auth user only)
+    //    @SerializedName("timezone") var timezone: String?,
+    //
+    //    // Minutes between activity for them to be merged together. 0 is Never, Above 2 weeks (20160 mins) is Always.
+    //    @SerializedName("activityMergeTime") var activityMergeTime: Int?,
+    //
+    //    // The language the user wants to see staff and character names in
+    //    // @SerializedName("staffNameLanguage") var staffNameLanguage: UserStaffNameLanguage?,
+    //
+    //    // Whether the user only allow messages from users they follow
+    //    @SerializedName("restrictMessagesToFollowing") var restrictMessagesToFollowing: Boolean?,
 
     // The list activity types the user has disabled from being created from list updates
-    // var disabledListActivity: List<ListActivityOption>?,
+    // @SerializedName("disabledListActivity") var disabledListActivity: List<ListActivityOption>?,
 )
 
 data class UserAvatar(
     // The avatar of user at its largest size
-    var large: String?,
+    @SerializedName("large") var large: String?,
 
     // The avatar of user at medium size
-    var medium: String?,
+    @SerializedName("medium") var medium: String?,
 )
 
 data class UserStatisticTypes(
-    var anime: UserStatistics?,
-    var manga: UserStatistics?
+    @SerializedName("anime") var anime: UserStatistics?,
+    @SerializedName("manga") var manga: UserStatistics?
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class UserStatistics(
     //
-    var count: Int?,
-    var meanScore: Float?,
-    var standardDeviation: Float?,
-    var minutesWatched: Int?,
-    var episodesWatched: Int?,
-    var chaptersRead: Int?,
-    var volumesRead: Int?,
-    //    var formats: List<UserFormatStatistic>?,
-    //    var statuses: List<UserStatusStatistic>?,
-    //    var scores: List<UserScoreStatistic>?,
-    //    var lengths: List<UserLengthStatistic>?,
-    //    var releaseYears: List<UserReleaseYearStatistic>?,
-    //    var startYears: List<UserStartYearStatistic>?,
-    //    var genres: List<UserGenreStatistic>?,
-    //    var tags: List<UserTagStatistic>?,
-    //    var countries: List<UserCountryStatistic>?,
-    //    var voiceActors: List<UserVoiceActorStatistic>?,
-    //    var staff: List<UserStaffStatistic>?,
-    //    var studios: List<UserStudioStatistic>?,
+    @SerializedName("count") var count: Int?,
+    @SerializedName("meanScore") var meanScore: Float?,
+    @SerializedName("standardDeviation") var standardDeviation: Float?,
+    @SerializedName("minutesWatched") var minutesWatched: Int?,
+    @SerializedName("episodesWatched") var episodesWatched: Int?,
+    @SerializedName("chaptersRead") var chaptersRead: Int?,
+    @SerializedName("volumesRead") var volumesRead: Int?,
+    //    @SerializedName("formats") var formats: List<UserFormatStatistic>?,
+    //    @SerializedName("statuses") var statuses: List<UserStatusStatistic>?,
+    //    @SerializedName("scores") var scores: List<UserScoreStatistic>?,
+    //    @SerializedName("lengths") var lengths: List<UserLengthStatistic>?,
+    //    @SerializedName("releaseYears") var releaseYears: List<UserReleaseYearStatistic>?,
+    //    @SerializedName("startYears") var startYears: List<UserStartYearStatistic>?,
+    //    @SerializedName("genres") var genres: List<UserGenreStatistic>?,
+    //    @SerializedName("tags") var tags: List<UserTagStatistic>?,
+    //    @SerializedName("countries") var countries: List<UserCountryStatistic>?,
+    //    @SerializedName("voiceActors") var voiceActors: List<UserVoiceActorStatistic>?,
+    //    @SerializedName("staff") var staff: List<UserStaffStatistic>?,
+    //    @SerializedName("studios") var studios: List<UserStudioStatistic>?,
 )
 
 data class Favourites(
     // Favourite anime
-    var anime: MediaConnection?,
+    @SerializedName("anime") var anime: MediaConnection?,
 
     // Favourite manga
-    var manga: MediaConnection?,
+    @SerializedName("manga") var manga: MediaConnection?,
 
     // Favourite characters
-    var characters: CharacterConnection?,
+    @SerializedName("characters") var characters: CharacterConnection?,
 
     // Favourite staff
-    var staff: StaffConnection?,
+    @SerializedName("staff") var staff: StaffConnection?,
 
     // Favourite studios
-    var studios: StudioConnection?,
+    @SerializedName("studios") var studios: StudioConnection?,
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class MediaListOptions(
     // The score format the user is using for media lists
-    // var scoreFormat: ScoreFormat?,
+    // @SerializedName("scoreFormat") var scoreFormat: ScoreFormat?,
 
     // The default order list rows should be displayed in
-    var rowOrder: String?,
+    @SerializedName("rowOrder") var rowOrder: String?,
 
     // The user's anime list options
-    var animeList: MediaListTypeOptions?,
+    @SerializedName("animeList") var animeList: MediaListTypeOptions?,
 
     // The user's manga list options
-    var mangaList: MediaListTypeOptions?,
+    @SerializedName("mangaList") var mangaList: MediaListTypeOptions?,
 )
 
 data class MediaListTypeOptions(
     // The order each list should be displayed in
-    var sectionOrder: List<String>?,
+    @SerializedName("sectionOrder") var sectionOrder: List<String>?,
 
-//    // If the completed sections of the list should be separated by format
-//    var splitCompletedSectionByFormat: Boolean?,
-//
-//    // The names of the user's custom lists
-//    var customLists: List<String>?,
-//
-//    // The names of the user's advanced scoring sections
-//    var advancedScoring: List<String>?,
-//
-//    // If advanced scoring is enabled
-//    var advancedScoringEnabled: Boolean?,
+    //    // If the completed sections of the list should be separated by format
+    //    @SerializedName("splitCompletedSectionByFormat") var splitCompletedSectionByFormat: Boolean?,
+    //
+    //    // The names of the user's custom lists
+    //    @SerializedName("customLists") var customLists: List<String>?,
+    //
+    //    // The names of the user's advanced scoring sections
+    //    @SerializedName("advancedScoring") var advancedScoring: List<String>?,
+    //
+    //    // If advanced scoring is enabled
+    //    @SerializedName("advancedScoringEnabled") var advancedScoringEnabled: Boolean?,
 )
 
-data class Viewer(
-    var user: User?
-)

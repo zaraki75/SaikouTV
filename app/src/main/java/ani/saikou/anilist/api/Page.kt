@@ -1,62 +1,62 @@
 package ani.saikou.anilist.api
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.google.gson.annotations.SerializedName
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+
 data class Page(
     // The pagination information
-    var pageInfo: PageInfo?,
+    @SerializedName("pageInfo") var pageInfo: PageInfo?,
 
-    var users: List<User>?,
+    @SerializedName("users") var users: List<User>?,
 
-    var media: List<Media>?,
+    @SerializedName("media") var media: List<Media>?,
 
-    var characters: List<Character>?,
+    @SerializedName("characters") var characters: List<Character>?,
 
-    var staff: List<Staff>?,
+    @SerializedName("staff") var staff: List<Staff>?,
 
-    var studios: List<Studio>?,
+    @SerializedName("studios") var studios: List<Studio>?,
 
-    var mediaList: List<MediaList>?,
+    @SerializedName("mediaList") var mediaList: List<MediaList>?,
 
-    var airingSchedules: List<AiringSchedule>?,
+    @SerializedName("airingSchedules") var airingSchedules: List<AiringSchedule>?,
 
-    // var mediaTrends: List<MediaTrend>?,
+    // @SerializedName("mediaTrends") var mediaTrends: List<MediaTrend>?,
 
-    // var notifications: List<NotificationUnion>?,
+    // @SerializedName("notifications") var notifications: List<NotificationUnion>?,
 
-    var followers: List<User>?,
+    @SerializedName("followers") var followers: List<User>?,
 
-    var following: List<User>?,
+    @SerializedName("following") var following: List<User>?,
 
-    // var activities: List<ActivityUnion>?,
+    // @SerializedName("activities") var activities: List<ActivityUnion>?,
 
-    // var activityReplies: List<ActivityReply>?,
+    // @SerializedName("activityReplies") var activityReplies: List<ActivityReply>?,
 
-    var threads: List<Thread>?,
+    @SerializedName("threads") var threads: List<Thread>?,
 
-    // var threadComments: List<ThreadComment>?,
+    // @SerializedName("threadComments") var threadComments: List<ThreadComment>?,
 
-    // var reviews: List<Review>?,
+    // @SerializedName("reviews") var reviews: List<Review>?,
 
-    var recommendations: List<Recommendation>?,
+    @SerializedName("recommendations") var recommendations: List<Recommendation>?,
 
-    var likes: List<User>?,
+    @SerializedName("likes") var likes: List<User>?,
 )
 
 data class PageInfo(
     // The total number of items. Note: This value is not guaranteed to be accurate, do not rely on this for logic
-    var total: Int?,
+    @SerializedName("total") var total: Int?,
 
     // The count on a page
-    var perPage: Int?,
+    @SerializedName("perPage") var perPage: Int?,
 
     // The current page
-    var currentPage: Int?,
+    @SerializedName("currentPage") var currentPage: Int?,
 
     // The last page
-    var lastPage: Int?,
+    @SerializedName("lastPage") var lastPage: Int?,
 
     // If there is another page
-    var hasNextPage: Boolean?,
+    @SerializedName("hasNextPage") var hasNextPage: Boolean?,
 )

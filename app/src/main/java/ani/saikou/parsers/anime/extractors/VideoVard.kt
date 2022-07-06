@@ -8,6 +8,7 @@ import ani.saikou.parsers.VideoContainer
 import ani.saikou.parsers.VideoExtractor
 import ani.saikou.parsers.VideoServer
 import ani.saikou.tryWithSuspend
+import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.delay
 import java.math.BigInteger
 
@@ -52,7 +53,7 @@ class VideoVard(override val server: VideoServer, private val download:Boolean=f
                         "hash" to (hash.hash ?: return@tryWithSuspend null)
                     )
                 ).parsed<SetupResponse>()
-                val m3u8 = FileUrl(decode(res.src?:return@tryWithSuspend null, res.seed), headers)
+                val m3u8 = FileUrl(decode(res.src!!, res.seed), headers)
                 Video(null, true, m3u8)
             }
         }
@@ -273,16 +274,16 @@ class VideoVard(override val server: VideoServer, private val download:Boolean=f
             return if(input.reversed()[3].isDigit()) input
             else input.dropLast(4)
         }
-
-        private data class HashResponse(
-            val hash: String? = null,
-            val version:String? = null
-        )
-
-        private data class SetupResponse(
-            val seed: String,
-            val src: String?=null,
-            val link:String?=null
-        )
     }
+
+    private data class HashResponse(
+        @SerializedName("hash") val hash: String? = null,
+        @SerializedName("version") val version:String? = null
+    )
+
+    private data class SetupResponse(
+        @SerializedName("seed") val seed: String,
+        @SerializedName("src") val src: String?=null,
+        @SerializedName("link") val link:String?=null
+    )
 }

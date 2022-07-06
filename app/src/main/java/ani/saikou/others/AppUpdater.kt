@@ -14,7 +14,7 @@ import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
 import androidx.fragment.app.FragmentActivity
 import ani.saikou.*
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.gson.annotations.SerializedName
 import io.noties.markwon.Markwon
 import io.noties.markwon.SoftBreakAddsNewLinePlugin
 import kotlinx.coroutines.Dispatchers
@@ -160,10 +160,10 @@ object AppUpdater {
         }
     }
     data class GithubResponse (
-        val assets: List<Asset>? = null
+        @SerializedName("assets") val assets: List<Asset>? = null
     ) {
         data class Asset(
-            @JsonProperty("browser_download_url")
+            @SerializedName("browser_download_url")
             val browserDownloadURL: String
         )
     }

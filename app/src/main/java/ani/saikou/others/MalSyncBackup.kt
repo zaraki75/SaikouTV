@@ -3,20 +3,19 @@ package ani.saikou.others
 import ani.saikou.client
 import ani.saikou.parsers.ShowResponse
 import ani.saikou.tryWithSuspend
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.gson.annotations.SerializedName
 
 object MalSyncBackup {
     data class MalBackUpSync(
-        @JsonProperty("Pages")
-        val pages: Map<String, Map<String, Page>>? = null
+        @SerializedName("Pages") val pages: Map<String, Map<String, Page>>? = null
     )
 
     data class Page(
-        val identifier: String,
-        val title: String,
-        val url: String? = null,
-        val image: String? = null,
-        val active: Boolean? = null,
+        @SerializedName("identifier") val identifier: String,
+        @SerializedName("title") val title: String,
+        @SerializedName("url") val url: String? = null,
+        @SerializedName("image") val image: String? = null,
+        @SerializedName("active") val active: Boolean? = null,
     )
 
     suspend fun get(id: Int, name: String, dub: Boolean = false): ShowResponse? {
