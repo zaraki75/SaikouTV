@@ -1,189 +1,190 @@
+@file:Suppress("unused")
+
 package ani.saikou.anilist.api
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.google.gson.annotations.SerializedName
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class Media(
     // The id of the media
-    var id: Int,
+    @SerializedName("id") var id: Int,
 
     // The mal id of the media
-    var idMal: Int?,
+    @SerializedName("idMal") var idMal: Int?,
 
     // The official titles of the media in various languages
-    var title: MediaTitle?,
+    @SerializedName("title") var title: MediaTitle?,
 
     // The type of the media; anime or manga
-    var type: MediaType?,
+    @SerializedName("type") var type: MediaType?,
 
     // The format the media was released in
-    var format: MediaFormat?,
+    @SerializedName("format") var format: MediaFormat?,
 
     // The current releasing status of the media
-    var status: MediaStatus?,
+    @SerializedName("status") var status: MediaStatus?,
 
     // Short description of the media's story and characters
-    var description: String?,
+    @SerializedName("description") var description: String?,
 
     // The first official release date of the media
-    var startDate: FuzzyDate?,
+    @SerializedName("startDate") var startDate: FuzzyDate?,
 
     // The last official release date of the media
-    var endDate: FuzzyDate?,
+    @SerializedName("endDate") var endDate: FuzzyDate?,
 
     // The season the media was initially released in
-    var season: MediaSeason?,
+    @SerializedName("season") var season: MediaSeason?,
 
     // The season year the media was initially released in
-    var seasonYear: Int?,
+    @SerializedName("seasonYear") var seasonYear: Int?,
 
     // The year & season the media was initially released in
-    var seasonInt: Int?,
+    @SerializedName("seasonInt") var seasonInt: Int?,
 
     // The amount of episodes the anime has when complete
-    var episodes: Int?,
+    @SerializedName("episodes") var episodes: Int?,
 
     // The general length of each anime episode in minutes
-    var duration: Int?,
+    @SerializedName("duration") var duration: Int?,
 
     // The amount of chapters the manga has when complete
-    var chapters: Int?,
+    @SerializedName("chapters") var chapters: Int?,
 
     // The amount of volumes the manga has when complete
-    var volumes: Int?,
+    @SerializedName("volumes") var volumes: Int?,
 
     // Where the media was created. (ISO 3166-1 alpha-2)
     // Originally a "CountryCode"
-    var countryOfOrigin: String?,
+    @SerializedName("countryOfOrigin") var countryOfOrigin: String?,
 
     // If the media is officially licensed or a self-published doujin release
-    var isLicensed: Boolean?,
+    @SerializedName("isLicensed") var isLicensed: Boolean?,
 
     // Source type the media was adapted from.
-    var source: MediaSource?,
+    @SerializedName("source") var source: MediaSource?,
 
     // Official Twitter hashtags for the media
-    var hashtag: String?,
+    @SerializedName("hashtag") var hashtag: String?,
 
     // Media trailer or advertisement
-    var trailer: MediaTrailer?,
+    @SerializedName("trailer") var trailer: MediaTrailer?,
 
     // When the media's data was last updated
-    var updatedAt: Int?,
+    @SerializedName("updatedAt") var updatedAt: Int?,
 
     // The cover images of the media
-    var coverImage: MediaCoverImage?,
+    @SerializedName("coverImage") var coverImage: MediaCoverImage?,
 
     // The banner image of the media
-    var bannerImage: String?,
+    @SerializedName("bannerImage") var bannerImage: String?,
 
     // The genres of the media
-    var genres: List<String>?,
+    @SerializedName("genres") var genres: List<String>?,
 
     // Alternative titles of the media
-    var synonyms: List<String>?,
+    @SerializedName("synonyms") var synonyms: List<String>?,
 
     // A weighted average score of all the user's scores of the media
-    var averageScore: Int?,
+    @SerializedName("averageScore") var averageScore: Int?,
 
     // Mean score of all the user's scores of the media
-    var meanScore: Int?,
+    @SerializedName("meanScore") var meanScore: Int?,
 
     // The number of users with the media on their list
-    var popularity: Int?,
+    @SerializedName("popularity") var popularity: Int?,
 
     // Locked media may not be added to lists our favorited. This may be due to the entry pending for deletion or other reasons.
-    var isLocked: Boolean?,
+    @SerializedName("isLocked") var isLocked: Boolean?,
 
     // The amount of related activity in the past hour
-    var trending: Int?,
+    @SerializedName("trending") var trending: Int?,
 
     // The amount of user's who have favourited the media
-    var favourites: Int?,
+    @SerializedName("favourites") var favourites: Int?,
 
     // List of tags that describes elements and themes of the media
-    var tags: List<MediaTag>?,
+    @SerializedName("tags") var tags: List<MediaTag>?,
 
     // Other media in the same or connecting franchise
-    var relations: MediaConnection?,
+    @SerializedName("relations") var relations: MediaConnection?,
 
     // The characters in the media
-    var characters: CharacterConnection?,
+    @SerializedName("characters") var characters: CharacterConnection?,
 
     // The staff who produced the media
-    // var staff: StaffConnection?,
+    // @SerializedName("staff") var staff: StaffConnection?,
 
     // The companies who produced the media
-    var studios: StudioConnection?,
+    @SerializedName("studios") var studios: StudioConnection?,
 
     // If the media is marked as favourite by the current authenticated user
-    var isFavourite: Boolean?,
+    @SerializedName("isFavourite") var isFavourite: Boolean?,
 
     // If the media is blocked from being added to favourites
-    var isFavouriteBlocked: Boolean?,
+    @SerializedName("isFavouriteBlocked") var isFavouriteBlocked: Boolean?,
 
     // If the media is intended only for 18+ adult audiences
-    var isAdult: Boolean?,
+    @SerializedName("isAdult") var isAdult: Boolean?,
 
     // The media's next episode airing schedule
-    var nextAiringEpisode: AiringSchedule?,
+    @SerializedName("nextAiringEpisode") var nextAiringEpisode: AiringSchedule?,
 
     // The media's entire airing schedule
-    // var airingSchedule: AiringScheduleConnection?,
+    // @SerializedName("airingSchedule") var airingSchedule: AiringScheduleConnection?,
 
     // The media's daily trend stats
-    // var trends: MediaTrendConnection?,
+    // @SerializedName("trends") var trends: MediaTrendConnection?,
 
     // External links to another site related to the media
-    var externalLinks: List<MediaExternalLink>?,
+    @SerializedName("externalLinks") var externalLinks: List<MediaExternalLink>?,
 
     // Data and links to legal streaming episodes on external sites
-    // var streamingEpisodes: List<MediaStreamingEpisode>?,
+    // @SerializedName("streamingEpisodes") var streamingEpisodes: List<MediaStreamingEpisode>?,
 
     // The ranking of the media in a particular time span and format compared to other media
-    // var rankings: List<MediaRank>?,
+    // @SerializedName("rankings") var rankings: List<MediaRank>?,
 
     // The authenticated user's media list entry for the media
-    var mediaListEntry: MediaList?,
+    @SerializedName("mediaListEntry") var mediaListEntry: MediaList?,
 
     // User reviews of the media
-    // var reviews: ReviewConnection?,
+    // @SerializedName("reviews") var reviews: ReviewConnection?,
 
     // User recommendations for similar media
-    var recommendations: RecommendationConnection?,
+    @SerializedName("recommendations") var recommendations: RecommendationConnection?,
 
     //
-    // var stats: MediaStats?,
+    // @SerializedName("stats") var stats: MediaStats?,
 
     // The url for the media page on the AniList website
-    var siteUrl: String?,
+    @SerializedName("siteUrl") var siteUrl: String?,
 
     // If the media should have forum thread automatically created for it on airing episode release
-    var autoCreateForumThread: Boolean?,
+    @SerializedName("autoCreateForumThread") var autoCreateForumThread: Boolean?,
 
     // If the media is blocked from being recommended to/from
-    var isRecommendationBlocked: Boolean?,
+    @SerializedName("isRecommendationBlocked") var isRecommendationBlocked: Boolean?,
 
     // If the media is blocked from being reviewed
-    var isReviewBlocked: Boolean?,
+    @SerializedName("isReviewBlocked") var isReviewBlocked: Boolean?,
 
     // Notes for site moderators
-    var modNotes: String?,
+    @SerializedName("modNotes") var modNotes: String?,
 )
 
 
 data class MediaTitle(
     // The romanization of the native language title
-    var romaji: String,
+    @SerializedName("romaji") var romaji: String,
 
     // The official english title
-    var english: String?,
+    @SerializedName("english") var english: String?,
 
     // Official title in it's native language
-    var native: String?,
+    @SerializedName("native") var native: String?,
 
     // The currently authenticated users preferred title language. Default romaji for non-authenticated
-    var userPreferred: String,
+    @SerializedName("userPreferred") var userPreferred: String,
 )
 
 enum class MediaType {
@@ -204,97 +205,96 @@ enum class MediaStatus {
 
 data class AiringSchedule(
     // The id of the airing schedule item
-    var id: Int?,
+    @SerializedName("id") var id: Int?,
 
     // The time the episode airs at
-    var airingAt: Int?,
+    @SerializedName("airingAt") var airingAt: Int?,
 
     // Seconds until episode starts airing
-    var timeUntilAiring: Int?,
+    @SerializedName("timeUntilAiring") var timeUntilAiring: Int?,
 
     // The airing episode number
-    var episode: Int?,
+    @SerializedName("episode") var episode: Int?,
 
     // The associate media id of the airing episode
-    var mediaId: Int?,
+    @SerializedName("mediaId") var mediaId: Int?,
 
     // The associate media of the airing episode
-    var media: Media?,
+    @SerializedName("media") var media: Media?,
 )
 
 data class MediaCoverImage(
     // The cover image url of the media at its largest size. If this size isn't available, large will be provided instead.
-    var extraLarge: String?,
+    @SerializedName("extraLarge") var extraLarge: String?,
 
     // The cover image url of the media at a large size
-    var large: String?,
+    @SerializedName("large") var large: String?,
 
     // The cover image url of the media at medium size
-    var medium: String?,
+    @SerializedName("medium") var medium: String?,
 
     // Average #hex color of cover image
-    var color: String?,
+    @SerializedName("color") var color: String?,
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class MediaList(
     // The id of the list entry
-    var id: Int?,
+    @SerializedName("id") var id: Int?,
 
     // The id of the user owner of the list entry
-    var userId: Int?,
+    @SerializedName("userId") var userId: Int?,
 
     // The id of the media
-    var mediaId: Int?,
+    @SerializedName("mediaId") var mediaId: Int?,
 
     // The watching/reading status
-    var status: MediaListStatus?,
+    @SerializedName("status") var status: MediaListStatus?,
 
     // The score of the entry
-    var score: Float?,
+    @SerializedName("score") var score: Float?,
 
     // The amount of episodes/chapters consumed by the user
-    var progress: Int?,
+    @SerializedName("progress") var progress: Int?,
 
     // The amount of volumes read by the user
-    var progressVolumes: Int?,
+    @SerializedName("progressVolumes") var progressVolumes: Int?,
 
     // The amount of times the user has rewatched/read the media
-    var repeat: Int?,
+    @SerializedName("repeat") var repeat: Int?,
 
     // Priority of planning
-    var priority: Int?,
+    @SerializedName("priority") var priority: Int?,
 
     // If the entry should only be visible to authenticated user
-    var private: Boolean?,
+    @SerializedName("private") var private: Boolean?,
 
     // Text notes
-    var notes: String?,
+    @SerializedName("notes") var notes: String?,
 
     // If the entry shown be hidden from non-custom lists
-    var hiddenFromStatusLists: Boolean?,
+    @SerializedName("hiddenFromStatusLists") var hiddenFromStatusLists: Boolean?,
 
     // Map of booleans for which custom lists the entry are in
-    // var customLists: Json?,
+    // @SerializedName("customLists") var customLists: Json?,
 
     // Map of advanced scores with name keys
-    // var advancedScores: Json?,
+    // @SerializedName("advancedScores") var advancedScores: Json?,
 
     // When the entry was started by the user
-    var startedAt: FuzzyDate?,
+    @SerializedName("startedAt") var startedAt: FuzzyDate?,
 
     // When the entry was completed by the user
-    var completedAt: FuzzyDate?,
+    @SerializedName("completedAt") var completedAt: FuzzyDate?,
 
     // When the entry data was last updated
-    var updatedAt: Int?,
+    @SerializedName("updatedAt") var updatedAt: Int?,
 
     // When the entry data was created
-    var createdAt: Int?,
+    @SerializedName("createdAt") var createdAt: Int?,
 
-    var media: Media?,
+    @SerializedName("media") var media: Media?,
 
-    var user: User?
+    @SerializedName("user") var user: User?
 )
 
 enum class MediaListStatus {
@@ -323,98 +323,97 @@ enum class MediaFormat {
 
 data class MediaTrailer(
     // The trailer video id
-    var id: String?,
+    @SerializedName("id") var id: String?,
 
     // The site the video is hosted by (Currently either youtube or dailymotion)
-    var site: String?,
+    @SerializedName("site") var site: String?,
 
     // The url for the thumbnail image of the video
-    var thumbnail: String?,
+    @SerializedName("thumbnail") var thumbnail: String?,
 )
 
 data class MediaTagCollection(
-    var tags : List<MediaTag>?
+    @SerializedName("tags") var tags : List<MediaTag>?
 )
 
 data class MediaTag(
     // The id of the tag
-    var id: Int?,
+    @SerializedName("id") var id: Int?,
 
     // The name of the tag
-    var name: String,
+    @SerializedName("name") var name: String,
 
     // A general description of the tag
-    var description: String?,
+    @SerializedName("description") var description: String?,
 
     // The categories of tags this tag belongs to
-    var category: String?,
+    @SerializedName("category") var category: String?,
 
     // The relevance ranking of the tag out of the 100 for this media
-    var rank: Int?,
+    @SerializedName("rank") var rank: Int?,
 
     // If the tag could be a spoiler for any media
-    var isGeneralSpoiler: Boolean?,
+    @SerializedName("isGeneralSpoiler") var isGeneralSpoiler: Boolean?,
 
     // If the tag is a spoiler for this media
-    var isMediaSpoiler: Boolean?,
+    @SerializedName("isMediaSpoiler") var isMediaSpoiler: Boolean?,
 
     // If the tag is only for adult 18+ media
-    var isAdult: Boolean?,
+    @SerializedName("isAdult") var isAdult: Boolean?,
 
     // The user who submitted the tag
-    var userId: Int?,
+    @SerializedName("userId") var userId: Int?,
 )
 
 
 data class MediaConnection(
-    var edges: List<MediaEdge>?,
+    @SerializedName("edges") var edges: List<MediaEdge>?,
 
-    var nodes: List<Media>?,
+    @SerializedName("nodes") var nodes: List<Media>?,
 
     // The pagination information
-    var pageInfo: PageInfo?,
+    @SerializedName("pageInfo") var pageInfo: PageInfo?,
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class MediaEdge(
     //
-    var node: Media?,
+    @SerializedName("node") var node: Media?,
 
     // The id of the connection
-    var id: Int?,
+    @SerializedName("id") var id: Int?,
 
     // The type of relation to the parent model
-    var relationType: MediaRelation?,
+    @SerializedName("relationType") var relationType: MediaRelation?,
 
     // If the studio is the main animation studio of the media (For Studio->MediaConnection field only)
-    var isMainStudio: Boolean?,
+    @SerializedName("isMainStudio") var isMainStudio: Boolean?,
 
     // The characters in the media voiced by the parent actor
-    var characters: List<Character>?,
+    @SerializedName("characters") var characters: List<Character>?,
 
     // The characters role in the media
-    var characterRole: CharacterRole?,
+    @SerializedName("characterRole") var characterRole: String?,
 
     // Media specific character name
-    var characterName: String?,
+    @SerializedName("characterName") var characterName: String?,
 
     // Notes regarding the VA's role for the character
-    var roleNotes: String?,
+    @SerializedName("roleNotes") var roleNotes: String?,
 
     // Used for grouping roles where multiple dubs exist for the same language. Either dubbing company name or language variant.
-    var dubGroup: String?,
+    @SerializedName("dubGroup") var dubGroup: String?,
 
     // The role of the staff member in the production of the media
-    var staffRole: String?,
+    @SerializedName("staffRole") var staffRole: String?,
 
     // The voice actors of the character
-    // var voiceActors: List<Staff>?,
+    // @SerializedName("voiceActors") var voiceActors: List<Staff>?,
 
     // The voice actors of the character with role date
-    // var voiceActorRoles: List<StaffRoleType>?,
+    // @SerializedName("voiceActorRoles") var voiceActorRoles: List<StaffRoleType>?,
 
     // The order the media should be displayed from the users favourites
-    var favouriteOrder: Int?,
+    @SerializedName("favouriteOrder") var favouriteOrder: Int?,
 )
 
 enum class MediaRelation {
@@ -431,29 +430,29 @@ enum class MediaSeason {
 
 data class MediaExternalLink(
     // The id of the external link
-    var id: Int?,
+    @SerializedName("id") var id: Int?,
 
     // The url of the external link or base url of link source
-    var url: String?,
+    @SerializedName("url") var url: String?,
 
     // The links website site name
-    var site: String,
+    @SerializedName("site") var site: String,
 
     // The links website site id
-    var siteId: Int?,
+    @SerializedName("siteId") var siteId: Int?,
 
-    var type: ExternalLinkType?,
+    @SerializedName("type") var type: ExternalLinkType?,
 
     // Language the site content is in. See Staff language field for values.
-    var language: String?,
+    @SerializedName("language") var language: String?,
 
-    var color: String?,
+    @SerializedName("color") var color: String?,
 
     // The icon image url of the site. Not available for all links. Transparent PNG 64x64
-    var icon: String?,
+    @SerializedName("icon") var icon: String?,
 
     // isDisabled: Boolean
-    var notes: String?,
+    @SerializedName("notes") var notes: String?,
 )
 
 enum class ExternalLinkType {
@@ -466,29 +465,25 @@ enum class ExternalLinkType {
 
 data class MediaListCollection(
     // Grouped media list entries
-    var lists: List<MediaListGroup>?,
+    @SerializedName("lists") var lists: List<MediaListGroup>?,
 
     // The owner of the list
-    var user: User?,
+    @SerializedName("user") var user: User?,
 
     // If there is another chunk
-    var hasNextChunk: Boolean?,
+    @SerializedName("hasNextChunk") var hasNextChunk: Boolean?,
 
     )
 
 data class MediaListGroup(
     // Media list entries
-    var entries: List<MediaList>?,
+    @SerializedName("entries") var entries: List<MediaList>?,
 
-    var name: String?,
+    @SerializedName("name") var name: String?,
 
-    var isCustomList: Boolean?,
+    @SerializedName("isCustomList") var isCustomList: Boolean?,
 
-    var isSplitCompletedList: Boolean?,
+    @SerializedName("isSplitCompletedList") var isSplitCompletedList: Boolean?,
 
-    var status: MediaListStatus?,
-)
-
-data class QueryMedia(
-    var media: Media?
+    @SerializedName("status") var status: MediaListStatus?,
 )

@@ -7,8 +7,7 @@ import ani.saikou.parsers.Video
 import ani.saikou.parsers.VideoContainer
 import ani.saikou.parsers.VideoExtractor
 import ani.saikou.parsers.VideoServer
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.gson.annotations.SerializedName
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -44,7 +43,7 @@ class GogoCDN(override val server: VideoServer) : VideoExtractor() {
                 .replace("""o"<P{#meme":""", """e":[{"file":""")
 
             val json =
-                mapper.readValue<SourceResponse>(jumbledJson.dropLast(jumbledJson.length - jumbledJson.lastIndexOf('}') - 1))
+                Mapper.parse<SourceResponse>(jumbledJson.dropLast(jumbledJson.length - jumbledJson.lastIndexOf('}') - 1))
 
             suspend fun add(i: SourceResponse.Source, backup: Boolean) {
                 val label = i.label?.lowercase() ?: return
@@ -115,14 +114,13 @@ class GogoCDN(override val server: VideoServer) : VideoExtractor() {
     }
 
     private data class SourceResponse(
-        val source: List<Source>? = null,
-        @JsonProperty("source_bk")
-        val sourceBk: List<Source>? = null
+        @SerializedName("source") val source: List<Source>? = null,
+        @SerializedName("source_bk") val sourceBk: List<Source>? = null
     ) {
         data class Source(
-            val file: String? = null,
-            val label: String? = null,
-            val type: String? = null
+            @SerializedName("file") val file: String? = null,
+            @SerializedName("label") val label: String? = null,
+            @SerializedName("type") val type: String? = null
         )
     }
 }

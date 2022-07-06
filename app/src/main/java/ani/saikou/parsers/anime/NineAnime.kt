@@ -5,7 +5,6 @@ import ani.saikou.parsers.*
 import ani.saikou.parsers.anime.extractors.StreamTape
 import ani.saikou.parsers.anime.extractors.VideoVard
 import ani.saikou.parsers.anime.extractors.VizCloud
-import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jsoup.Jsoup
@@ -38,7 +37,7 @@ class NineAnime : AnimeParser() {
         val body = client.get(episodeLink).parsed<Response>().html
         val document = Jsoup.parse(body)
         val rawJson = document.select(".episodes li a").select(".active").attr("data-sources")
-        val dataSources = mapper.readValue<Map<String, String>>(rawJson)
+        val dataSources = Mapper.parse<Map<String, String>>(rawJson)
 
         var videoVardDownload: VideoServer?=null
 
@@ -181,7 +180,7 @@ class NineAnime : AnimeParser() {
                 r = arr[c]
                 arr[c] = arr[u]
                 arr[u] = r
-                output += (text[f].code xor arr[(arr[c] + arr[u]) % 256]).toChar()
+                output += (text[f].code xor arr[(arr[c] + arr[u]) % 256]).also { println(it) }.toChar()
             }
             return output
         }

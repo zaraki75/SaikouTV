@@ -2,9 +2,12 @@ package ani.saikou.parsers.manga
 
 import ani.saikou.anilist.Anilist
 import ani.saikou.client
-import ani.saikou.parsers.*
+import ani.saikou.parsers.MangaChapter
+import ani.saikou.parsers.MangaImage
+import ani.saikou.parsers.MangaParser
+import ani.saikou.parsers.ShowResponse
 import ani.saikou.tryWithSuspend
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.gson.annotations.SerializedName
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.text.DecimalFormat
 
@@ -102,46 +105,47 @@ class AllAnime : MangaParser() {
         return null
     }
 
-    private data class Query(var data: Data?) {
+    private data class Query(
+        @SerializedName("data") var data: Data?
+    ) {
         data class Data(
-            val manga: Manga?,
-            val mangas: MangasConnection?,
-            val episodeInfos: List<EpisodeInfo>?,
-            val chapterPages: ChapterConnection?,
+            @SerializedName("manga") val manga: Manga?,
+            @SerializedName("mangas") val mangas: MangasConnection?,
+            @SerializedName("episodeInfos") val episodeInfos: List<EpisodeInfo>?,
+            @SerializedName("chapterPages") val chapterPages: ChapterConnection?,
         )
 
         data class MangasConnection(
-            val edges: List<Manga>
+            @SerializedName("edges") val edges: List<Manga>
         )
 
         data class Manga(
-            @JsonProperty("_id")
-            val id: String,
-            val name: String,
-            val description: String?,
-            val englishName: String?,
-            val nativeName: String?,
-            val thumbnail: String,
-            val availableChapters: AvailableChapters,
-            val altNames: List<String>?
+            @SerializedName("_id") val id: String,
+            @SerializedName("name") val name: String,
+            @SerializedName("description") val description: String?,
+            @SerializedName("englishName") val englishName: String?,
+            @SerializedName("nativeName") val nativeName: String?,
+            @SerializedName("thumbnail") val thumbnail: String,
+            @SerializedName("availableChapters") val availableChapters: AvailableChapters,
+            @SerializedName("altNames") val altNames: List<String>?
         )
 
         data class AvailableChapters(
-            val sub: Int,
-            val raw: Int
+            @SerializedName("sub") val sub: Int,
+            @SerializedName("raw") val raw: Int
         )
 
         data class ChapterConnection(
-            val edges: List<Chapter>
+            @SerializedName("edges") val edges: List<Chapter>
         ) {
             data class Chapter(
-                val pictureUrls: List<PictureUrl>,
-                val pictureUrlHead: String?
+                @SerializedName("pictureUrls") val pictureUrls: List<PictureUrl>,
+                @SerializedName("pictureUrlHead") val pictureUrlHead: String?
             )
 
             data class PictureUrl(
-                val num: Int,
-                val url: String
+                @SerializedName("num") val num: Int,
+                @SerializedName("url") val url: String
 
                 )
         }
@@ -149,9 +153,9 @@ class AllAnime : MangaParser() {
 
     private data class EpisodeInfo(
         // Episode "numbers" can have decimal values, hence float
-        val episodeIdNum: Float,
-        val notes: String?,
-        val thumbnails: List<String>?,
+        @SerializedName("episodeIdNum") val episodeIdNum: Float,
+        @SerializedName("notes") val notes: String?,
+        @SerializedName("thumbnails") val thumbnails: List<String>?,
     )
 
 }

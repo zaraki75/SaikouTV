@@ -1,11 +1,10 @@
 package ani.saikou.parsers.anime
 
 import ani.saikou.FileUrl
+import ani.saikou.Mapper
 import ani.saikou.client
 import ani.saikou.getSize
-import ani.saikou.mapper
 import ani.saikou.parsers.*
-import com.fasterxml.jackson.module.kotlin.readValue
 import java.net.URI
 
 open class Tenshi : AnimeParser() {
@@ -68,7 +67,7 @@ open class Tenshi : AnimeParser() {
 
             val unSanitized = client.get(url, headers).text.substringAfter("player.source = ").substringBefore(';')
 
-            val json = mapper.readValue<Player>(
+            val json = Mapper.parse<Player>(
                 Regex("""([a-z0-9A-Z_]+): """)
                     .replace(unSanitized, "\"$1\" : ")
                     .replace('\'', '"').replace("\n", "")

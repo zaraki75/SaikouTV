@@ -7,7 +7,6 @@ import ani.saikou.parsers.Video
 import ani.saikou.parsers.VideoContainer
 import ani.saikou.parsers.VideoExtractor
 import ani.saikou.parsers.VideoServer
-import com.fasterxml.jackson.databind.exc.MismatchedInputException
 
 class FPlayer(override val server: VideoServer) : VideoExtractor() {
 
@@ -27,7 +26,7 @@ class FPlayer(override val server: VideoServer) : VideoExtractor() {
                 }?: listOf())
             }
 
-        } catch (e: MismatchedInputException) {}
+        } catch (e: Exception) {}
         return VideoContainer(listOf())
     }
 

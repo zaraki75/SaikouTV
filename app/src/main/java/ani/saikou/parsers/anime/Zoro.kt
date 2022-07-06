@@ -8,6 +8,7 @@ import ani.saikou.parsers.*
 import ani.saikou.parsers.anime.extractors.RapidCloud
 import ani.saikou.parsers.anime.extractors.StreamSB
 import ani.saikou.parsers.anime.extractors.StreamTape
+import com.google.gson.annotations.SerializedName
 import org.jsoup.Jsoup
 import java.net.URLEncoder
 
@@ -79,12 +80,12 @@ class Zoro : AnimeParser() {
     }
 
     data class SourceResponse(
-        val link: String
+        @SerializedName("link") val link: String
     )
 
     private data class HtmlResponse(
-        val status: Boolean,
-        val html: String? = null,
+        @SerializedName("status") val status: Boolean,
+        @SerializedName("html") val html: String? = null,
     )
 
 }

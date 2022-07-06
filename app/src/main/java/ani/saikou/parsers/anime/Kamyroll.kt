@@ -5,7 +5,7 @@ import ani.saikou.client
 import ani.saikou.levenshtein
 import ani.saikou.media.Media
 import ani.saikou.parsers.*
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.gson.annotations.SerializedName
 
 class Kamyroll : AnimeParser() {
 
@@ -133,19 +133,18 @@ class Kamyroll : AnimeParser() {
         }
 
         private data class StreamsResponse(
-            val subtitles: List<Subtitle>? = null,
-            val streams: List<Stream>? = null
+            @SerializedName("subtitles") val subtitles: List<Subtitle>? = null,
+            @SerializedName("streams") val streams: List<Stream>? = null
         ) {
             data class Stream(
-                @JsonProperty("hardsub_locale")
-                val hardsubLocale: String? = null,
-                val url: String? = null
+                @SerializedName("hardsub_locale") val hardsubLocale: String? = null,
+                @SerializedName("url") val url: String? = null
             )
 
             data class Subtitle(
-                val locale: String? = null,
-                val url: String? = null,
-                val format: String? = null
+                @SerializedName("locale") val locale: String? = null,
+                @SerializedName("url") val url: String? = null,
+                @SerializedName("format") val format: String? = null
             )
         }
     }
@@ -233,92 +232,94 @@ class Kamyroll : AnimeParser() {
         }
 
         private data class AccessToken(
-            @JsonProperty("access_token")
+            @SerializedName("access_token")
             val accessToken: String,
-            @JsonProperty("token_type")
+            @SerializedName("token_type")
             val tokenType: String,
         )
     }
 
     private data class MovieResponse(
-        val items: List<KamyEpisode>? = null,
+        @SerializedName("items") val items: List<KamyEpisode>? = null,
     )
 
     private data class EpisodesResponse(
-        val total: Long? = null,
-        val items: List<Item>? = null
+        @SerializedName("total") val total: Long? = null,
+        @SerializedName("items") val items: List<Item>? = null
     ) {
         data class Item(
-            val title: String? = null,
+            @SerializedName("title") val title: String? = null,
 
-            @JsonProperty("season_number")
+            @SerializedName("season_number")
             val seasonNumber: Long? = null,
 
-            @JsonProperty("episode_count")
+            @SerializedName("episode_count")
             val episodeCount: Long? = null,
 
+            @SerializedName("episodes")
             val episodes: List<KamyEpisode>? = null
         )
     }
 
     data class KamyEpisode(
-        val id: String,
-        val type: String,
+        @SerializedName("id") val id: String,
+        @SerializedName("type") val type: String,
 
-        @JsonProperty("season_number")
+        @SerializedName("season_number")
         val seasonNumber: Long? = null,
 
-        val episode: String? = null,
+        @SerializedName("episode") val episode: String? = null,
 
-        @JsonProperty("sequence_number")
+        @SerializedName("sequence_number")
         val sequenceNumber: Long,
 
+        @SerializedName("title")
         val title: String? = null,
+
+        @SerializedName("description")
         val description: String? = null,
 
-        @JsonProperty("is_subbed")
+        @SerializedName("is_subbed")
         val isSubbed: Boolean? = null,
 
-        @JsonProperty("is_dubbed")
+        @SerializedName("is_dubbed")
         val isDubbed: Boolean? = null,
 
-        val images: Images? = null,
+        @SerializedName("images") val images: Images? = null,
 
-        @JsonProperty("duration_ms")
+        @SerializedName("duration_ms")
         val duration: Long? = null,
     ) {
         data class Images(
-            val thumbnail: List<Thumbnail>? = null
+            @SerializedName("thumbnail") val thumbnail: List<Thumbnail>? = null
         )
 
         data class Thumbnail(
-            val width: Long? = null,
-            val height: Long? = null,
-            val source: String? = null
+            @SerializedName("width") val width: Long? = null,
+            @SerializedName("height") val height: Long? = null,
+            @SerializedName("source") val source: String? = null
         )
     }
 
     private data class SearchResponse(
-        val total: Long? = null,
-        val items: List<ResponseItem>? = null
+        @SerializedName("total") val total: Long? = null,
+        @SerializedName("items") val items: List<ResponseItem>? = null
     ) {
-        data class ResponseItem(val items: List<ItemItem>)
+        data class ResponseItem(@SerializedName("items") val items: List<ItemItem>)
 
         data class ItemItem(
-            val id: String,
-            @JsonProperty("media_type")
-            val type: String,
-            val title: String,
-            val images: Images? = null,
+            @SerializedName("id") val id: String,
+            @SerializedName("media_type") val type: String,
+            @SerializedName("title") val title: String,
+            @SerializedName("images") val images: Images? = null,
         )
 
         data class Images(
-            @JsonProperty("poster_tall")
-            val posterTall: List<PosterTall>
+            @SerializedName("poster_tall") val posterTall: List<PosterTall>
         )
 
         data class PosterTall(
-            val source: String,
+            @SerializedName("source") val source: String,
         )
     }
 }

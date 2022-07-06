@@ -1,35 +1,33 @@
 package ani.saikou.anilist.api
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.google.gson.annotations.SerializedName
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class Recommendation(
     // The id of the recommendation
-    var id: Int,
+    @SerializedName("id") var id: Int,
 
     // Users rating of the recommendation
-    var rating: Int?,
+    @SerializedName("rating") var rating: Int?,
 
     // The rating of the recommendation by currently authenticated user
-    // var userRating: RecommendationRating?,
+    // @SerializedName("userRating") var userRating: RecommendationRating?,
 
     // The media the recommendation is from
-    var media: Media?,
+    @SerializedName("media") var media: Media?,
 
     // The recommended media
-    var mediaRecommendation: Media?,
+    @SerializedName("mediaRecommendation") var mediaRecommendation: Media?,
 
     // The user that first created the recommendation
-    var user: User?,
+    @SerializedName("user") var user: User?,
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class RecommendationConnection(
-    //var edges: List<RecommendationEdge>?,
+    //@SerializedName("edges") var edges: List<RecommendationEdge>?,
 
-    var nodes: List<Recommendation>?,
+    @SerializedName("nodes") var nodes: List<Recommendation>?,
 
     // The pagination information
-    //var pageInfo: PageInfo?,
+    //@SerializedName("pageInfo") var pageInfo: PageInfo?,
 
 )

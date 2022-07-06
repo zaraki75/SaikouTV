@@ -13,6 +13,7 @@ import ani.saikou.parsers.MangaParser
 import ani.saikou.parsers.ShowResponse
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.engine.Resource
+import com.google.gson.annotations.SerializedName
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.io.ByteArrayOutputStream
@@ -66,8 +67,8 @@ class MangaReaderTo : MangaParser() {
     }
 
     private data class HtmlResponse(
-        val status: Boolean,
-        val html: String? = null,
+        @SerializedName("status") val status: Boolean,
+        @SerializedName("html") val html: String? = null,
     )
 }
 

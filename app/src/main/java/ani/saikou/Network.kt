@@ -1,7 +1,9 @@
 package ani.saikou
 
 import android.content.Context
+import com.google.gson.Gson
 import com.lagradost.nicehttp.Requests
+import com.lagradost.nicehttp.ResponseParser
 import com.lagradost.nicehttp.addGenericDns
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -11,6 +13,7 @@ import okhttp3.OkHttpClient
 import java.io.File
 import java.io.Serializable
 import java.util.concurrent.*
+import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 
 val defaultHeaders = mapOf(
@@ -41,13 +44,36 @@ fun initializeNetwork(context: Context) {
         .build()
     client = Requests(
         okHttpClient,
+        defaultHeaders,
         defaultCacheTime = 6,
         defaultCacheTimeUnit = TimeUnit.HOURS,
-        defaultHeaders = defaultHeaders
+        responseParser = Mapper
     )
 }
 
-val mapper = Requests.mapper
+object Mapper : ResponseParser {
+    val mapper = Gson()
+
+    override fun <T : Any> parse(text: String, kClass: KClass<T>): T {
+        return mapper.fromJson(text, kClass.java)
+    }
+
+    override fun <T : Any> parseSafe(text: String, kClass: KClass<T>): T? {
+        return try {
+            mapper.fromJson(text, kClass.java)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    override fun writeValueAsString(obj: Any): String {
+        return mapper.toJson(obj)
+    }
+
+    inline fun <reified T> parse(text: String): T {
+        return mapper.fromJson(text, T::class.java)
+    }
+}
 
 //fun <K, V, R> Map<out K, V>.asyncMap(f: suspend (Map.Entry<K, V>) -> R): List<R> = runBlocking {
 //    map { withContext(Dispatchers.IO) { async { f(it) } } }.map { it.await() }
@@ -92,10 +118,10 @@ suspend fun <T> tryWithSuspend(call: suspend () -> T): T? {
 data class FileUrl(
     val url: String,
     val headers: Map<String, String> = mapOf()
-) : Serializable{
-    companion object{
-        operator fun get(url:String?,headers: Map<String, String> = mapOf()) : FileUrl?{
-            return FileUrl(url?:return null,headers)
+) : Serializable {
+    companion object {
+        operator fun get(url: String?, headers: Map<String, String> = mapOf()): FileUrl? {
+            return FileUrl(url ?: return null, headers)
         }
     }
 }
@@ -108,9 +134,9 @@ data class Lazier<T>(
     val get = lazy { lClass.call() }
 }
 
-fun <T> lazyList(vararg objects: Pair<String,KFunction<T>>): List<Lazier<T>> {
+fun <T> lazyList(vararg objects: Pair<String, KFunction<T>>): List<Lazier<T>> {
     return objects.map {
-        Lazier(it.second,it.first)
+        Lazier(it.second, it.first)
     }
 }
 

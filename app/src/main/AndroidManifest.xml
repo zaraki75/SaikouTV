@@ -13,7 +13,7 @@
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-    <application
+        <application
         android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

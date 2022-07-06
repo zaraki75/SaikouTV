@@ -1,9 +1,9 @@
 package ani.saikou.settings
 
-import android.os.Build.*
-import android.os.Build.VERSION.*
 import android.content.Intent
 import android.graphics.drawable.Animatable
+import android.os.Build.*
+import android.os.Build.VERSION.*
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
+import androidx.multidex.BuildConfig
 import ani.saikou.*
 import ani.saikou.databinding.ActivitySettingsBinding
 import ani.saikou.others.CustomBottomDialog

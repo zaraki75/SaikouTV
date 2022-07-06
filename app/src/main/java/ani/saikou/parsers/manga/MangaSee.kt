@@ -1,15 +1,14 @@
 package ani.saikou.parsers.manga
 
+import ani.saikou.Mapper
 import ani.saikou.client
 import ani.saikou.findBetween
-import ani.saikou.mapper
 import ani.saikou.parsers.MangaChapter
 import ani.saikou.parsers.MangaImage
 import ani.saikou.parsers.MangaParser
 import ani.saikou.parsers.ShowResponse
 import ani.saikou.sortByTitle
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.gson.annotations.SerializedName
 
 class MangaSee : MangaParser() {
 
@@ -22,7 +21,7 @@ class MangaSee : MangaParser() {
         val json = client.get("$hostUrl/manga/$mangaLink").document.select("script")
             .lastOrNull()?.toString()?.findBetween("vm.Chapters = ", ";")?: return listOf()
 
-        return mapper.readValue<List<MangaResponse>>(json).reversed().map {
+        return Mapper.parse<List<MangaResponse>>(json).reversed().map {
             val chap = it.chapter
             val num = chapChop(chap, 3)
             val link = hostUrl + "/read-online/$mangaLink-chapter-" + chapChop(chap, 1) + chapChop(chap, 2) + chapChop(chap, 0) + ".html"
@@ -35,7 +34,7 @@ class MangaSee : MangaParser() {
         val str = res?.toString() ?: return listOf()
         val server = str.findBetween("vm.CurPathName = ", ";")?.trim('"') ?: return listOf()
         val slug = str.findBetween("vm.IndexName = ", ";")?.trim('"') ?: return listOf()
-        val json = mapper.readValue<ChapterResponse>(
+        val json = Mapper.parse<ChapterResponse>(
             str.findBetween("vm.CurChapter = ", ";") ?: return listOf()
         )
         val id = json.chapter
@@ -64,7 +63,7 @@ class MangaSee : MangaParser() {
             else {
                 val json = client.get("$host/search/").document.select("script")
                     .last().toString().findBetween("vm.Directory = ", "\n")!!.replace(";", "")
-                mapper.readValue<List<SearchResponse>>(json).map {
+                Mapper.parse<List<SearchResponse>>(json).map {
                     ShowResponse(it.s, it.i, "https://cover.nep.li/cover/${it.i}.jpg"
                     )
                 }
@@ -82,17 +81,17 @@ class MangaSee : MangaParser() {
     }
 
     private data class MangaResponse(
-        @JsonProperty("Chapter") val chapter: String,
-        @JsonProperty("ChapterName") val chapterName: String?
+        @SerializedName("Chapter") val chapter: String,
+        @SerializedName("ChapterName") val chapterName: String?
     )
 
     private data class ChapterResponse(
-        @JsonProperty("Chapter") val chapter: String,
-        @JsonProperty("Page") val page: String
+        @SerializedName("Chapter") val chapter: String,
+        @SerializedName("Page") val page: String
     )
 
     private data class SearchResponse(
-        val s: String,
-        val i: String
+        @SerializedName("s") val s: String,
+        @SerializedName("i") val i: String
     )
 }

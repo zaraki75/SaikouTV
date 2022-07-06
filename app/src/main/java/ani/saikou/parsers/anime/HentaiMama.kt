@@ -1,12 +1,12 @@
 package ani.saikou.parsers.anime
 
 
+import ani.saikou.Mapper
 import ani.saikou.client
 import ani.saikou.findBetween
 import ani.saikou.getSize
-import ani.saikou.mapper
 import ani.saikou.parsers.*
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.gson.annotations.SerializedName
 
 class HentaiMama : AnimeParser() {
     override val name = "Hentaimama"
@@ -52,7 +52,7 @@ class HentaiMama : AnimeParser() {
                 return VideoContainer(listOf(Video(null, false, this, getSize(this))))
             }
             val unSanitized = doc.text.findBetween("sources: [", "],") ?: return VideoContainer(listOf())
-            val json = mapper.readValue<List<ResponseElement>>(
+            val json = Mapper.parse<List<ResponseElement>>(
                 "[${
                     unSanitized
                         .replace("type:", "\"type\":")
@@ -68,8 +68,8 @@ class HentaiMama : AnimeParser() {
         }
 
         data class ResponseElement(
-            val type: String,
-            val file: String
+            @SerializedName("type") val type: String,
+            @SerializedName("file") val file: String
         )
     }
 

@@ -6,7 +6,7 @@ import ani.saikou.client
 import ani.saikou.logger
 import ani.saikou.media.Media
 import ani.saikou.tryWithSuspend
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.gson.annotations.SerializedName
 
 object Kitsu {
     private suspend fun getKitsuData(query: String): KitsuResponse? {
@@ -64,43 +64,42 @@ query {
     }
 
     private data class KitsuResponse(
-        val data: Data? = null
+        @SerializedName("data") val data: Data? = null
     ) {
         data class Data (
-            val lookupMapping: LookupMapping? = null
+            @SerializedName("lookupMapping") val lookupMapping: LookupMapping? = null
         )
 
         data class LookupMapping (
-            val id: String? = null,
-            val episodes: Episodes? = null
+            @SerializedName("id") val id: String? = null,
+            @SerializedName("episodes") val episodes: Episodes? = null
         )
 
         data class Episodes (
-            val nodes: List<Node?>? = null
+            @SerializedName("nodes") val nodes: List<Node?>? = null
         )
 
         data class Node (
-            @JsonProperty("number")
-            val num: Long? = null,
-            val titles: Titles? = null,
-            val description: Description? = null,
-            val thumbnail: Thumbnail? = null
+            @SerializedName("number") val num: Long? = null,
+            @SerializedName("titles") val titles: Titles? = null,
+            @SerializedName("description") val description: Description? = null,
+            @SerializedName("thumbnail") val thumbnail: Thumbnail? = null
         )
 
         data class Description (
-            val en: String? = null
+            @SerializedName("en") val en: String? = null
         )
 
         data class Thumbnail (
-            val original: Original? = null
+            @SerializedName("original") val original: Original? = null
         )
 
         data class Original (
-            val url: String? = null
+            @SerializedName("url") val url: String? = null
         )
 
         data class Titles (
-            val canonical: String? = null
+            @SerializedName("canonical") val canonical: String? = null
         )
 
     }

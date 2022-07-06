@@ -1,13 +1,14 @@
 package ani.saikou.anilist.api
 
+import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 import java.text.DateFormatSymbols
 import java.util.*
 
 data class FuzzyDate(
-    val year: Int? = null,
-    val month: Int? = null,
-    val day: Int? = null,
+    @SerializedName("year") val year: Int? = null,
+    @SerializedName("month") val month: Int? = null,
+    @SerializedName("day") val day: Int? = null,
 ) : Serializable {
     override fun toString(): String {
         val a = if (month != null) DateFormatSymbols().months[month - 1] else ""

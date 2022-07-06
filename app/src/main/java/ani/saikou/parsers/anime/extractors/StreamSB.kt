@@ -6,7 +6,7 @@ import ani.saikou.parsers.Video
 import ani.saikou.parsers.VideoContainer
 import ani.saikou.parsers.VideoExtractor
 import ani.saikou.parsers.VideoServer
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.gson.annotations.SerializedName
 
 class StreamSB(override val server: VideoServer) : VideoExtractor() {
     override suspend fun extract(): VideoContainer {
@@ -34,14 +34,14 @@ class StreamSB(override val server: VideoServer) : VideoExtractor() {
     }
 
     private data class Response(
-        @JsonProperty("stream_data")
+        @SerializedName("stream_data")
         val streamData: StreamData? = null,
-        @JsonProperty("status_code")
+        @SerializedName("status_code")
         val statusCode: Int? = null
     )
 
     private data class StreamData(
-        val file: String
+        @SerializedName("file") val file: String
     )
 
     companion object {
