@@ -1,13 +1,17 @@
 package ani.saikou
 
 import android.content.Context
-import com.google.gson.Gson
 import com.lagradost.nicehttp.Requests
 import com.lagradost.nicehttp.ResponseParser
 import com.lagradost.nicehttp.addGenericDns
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import java.io.File
@@ -52,26 +56,33 @@ fun initializeNetwork(context: Context) {
 }
 
 object Mapper : ResponseParser {
-    val mapper = Gson()
 
+    @OptIn(ExperimentalSerializationApi::class)
+    val json = Json {
+        isLenient = true
+        ignoreUnknownKeys = true
+        explicitNulls = false
+    }
+
+    @OptIn(InternalSerializationApi::class)
     override fun <T : Any> parse(text: String, kClass: KClass<T>): T {
-        return mapper.fromJson(text, kClass.java)
+        return json.decodeFromString(kClass.serializer(),text)
     }
 
     override fun <T : Any> parseSafe(text: String, kClass: KClass<T>): T? {
         return try {
-            mapper.fromJson(text, kClass.java)
+            parse(text, kClass)
         } catch (e: Exception) {
             null
         }
     }
 
     override fun writeValueAsString(obj: Any): String {
-        return mapper.toJson(obj)
+        return json.encodeToString(serializer(),obj)
     }
 
     inline fun <reified T> parse(text: String): T {
-        return mapper.fromJson(text, T::class.java)
+        return json.decodeFromString(text)
     }
 }
 

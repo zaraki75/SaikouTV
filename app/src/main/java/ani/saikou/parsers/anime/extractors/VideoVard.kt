@@ -8,8 +8,9 @@ import ani.saikou.parsers.VideoContainer
 import ani.saikou.parsers.VideoExtractor
 import ani.saikou.parsers.VideoServer
 import ani.saikou.tryWithSuspend
-import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.delay
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.math.BigInteger
 
 class VideoVard(override val server: VideoServer, private val download:Boolean=false) : VideoExtractor() {
@@ -37,7 +38,7 @@ class VideoVard(override val server: VideoServer, private val download:Boolean=f
                         "hash" to (res.hash?:return@tryWithSuspend null),
                         "version" to res.version!!,
                     )
-                ).parsed<SetupResponse>()
+                ).also { if(!it.text.startsWith("{")) throw Exception("Video Not Found") }.parsed<SetupResponse>()
                 val mp4 = FileUrl(decode(setup.link!!, setup.seed), headers)
                 Video(null, false, mp4, getSize(mp4))
             }
@@ -52,7 +53,7 @@ class VideoVard(override val server: VideoServer, private val download:Boolean=f
                         "file_code" to id,
                         "hash" to (hash.hash ?: return@tryWithSuspend null)
                     )
-                ).parsed<SetupResponse>()
+                ).also { if(!it.text.startsWith("{")) throw Exception("Video Not Found") }.parsed<SetupResponse>()
                 val m3u8 = FileUrl(decode(res.src!!, res.seed), headers)
                 Video(null, true, m3u8)
             }
@@ -276,14 +277,16 @@ class VideoVard(override val server: VideoServer, private val download:Boolean=f
         }
     }
 
+    @Serializable
     private data class HashResponse(
-        @SerializedName("hash") val hash: String? = null,
-        @SerializedName("version") val version:String? = null
+        @SerialName("hash") val hash: String? = null,
+        @SerialName("version") val version:String? = null
     )
 
+    @Serializable
     private data class SetupResponse(
-        @SerializedName("seed") val seed: String,
-        @SerializedName("src") val src: String?=null,
-        @SerializedName("link") val link:String?=null
+        @SerialName("seed") val seed: String,
+        @SerialName("src") val src: String?=null,
+        @SerialName("link") val link:String?=null
     )
 }

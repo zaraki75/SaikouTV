@@ -1,6 +1,7 @@
-# 1.2.0.15
+# 1.2.0.17
 
-- The last update of the month
-- change some kamyroll stuff
-- Fix 9anime tomfoolery
-- maybe fixed firebase thingy, idk
+- Fixed Serialization Problems
+- Fixed Kamyroll Episode Problem
+- AniMixPlay Source by @scrazzz (Not Tested)
+- Add New Contributors Names
+- Fixed Firebase For Real this time

@@ -5,6 +5,7 @@ import ani.saikou.Mapper
 import ani.saikou.client
 import ani.saikou.getSize
 import ani.saikou.parsers.*
+import kotlinx.serialization.Serializable
 import java.net.URI
 
 open class Tenshi : AnimeParser() {
@@ -83,7 +84,9 @@ open class Tenshi : AnimeParser() {
             })
         }
 
+        @Serializable
         private data class Player(val sources: List<PlayerSource>) {
+            @Serializable
             data class PlayerSource(
                 val size: Int? = null,
                 val src: String? = null

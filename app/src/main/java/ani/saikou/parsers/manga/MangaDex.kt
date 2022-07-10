@@ -6,7 +6,8 @@ import ani.saikou.parsers.MangaChapter
 import ani.saikou.parsers.MangaImage
 import ani.saikou.parsers.MangaParser
 import ani.saikou.parsers.ShowResponse
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 class MangaDex : MangaParser() {
 
@@ -61,64 +62,75 @@ class MangaDex : MangaParser() {
         } ?: listOf()
     }
 
+    @Serializable
     private data class SearchResponse(
-        @SerializedName("result") val result: String? = null,
-        @SerializedName("data") val data: List<Datum>? = null,
-        @SerializedName("total") val total: Long? = null
+        @SerialName("result") val result: String? = null,
+        @SerialName("data") val data: List<Datum>? = null,
+        @SerialName("total") val total: Long? = null
     ) {
+        @Serializable
         data class Datum(
-            @SerializedName("id") val id: String? = null,
-            @SerializedName("attributes") val attributes: DatumAttributes? = null,
-            @SerializedName("relationships") val relationships: List<Relationship>? = null
+            @SerialName("id") val id: String? = null,
+            @SerialName("attributes") val attributes: DatumAttributes? = null,
+            @SerialName("relationships") val relationships: List<Relationship>? = null
         )
 
+        @Serializable
         data class DatumAttributes(
-            @SerializedName("title") val title: Title? = null
+            @SerialName("title") val title: Title? = null
         )
 
+        @Serializable
         data class Title(
-            @SerializedName("en") val en: String? = null
+            @SerialName("en") val en: String? = null
         )
 
+        @Serializable
         data class Relationship(
-            @SerializedName("id") val id: String? = null,
-            @SerializedName("type") val type: String? = null,
-            @SerializedName("attributes") val attributes: RelationshipAttributes? = null
+            @SerialName("id") val id: String? = null,
+            @SerialName("type") val type: String? = null,
+            @SerialName("attributes") val attributes: RelationshipAttributes? = null
         )
 
+        @Serializable
         data class RelationshipAttributes(
-            @SerializedName("fileName") val fileName: String? = null
+            @SerialName("fileName") val fileName: String? = null
         )
     }
 
+    @Serializable
     private data class MangaResponse(
-        @SerializedName("result") val result: String? = null,
-        @SerializedName("data") val data: List<Datum>? = null,
-        @SerializedName("total") val total: Long? = null
+        @SerialName("result") val result: String? = null,
+        @SerialName("data") val data: List<Datum>? = null,
+        @SerialName("total") val total: Long? = null
     ) {
+        @Serializable
         data class Datum(
-            @SerializedName("id") val id: String,
-            @SerializedName("attributes") val attributes: Attributes
+            @SerialName("id") val id: String,
+            @SerialName("attributes") val attributes: Attributes
         )
 
+        @Serializable
         data class Attributes(
-            @SerializedName("volume") val volume: Any? = null,
-            @SerializedName("chapter") val chapter: Any? = null,
-            @SerializedName("title") val title: String? = null,
-            @SerializedName("translatedLanguage") val translatedLanguage: String? = null,
-            @SerializedName("externalUrl") val externalUrl : String? = null
+            @SerialName("volume") val volume: String? = null,
+            @SerialName("chapter") val chapter: String? = null,
+            @SerialName("title") val title: String? = null,
+            @SerialName("translatedLanguage") val translatedLanguage: String? = null,
+            @SerialName("externalUrl") val externalUrl : String? = null
         )
     }
 
+    @Serializable
     private data class ChapterResponse(
-        @SerializedName("result") val result: String? = null,
-        @SerializedName("baseURL") val baseURL: String? = null,
-        @SerializedName("chapter") val chapter: Chapter? = null
+        @SerialName("result") val result: String? = null,
+        @SerialName("baseURL") val baseURL: String? = null,
+        @SerialName("chapter") val chapter: Chapter? = null
     ) {
+        @Serializable
         data class Chapter(
-            @SerializedName("hash") val hash: String? = null,
-            @SerializedName("data") val data: List<String>? = null,
-            @SerializedName("dataSaver") val dataSaver: List<String>? = null
+            @SerialName("hash") val hash: String? = null,
+            @SerialName("data") val data: List<String>? = null,
+            @SerialName("dataSaver") val dataSaver: List<String>? = null
         )
     }
 }

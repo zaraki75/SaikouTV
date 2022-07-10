@@ -6,7 +6,8 @@ import ani.saikou.parsers.Video
 import ani.saikou.parsers.VideoContainer
 import ani.saikou.parsers.VideoExtractor
 import ani.saikou.parsers.VideoServer
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 class StreamSB(override val server: VideoServer) : VideoExtractor() {
     override suspend fun extract(): VideoContainer {
@@ -33,15 +34,17 @@ class StreamSB(override val server: VideoServer) : VideoExtractor() {
         return String(hexChars)
     }
 
+    @Serializable
     private data class Response(
-        @SerializedName("stream_data")
+        @SerialName("stream_data")
         val streamData: StreamData? = null,
-        @SerializedName("status_code")
+        @SerialName("status_code")
         val statusCode: Int? = null
     )
 
+    @Serializable
     private data class StreamData(
-        @SerializedName("file") val file: String
+        @SerialName("file") val file: String
     )
 
     companion object {

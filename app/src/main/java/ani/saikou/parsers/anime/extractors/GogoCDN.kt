@@ -7,7 +7,8 @@ import ani.saikou.parsers.Video
 import ani.saikou.parsers.VideoContainer
 import ani.saikou.parsers.VideoExtractor
 import ani.saikou.parsers.VideoServer
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -113,14 +114,16 @@ class GogoCDN(override val server: VideoServer) : VideoExtractor() {
         )
     }
 
+    @Serializable
     private data class SourceResponse(
-        @SerializedName("source") val source: List<Source>? = null,
-        @SerializedName("source_bk") val sourceBk: List<Source>? = null
+        @SerialName("source") val source: List<Source>? = null,
+        @SerialName("source_bk") val sourceBk: List<Source>? = null
     ) {
+        @Serializable
         data class Source(
-            @SerializedName("file") val file: String? = null,
-            @SerializedName("label") val label: String? = null,
-            @SerializedName("type") val type: String? = null
+            @SerialName("file") val file: String? = null,
+            @SerialName("label") val label: String? = null,
+            @SerialName("type") val type: String? = null
         )
     }
 }

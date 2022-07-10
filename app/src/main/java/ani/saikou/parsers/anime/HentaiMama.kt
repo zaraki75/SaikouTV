@@ -6,7 +6,8 @@ import ani.saikou.client
 import ani.saikou.findBetween
 import ani.saikou.getSize
 import ani.saikou.parsers.*
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 class HentaiMama : AnimeParser() {
     override val name = "Hentaimama"
@@ -28,12 +29,14 @@ class HentaiMama : AnimeParser() {
 
     override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
         val animeId = client.get(episodeLink).document.select("#post_report > input:nth-child(5)").attr("value")
-        val json = client.post(
-            "https://hentaimama.io/wp-admin/admin-ajax.php", data = mapOf(
-                "action" to "get_player_contents",
-                "a" to animeId
-            )
-        ).parsed<List<String>>()
+        val json = Mapper.parse<List<String>>(
+            client.post(
+                "https://hentaimama.io/wp-admin/admin-ajax.php", data = mapOf(
+                    "action" to "get_player_contents",
+                    "a" to animeId
+                )
+            ).text
+        )
         return json.mapIndexed { i, it ->
             val url = it.substringAfter("src=\"").substringBefore("\"")
             VideoServer("Mirror $i", url)
@@ -67,9 +70,10 @@ class HentaiMama : AnimeParser() {
             })
         }
 
+        @Serializable
         data class ResponseElement(
-            @SerializedName("type") val type: String,
-            @SerializedName("file") val file: String
+            @SerialName("type") val type: String,
+            @SerialName("file") val file: String
         )
     }
 

@@ -3,7 +3,9 @@ package ani.saikou.anime
 import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -221,11 +223,13 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
                 binding.urlDownload.setSafeOnClickListener {
                     media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedServer = extractor.server.name
                     media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedVideo = position
+                    binding.urlDownload.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                     download(
                         requireActivity(),
                         media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!,
                         media!!.userPreferredName
                     )
+                    dismiss()
                 }
             }
             else {
@@ -249,12 +253,14 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
                     startExoplayer(media!!)
                 }
                 itemView.setOnLongClickListener {
-                    val video = extractor.videos[position]
-                    val intent= Intent()
-                    intent.action=Intent.ACTION_SEND
-                    intent.putExtra(Intent.EXTRA_TEXT, video.url.url)
-                    intent.type="text/plain"
-                    startActivity(Intent.createChooser(intent,"Share To:")); true
+                    val video = extractor.videos[bindingAdapterPosition]
+                    val intent= Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(Uri.parse(video.url.url),"video/*")
+                    }
+                    copyToClipboard(video.url.url,true)
+                    dismiss()
+                    startActivity(Intent.createChooser(intent,"Open Video in :"))
+                    true
                 }
             }
         }

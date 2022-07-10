@@ -7,14 +7,15 @@ import ani.saikou.parsers.VideoContainer
 import ani.saikou.parsers.VideoExtractor
 import ani.saikou.parsers.VideoServer
 import ani.saikou.parsers.anime.NineAnime.Companion.encrypt
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 class VizCloud(override val server: VideoServer) : VideoExtractor() {
 
-    private data class Sources(@SerializedName("file") val file: String)
-    private data class Media(@SerializedName("sources") val sources: List<Sources>)
-    private data class Data(@SerializedName("media") val media: Media)
-    private data class Response(@SerializedName("data") val data: Data)
+    @Serializable private data class Sources(val file: String)
+    @Serializable private data class Media(val sources: List<Sources>)
+    @Serializable private data class Data(val media: Media)
+    @Serializable private data class Response(val data: Data)
 
     private val regex = Regex("(.+?/)e(?:mbed)?/([a-zA-Z0-9]+)")
 
@@ -52,10 +53,10 @@ class VizCloud(override val server: VideoServer) : VideoExtractor() {
         val id = encrypt(
             cipher(
                 viz.cipherKey,
-                encrypt(group[2], viz.encryptKey)
-            ),
+                encrypt(group[2].also { println(it) }, viz.encryptKey).also { println(it) }
+            ).also { println(it) },
             viz.encryptKey
-        ).replace("/", "_").replace("=", "")
+        ).also { println(it) }
 
         val link = "${host}mediainfo/${dashify(id, viz.dashTable)}?key=${viz.mainKey}"
         val response = client.get(link, embed.headers)
@@ -80,14 +81,15 @@ class VizCloud(override val server: VideoServer) : VideoExtractor() {
             return cipherKey!!
         }
 
+        @Serializable
         data class VizCloudKey(
-            @SerializedName("cipherKey") val cipherKey: String,
-            @SerializedName("mainKey") val mainKey: String,
-            @SerializedName("encryptKey") val encryptKey: String,
-            @SerializedName("dashTable") val dashTable: String
+            @SerialName("cipherKey") val cipherKey: String,
+            @SerialName("mainKey") val mainKey: String,
+            @SerialName("encryptKey") val encryptKey: String,
+            @SerialName("dashTable") val dashTable: String
         )
 
-        private const val baseTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/_"
+        private const val baseTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+=/_"
 
         private fun dashify(id: String, dashTable: String): String {
             val table = dashTable.split(" ")
