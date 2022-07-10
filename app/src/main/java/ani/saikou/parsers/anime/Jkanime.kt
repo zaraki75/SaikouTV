@@ -3,11 +3,9 @@ package ani.saikou.parsers.anime
 import android.net.Uri
 import android.util.Log
 import ani.saikou.*
-import ani.saikou.Mapper.mapper
 import ani.saikou.parsers.*
 import ani.saikou.parsers.anime.extractors.FPlayer
 import ani.saikou.parsers.anime.extractors.OK
-import java.io.Reader
 
 
 class Jkanime : AnimeParser() {
