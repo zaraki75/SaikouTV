@@ -5,7 +5,8 @@ import ani.saikou.client
 import ani.saikou.levenshtein
 import ani.saikou.media.Media
 import ani.saikou.parsers.*
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 class Kamyroll : AnimeParser() {
 
@@ -34,7 +35,7 @@ class Kamyroll : AnimeParser() {
                 val series: MutableMap<String, String> = mutableMapOf()
             )
 
-            val epMap = mutableMapOf<Long, Temp>()
+            val epMap = mutableMapOf<Float, Temp>()
             val dataList = (eps.items ?: return listOf()).mapNotNull { item ->
                 val tit = item.title ?: return@mapNotNull null
                 (item.episodes ?: return@mapNotNull null).map {
@@ -57,7 +58,7 @@ class Kamyroll : AnimeParser() {
             epMap.map {
                 if (it.value.thumb != null)
                     Episode(
-                        it.key.toString(),
+                        it.key.toString().replace(".0",""),
                         it.value.type,
                         it.value.title,
                         it.value.thumb!!,
@@ -132,19 +133,22 @@ class Kamyroll : AnimeParser() {
             return VideoContainer(vid, subtitle ?: listOf())
         }
 
+        @Serializable
         private data class StreamsResponse(
-            @SerializedName("subtitles") val subtitles: List<Subtitle>? = null,
-            @SerializedName("streams") val streams: List<Stream>? = null
+            @SerialName("subtitles") val subtitles: List<Subtitle>? = null,
+            @SerialName("streams") val streams: List<Stream>? = null
         ) {
+            @Serializable
             data class Stream(
-                @SerializedName("hardsub_locale") val hardsubLocale: String? = null,
-                @SerializedName("url") val url: String? = null
+                @SerialName("hardsub_locale") val hardsubLocale: String? = null,
+                @SerialName("url") val url: String? = null
             )
 
+            @Serializable
             data class Subtitle(
-                @SerializedName("locale") val locale: String? = null,
-                @SerializedName("url") val url: String? = null,
-                @SerializedName("format") val format: String? = null
+                @SerialName("locale") val locale: String? = null,
+                @SerialName("url") val url: String? = null,
+                @SerialName("format") val format: String? = null
             )
         }
     }
@@ -231,95 +235,107 @@ class Kamyroll : AnimeParser() {
             return headers!!
         }
 
+        @Serializable
         private data class AccessToken(
-            @SerializedName("access_token")
+            @SerialName("access_token")
             val accessToken: String,
-            @SerializedName("token_type")
+            @SerialName("token_type")
             val tokenType: String,
         )
     }
 
+    @Serializable
     private data class MovieResponse(
-        @SerializedName("items") val items: List<KamyEpisode>? = null,
+        @SerialName("items") val items: List<KamyEpisode>? = null,
     )
 
+    @Serializable
     private data class EpisodesResponse(
-        @SerializedName("total") val total: Long? = null,
-        @SerializedName("items") val items: List<Item>? = null
+        @SerialName("total") val total: Long? = null,
+        @SerialName("items") val items: List<Item>? = null
     ) {
+        @Serializable
         data class Item(
-            @SerializedName("title") val title: String? = null,
+            @SerialName("title") val title: String? = null,
 
-            @SerializedName("season_number")
+            @SerialName("season_number")
             val seasonNumber: Long? = null,
 
-            @SerializedName("episode_count")
+            @SerialName("episode_count")
             val episodeCount: Long? = null,
 
-            @SerializedName("episodes")
+            @SerialName("episodes")
             val episodes: List<KamyEpisode>? = null
         )
     }
 
+    @Serializable
     data class KamyEpisode(
-        @SerializedName("id") val id: String,
-        @SerializedName("type") val type: String,
+        @SerialName("id") val id: String,
+        @SerialName("type") val type: String,
 
-        @SerializedName("season_number")
-        val seasonNumber: Long? = null,
+        @SerialName("season_number")
+        val seasonNumber: Float? = null,
 
-        @SerializedName("episode") val episode: String? = null,
+        @SerialName("episode") val episode: String? = null,
 
-        @SerializedName("sequence_number")
-        val sequenceNumber: Long,
+        @SerialName("sequence_number")
+        val sequenceNumber: Float,
 
-        @SerializedName("title")
+        @SerialName("title")
         val title: String? = null,
 
-        @SerializedName("description")
+        @SerialName("description")
         val description: String? = null,
 
-        @SerializedName("is_subbed")
+        @SerialName("is_subbed")
         val isSubbed: Boolean? = null,
 
-        @SerializedName("is_dubbed")
+        @SerialName("is_dubbed")
         val isDubbed: Boolean? = null,
 
-        @SerializedName("images") val images: Images? = null,
+        @SerialName("images") val images: Images? = null,
 
-        @SerializedName("duration_ms")
+        @SerialName("duration_ms")
         val duration: Long? = null,
     ) {
+        @Serializable
         data class Images(
-            @SerializedName("thumbnail") val thumbnail: List<Thumbnail>? = null
+            @SerialName("thumbnail") val thumbnail: List<Thumbnail>? = null
         )
 
+        @Serializable
         data class Thumbnail(
-            @SerializedName("width") val width: Long? = null,
-            @SerializedName("height") val height: Long? = null,
-            @SerializedName("source") val source: String? = null
+            @SerialName("width") val width: Long? = null,
+            @SerialName("height") val height: Long? = null,
+            @SerialName("source") val source: String? = null
         )
     }
 
+    @Serializable
     private data class SearchResponse(
-        @SerializedName("total") val total: Long? = null,
-        @SerializedName("items") val items: List<ResponseItem>? = null
+        @SerialName("total") val total: Long? = null,
+        @SerialName("items") val items: List<ResponseItem>? = null
     ) {
-        data class ResponseItem(@SerializedName("items") val items: List<ItemItem>)
+        @Serializable
+        data class ResponseItem(@SerialName("items") val items: List<ItemItem>)
 
+        @Serializable
         data class ItemItem(
-            @SerializedName("id") val id: String,
-            @SerializedName("media_type") val type: String,
-            @SerializedName("title") val title: String,
-            @SerializedName("images") val images: Images? = null,
+            @SerialName("id") val id: String,
+            @SerialName("media_type") val type: String,
+            @SerialName("title") val title: String,
+            @SerialName("images") val images: Images? = null,
         )
 
+        @Serializable
         data class Images(
-            @SerializedName("poster_tall") val posterTall: List<PosterTall>
+            @SerialName("poster_tall") val posterTall: List<PosterTall>
         )
 
+        @Serializable
         data class PosterTall(
-            @SerializedName("source") val source: String,
+            @SerialName("source") val source: String,
         )
     }
 }

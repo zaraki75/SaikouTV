@@ -7,6 +7,7 @@ import ani.saikou.parsers.anime.extractors.VideoVard
 import ani.saikou.parsers.anime.extractors.VizCloud
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.Serializable
 import org.jsoup.Jsoup
 import java.net.URLDecoder.decode
 import java.net.URLEncoder.encode
@@ -98,7 +99,9 @@ class NineAnime : AnimeParser() {
         }
     }
 
+    @Serializable
     private data class Links(val url: String?)
+    @Serializable
     data class Response(val html: String)
 
     private suspend fun getEpisodeLinks(source: String): Links? {
@@ -119,11 +122,7 @@ class NineAnime : AnimeParser() {
             return "https://$host"
         }
 
-        //thanks to @Modder4869 for key
         private const val nineAnimeKey = "c/aUAorINHBLxWTy3uRiPt8J+vjsOheFG1E0q2X9CYwDZlnmd4Kb5M6gSVzfk7pQ"
-
-        //The code below is taken from
-        //https://github.com/jmir1/aniyomi-extensions/blob/master/src/en/nineanime/src/eu/kanade/tachiyomi/animeextension/en/nineanime/NineAnime.kt
 
         private fun getVrf(id: String): String {
             val reversed = encrypt(Companion.encode(id) + "0000000", nineAnimeKey).slice(0..5).reversed()
@@ -161,7 +160,7 @@ class NineAnime : AnimeParser() {
             return output
         }
 
-        fun cipher(key: String, text: String): String {
+        private fun cipher(key: String, text: String): String {
             val arr = IntArray(256) { it }
             var output = ""
             var u = 0
@@ -180,7 +179,7 @@ class NineAnime : AnimeParser() {
                 r = arr[c]
                 arr[c] = arr[u]
                 arr[u] = r
-                output += (text[f].code xor arr[(arr[c] + arr[u]) % 256]).also { println(it) }.toChar()
+                output += (text[f].code xor arr[(arr[c] + arr[u]) % 256]).toChar()
             }
             return output
         }

@@ -3,7 +3,8 @@ package ani.saikou.others
 import ani.saikou.anime.Episode
 import ani.saikou.client
 import ani.saikou.tryWithSuspend
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 object AnimeFillerList {
     suspend fun getFillers(malId: Int): Map<String, Episode>? {
@@ -20,24 +21,25 @@ object AnimeFillerList {
         }
     }
 
+    @Serializable
     data class AnimeFillerListValue (
-        @SerializedName("MAL-id")
+        @SerialName("MAL-id")
         val malID: Int? = null,
 
-        @SerializedName("Anilist-id")
+        @SerialName("Anilist-id")
         val anilistID: Int? = null,
 
-        @SerializedName("episodes")
         val episodes: List<AFLEpisode>? = null
     )
 
+    @Serializable
     data class AFLEpisode (
-        @SerializedName("number") val number: Int? = null,
-        @SerializedName("title") val title: String? = null,
-        @SerializedName("desc") val desc: String? = null,
-        @SerializedName("filler") val filler: String? = null,
-        @SerializedName("filler-bool") val fillerBool : Boolean?=null,
-        @SerializedName("airDate") val airDate: String? = null
+        val number: Int? = null,
+        val title: String? = null,
+        val desc: String? = null,
+        val filler: String? = null,
+        @SerialName("filler-bool") val fillerBool : Boolean?=null,
+        val airDate: String? = null
     )
 }
 

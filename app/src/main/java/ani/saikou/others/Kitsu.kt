@@ -6,7 +6,8 @@ import ani.saikou.client
 import ani.saikou.logger
 import ani.saikou.media.Media
 import ani.saikou.tryWithSuspend
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 object Kitsu {
     private suspend fun getKitsuData(query: String): KitsuResponse? {
@@ -63,43 +64,45 @@ query {
         }.toMap()
     }
 
+    @Serializable
     private data class KitsuResponse(
-        @SerializedName("data") val data: Data? = null
+        @SerialName("data") val data: Data? = null
     ) {
+        @Serializable
         data class Data (
-            @SerializedName("lookupMapping") val lookupMapping: LookupMapping? = null
+            @SerialName("lookupMapping") val lookupMapping: LookupMapping? = null
         )
-
+        @Serializable
         data class LookupMapping (
-            @SerializedName("id") val id: String? = null,
-            @SerializedName("episodes") val episodes: Episodes? = null
+            @SerialName("id") val id: String? = null,
+            @SerialName("episodes") val episodes: Episodes? = null
         )
-
+        @Serializable
         data class Episodes (
-            @SerializedName("nodes") val nodes: List<Node?>? = null
+            @SerialName("nodes") val nodes: List<Node?>? = null
         )
-
+        @Serializable
         data class Node (
-            @SerializedName("number") val num: Long? = null,
-            @SerializedName("titles") val titles: Titles? = null,
-            @SerializedName("description") val description: Description? = null,
-            @SerializedName("thumbnail") val thumbnail: Thumbnail? = null
+            @SerialName("number") val num: Long? = null,
+            @SerialName("titles") val titles: Titles? = null,
+            @SerialName("description") val description: Description? = null,
+            @SerialName("thumbnail") val thumbnail: Thumbnail? = null
         )
-
+        @Serializable
         data class Description (
-            @SerializedName("en") val en: String? = null
+            @SerialName("en") val en: String? = null
         )
-
+        @Serializable
         data class Thumbnail (
-            @SerializedName("original") val original: Original? = null
+            @SerialName("original") val original: Original? = null
         )
-
+        @Serializable
         data class Original (
-            @SerializedName("url") val url: String? = null
+            @SerialName("url") val url: String? = null
         )
-
+        @Serializable
         data class Titles (
-            @SerializedName("canonical") val canonical: String? = null
+            @SerialName("canonical") val canonical: String? = null
         )
 
     }

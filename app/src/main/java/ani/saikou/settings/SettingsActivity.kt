@@ -12,7 +12,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
-import androidx.multidex.BuildConfig
 import ani.saikou.*
 import ani.saikou.databinding.ActivitySettingsBinding
 import ani.saikou.others.CustomBottomDialog
@@ -44,11 +43,9 @@ class SettingsActivity : AppCompatActivity() {
             }
             val info = """
 Saikou Version: ${BuildConfig.VERSION_NAME}
-Brand: $BRAND
-Board: $BOARD
+Device: $BRAND $DEVICE
 Architecture: ${getArch()}
-Bootloader: $BOOTLOADER
-OS Version: $CODENAME $RELEASE (SDK v${SDK_INT})
+OS Version: $CODENAME $RELEASE ($SDK_INT)
             """.trimIndent()
             copyToClipboard(info, false)
             toast("Copied device info")

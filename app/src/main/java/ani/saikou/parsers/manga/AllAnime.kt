@@ -7,7 +7,8 @@ import ani.saikou.parsers.MangaImage
 import ani.saikou.parsers.MangaParser
 import ani.saikou.parsers.ShowResponse
 import ani.saikou.tryWithSuspend
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.text.DecimalFormat
 
@@ -105,57 +106,66 @@ class AllAnime : MangaParser() {
         return null
     }
 
+    @Serializable
     private data class Query(
-        @SerializedName("data") var data: Data?
+        @SerialName("data") var data: Data?
     ) {
+        @Serializable
         data class Data(
-            @SerializedName("manga") val manga: Manga?,
-            @SerializedName("mangas") val mangas: MangasConnection?,
-            @SerializedName("episodeInfos") val episodeInfos: List<EpisodeInfo>?,
-            @SerializedName("chapterPages") val chapterPages: ChapterConnection?,
+            @SerialName("manga") val manga: Manga?,
+            @SerialName("mangas") val mangas: MangasConnection?,
+            @SerialName("episodeInfos") val episodeInfos: List<EpisodeInfo>?,
+            @SerialName("chapterPages") val chapterPages: ChapterConnection?,
         )
 
+        @Serializable
         data class MangasConnection(
-            @SerializedName("edges") val edges: List<Manga>
+            @SerialName("edges") val edges: List<Manga>
         )
 
+        @Serializable
         data class Manga(
-            @SerializedName("_id") val id: String,
-            @SerializedName("name") val name: String,
-            @SerializedName("description") val description: String?,
-            @SerializedName("englishName") val englishName: String?,
-            @SerializedName("nativeName") val nativeName: String?,
-            @SerializedName("thumbnail") val thumbnail: String,
-            @SerializedName("availableChapters") val availableChapters: AvailableChapters,
-            @SerializedName("altNames") val altNames: List<String>?
+            @SerialName("_id") val id: String,
+            @SerialName("name") val name: String,
+            @SerialName("description") val description: String?,
+            @SerialName("englishName") val englishName: String?,
+            @SerialName("nativeName") val nativeName: String?,
+            @SerialName("thumbnail") val thumbnail: String,
+            @SerialName("availableChapters") val availableChapters: AvailableChapters,
+            @SerialName("altNames") val altNames: List<String>?
         )
 
+        @Serializable
         data class AvailableChapters(
-            @SerializedName("sub") val sub: Int,
-            @SerializedName("raw") val raw: Int
+            @SerialName("sub") val sub: Int,
+            @SerialName("raw") val raw: Int
         )
 
+        @Serializable
         data class ChapterConnection(
-            @SerializedName("edges") val edges: List<Chapter>
+            @SerialName("edges") val edges: List<Chapter>
         ) {
+            @Serializable
             data class Chapter(
-                @SerializedName("pictureUrls") val pictureUrls: List<PictureUrl>,
-                @SerializedName("pictureUrlHead") val pictureUrlHead: String?
+                @SerialName("pictureUrls") val pictureUrls: List<PictureUrl>,
+                @SerialName("pictureUrlHead") val pictureUrlHead: String?
             )
 
+            @Serializable
             data class PictureUrl(
-                @SerializedName("num") val num: Int,
-                @SerializedName("url") val url: String
+                @SerialName("num") val num: Int,
+                @SerialName("url") val url: String
 
                 )
         }
     }
 
+    @Serializable
     private data class EpisodeInfo(
         // Episode "numbers" can have decimal values, hence float
-        @SerializedName("episodeIdNum") val episodeIdNum: Float,
-        @SerializedName("notes") val notes: String?,
-        @SerializedName("thumbnails") val thumbnails: List<String>?,
+        @SerialName("episodeIdNum") val episodeIdNum: Float,
+        @SerialName("notes") val notes: String?,
+        @SerialName("thumbnails") val thumbnails: List<String>?,
     )
 
 }

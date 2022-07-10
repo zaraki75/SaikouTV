@@ -1,33 +1,40 @@
 package ani.saikou.anilist.api
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 class Query{
+    @Serializable
     data class Viewer(
-        @SerializedName("data")
+        @SerialName("data")
         val data : Data?
     ){
+        @Serializable
         data class Data(
-            @SerializedName("Viewer")
+            @SerialName("Viewer")
             val user: ani.saikou.anilist.api.User?
         )
     }
+    @Serializable
     data class Media(
-        @SerializedName("data")
+        @SerialName("data")
         val data :  Data?
     ){
+        @Serializable
         data class Data(
-            @SerializedName("Media")
+            @SerialName("Media")
             val media: ani.saikou.anilist.api.Media?
         )
     }
 
+    @Serializable
     data class Page(
-        @SerializedName("data")
+        @SerialName("data")
         val data : Data?
     ){
+        @Serializable
         data class Data(
-            @SerializedName("Page")
+            @SerialName("Page")
             val page : ani.saikou.anilist.api.Page?
         )
     }
@@ -39,22 +46,27 @@ class Query{
 //        )
 //    }
 
+    @Serializable
     data class Character(
-        @SerializedName("data")
+        @SerialName("data")
         val data :  Data?
     ){
+
+        @Serializable
         data class Data(
-            @SerializedName("Character")
+            @SerialName("Character")
             val character: ani.saikou.anilist.api.Character?
         )
     }
 
+    @Serializable
     data class Studio(
-        @SerializedName("data")
+        @SerialName("data")
         val data: Data?
     ){
+        @Serializable
         data class Data(
-            @SerializedName("Studio")
+            @SerialName("Studio")
             val studio: ani.saikou.anilist.api.Studio?
         )
     }
@@ -67,42 +79,50 @@ class Query{
 //        )
 //    }
 
+    @Serializable
     data class MediaListCollection(
-        @SerializedName("data")
+        @SerialName("data")
         val data : Data?
     ){
+        @Serializable
         data class Data(
-            @SerializedName("MediaListCollection")
+            @SerialName("MediaListCollection")
             val mediaListCollection: ani.saikou.anilist.api.MediaListCollection?
         )
     }
 
+    @Serializable
     data class GenreCollection(
-        @SerializedName("data")
+        @SerialName("data")
         val data: Data
     ){
+        @Serializable
         data class Data(
-            @SerializedName("GenreCollection")
+            @SerialName("GenreCollection")
             val genreCollection: List<String>?
         )
     }
 
+    @Serializable
     data class MediaTagCollection(
-        @SerializedName("data")
+        @SerialName("data")
         val data: Data
     ){
+        @Serializable
         data class Data(
-            @SerializedName("MediaTagCollection")
+            @SerialName("MediaTagCollection")
             val mediaTagCollection: List<MediaTag>?
         )
     }
 
+    @Serializable
     data class User(
-        @SerializedName("data")
+        @SerialName("data")
         val data: Data
     ){
+        @Serializable
         data class Data(
-            @SerializedName("User")
+            @SerialName("User")
             val user: ani.saikou.anilist.api.User?
         )
     }

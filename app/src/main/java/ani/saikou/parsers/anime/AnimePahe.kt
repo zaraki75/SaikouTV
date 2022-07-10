@@ -3,7 +3,8 @@ package ani.saikou.parsers.anime
 import ani.saikou.FileUrl
 import ani.saikou.client
 import ani.saikou.parsers.*
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 class AnimePahe : AnimeParser() {
 
@@ -71,31 +72,40 @@ class AnimePahe : AnimeParser() {
     }
 
 
-    private data class SearchQuery(@SerializedName("data") val data: List<SearchQueryData>) {
+    @Serializable
+    private data class SearchQuery(@SerialName("data") val data: List<SearchQueryData>) {
+
+        @Serializable
         data class SearchQueryData(
-            @SerializedName("slug") val slug: String,
-            @SerializedName("title") val title: String,
-            @SerializedName("poster") val poster: String,
-            @SerializedName("session") val session: String,
+            @SerialName("slug") val slug: String,
+            @SerialName("title") val title: String,
+            @SerialName("poster") val poster: String,
+            @SerialName("session") val session: String,
         )
     }
 
+    @Serializable
     private data class ReleaseRouteResponse(
-        @SerializedName("last_page") val last_page: Int,
-        @SerializedName("data") val data: List<ReleaseResponse>?
+        @SerialName("last_page") val last_page: Int,
+        @SerialName("data") val data: List<ReleaseResponse>?
     ) {
+
+        @Serializable
         data class ReleaseResponse(
-            @SerializedName("episode") val episode: Int,
-            @SerializedName("anime_id") val anime_id: Int,
-            @SerializedName("title") val title: String,
-            @SerializedName("snapshot") val snapshot: String,
-            @SerializedName("session") val session: String,
+            @SerialName("episode") val episode: Int,
+            @SerialName("anime_id") val anime_id: Int,
+            @SerialName("title") val title: String,
+            @SerialName("snapshot") val snapshot: String,
+            @SerialName("session") val session: String,
         )
     }
 
-    private data class KwikUrls(@SerializedName("data") val data: List<Map<String, Url>>) {
+    @Serializable
+    private data class KwikUrls(@SerialName("data") val data: List<Map<String, Url>>) {
+
+        @Serializable
         data class Url(
-            @SerializedName("kwik") val kwik: String?,
+            @SerialName("kwik") val kwik: String?,
         )
     }
 
