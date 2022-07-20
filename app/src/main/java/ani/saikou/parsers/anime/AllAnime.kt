@@ -54,7 +54,7 @@ class AllAnime : AnimeParser() {
                 graphqlQuery(
                     variables,
                     "29f49ce1a69320b2ab11a475fd114e5c07b03a7dc683f77dd502ca42b26df232"
-                )?.data?.episode?.sourceUrls?.forEach { source ->
+                ).data?.episode?.sourceUrls?.forEach { source ->
                     // It can be that two different actual sources share the same sourceName
                     var serverName = source.sourceName
                     var sourceNum = 2
@@ -98,7 +98,7 @@ class AllAnime : AnimeParser() {
             val variables =
                 """{"search":{"allowAdult":${Anilist.adult},"query":"$query"},"translationType":"${if (selectDub) "dub" else "sub"}"}"""
             val edges =
-                graphqlQuery(variables, "9343797cc3d9e3f444e2d3b7db9a84d759b816a4d84512ea72d079f85bb96e98")?.data?.shows?.edges
+                graphqlQuery(variables, "d2670e3e27ee109630991152c8484fce5ff5e280c523378001f9a23dc1839068").data?.shows?.edges
             if (!edges.isNullOrEmpty()) {
                 for (show in edges) {
                     val link = """${hostUrl}/anime/${show.id}"""
@@ -125,27 +125,29 @@ class AllAnime : AnimeParser() {
         return responseArray
     }
 
-    private suspend fun graphqlQuery(variables: String, persistHash: String): Query? {
+    private suspend fun graphqlQuery(variables: String, persistHash: String): Query {
         val extensions = """{"persistedQuery":{"version":1,"sha256Hash":"$persistHash"}}"""
-        val graphqlUrl = ("$hostUrl/graphql").toHttpUrl().newBuilder().addQueryParameter("variables", variables)
-            .addQueryParameter("extensions", extensions).build()
-        val headers = mutableMapOf<String, String>()
-        headers["Host"] = "allanime.site"
-        return tryWithSuspend {
-            client.get(graphqlUrl.toString(), headers).parsed()
-        }
+        val graphqlUrl = ("$hostUrl/graphql").toHttpUrl().newBuilder()
+            .addQueryParameter("variables", variables)
+            .addQueryParameter("extensions", extensions)
+            .build().toString()
+        println(variables)
+        return client.get(
+            graphqlUrl,
+            mapOf("Host" to "allanime.site")
+        ).also { println("res : ${it.text}") }.parsed()
     }
 
     private suspend fun getEpisodeInfos(showId: String): List<EpisodeInfo>? {
-        val variables = """{"ids": ["$showId"]}"""
-        val show = graphqlQuery(variables, "73492472c6af978c1ab89f7a177f8471a7cae41dadb95bcb9099d5e5caa2a8f9")?.data?.showsWithIds?.getOrNull(0)
+        val variables = """{"_id": "$showId"}"""
+        val show = graphqlQuery(variables, "bea0b50519809a797e72b9bd5131d453de6bd1841ea7e720765c5af143a0d6f0").data?.show
         if (show != null) {
             val epCount = if (selectDub) show.availableEpisodes.dub else show.availableEpisodes.sub
             val epVariables = """{"showId":"$showId","episodeNumStart":0,"episodeNumEnd":${epCount}}"""
             return graphqlQuery(
                 epVariables,
                 "73d998d209d6d8de325db91ed8f65716dce2a1c5f4df7d304d952fa3f223c9e8"
-            )?.data?.episodeInfos
+            ).data?.episodeInfos
         }
         return null
     }
@@ -216,7 +218,6 @@ class AllAnime : AnimeParser() {
         data class Data(
             @SerialName("shows") val shows: ShowsConnection?,
             @SerialName("show") val show: Show?,
-            @SerialName("showsWithIds") val showsWithIds: List<Show>?,
             @SerialName("episodeInfos") val episodeInfos: List<EpisodeInfo>?,
             @SerialName("episode") val episode: AllAnimeEpisode?,
         )
