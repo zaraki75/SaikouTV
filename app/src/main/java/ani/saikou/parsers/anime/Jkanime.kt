@@ -6,6 +6,7 @@ import ani.saikou.*
 import ani.saikou.parsers.*
 import ani.saikou.parsers.anime.extractors.FPlayer
 import ani.saikou.parsers.anime.extractors.OK
+import kotlinx.serialization.Serializable
 
 
 class Jkanime : AnimeParser() {
@@ -110,7 +111,7 @@ class Jkanime : AnimeParser() {
         }
         return videos
     }
-
+    @Serializable
     data class Nozomi (
         val file: String?
     )
@@ -174,7 +175,7 @@ class JkanimeExtractor(override val server: VideoServer): VideoExtractor() {
 
     }
 }
-
+@Serializable
 data class VideoResponse(
     val url: String,
     val type: String
