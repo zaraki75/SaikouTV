@@ -1,12 +1,16 @@
 <resources>
+
+    <string name="repo">Diegopyl1209/saikouSP</string>
+
     <string name="app_name">Saikou</string>
     <string name="slogan">The Best Anime, Manga &amp; Novel app for Android.</string>
+
     <string name="login">Login</string>
     <string name="logout">Logout</string>
 
     <string name="discord">https://discord.gg/5TXAWTU5qr</string>
     <string name="telegram">https://telegram.me/saikou_app</string>
-    <string name="github">https://github.com/saikou-app/saikou</string>
+    <string name="github">https://github.com/Diegopyl1209/saikouSP</string>
 
     <string name="home">Home</string>
     <string name="anime">Anime</string>
@@ -48,7 +52,6 @@
 
     <string name="get_recommendations">Watch/Read some Anime or Manga to get Recommendations</string>
     <string name="empty">All caught up, when New?</string>
-    <string name="title_activity_media">MediaActivity</string>
     <string name="action_settings">Settings</string>
 
     <string name="add">Add to List</string>
@@ -104,7 +107,7 @@
         Couldn\'t find anything X( \n
         Try another source.
     </string>
-    <string name="not_supported">%1$s are not supported yet!</string>
+    <string name="not_supported">%1$s is not supported yet!</string>
     <string name="server_selector">Select Server</string>
     <string name="auto_select_server">Auto Selecting Server</string>
     <string name="make_default">Make Default</string>
@@ -143,11 +146,11 @@
     <string name="disclaimer">Disclaimer</string>
     <string name="full_disclaimer">
          - Saikou only scrapes links from various websites and makes it easier for users to find anime and manga.
-        \n - Saikou or any of its developer/staff doesn\'t host any of the contents found inside Saikou. Any and all images and anime/manga information found in the app are taken from various public APIs (AniList, MyAnimeList, Kitsu).
-        \n - Furthermore, all of the anime/manga links found in Saikou are taken from various 3rd party anime hosting websites.
-        \n - Saikou or it\'s owners aren\'t liable for any misuse of any of the contents found inside or outside of the app and cannot be held accountable for the distribution of any of the contents found inside the app.
-        \n - By using Saikou, you comply to the fact that the developer of the app is not responsible for any of the contents found in the app; nonetheless they may or may not be from their legitimate sources.
-        \n - If the internet infringement issues are involved, please contact the source website. The developer does not assume any legal responsibility.
+        \n\n - Saikou or any of its developer/staff doesn\'t host any of the contents found inside Saikou. Any and all images and anime/manga information found in the app are taken from various public APIs (AniList, MyAnimeList, Kitsu).
+        \n\n - Furthermore, all of the anime/manga links found in Saikou are taken from various 3rd party anime hosting websites.
+        \n\n - Saikou or it\'s owners aren\'t liable for any misuse of any of the contents found inside or outside of the app and cannot be held accountable for the distribution of any of the contents found inside the app.
+        \n\n - By using Saikou, you comply to the fact that the developer of the app is not responsible for any of the contents found in the app; nonetheless they may or may not be from their legitimate sources.
+        \n\n - If the internet infringement issues are involved, please contact the source website. The developer does not assume any legal responsibility.
     </string>
     <string name="version_current">Version %1$s</string>
     <string-array name="tips">
@@ -168,6 +171,7 @@
 
     <string name="video">Video</string>
     <string name="video_info">Show Video Info</string>
+    <string name="source_info">Show Source Name</string>
     <string name="video_info_info">Shows what the Resolution of the current video playing, useful for <b>\"Multi Quality\"</b> servers.</string>
     <string name="default_quality">Auto Quality Selection</string>
     <string name="height">Height</string>
@@ -175,6 +179,16 @@
     <string name="default_quality_info">Automatically uses the closest quality provided by default, ONLY applied for \"Multi Quality\" Servers. Auto changes upon playing a video.</string>
     <string name="default_playback_speed">Default Playback Speed - %1$s</string>
     <string name="cursed_speeds">Cursed Speeds</string>
+    <string name="resize_mode_button">Set default resize mode</string>
+    <string name="subtitles">Subtitles</string>
+    <string name="primary_sub_color_select">Set Subtitle Color</string>
+    <string name="secondary_sub_color_select">Set Subtitle Outline Color</string>
+    <string name="secondary_sub_outline_type_select">Set Outline Type</string>
+    <string name="sub_color_info"><b>Note:</b> Changing Subtitle formatting only work with Zoro!</string>
+    <string name="sub_font_select">Subtitle Font</string>
+    <string name="subtitle_font_size">Subtitle Size</string>
+    <string name="subtitle_language_button">Subtitle Language</string>
+    <string name="subtitle_language_info"><b>Note:</b> The Subtitle-language can only be changed for <b>Kamyroll</b>. The change will restart the app.</string>
 
     <string name="auto">Auto</string>
     <string name="auto_play_next_episode">Autoplay Next Episode</string>
@@ -183,12 +197,15 @@
     <string name="auto_skip_fillers_info">Skips filler episodes when going to next Episode.</string>
 
     <string name="update_progress">Update Progress</string>
-    <string name="ask_update_progress">Ask for each Anime \"Individually\"</string>
-    <string name="ask_update_progress_info">Turning off will always automatically update progress when episode is watched.</string>
+    <string name="ask_update_progress_anime">Ask for each Anime \"Individually\"</string>
+    <string name="ask_update_progress_manga">Ask for each Manga \"Individually\"</string>
+    <string name="ask_update_progress_info_ep">Turning off will always automatically update progress when the episode is watched.</string>
+    <string name="ask_update_progress_info_chap">Turning off will always automatically update progress when the chapter is read.</string>
     <string name="ask_update_progress_hentai">Update Progress for Hentai</string>
-    <string name="very_bold">Very Bold of You sar</string>
-    <string name="complete_percentage">Watch Update Percentage</string>
-    <string name="complete_percentage_info">The percentage at which your Anilist progress should be updated after watching an episode. \nThis also sets the \% for when to preload links for the next episode.</string>
+    <string name="ask_update_progress_doujin">Update Progress for Doujins</string>
+    <string name="very_bold">very bold of you sar</string>
+    <string name="watch_complete_percentage">Watch Update Percentage</string>
+    <string name="watch_complete_percentage_info">The percentage at which your Anilist progress should be updated after watching an episode. \nThis also sets the \% for when to preload links for the next episode.</string>
 
     <string name="behaviour">Behaviour</string>
     <string name="always_continue">Always Continue from where you Left</string>
@@ -231,4 +248,29 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="current_page">Current Page</string>
+    <string name="dubbed">Dubbed</string>
+    <string name="prefer_dub">Prefer Dubbed Anime</string>
+    <string name="none">None</string>
+    <string name="selected_dns">Selected DNS</string>
+    <string name="dns_info">Change, If your ISP blocks any Source</string>
+    <string name="keep_screen_on">Keep Screen On</string>
+    <string name="layout">Layout</string>
+    <string name="spaced_pages">Spaced Pages</string>
+    <string name="direction">Direction</string>
+
+    <string name="general">General</string>
+    <string name="show_system_bars">Show Status &amp; Navigation Bars</string>
+    <string name="auto_detect_webtoon">Auto Detect Webtoon</string>
+    <string name="auto_detect_webtoon_info">If the Manga is not from Japan, the reader will default to Webtoon Reader Settings</string>
+    <string name="default_settings">Default Settings</string>
+    <string name="horizontal_scroll_bar">Horizontal Scroll Bar</string>
+    <string name="dual_page">Dual Page</string>
+    <string name="dual_page_info">Shows 2 Images in 1 page, will look weird if the images aren\'t the same size</string>
+    <string name="true_colors">True Colors</string>
+    <string name="true_colors_info">(32-bit color Mode) Reduces Banding on the images, may affect performance.</string>
+    <string name="image_rotation">Image Rotation</string>
+    <string name="sort_by_title">Sort by Title</string>
+    <string name="sort_by_last_updated">Sort by Last Updated</string>
+    <string name="sort_by_score">Sort by Score</string>
+
 </resources>

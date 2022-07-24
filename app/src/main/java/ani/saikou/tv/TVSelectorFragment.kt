@@ -21,6 +21,8 @@ import ani.saikou.databinding.ItemUrlBinding
 import ani.saikou.databinding.TvItemUrlBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
+import ani.saikou.parsers.Video
+import ani.saikou.parsers.VideoExtractor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,7 +31,7 @@ import java.text.DecimalFormat
 
 class TVSelectorFragment(var media: Media, val fromPlayer: Boolean): VerticalGridSupportFragment() {
 
-    lateinit var links: MutableMap<String, Episode.StreamLinks?>
+    lateinit var links: MutableList<VideoExtractor>
     private var selected:String?=null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,18 +60,18 @@ class TVSelectorFragment(var media: Media, val fromPlayer: Boolean): VerticalGri
         }
     }
 
-    fun setStreamLinks(streamLinks: MutableMap<String, Episode.StreamLinks?>) {
-        links = streamLinks
+    fun setStreamLinks(streamLinks: MutableList<VideoExtractor>?) {
+        streamLinks?.let {
+            links = it
+        }
         if(gridPresenter == null)
             return
 
-        val linkList = mutableListOf<Episode.StreamLinks>()
+        val linkList = mutableListOf<StreamItem>()
 
-        links.keys.toList().forEach { key ->
-            links[key]?.let { links ->
-                links.quality.forEach {
-                    linkList.add(Episode.StreamLinks(links.server, listOf(it), links.headers, links.subtitles))
-                }
+        links.forEach { extractor ->
+            extractor.videos.forEachIndexed { index, video ->
+                linkList.add(StreamItem(extractor.server.name, video, index)) //Episode.StreamLinks(links.server, listOf(it), links.headers, links.subtitles)
             }
         }
 
@@ -80,11 +82,11 @@ class TVSelectorFragment(var media: Media, val fromPlayer: Boolean): VerticalGri
     }
 
     fun startExoplayer(media: Media){
-        requireActivity().supportFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVMediaPlayer(media)).commit()
+        requireActivity().supportFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_detail_fragment, TVMediaPlayer(media)).commit()
     }
 
     fun cancel() {
-        media!!.selected!!.stream = null
+        media!!.selected?.server = null
         requireActivity().supportFragmentManager.popBackStack()
     }
 
@@ -92,6 +94,8 @@ class TVSelectorFragment(var media: Media, val fromPlayer: Boolean): VerticalGri
         fun newInstance(media: Media, fromPlayer: Boolean = false): TVSelectorFragment =
             TVSelectorFragment(media, fromPlayer)
     }
+
+    private data class StreamItem(val server: String, val video: Video, val videoIndex: Int)
 
     private inner class StreamAdapter : Presenter() {
 
@@ -101,15 +105,15 @@ class TVSelectorFragment(var media: Media, val fromPlayer: Boolean): VerticalGri
 
 
         override fun onBindViewHolder(viewHolder: ViewHolder?, item: Any?) {
-            val stream = item as Episode.StreamLinks
+            val stream = item as StreamItem
             val server = stream.server
-            val quality = stream.quality.first()
-            val qualityPos = links.values.find { it?.server == server }?.quality?.indexOfFirst { it.quality == quality.quality }
+            val quality = if(stream.video.quality!=null) "${stream.video.quality}p" else "Default Quality"
+            //val qualityPos = links.values.find { it?.server == server }?.quality?.indexOfFirst { it.quality == quality.quality }
             val holder = viewHolder as? UrlViewHolder
-            if(server!=null && holder != null && qualityPos != null) {
+            if(server!=null && holder != null ) { //&& qualityPos != null) {
                 holder.view.setOnClickListener {
-                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedStream = server
-                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedQuality = qualityPos
+                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedServer = server
+                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedVideo = stream.videoIndex
                     if (fromPlayer)
                         parentFragmentManager.popBackStack()
                     else
@@ -117,12 +121,11 @@ class TVSelectorFragment(var media: Media, val fromPlayer: Boolean): VerticalGri
                 }
 
                 val binding = holder.binding
-                val url = quality
                 binding.serverName.text = stream.server
-                binding.urlQuality.text = url.quality
-                binding.urlNote.text = url.note?:""
-                binding.urlNote.visibility = if(url.note!=null) View.VISIBLE else View.GONE
-                if(url.quality!="Multi Quality") {
+                binding.urlQuality.text = quality
+                binding.urlNote.text = stream.video.extraNote?:""
+                binding.urlNote.visibility = if(stream.video.extraNote!=null) View.VISIBLE else View.GONE
+                /*if(url.quality!="Multi Quality") {
                     binding.urlSize.visibility = if(url.size!=null) View.VISIBLE else View.GONE
                     binding.urlSize.text = (if (url.note!=null) " : " else "")+ DecimalFormat("#.##").format(url.size?:0).toString()+" MB"
 
@@ -133,7 +136,7 @@ class TVSelectorFragment(var media: Media, val fromPlayer: Boolean): VerticalGri
                         media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedQuality = qualityPos
                         download(requireActivity(),media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!,media!!.userPreferredName)
                     }*/
-                }
+                }*/
             }
         }
 

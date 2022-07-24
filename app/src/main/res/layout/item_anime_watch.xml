@@ -35,6 +35,19 @@
             app:iconTint="@color/bg_white"
             tools:ignore="TextContrastCheck" />
 
+        <TextView
+            android:id="@+id/animeSourceTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:ellipsize="marquee"
+            android:fontFamily="@font/poppins_bold"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            tools:text="@string/get_recommendations" />
+
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
@@ -63,36 +76,59 @@
                 tools:ignore="LabelFor,TextContrastCheck,DuplicateSpeakableTextCheck" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <TextView
-            android:id="@+id/animeSourceTitle"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp"
-            android:ellipsize="marquee"
-            android:fontFamily="@font/poppins_bold"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:singleLine="true"
-            tools:text="@string/get_recommendations" />
-
-        <TextView
-            android:id="@+id/animeSourceSearch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginTop="-12dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="-12dp"
             android:layout_marginEnd="-12dp"
-            android:layout_marginBottom="8dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:fontFamily="@font/poppins_bold"
-            android:padding="12dp"
-            android:text="@string/wrong"
-            android:textAlignment="textEnd"
-            android:textColor="?attr/colorSecondary"
-            tools:ignore="TextContrastCheck" />
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/animeSourceDubbedCont"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/animeSourceDubbed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:padding="12dp"
+                    app:cornerRadius="0dp"
+                    app:showText="false"
+                    app:thumbTint="@color/button_switch_track" />
+
+                <TextView
+                    android:id="@+id/animeSourceDubbedText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="-8dp"
+                    android:elegantTextHeight="true"
+                    android:ellipsize="marquee"
+                    android:fontFamily="@font/poppins_bold"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:singleLine="true"
+                    tools:text="Dubbed" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/animeSourceSearch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="@font/poppins_bold"
+                android:padding="12dp"
+                android:text="@string/wrong"
+                android:textAlignment="textEnd"
+                android:textColor="?attr/colorSecondary"
+                tools:ignore="TextContrastCheck" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

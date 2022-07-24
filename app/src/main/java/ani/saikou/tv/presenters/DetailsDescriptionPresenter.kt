@@ -16,7 +16,7 @@ class DetailsDescriptionPresenter: Presenter() {
     override fun onBindViewHolder(viewHolder: ViewHolder?, item: Any?) {
         (viewHolder as AnimeDetailViewHolder)?.let { vh ->
             (item as? Media)?.let {
-                vh.binding.title.text = it.getMainName()
+                vh.binding.title.text = it.name
                 vh.binding.altTitle.text = it.nameRomaji
                 vh.binding.status.text = it.status
                 val desc = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

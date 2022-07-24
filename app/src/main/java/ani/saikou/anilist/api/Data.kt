@@ -1,90 +1,172 @@
 package ani.saikou.anilist.api
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class Query(
-    var data : Data?
-)
+class Query{
+    @Serializable
+    data class Viewer(
+        @SerialName("data")
+        val data : Data?
+    ){
+        @Serializable
+        data class Data(
+            @SerialName("Viewer")
+            val user: ani.saikou.anilist.api.User?
+        )
+    }
+    @Serializable
+    data class Media(
+        @SerialName("data")
+        val data :  Data?
+    ){
+        @Serializable
+        data class Data(
+            @SerialName("Media")
+            val media: ani.saikou.anilist.api.Media?
+        )
+    }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class Data(
-    // Page
-    var Page: Page?,
+    @Serializable
+    data class Page(
+        @SerialName("data")
+        val data : Data?
+    ){
+        @Serializable
+        data class Data(
+            @SerialName("Page")
+            val page : ani.saikou.anilist.api.Page?
+        )
+    }
+//    data class AiringSchedule(
+//        val data : Data?
+//    ){
+//        data class Data(
+//            val AiringSchedule: ani.saikou.anilist.api.AiringSchedule?
+//        )
+//    }
 
-    // Media query
-    var Media: Media?,
+    @Serializable
+    data class Character(
+        @SerialName("data")
+        val data :  Data?
+    ){
 
-    // Airing schedule query
-    var AiringSchedule: AiringSchedule?,
+        @Serializable
+        data class Data(
+            @SerialName("Character")
+            val character: ani.saikou.anilist.api.Character?
+        )
+    }
 
-    // Character query
-    var Character: Character?,
+    @Serializable
+    data class Studio(
+        @SerialName("data")
+        val data: Data?
+    ){
+        @Serializable
+        data class Data(
+            @SerialName("Studio")
+            val studio: ani.saikou.anilist.api.Studio?
+        )
+    }
 
-    // Staff query
-    var Staff: Staff?,
+//    data class MediaList(
+//        val data: Data?
+//    ){
+//        data class Data(
+//            val MediaList: ani.saikou.anilist.api.MediaList?
+//        )
+//    }
 
-    // Media list query
-    var MediaList: MediaList?,
+    @Serializable
+    data class MediaListCollection(
+        @SerialName("data")
+        val data : Data?
+    ){
+        @Serializable
+        data class Data(
+            @SerialName("MediaListCollection")
+            val mediaListCollection: ani.saikou.anilist.api.MediaListCollection?
+        )
+    }
 
-    // Media list collection query, provides list pre-grouped by status & custom lists. User ID and Media Type arguments required.
-    var MediaListCollection: MediaListCollection?,
+    @Serializable
+    data class GenreCollection(
+        @SerialName("data")
+        val data: Data
+    ){
+        @Serializable
+        data class Data(
+            @SerialName("GenreCollection")
+            val genreCollection: List<String>?
+        )
+    }
 
-    // Collection of all the possible media genres
-    var GenreCollection: List<String>?,
+    @Serializable
+    data class MediaTagCollection(
+        @SerialName("data")
+        val data: Data
+    ){
+        @Serializable
+        data class Data(
+            @SerialName("MediaTagCollection")
+            val mediaTagCollection: List<MediaTag>?
+        )
+    }
 
-    // Collection of all the possible media tags
-    var MediaTagCollection: List<MediaTag>?,
+    @Serializable
+    data class User(
+        @SerialName("data")
+        val data: Data
+    ){
+        @Serializable
+        data class Data(
+            @SerialName("User")
+            val user: ani.saikou.anilist.api.User?
+        )
+    }
+}
 
-    // User query
-    var User: User?,
-
-    // Get the currently authenticated user
-    var Viewer: User?,
-
-    // Studio query
-    var Studio: Studio?,
-
-    // Follow query
-    var Following: User?,
-
-    // Follow query
-    var Follower: User?,
-
-    // Thread query
-    var Thread: Thread?,
-
-    // Recommendation query
-    var Recommendation: Recommendation?,
-
-    // Like query
-    var Like: User?,
+//data class WhaData(
+//    val Studio: Studio?,
+//
+//    // Follow query
+//    val Following: User?,
+//
+//    // Follow query
+//    val Follower: User?,
+//
+//    // Thread query
+//    val Thread: Thread?,
+//
+//    // Recommendation query
+//    val Recommendation: Recommendation?,
+//
+//    // Like query
+//    val Like: User?,
 
 //    // Review query
-//    var Review: Review?,
+//    val Review: Review?,
 //
 //    // Activity query
-//    var Activity: ActivityUnion?,
+//    val Activity: ActivityUnion?,
 //
 //    // Activity reply query
-//    var ActivityReply: ActivityReply?,
+//    val ActivityReply: ActivityReply?,
 
 //    // Comment query
-//    var ThreadComment: List<ThreadComment>?,
+//    val ThreadComment: List<ThreadComment>?,
 
 //    // Notification query
-//    var Notification: NotificationUnion?,
+//    val Notification: NotificationUnion?,
 
 //    // Media Trend query
-//    var MediaTrend: MediaTrend?,
+//    val MediaTrend: MediaTrend?,
 
 //    // Provide AniList markdown to be converted to html (Requires auth)
-//    var Markdown: ParsedMarkdown?,
+//    val Markdown: ParsedMarkdown?,
 
 //    // SiteStatistics: SiteStatistics
-//    var AniChartUser: AniChartUser?,
-
-    // ExternalLinkSource collection query
-    var ExternalLinkSourceCollection: List<MediaExternalLink>?,
-
-)
+//    val AniChartUser: AniChartUser?,
+//)

@@ -8,6 +8,7 @@ import android.util.DisplayMetrics
 import android.view.*
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.leanback.app.VideoSupportFragment
 import androidx.leanback.app.VideoSupportFragmentGlueHost
@@ -19,10 +20,11 @@ import ani.saikou.*
 import ani.saikou.anilist.Anilist
 import ani.saikou.anime.Episode
 import ani.saikou.anime.VideoCache
-import ani.saikou.anime.source.AnimeSources
-import ani.saikou.anime.source.HAnimeSources
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
+import ani.saikou.parsers.Subtitle
+import ani.saikou.parsers.Video
+import ani.saikou.parsers.VideoExtractor
 import ani.saikou.settings.PlayerSettings
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.tv.utils.VideoPlayerGlue
@@ -68,7 +70,11 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
     private lateinit var episodes: MutableMap<String,Episode>
     private lateinit var playerGlue : VideoPlayerGlue
 
-    private val model: MediaDetailsViewModel by viewModels()
+    private var extractor: VideoExtractor? = null
+    private var video: Video? = null
+    private var subtitle: Subtitle? = null
+
+    private val model: MediaDetailsViewModel by activityViewModels()
     private var episodeLength: Float = 0f
 
     private var settings = PlayerSettings()
@@ -108,16 +114,25 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
                     media.selected = model.loadSelected(media)
                     model.setMedia(media)
 
-                    val stream = episode.streamLinks[episode.selectedStream]
-                    val url = stream?.quality?.get(episode.selectedQuality)
-                    if(url == null) {
+                    lifecycleScope.launch(Dispatchers.IO){
+                        extractor?.onVideoStopped(video)
+                    }
+
+                    extractor = episode.extractors?.find { it.server.name == episode.selectedServer }
+                    video = extractor?.videos?.getOrNull(episode.selectedVideo)
+                    subtitle = extractor?.subtitles?.find { it.language == "English" }
+
+                    lifecycleScope.launch(Dispatchers.IO){
+                        extractor?.onVideoPlayed(video)
+                    }
+                    if(extractor == null) {
                         if (linkSelector == null) {
-                            episode.streamLinks?.let {
-                                if(it.size > 0) {
+                            episode.extractors?.let { extractors ->
+                                if(extractors.size > 0) {
                                     linkSelector = TVSelectorFragment.newInstance(media, true)
-                                    linkSelector?.setStreamLinks(it)
+                                    linkSelector?.setStreamLinks(extractors)
                                     parentFragmentManager.beginTransaction().addToBackStack(null)
-                                        .replace(R.id.main_tv_fragment, linkSelector!!)
+                                        .replace(R.id.main_detail_fragment, linkSelector!!)
                                         .commit()
                                 }
                             }
@@ -126,12 +141,11 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
                         if(!isInitialized) {
                             episodeArr = episodes.keys.toList()
                             currentEpisodeIndex = episodeArr.indexOf(media.anime!!.selectedEpisode!!)
-                            mediaItem = MediaItem.Builder().setUri(url?.url).build()
+                            mediaItem = MediaItem.Builder().setUri(video?.url?.url).build()
                             initVideo()
                         }
                     }
-                    }
-                //}
+                }
             }
         }
 
@@ -162,8 +176,6 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
         model.setMedia(media)
         episodes = media.anime!!.episodes!!
 
-        model.watchAnimeWatchSources = if(media.isAdult) HAnimeSources else AnimeSources
-
         //Set Episode, to invoke getEpisode() at Start
         model.setEpisode(episodes[media.anime!!.selectedEpisode!!]!!,"invoke")
         episodeArr = episodes.keys.toList()
@@ -173,7 +185,6 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
     fun initVideo() {
         val simpleCache = VideoCache.getInstance(requireContext())
 
-        val stream = episode.streamLinks[episode.selectedStream]?: return
         originalAspectRatio = null
         val httpClient = OkHttpClient().newBuilder().ignoreAllSSLErrors().apply {
             followRedirects(true)
@@ -181,10 +192,12 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
         }.build()
         val dataSourceFactory = DataSource.Factory {
             val dataSource: HttpDataSource = OkHttpDataSource.Factory(httpClient).createDataSource()
-            if(stream.headers!=null)
-                stream.headers.forEach {
-                    dataSource.setRequestProperty(it.key, it.value)
-                }
+            defaultHeaders.forEach {
+                dataSource.setRequestProperty(it.key, it.value)
+            }
+            video?.url?.headers?.forEach {
+                dataSource.setRequestProperty(it.key, it.value)
+            }
             dataSource
         }
         cacheFactory = CacheDataSource.Factory().apply {
@@ -241,9 +254,9 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
             }
         })
 
-        playerGlue = VideoPlayerGlue(requireActivity(), LeanbackPlayerAdapter(requireActivity(), exoPlayer, 16), episode.streamLinks[episode.selectedStream]!!.quality[episode.selectedQuality]!!.quality == "Multi Quality",this)
+        playerGlue = VideoPlayerGlue(requireActivity(), LeanbackPlayerAdapter(requireActivity(), exoPlayer, 16), false,this)
         playerGlue.host = VideoSupportFragmentGlueHost(this)
-        playerGlue.title = media.getMainName()
+        playerGlue.title = media.name
 
         if(!episode.title.isNullOrEmpty())
             playerGlue.subtitle = "Episode "+ episode.number + ": "+ episode.title
@@ -282,28 +295,16 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
         }
     }
 
-    override fun onTracksInfoChanged(tracksInfo: TracksInfo) {
-        playerGlue.shouldShowQualityAction = tracksInfo.trackGroupInfos.size > 2
-        //playerGlue.drawSecondaryActions()
+    override fun onTracksChanged(tracks: Tracks) {
+        super.onTracksChanged(tracks)
+        playerGlue.shouldShowQualityAction = tracks.groups.size > 2
     }
 
     // QUALITY SELECTOR
-    private fun initPopupQuality(trackSelector: DefaultTrackSelector): Dialog? {
-        val mappedTrackInfo = trackSelector.currentMappedTrackInfo ?: return null
-        var videoRenderer: Int? = null
-
-        fun isVideoRenderer(mappedTrackInfo: MappingTrackSelector.MappedTrackInfo, rendererIndex: Int): Boolean {
-            if (mappedTrackInfo.getTrackGroups(rendererIndex).length == 0) return false
-            return C.TRACK_TYPE_VIDEO == mappedTrackInfo.getRendererType(rendererIndex)
-        }
-
-        for (i in 0 until mappedTrackInfo.rendererCount)
-            if (isVideoRenderer(mappedTrackInfo, i))
-                videoRenderer = i
-
+    private fun initPopupQuality(): Dialog {
         val trackSelectionDialogBuilder =
-            TrackSelectionDialogBuilder(requireContext(), "Available Qualities", trackSelector, videoRenderer ?: return null)
-        trackSelectionDialogBuilder.setTheme(R.style.QualitySelectorDialogTheme)
+            TrackSelectionDialogBuilder(requireContext(), "Available Qualities", exoPlayer, C.TRACK_TYPE_VIDEO)
+        trackSelectionDialogBuilder.setTheme(R.style.DialogTheme)
         trackSelectionDialogBuilder.setTrackNameProvider {
             if (it.frameRate > 0f) it.height.toString() + "p" else it.height.toString() + "p (fps : N/A)"
         }
@@ -318,7 +319,7 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
 
     override fun onQuality() {
         if(playerGlue.shouldShowQualityAction)
-            initPopupQuality(trackSelector)?.show()
+            initPopupQuality().show()
     }
 
     override fun onPrevious() {
@@ -384,21 +385,34 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
                 exoPlayer.currentPosition,
                 requireActivity()
             )
-            val prev = episodeArr[currentEpisodeIndex]
+            val selected = media.selected
             episodeLength= 0f
             media.anime!!.selectedEpisode = episodeArr[index]
             model.setMedia(media)
             model.epChanged.postValue(false)
-            model.setEpisode(episodes[media.anime!!.selectedEpisode!!]!!,"change")
-
-            media.anime?.episodes?.get(media.anime!!.selectedEpisode!!)?.let{ ep ->
-                media.selected = model.loadSelected(media)
-                lifecycleScope.launch {
-                    media.selected?.let {
-                        model.loadEpisodeStreams(ep, it.source)
-                    }
+            selected?.let {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    if (media.selected!!.server != null)
+                        model.loadEpisodeSingleVideo(
+                            episodes[media.anime!!.selectedEpisode!!]!!,
+                            it,
+                            true
+                        )
+                    else
+                        model.loadEpisodeVideos(
+                            episodes[media.anime!!.selectedEpisode!!]!!,
+                            it.source,
+                            true
+                        )
                 }
             }
+
+            //model.setEpisode(episodes[media.anime!!.selectedEpisode!!]!!,"change")
+
+            /*media.anime?.episodes?.get(media.anime!!.selectedEpisode!!)?.let{ ep ->
+                media.selected = model.loadSelected(media)
+                model.setMedia(media)
+            }*/
         }
     }
 

@@ -261,16 +261,59 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginBottom="16dp"
                 android:layout_marginStart="-16dp"
                 android:layout_marginEnd="-16dp"
+                android:layout_marginBottom="16dp"
                 android:background="?android:attr/listDivider" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:alpha="0.58"
+                android:fontFamily="@font/poppins_bold"
+                android:text="@string/selected_dns" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:boxCornerRadiusBottomEnd="8dp"
+                app:boxCornerRadiusBottomStart="8dp"
+                app:boxCornerRadiusTopEnd="8dp"
+                app:boxCornerRadiusTopStart="8dp"
+                app:hintAnimationEnabled="true"
+                app:startIconDrawable="@drawable/ic_round_dns_24">
+
+                <AutoCompleteTextView
+                    android:id="@+id/settingsDns"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/poppins_bold"
+                    android:freezesText="false"
+                    android:inputType="none"
+                    android:padding="8dp"
+                    android:text="@string/none"
+                    android:textAllCaps="true"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:textSize="14sp"
+                    tools:ignore="LabelFor,TextContrastCheck,DuplicateSpeakableTextCheck" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:alpha="0.58"
+                android:fontFamily="@font/poppins_family"
+                android:text="@string/dns_info"
+                android:textSize="14sp" />
 
             <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/settingsDownloadInSd"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:checked="false"
                 android:drawableStart="@drawable/ic_round_sd_card_24"
                 android:drawablePadding="16dp"
@@ -365,10 +408,28 @@
                     tools:ignore="LabelFor,TextContrastCheck,DuplicateSpeakableTextCheck" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/settingsPreferDub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:drawableStart="@drawable/ic_round_audiotrack_24"
+                android:drawablePadding="16dp"
+                android:elegantTextHeight="true"
+                android:fontFamily="@font/poppins_bold"
+                android:minHeight="64dp"
+                android:text="@string/prefer_dub"
+                android:textAlignment="viewStart"
+                android:textColor="@color/bg_opp"
+                app:cornerRadius="0dp"
+                app:drawableTint="?attr/colorPrimary"
+                app:showText="false"
+                app:thumbTint="@color/button_switch_track" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="8dp"
                 android:gravity="center"
                 android:orientation="horizontal">
 

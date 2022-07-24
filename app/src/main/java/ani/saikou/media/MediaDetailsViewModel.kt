@@ -7,21 +7,19 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import ani.saikou.*
 import ani.saikou.anilist.Anilist
 import ani.saikou.anime.Episode
 import ani.saikou.anime.SelectorDialogFragment
-import ani.saikou.anime.source.WatchSources
-import ani.saikou.loadData
-import ani.saikou.logger
 import ani.saikou.manga.MangaChapter
-import ani.saikou.manga.source.MangaReadSources
 import ani.saikou.others.AnimeFillerList
 import ani.saikou.others.Kitsu
-import ani.saikou.saveData
-import ani.saikou.toastString
+import ani.saikou.parsers.*
+import com.bumptech.glide.load.Transformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import java.io.File
 
 class MediaDetailsViewModel : ViewModel() {
     val scrolledToTop = MutableLiveData(true)
@@ -33,9 +31,10 @@ class MediaDetailsViewModel : ViewModel() {
     fun loadSelected(media: Media): Selected {
         return loadData<Selected>("${media.id}-select") ?: Selected().let {
             it.source = if (media.isAdult) 0 else when (media.anime != null) {
-                true -> loadData("settings_default_anime_source") ?: 0
-                else -> loadData("settings_default_manga_source") ?: 0
+                true -> loadData("settings_def_anime_source") ?: 0
+                else -> loadData("settings_def_manga_source") ?: 0
             }
+            it.preferDub = loadData("settings_prefer_dub") ?: false
             it
         }
     }
@@ -57,47 +56,94 @@ class MediaDetailsViewModel : ViewModel() {
         media.postValue(m)
     }
 
-    val sources = MutableLiveData<ArrayList<Source>?>(null)
+    val responses = MutableLiveData<List<ShowResponse>?>(null)
+
 
     //Anime
-    private val kitsuEpisodes: MutableLiveData<MutableMap<String, Episode>> = MutableLiveData<MutableMap<String, Episode>>(null)
-    fun getKitsuEpisodes(): LiveData<MutableMap<String, Episode>> = kitsuEpisodes
+    private val kitsuEpisodes: MutableLiveData<Map<String, Episode>> = MutableLiveData<Map<String, Episode>>(null)
+    fun getKitsuEpisodes(): LiveData<Map<String, Episode>> = kitsuEpisodes
     suspend fun loadKitsuEpisodes(s: Media) {
-        if (kitsuEpisodes.value == null) kitsuEpisodes.postValue(Kitsu.getKitsuEpisodesDetails(s))
+        tryWithSuspend {
+            if (kitsuEpisodes.value == null) kitsuEpisodes.postValue(Kitsu.getKitsuEpisodesDetails(s))
+        }
     }
 
-    private val fillerEpisodes: MutableLiveData<MutableMap<String, Episode>> = MutableLiveData<MutableMap<String, Episode>>(null)
-    fun getFillerEpisodes(): LiveData<MutableMap<String, Episode>> = fillerEpisodes
+    private val fillerEpisodes: MutableLiveData<Map<String, Episode>> = MutableLiveData<Map<String, Episode>>(null)
+    fun getFillerEpisodes(): LiveData<Map<String, Episode>> = fillerEpisodes
     suspend fun loadFillerEpisodes(s: Media) {
-        if (fillerEpisodes.value == null) fillerEpisodes.postValue(AnimeFillerList.getFillers(s.idMAL ?: return))
+        tryWithSuspend {
+            if (fillerEpisodes.value == null) fillerEpisodes.postValue(
+                AnimeFillerList.getFillers(
+                    s.idMAL ?: return@tryWithSuspend
+                )
+            )
+        }
     }
 
-    var watchAnimeWatchSources: WatchSources? = null
+    var watchSources: WatchSources? = null
 
-    private val episodes: MutableLiveData<MutableMap<Int, MutableMap<String, Episode>>> =
-        MutableLiveData<MutableMap<Int, MutableMap<String, Episode>>>(null)
+    private val episodes = MutableLiveData<MutableMap<Int, MutableMap<String, Episode>>>(null)
     private val epsLoaded = mutableMapOf<Int, MutableMap<String, Episode>>()
     fun getEpisodes(): LiveData<MutableMap<Int, MutableMap<String, Episode>>> = episodes
     suspend fun loadEpisodes(media: Media, i: Int) {
         if (!epsLoaded.containsKey(i)) {
-            epsLoaded[i] = watchAnimeWatchSources?.get(i)!!.getEpisodes(media)
+            epsLoaded[i] = watchSources?.loadEpisodesFromMedia(i, media) ?: return
         }
         episodes.postValue(epsLoaded)
     }
 
-    suspend fun overrideEpisodes(i: Int, source: Source, id: Int) {
-        watchAnimeWatchSources?.get(i)!!.saveSource(source, id)
-        epsLoaded[i] = watchAnimeWatchSources?.get(i)!!.getSlugEpisodes(source.link)
+    suspend fun forceLoadEpisode(media: Media, i: Int) {
+        epsLoaded[i] = watchSources?.loadEpisodesFromMedia(i, media) ?: return
         episodes.postValue(epsLoaded)
     }
 
-    private var episode: MutableLiveData<Episode?> = MutableLiveData<Episode?>(null)
+    suspend fun overrideEpisodes(i: Int, source: ShowResponse, id: Int) {
+        watchSources?.saveResponse(i, id, source)
+        epsLoaded[i] = watchSources?.loadEpisodes(i, source.link, source.extra) ?: return
+        episodes.postValue(epsLoaded)
+    }
+
+    private var episode = MutableLiveData<Episode?>(null)
     fun getEpisode(): LiveData<Episode?> = episode
-    suspend fun loadEpisodeStreams(ep: Episode, i: Int, post: Boolean = true) {
-        if (!ep.allStreams || ep.streamLinks.isNullOrEmpty() || !ep.saveStreams) {
-            watchAnimeWatchSources?.get(i)?.getStreams(ep)?.apply {
-                this.allStreams = true
+
+    suspend fun loadEpisodeVideos(ep: Episode, i: Int, post: Boolean = true) {
+        val link = ep.link ?: return
+        if (!ep.allStreams || ep.extractors.isNullOrEmpty()) {
+            val list = mutableListOf<VideoExtractor>()
+            ep.extractors = list
+            watchSources?.get(i)?.apply {
+                if (!post && post == allowsPreloading) return@apply
+                loadByVideoServers(link, ep.extra) {
+                    if (it.videos.isNotEmpty()) {
+                        list.add(it)
+                        ep.extractorCallback?.invoke(it)
+                    }
+                }
+                ep.extractorCallback = null
+                ep.allStreams = true
             }
+        }
+
+
+        if (post) {
+            episode.postValue(ep)
+            MainScope().launch(Dispatchers.Main) {
+                episode.value = null
+            }
+        }
+    }
+
+    suspend fun loadEpisodeSingleVideo(ep: Episode, selected: Selected, post: Boolean = true): Boolean {
+        if (ep.extractors.isNullOrEmpty()) {
+
+            val server = selected.server ?: return false
+            val link = ep.link ?: return false
+
+            ep.extractors = mutableListOf(watchSources?.get(selected.source)?.let {
+                if (!post && post == it.allowsPreloading) null
+                else it.loadSingleVideoServer(server, link, ep.extra)
+            } ?: return false)
+            ep.allStreams = false
         }
         if (post) {
             episode.postValue(ep)
@@ -105,24 +151,7 @@ class MediaDetailsViewModel : ViewModel() {
                 episode.value = null
             }
         }
-
-    }
-
-    suspend fun loadEpisodeStream(ep: Episode, selected: Selected, post: Boolean = true): Boolean {
-        return if (selected.stream != null) {
-            if (ep.streamLinks.isNullOrEmpty() || !ep.saveStreams) {
-                watchAnimeWatchSources?.get(selected.source)?.getStream(ep, selected.stream!!)?.apply {
-                    this.allStreams = false
-                }
-            }
-            if (post) {
-                episode.postValue(ep)
-                MainScope().launch(Dispatchers.Main) {
-                    episode.value = null
-                }
-            }
-            true
-        } else false
+        return true
     }
 
     fun setEpisode(ep: Episode?, who: String) {
@@ -144,7 +173,7 @@ class MediaDetailsViewModel : ViewModel() {
                     return@post
                 }
                 media.selected = this.loadSelected(media)
-                val selector = SelectorDialogFragment.newInstance(media.selected!!.stream, launch, prevEp)
+                val selector = SelectorDialogFragment.newInstance(media.selected!!.server, launch, prevEp)
                 selector.show(manager, "dialog")
             }
         }
@@ -152,30 +181,40 @@ class MediaDetailsViewModel : ViewModel() {
 
 
     //Manga
-    var readMangaReadSources: MangaReadSources? = null
+    var mangaReadSources: MangaReadSources? = null
 
-    private val mangaChapters: MutableLiveData<MutableMap<Int, MutableMap<String, MangaChapter>>> =
-        MutableLiveData<MutableMap<Int, MutableMap<String, MangaChapter>>>(null)
+    private val mangaChapters = MutableLiveData<MutableMap<Int, MutableMap<String, MangaChapter>>>(null)
     private val mangaLoaded = mutableMapOf<Int, MutableMap<String, MangaChapter>>()
     fun getMangaChapters(): LiveData<MutableMap<Int, MutableMap<String, MangaChapter>>> = mangaChapters
     suspend fun loadMangaChapters(media: Media, i: Int) {
         logger("Loading Manga Chapters : $mangaLoaded")
-        if (!mangaLoaded.containsKey(i)) {
-            mangaLoaded[i] = readMangaReadSources?.get(i)!!.getChapters(media)
+        if (!mangaLoaded.containsKey(i)) tryWithSuspend {
+            mangaLoaded[i] = mangaReadSources?.loadChaptersFromMedia(i, media) ?: return@tryWithSuspend
         }
         mangaChapters.postValue(mangaLoaded)
     }
 
-    suspend fun overrideMangaChapters(i: Int, source: Source, id: Int) {
-        readMangaReadSources?.get(i)!!.saveSource(source, id)
-        mangaLoaded[i] = readMangaReadSources?.get(i)!!.getLinkChapters(source.link)
+    suspend fun overrideMangaChapters(i: Int, source: ShowResponse, id: Int) {
+        mangaReadSources?.saveResponse(i, id, source)
+        tryWithSuspend {
+            mangaLoaded[i] = mangaReadSources?.loadChapters(i, source) ?: return@tryWithSuspend
+        }
         mangaChapters.postValue(mangaLoaded)
     }
 
     private val mangaChapter = MutableLiveData<MangaChapter?>(null)
     fun getMangaChapter(): LiveData<MangaChapter?> = mangaChapter
-    suspend fun loadMangaChapterImages(chapter: MangaChapter, selected: Selected) {
-        readMangaReadSources?.get(selected.source)?.getChapter(chapter)
-        mangaChapter.postValue(chapter)
+    suspend fun loadMangaChapterImages(chapter: MangaChapter, selected: Selected, post: Boolean = true) {
+        tryWithSuspend {
+            if (chapter.images == null) {
+                chapter.images = mangaReadSources?.get(selected.source)?.loadImages(chapter.link) ?: return@tryWithSuspend
+            }
+        }
+        if (post) mangaChapter.postValue(chapter)
+    }
+
+    fun loadTransformation(mangaImage: MangaImage, source: Int): Transformation<File>? {
+        return if (mangaImage.useTransformation) mangaReadSources?.get(source)?.getTransformation() else null
+
     }
 }

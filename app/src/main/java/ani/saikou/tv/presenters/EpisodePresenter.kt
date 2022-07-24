@@ -43,7 +43,7 @@ class EpisodePresenter(
                         binding.itemEpisodeDesc.maxLines = 3
                 }
 
-                Glide.with(binding.itemEpisodeImage).load(ep.thumb?:media.cover).override(400,0).into(binding.itemEpisodeImage)
+                Glide.with(binding.itemEpisodeImage).load(ep.thumb?.url?:media.cover).override(400,0).into(binding.itemEpisodeImage)
                 binding.itemEpisodeNumber.text = ep.number
                 if(ep.filler){
                     binding.itemEpisodeFiller.visibility = View.VISIBLE

@@ -13,17 +13,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
-import ani.saikou.anime.source.AnimeParser
-import ani.saikou.anime.source.AnimeSources
-import ani.saikou.anime.source.HAnimeSources
-import ani.saikou.anime.source.WatchSources
+import ani.saikou.*
 import ani.saikou.databinding.FragmentAnimeWatchBinding
-import ani.saikou.dp
-import ani.saikou.loadData
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
-import ani.saikou.navBarHeight
-import ani.saikou.saveData
+import ani.saikou.parsers.AnimeParser
+import ani.saikou.parsers.AnimeSources
+import ani.saikou.parsers.HAnimeSources
 import ani.saikou.settings.PlayerSettings
 import ani.saikou.settings.UserInterfaceSettings
 import kotlinx.coroutines.Dispatchers
@@ -34,8 +30,7 @@ import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-open class AnimeWatchFragment : Fragment() {
-    open val watchSources: WatchSources = AnimeSources
+class AnimeWatchFragment : Fragment() {
     private var _binding: FragmentAnimeWatchBinding? = null
     private val binding get() = _binding!!
     private val model: MediaDetailsViewModel by activityViewModels()
@@ -117,9 +112,9 @@ open class AnimeWatchFragment : Fragment() {
                 binding.mediaInfoProgressBar.visibility = progress
 
                 if (!loaded) {
-                    model.watchAnimeWatchSources = if (media.isAdult) HAnimeSources else AnimeSources
+                    model.watchSources = if (media.isAdult) HAnimeSources else AnimeSources
 
-                    headerAdapter = AnimeWatchAdapter(it, this, watchSources)
+                    headerAdapter = AnimeWatchAdapter(it, this, model.watchSources!!)
                     episodeAdapter = EpisodeAdapter(style ?: uiSettings.animeDefaultView, media, this)
 
                     binding.animeSourceRecycler.adapter = ConcatAdapter(headerAdapter, episodeAdapter)
@@ -144,17 +139,15 @@ open class AnimeWatchFragment : Fragment() {
                     episodes.forEach { (i, episode) ->
                         if (media.anime?.fillerEpisodes != null) {
                             if (media.anime!!.fillerEpisodes!!.containsKey(i)) {
-                                episode.title = media.anime!!.fillerEpisodes!![i]?.title
-                                episode.filler =
-                                    media.anime!!.fillerEpisodes!![i]?.filler ?: false
+                                episode.title = episode.title ?: media.anime!!.fillerEpisodes!![i]?.title
+                                episode.filler = media.anime!!.fillerEpisodes!![i]?.filler ?: false
                             }
                         }
                         if (media.anime?.kitsuEpisodes != null) {
                             if (media.anime!!.kitsuEpisodes!!.containsKey(i)) {
-                                episode.desc = media.anime!!.kitsuEpisodes!![i]?.desc
-                                episode.title = media.anime!!.kitsuEpisodes!![i]?.title
-                                episode.thumb =
-                                    media.anime!!.kitsuEpisodes!![i]?.thumb ?: media.cover
+                                episode.desc = episode.desc ?: media.anime!!.kitsuEpisodes!![i]?.desc
+                                episode.title = episode.title ?: media.anime!!.kitsuEpisodes!![i]?.title
+                                episode.thumb = episode.thumb?: media.anime!!.kitsuEpisodes!![i]?.thumb ?: FileUrl[media.cover]
                             }
                         }
                     }
@@ -205,11 +198,21 @@ open class AnimeWatchFragment : Fragment() {
         media.anime?.episodes = null
         reload()
         val selected = model.loadSelected(media)
+        model.watchSources?.get(selected.source)?.showUserTextListener = null
         selected.source = i
-        selected.stream = null
+        selected.server = null
         model.saveSelected(media.id, selected, requireActivity())
         media.selected = selected
-        return watchSources[i]!!
+        return model.watchSources?.get(i)!!
+    }
+
+    fun onDubClicked(checked:Boolean){
+        val selected = model.loadSelected(media)
+        model.watchSources?.get(selected.source)?.selectDub = checked
+        selected.preferDub = checked
+        model.saveSelected(media.id, selected, requireActivity())
+        media.selected = selected
+        lifecycleScope.launch(Dispatchers.IO) { model.forceLoadEpisode(media, selected.source) }
     }
 
     fun loadEpisodes(i: Int) {
@@ -260,7 +263,7 @@ open class AnimeWatchFragment : Fragment() {
     }
 
     override fun onDestroy() {
-        watchSources.flushLive()
+        model.watchSources?.flushText()
         super.onDestroy()
     }
 

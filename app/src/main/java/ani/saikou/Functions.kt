@@ -42,8 +42,8 @@ import ani.saikou.anilist.api.FuzzyDate
 import ani.saikou.anime.Episode
 import ani.saikou.databinding.ItemCountDownBinding
 import ani.saikou.media.Media
-import ani.saikou.media.Source
-import ani.saikou.others.logError
+import ani.saikou.others.DisabledReports
+import ani.saikou.parsers.ShowResponse
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.tv.TVMainActivity
 import com.bumptech.glide.Glide
@@ -56,9 +56,10 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.internal.ViewUtils
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import nl.joery.animatedbottombar.AnimatedBottomBar
 import java.io.*
@@ -97,8 +98,8 @@ fun logger(e: Any?, print: Boolean = true) {
         println(e)
 }
 
-fun saveData(fileName: String, data: Any?, activity: Activity? = null) {
-    try {
+fun saveData(fileName: String, data: Any?, activity: Context? = null) {
+    tryWith {
         val a = activity ?: currActivity()
         if (a != null) {
             val fos: FileOutputStream = a.openFileOutput(fileName, Context.MODE_PRIVATE)
@@ -107,13 +108,11 @@ fun saveData(fileName: String, data: Any?, activity: Activity? = null) {
             os.close()
             fos.close()
         }
-    } catch (e: Exception) {
-        logError(e)
     }
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T> loadData(fileName: String, activity: Activity? = null, toast: Boolean = true): T? {
+fun <T> loadData(fileName: String, activity: Context? = null, toast: Boolean = true): T? {
     val a = activity ?: currActivity()
     try {
         if (a?.fileList() != null)
@@ -127,6 +126,7 @@ fun <T> loadData(fileName: String, activity: Activity? = null, toast: Boolean = 
             }
     } catch (e: Exception) {
         if (toast) toastString("Error loading data $fileName")
+        e.printStackTrace()
     }
     return null
 }
@@ -143,9 +143,9 @@ fun initActivity(a: Activity) {
     uiSettings.darkMode.apply {
         AppCompatDelegate.setDefaultNightMode(
             when (this) {
-                true -> AppCompatDelegate.MODE_NIGHT_YES
+                true  -> AppCompatDelegate.MODE_NIGHT_YES
                 false -> AppCompatDelegate.MODE_NIGHT_NO
-                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                else  -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
             }
         )
     }
@@ -208,34 +208,32 @@ open class BottomSheetDialogFragment : BottomSheetDialogFragment() {
 
 fun isOnline(context: Context): Boolean {
     val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    try {
+    return tryWith {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-            if (capabilities != null) {
+            return@tryWith if (capabilities != null) {
                 when {
                     capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
                         logger("Device on Cellular")
-                        return true
+                        true
                     }
                     capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)     -> {
                         logger("Device on Wifi")
-                        return true
+                        true
                     }
                     capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
                         logger("Device on Ethernet, TF man?")
-                        return true
+                        true
                     }
                     capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)      -> {
                         logger("Device on VPN")
-                        return true
+                        true
                     }
+                    else                                                              -> false
                 }
-            }
-        } else return true
-    } catch (e: Exception) {
-        logError(e)
-    }
-    return false
+            } else false
+        } else true
+    } ?: false
 }
 
 fun startMainActivity(activity: Activity) {
@@ -288,40 +286,6 @@ class InputFilterMinMax(private val min: Double, private val max: Double, privat
     }
 }
 
-suspend fun getMalMedia(media: Media): Media {
-    try {
-        if (media.anime != null) {
-            val res = httpClient.get("https://myanimelist.net/anime/${media.idMAL}").document
-            val a = res.select(".title-english").text()
-            media.nameMAL = if (a != "") a else res.select(".title-name").text()
-            media.typeMAL =
-                if (res.select("div.spaceit_pad > a").isNotEmpty()) res.select("div.spaceit_pad > a")[0].text() else null
-            media.anime.op = arrayListOf()
-            res.select(".opnening > table > tbody > tr").forEach {
-                val text = it.text()
-                if (!text.contains("Help improve our database"))
-                    media.anime.op.add(it.text())
-            }
-            media.anime.ed = arrayListOf()
-            res.select(".ending > table > tbody > tr").forEach {
-                val text = it.text()
-                if (!text.contains("Help improve our database"))
-                    media.anime.ed.add(it.text())
-            }
-
-        } else {
-            val res = httpClient.get("https://myanimelist.net/manga/${media.idMAL}").document
-            val b = res.select(".title-english").text()
-            val a = res.select(".h1-title").text().removeSuffix(b)
-            media.nameMAL = a
-            media.typeMAL =
-                if (res.select("div.spaceit_pad > a").isNotEmpty()) res.select("div.spaceit_pad > a")[0].text() else null
-        }
-    } catch (e: Exception) {
-        logError(e)
-    }
-    return media
-}
 
 class ZoomOutPageTransformer(private val uiSettings: UserInterfaceSettings) : ViewPager2.PageTransformer {
     override fun transformPage(view: View, position: Float) {
@@ -423,7 +387,7 @@ fun levenshtein(lhs: CharSequence, rhs: CharSequence): Int {
     return cost[lhsLength - 1]
 }
 
-fun ArrayList<Source>.sortByTitle(string: String) {
+fun MutableList<ShowResponse>.sortByTitle(string: String) {
     val temp: MutableMap<Int, Int> = mutableMapOf()
     for (i in 0 until this.size) {
         temp[i] = levenshtein(string.lowercase(), this[i].name.lowercase())
@@ -434,8 +398,7 @@ fun ArrayList<Source>.sortByTitle(string: String) {
     for (i in b.indices.reversed()) {
         if (b[i] > 18 && i < a.size) a.removeAt(i)
     }
-    val temp2 = arrayListOf<Source>()
-    temp2.addAll(this)
+    val temp2 = this.toMutableList()
     this.clear()
     for (i in a.indices) {
         this.add(temp2[a[i]])
@@ -448,13 +411,17 @@ fun String.findBetween(a: String, b: String): String? {
     return if (end != -1) this.subSequence(start, end).removePrefix(a).removeSuffix(b).toString() else null
 }
 
-fun ImageView.loadImage(url: String?, size: Int = 0, headers: MutableMap<String, String>? = null) {
+fun ImageView.loadImage(url: String?, size: Int = 0) {
     if (!url.isNullOrEmpty()) {
-        try {
-            val glideUrl = GlideUrl(url) { headers ?: mutableMapOf() }
-            Glide.with(this).load(glideUrl).transition(withCrossFade()).override(size).into(this)
-        } catch (e: Exception) {
-            logger(e.localizedMessage)
+        loadImage(FileUrl(url),size)
+    }
+}
+
+fun ImageView.loadImage(file: FileUrl?, size: Int = 0) {
+    if (file?.url?.isNotEmpty() == true) {
+        tryWith {
+            val glideUrl = GlideUrl(file.url) { file.headers }
+            Glide.with(this.context).load(glideUrl).transition(withCrossFade()).override(size).into(this)
         }
     }
 }
@@ -482,13 +449,14 @@ fun View.setSafeOnClickListener(onSafeClick: (View) -> Unit) {
     setOnClickListener(safeClickListener)
 }
 
-suspend fun getSize(url: String, headers: MutableMap<String, String>? = null): Double? {
-    return try {
-        httpClient.head(url,headers?: mapOf(), timeout = 1000).size?.toDouble()?.div(1048576)
-    } catch (e: Exception) {
-        logger(e)
-        null
+suspend fun getSize(file: FileUrl): Double? {
+    return tryWithSuspend {
+        client.head(file.url, file.headers, timeout = 1000).size?.toDouble()?.div(1024*1024)
     }
+}
+
+suspend fun getSize(file: String): Double? {
+    return getSize(FileUrl(file))
 }
 
 
@@ -507,12 +475,16 @@ class App : MultiDexApplication() {
     override fun onCreate() {
         super.onCreate()
         registerActivityLifecycleCallbacks(mFTActivityLifecycleCallbacks)
+
+        Firebase.crashlytics.setCrashlyticsCollectionEnabled(!DisabledReports)
+        initializeNetwork(baseContext)
+
     }
 
     companion object {
         private var instance: App? = null
         fun currentActivity(): Activity? {
-            return instance!!.mFTActivityLifecycleCallbacks.currentActivity
+            return instance?.mFTActivityLifecycleCallbacks?.currentActivity
         }
     }
 }
@@ -520,7 +492,9 @@ class App : MultiDexApplication() {
 class FTActivityLifecycleCallbacks : Application.ActivityLifecycleCallbacks {
     var currentActivity: Activity? = null
     override fun onActivityCreated(p0: Activity, p1: Bundle?) {}
-    override fun onActivityStarted(p0: Activity) {}
+    override fun onActivityStarted(p0: Activity) {
+        currentActivity = p0
+    }
     override fun onActivityResumed(p0: Activity) {
         currentActivity = p0
     }
@@ -549,7 +523,7 @@ class ExtendedTimeBar(
     }
 }
 
-abstract class DoubleClickListener : GestureDetector.SimpleOnGestureListener() {
+abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
     private var timer: Timer? = null //at class level;
     private val delay: Long = 200
 
@@ -604,7 +578,7 @@ abstract class DoubleClickListener : GestureDetector.SimpleOnGestureListener() {
     }
 
     open fun onSingleClick(event: MotionEvent?) {}
-    abstract fun onDoubleClick(event: MotionEvent?)
+    open fun onDoubleClick(event: MotionEvent?) {}
     open fun onScrollYClick(y: Float) {}
     open fun onLongClick(event: MotionEvent?) {}
 }
@@ -614,29 +588,27 @@ fun View.circularReveal(x: Int, y: Int, time: Long) {
 }
 
 fun openLinkInBrowser(link: String?) {
-    try {
+    tryWith {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
         currActivity()?.startActivity(intent)
-    } catch (e: Exception) {
-        logError(e)
     }
 }
 
 fun download(activity: Activity, episode: Episode, animeTitle: String) {
     val manager = activity.getSystemService(AppCompatActivity.DOWNLOAD_SERVICE) as DownloadManager
-    val stream = episode.streamLinks[episode.selectedStream] ?: return
-    val uri =
-        if (stream.quality.size > episode.selectedQuality) Uri.parse(stream.quality[episode.selectedQuality].url) else return
+    val extractor = episode.extractors?.find { it.server.name == episode.selectedServer } ?: return
+    val video =
+        if (extractor.videos.size > episode.selectedVideo) extractor.videos[episode.selectedVideo] else return
     val regex = "[\\\\/:*?\"<>|]".toRegex()
     val aTitle = animeTitle.replace(regex, "")
-    val request: DownloadManager.Request = DownloadManager.Request(uri)
+    val request: DownloadManager.Request = DownloadManager.Request(Uri.parse(video.url.url))
 
-    stream.headers?.forEach {
+    video.url.headers.forEach {
         request.addRequestHeader(it.key, it.value)
     }
 
     val title = "Episode ${episode.number}${if (episode.title != null) " - ${episode.title}" else ""}".replace(regex, "")
-
+    val name = "$title${if (video.size != null) "(${video.size}p)" else ""}.mp4"
     CoroutineScope(Dispatchers.IO).launch {
         try {
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
@@ -646,13 +618,13 @@ fun download(activity: Activity, episode: Episode, animeTitle: String) {
                 val parentDirectory = arrayOfFiles[1].toString() + "/Anime/${aTitle}/"
                 val direct = File(parentDirectory)
                 if (!direct.exists()) direct.mkdirs()
-                request.setDestinationUri(Uri.fromFile(File("$parentDirectory$title (${stream.quality[episode.selectedQuality].quality}).mp4")))
+                request.setDestinationUri(Uri.fromFile(File("$parentDirectory$name")))
             } else {
                 val direct = File(Environment.DIRECTORY_DOWNLOADS + "/Saikou/Anime/${aTitle}/")
                 if (!direct.exists()) direct.mkdirs()
                 request.setDestinationInExternalPublicDir(
                     Environment.DIRECTORY_DOWNLOADS,
-                    "/Saikou/Anime/${aTitle}/$title (${stream.quality[episode.selectedQuality].quality}).mp4"
+                    "/Saikou/Anime/${aTitle}/$name"
                 )
             }
             request.setTitle("$title:$aTitle")
@@ -668,7 +640,7 @@ fun download(activity: Activity, episode: Episode, animeTitle: String) {
 
 fun updateAnilistProgress(media: Media, number: String) {
     if (Anilist.userid != null) {
-        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             val a = number.toFloatOrNull()?.roundToInt()
             if (a != media.userProgress) {
                 Anilist.mutation.editList(

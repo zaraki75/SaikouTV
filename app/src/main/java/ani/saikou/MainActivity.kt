@@ -2,6 +2,7 @@ package ani.saikou
 
 import android.animation.ObjectAnimator
 import android.content.Intent
+import android.graphics.drawable.Animatable
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -22,10 +23,11 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistHomeViewModel
 import ani.saikou.databinding.ActivityMainBinding
+import ani.saikou.databinding.SplashScreenBinding
 import ani.saikou.media.MediaDetailsActivity
-import ani.saikou.others.DisableFirebase
 import ani.saikou.settings.UserInterfaceSettings
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nl.joery.animatedbottombar.AnimatedBottomBar
@@ -45,30 +47,46 @@ class MainActivity : AppCompatActivity() {
         if(isOnTV(this))
             startMainActivity(this)
 
-        DisableFirebase.handle()
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         binding.root.isMotionEventSplittingEnabled = false
 
+        lifecycleScope.launchWhenStarted {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                val splash = SplashScreenBinding.inflate(layoutInflater)
+                binding.root.addView(splash.root)
+                (splash.splashImage.drawable as Animatable).start()
+                launch {
+                    delay(2000)
+                    ObjectAnimator.ofFloat(
+                        splash.root,
+                        View.TRANSLATION_Y,
+                        0f,
+                        -splash.root.height.toFloat()
+                    ).apply {
+                        interpolator = AnticipateInterpolator()
+                        duration = 200L
+                        doOnEnd { binding.root.removeView(splash.root) }
+                        start()
+                    }
+                }
+            }
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             splashScreen.setOnExitAnimationListener { splashScreenView ->
-                // Create your custom animation.
-                val slideUp = ObjectAnimator.ofFloat(
+                ObjectAnimator.ofFloat(
                     splashScreenView,
                     View.TRANSLATION_Y,
                     0f,
                     -splashScreenView.height.toFloat()
-                )
-                slideUp.interpolator = AnticipateInterpolator()
-                slideUp.duration = 200L
-
-                // Call SplashScreenView.remove at the end of your custom animation.
-                slideUp.doOnEnd { splashScreenView.remove() }
-
-                // Run your animation.
-                slideUp.start()
+                ).apply {
+                    interpolator = AnticipateInterpolator()
+                    duration = 200L
+                    doOnEnd { splashScreenView.remove() }
+                    start()
+                }
             }
         }
 
@@ -158,7 +176,6 @@ class MainActivity : AppCompatActivity() {
         }
         this.doubleBackToExitPressedOnce = true
         toastString("Please perform BACK again to Exit")
-
         Handler(Looper.getMainLooper()).postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
     }
 

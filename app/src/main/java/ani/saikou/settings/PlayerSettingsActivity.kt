@@ -1,6 +1,7 @@
 package ani.saikou.settings
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -11,6 +12,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
 import ani.saikou.*
 import ani.saikou.databinding.ActivityPlayerSettingsBinding
+import com.google.android.material.snackbar.Snackbar
 import kotlin.math.roundToInt
 
 
@@ -177,5 +179,88 @@ class PlayerSettingsActivity : AppCompatActivity() {
             saveData(player, settings)
         }
 
+        val resizeModes = arrayOf("Original", "Zoom", "Stretch")
+        val resizeDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Default Resize Mode")
+        binding.playerResizeMode.setOnClickListener {
+            resizeDialog.setSingleChoiceItems(resizeModes, settings.resize) { dialog, count ->
+                settings.resize = count
+                saveData(player, settings)
+                dialog.dismiss()
+            }.show()
+        }
+        val colorsPrimary = arrayOf("Black","Dark Gray","Gray","Light Gray","White","Red","Yellow","Green","Cyan","Blue","Magenta")
+        val primaryColorDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Primary Sub Color")
+        binding.videoSubColorPrimary.setOnClickListener {
+            primaryColorDialog.setSingleChoiceItems(colorsPrimary, settings.primaryColor) { dialog, count1 ->
+                settings.primaryColor = count1
+                saveData(player, settings)
+                dialog.dismiss()
+            }.show()
+        }
+        val colorsSecondary = arrayOf("Black","Dark Gray","Gray","Light Gray","White","Red","Yellow","Green","Cyan","Blue","Magenta","Transparent")
+        val secondaryColorDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Outline Sub Color")
+        binding.videoSubColorSecondary.setOnClickListener {
+            secondaryColorDialog.setSingleChoiceItems(colorsSecondary, settings.secondaryColor) { dialog, count2 ->
+                settings.secondaryColor = count2
+                saveData(player, settings)
+                dialog.dismiss()
+            }.show()
+        }
+        val typesOutline = arrayOf("Outline","Shine","Drop Shadow","None")
+        val outlineDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Outline Type")
+        binding.videoSubOutline.setOnClickListener {
+            outlineDialog.setSingleChoiceItems(typesOutline, settings.outline) { dialog, count3 ->
+                settings.outline = count3
+                saveData(player, settings)
+                dialog.dismiss()
+            }.show()
+        }
+        val fonts = arrayOf("Poppins Semi Bold","Poppins Bold","Poppins","Poppins Thin")
+        val fontDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Subtitle Font")
+        binding.videoSubFont.setOnClickListener {
+            fontDialog.setSingleChoiceItems(fonts, settings.font) { dialog, count4 ->
+                settings.font = count4
+                saveData(player, settings)
+                dialog.dismiss()
+            }.show()
+        }
+        fun restartApp() {
+        Snackbar.make(
+            binding.root,
+            R.string.restart_app, Snackbar.LENGTH_SHORT
+        ).apply {
+            val mainIntent =
+                Intent.makeRestartActivityTask(context.packageManager.getLaunchIntentForPackage(context.packageName)!!.component)
+            setAction("Do it!") {
+                context.startActivity(mainIntent)
+                Runtime.getRuntime().exit(0)
+            }
+            show()
+        }
+    }
+        val locales = arrayOf("[en-US] English", "[es-ES] Spanish", "[pt-PT] Portuguese", "[pt-BR] Brazilian Portuguese", "[fr-FR] French", "[de-DE] German", "[ar-ME] Arabic", "[ru-RU] Russian")
+        val localeDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Subtitle Language")
+        binding.subLang.setOnClickListener {
+            localeDialog.setSingleChoiceItems(locales, settings.locale) { dialog, count5 ->
+                settings.locale = count5
+                saveData(player, settings)
+                dialog.dismiss()
+                restartApp()
+            }.show()
+        }
+        binding.subtitleFontSize.setText(settings.fontSize.toString())
+        binding.subtitleFontSize.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                binding.subtitleFontSize.clearFocus()
+            }
+            false
+        }
+        binding.subtitleFontSize.addTextChangedListener {
+            val size = binding.subtitleFontSize.text.toString().toIntOrNull()
+            if (size != null) {
+                settings.fontSize = size
+                saveData(player, settings)
+            }
+        }
     }
 }

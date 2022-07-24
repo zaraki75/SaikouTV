@@ -40,10 +40,10 @@ class MediaAdaptor(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (type) {
-            0 -> MediaViewHolder(ItemMediaCompactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-            1 -> MediaLargeViewHolder(ItemMediaLargeBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-            2 -> MediaPageViewHolder(ItemMediaPageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-            3 -> MediaPageSmallViewHolder(
+            0    -> MediaViewHolder(ItemMediaCompactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            1    -> MediaLargeViewHolder(ItemMediaLargeBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            2    -> MediaPageViewHolder(ItemMediaPageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            3    -> MediaPageSmallViewHolder(
                 ItemMediaPageSmallBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
@@ -61,7 +61,7 @@ class MediaAdaptor(
             0 -> {
                 val b = (holder as MediaViewHolder).binding
                 setAnimation(activity, b.root, uiSettings)
-                val media = mediaList?.get(position)
+                val media = mediaList?.getOrNull(position)
                 if (media != null) {
                     b.itemCompactImage.loadImage(media.cover)
                     b.itemCompactOngoing.visibility = if (media.status == "RELEASING") View.VISIBLE else View.GONE
@@ -273,7 +273,7 @@ class MediaAdaptor(
     }
 
     fun clicked(position: Int) {
-        if (mediaList?.size ?: 0 > position && position != -1) {
+        if ((mediaList?.size ?: 0) > position && position != -1) {
             val media = mediaList?.get(position)
             ContextCompat.startActivity(
                 activity,
@@ -286,7 +286,7 @@ class MediaAdaptor(
     }
 
     fun longClicked(position: Int): Boolean {
-        if (mediaList?.size ?: 0 > position && position != -1) {
+        if ((mediaList?.size ?: 0) > position && position != -1) {
             val media = mediaList?.get(position) ?: return false
             if (activity.supportFragmentManager.findFragmentByTag("list") == null) {
                 MediaListDialogSmallFragment.newInstance(media).show(activity.supportFragmentManager, "list")

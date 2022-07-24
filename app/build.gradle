@@ -4,6 +4,7 @@ plugins {
     id 'com.google.firebase.crashlytics'
     id 'kotlin-android'
     id 'kotlin-kapt'
+    id 'kotlinx-serialization'
 }
 
 android {
@@ -13,12 +14,15 @@ android {
         applicationId "ani.saikou"
         minSdk 21
         targetSdk 31
-        versionCode 10
-        versionName "1.0.8"
+        versionCode 11
+        versionName "1.0.9"
         signingConfig signingConfigs.debug
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix ".beta"
+        }
         release {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -27,47 +31,56 @@ android {
         viewBinding true
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = '1.8'
-        freeCompilerArgs = ['-Xjvm-default=compatibility']
+        jvmTarget = '11'
     }
+    namespace 'ani.saikou'
 }
 
 dependencies {
 //    Core
-    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation "androidx.browser:browser:1.4.0"
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.fragment:fragment-ktx:1.4.1'
+    implementation "androidx.core:core-ktx:1.8.0"
+    implementation 'androidx.fragment:fragment-ktx:1.5.0'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.multidex:multidex:2.0.1'
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.7.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
-    implementation 'com.github.Blatzar:NiceHttp:0.1.8'
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3"
+    implementation 'com.github.Blatzar:NiceHttp:0.3.2'
 
+//    Glide
     implementation 'com.github.bumptech.glide:glide:4.13.1'
     kapt 'com.github.bumptech.glide:compiler:4.13.1'
+    implementation 'com.github.bumptech.glide:okhttp3-integration:4.13.1'
+    implementation 'jp.wasabeef:glide-transformations:4.3.0'
 
-    implementation platform('com.google.firebase:firebase-bom:29.0.3')
-    implementation 'com.google.firebase:firebase-analytics-ktx:20.1.2'
-    implementation 'com.google.firebase:firebase-crashlytics-ktx:18.2.10'
+//    FireBase
+    implementation platform('com.google.firebase:firebase-bom:30.2.0')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
 //    Exoplayer
-    implementation 'com.google.android.exoplayer:exoplayer-core:2.17.1'
-    implementation 'com.google.android.exoplayer:exoplayer-ui:2.17.1'
-    implementation 'com.google.android.exoplayer:exoplayer-hls:2.17.1'
-    implementation 'com.google.android.exoplayer:extension-okhttp:2.17.1'
-    implementation 'com.google.android.exoplayer:extension-mediasession:2.17.1'
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.18.0'
+    implementation 'com.google.android.exoplayer:exoplayer-ui:2.18.0'
+    implementation 'com.google.android.exoplayer:exoplayer-hls:2.18.0'
+    implementation 'com.google.android.exoplayer:extension-okhttp:2.18.0'
+    implementation 'com.google.android.exoplayer:extension-mediasession:2.18.0'
 
 //    UI
-    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'com.google.android.material:material:1.6.1'
     implementation 'nl.joery.animatedbottombar:library:1.1.0'
     implementation "io.noties.markwon:core:4.6.2"
     implementation 'com.flaviofaria:kenburnsview:1.0.7'
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view-androidx:3.10.0'
+    implementation 'com.alexvasilkov:gesture-views:2.8.3'
+
     implementation 'jp.wasabeef:glide-transformations:4.3.0'
 
     // TV

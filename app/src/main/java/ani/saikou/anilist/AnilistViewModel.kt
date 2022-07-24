@@ -1,6 +1,6 @@
 package ani.saikou.anilist
 
-import android.app.Activity
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -44,7 +44,7 @@ class AnilistHomeViewModel : ViewModel() {
     fun getRecommendation(): LiveData<ArrayList<Media>> = recommendation
     suspend fun setRecommendation() = recommendation.postValue(Anilist.query.recommendations())
 
-    suspend fun loadMain(context: Activity) {
+    suspend fun loadMain(context: FragmentActivity) {
         Anilist.getSavedToken(context)
         AppUpdater.check(context)
         genres.postValue(Anilist.query.getGenresAndTags(context))

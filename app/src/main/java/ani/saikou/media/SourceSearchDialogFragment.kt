@@ -13,14 +13,16 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import ani.saikou.BottomSheetDialogFragment
-import ani.saikou.anime.source.AnimeSourceAdapter
-import ani.saikou.anime.source.AnimeSources
-import ani.saikou.anime.source.HAnimeSources
+import ani.saikou.anime.AnimeSourceAdapter
 import ani.saikou.databinding.BottomSheetSourceSearchBinding
-import ani.saikou.manga.source.MangaSourceAdapter
-import ani.saikou.manga.source.MangaSources
+import ani.saikou.manga.MangaSourceAdapter
 import ani.saikou.navBarHeight
+import ani.saikou.parsers.AnimeSources
+import ani.saikou.parsers.HAnimeSources
+import ani.saikou.parsers.HMangaSources
+import ani.saikou.parsers.MangaSources
 import ani.saikou.px
+import ani.saikou.tryWithSuspend
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -56,55 +58,41 @@ class SourceSearchDialogFragment : BottomSheetDialogFragment() {
                 binding.searchProgress.visibility = View.VISIBLE
 
                 i = media!!.selected!!.source
-                if (media!!.anime != null) {
-                    val source = (if (!media!!.isAdult) AnimeSources else HAnimeSources)[i!!]!!
-                    binding.searchSourceTitle.text = source.name
-                    binding.searchBarText.setText(media!!.getMangaName())
-                    fun search() {
-                        binding.searchBarText.clearFocus()
-                        imm.hideSoftInputFromWindow(binding.searchBarText.windowToken, 0)
-                        scope.launch {
-                            model.sources.postValue(withContext(Dispatchers.IO) { source.search(binding.searchBarText.text.toString()) })
-                        }
-                    }
-                    binding.searchBarText.setOnEditorActionListener { _, actionId, _ ->
-                        return@setOnEditorActionListener when (actionId) {
-                            EditorInfo.IME_ACTION_SEARCH -> {
-                                search()
-                                true
-                            }
-                            else                         -> false
-                        }
-                    }
-                    binding.searchBar.setEndIconOnClickListener { search() }
-                    if (!searched) search()
 
-                } else if (media!!.manga != null) {
+                val source = if (media!!.anime != null) {
+                    (if (!media!!.isAdult) AnimeSources else HAnimeSources)[i!!]
+                } else {
                     anime = false
-                    val source = MangaSources[i!!]!!
-                    binding.searchSourceTitle.text = source.name
-                    binding.searchBarText.setText(media!!.getMangaName())
-                    fun search() {
-                        binding.searchBarText.clearFocus()
-                        imm.hideSoftInputFromWindow(binding.searchBarText.windowToken, 0)
-                        scope.launch {
-                            model.sources.postValue(withContext(Dispatchers.IO) { source.search(binding.searchBarText.text.toString()) })
-                        }
-                    }
-                    binding.searchBarText.setOnEditorActionListener { _, actionId, _ ->
-                        return@setOnEditorActionListener when (actionId) {
-                            EditorInfo.IME_ACTION_SEARCH -> {
-                                search()
-                                true
-                            }
-                            else                         -> false
-                        }
-                    }
-                    binding.searchBar.setEndIconOnClickListener { search() }
-                    if (!searched) search()
+                    (if (media!!.isAdult) HMangaSources else MangaSources)[i!!]
                 }
+                fun search() {
+                    binding.searchBarText.clearFocus()
+                    imm.hideSoftInputFromWindow(binding.searchBarText.windowToken, 0)
+                    scope.launch {
+                        model.responses.postValue(
+                            withContext(Dispatchers.IO) {
+                                tryWithSuspend {
+                                    source.search(binding.searchBarText.text.toString())
+                                }
+                            }
+                        )
+                    }
+                }
+                binding.searchSourceTitle.text = source.name
+                binding.searchBarText.setText(media!!.mangaName())
+                binding.searchBarText.setOnEditorActionListener { _, actionId, _ ->
+                    return@setOnEditorActionListener when (actionId) {
+                        EditorInfo.IME_ACTION_SEARCH -> {
+                            search()
+                            true
+                        }
+                        else                         -> false
+                    }
+                }
+                binding.searchBar.setEndIconOnClickListener { search() }
+                if (!searched) search()
                 searched = true
-                model.sources.observe(viewLifecycleOwner) { j ->
+                model.responses.observe(viewLifecycleOwner) { j ->
                     if (j != null) {
                         binding.searchRecyclerView.visibility = View.VISIBLE
                         binding.searchProgress.visibility = View.GONE
@@ -127,7 +115,7 @@ class SourceSearchDialogFragment : BottomSheetDialogFragment() {
     }
 
     override fun dismiss() {
-        model.sources.value = null
+        model.responses.value = null
         super.dismiss()
     }
 }

@@ -20,15 +20,13 @@ import androidx.leanback.widget.*
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import ani.saikou.*
 import ani.saikou.R
-import ani.saikou.Refresh
 import ani.saikou.anime.Episode
-import ani.saikou.anime.source.AnimeSources
-import ani.saikou.anime.source.HAnimeSources
-import ani.saikou.loadData
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
-import ani.saikou.saveData
+import ani.saikou.parsers.AnimeSources
+import ani.saikou.parsers.HAnimeSources
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.tv.components.CustomListRowPresenter
 import ani.saikou.tv.components.HeaderOnlyRow
@@ -45,20 +43,22 @@ import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 
-class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
+class TVAnimeDetailFragment() : DetailsSupportFragment() {
 
-    private val model: MediaDetailsViewModel by viewModels()
+    private val model: MediaDetailsViewModel by activityViewModels()
     private val scope = lifecycleScope
     val actions = ArrayObjectAdapter(DetailActionsPresenter())
     lateinit var uiSettings: UserInterfaceSettings
     var loaded = false
+    lateinit var media: Media
 
     private var linkSelector: TVSelectorFragment? = null
 
     private var episodeObserver = Observer<Episode?> {
         if (it != null){
             MainScope().launch {
-                linkSelector?.setStreamLinks(it.streamLinks)
+                it.extractors
+                linkSelector?.setStreamLinks(it.extractors)
             }
         }
     }
@@ -70,6 +70,9 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        media = requireActivity().intent.getSerializableExtra("media") as Media
+
         detailsBackground = DetailsSupportFragmentBackgroundController(this)
         uiSettings = loadData("ui_settings", toast = false)
             ?: UserInterfaceSettings().apply { saveData("ui_settings", this) }
@@ -80,7 +83,6 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
         progressBarManager.setRootView(this.view as ViewGroup)
         progressBarManager.initialDelay =0
         progressBarManager.show()
-
         buildDetails()
         observeData()
     }
@@ -101,7 +103,7 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
                     if (it.id.toInt() == 0) {
                         parentFragmentManager.beginTransaction().addToBackStack(null)
                             .replace(
-                                R.id.main_tv_fragment,
+                                R.id.main_detail_fragment,
                                 TVSourceSelectorFragment(media)
                             ).commit()
                     }
@@ -126,15 +128,6 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
     }
 
     fun observeData() {
-        model.getKitsuEpisodes().observe(viewLifecycleOwner) { i ->
-            if (i != null)
-                media.anime?.kitsuEpisodes = i
-        }
-
-        model.getFillerEpisodes().observe(viewLifecycleOwner) { i ->
-            if (i != null)
-                media.anime?.fillerEpisodes = i
-        }
 
         model.getMedia().observe(viewLifecycleOwner) {
             if (it != null && media.id == it.id) {
@@ -142,9 +135,7 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
                 media.selected = model.loadSelected(media)
 
                 if (!loaded) {
-                    model.watchAnimeWatchSources =
-                        if (media.isAdult) HAnimeSources else AnimeSources
-
+                    model.watchSources = if (media.isAdult) HAnimeSources else AnimeSources
                     setupActions()
 
                     lifecycleScope.launch(Dispatchers.IO) {
@@ -164,72 +155,62 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
 
         model.getEpisodes().observe(viewLifecycleOwner) { loadedEpisodes ->
             loadedEpisodes?.let { epMap ->
-                epMap[media.selected!!.source]?.let { ep ->
-                    val episodes = ep
-                    media.anime?.episodes = ep
-
-                    if(loaded) {
-
-                        clearEpisodes()
-
-                        episodes.forEach { (i, episode) ->
-                            if (media.anime?.fillerEpisodes != null) {
-                                if (media.anime!!.fillerEpisodes!!.containsKey(i)) {
-                                    episode.title = media.anime!!.fillerEpisodes!![i]?.title
-                                    episode.filler =
-                                        media.anime!!.fillerEpisodes!![i]?.filler ?: false
-                                }
-                            }
-                            if (media.anime?.kitsuEpisodes != null) {
-                                if (media.anime!!.kitsuEpisodes!!.containsKey(i)) {
-                                    episode.desc = media.anime!!.kitsuEpisodes!![i]?.desc
-                                    episode.title = media.anime!!.kitsuEpisodes!![i]?.title
-                                    episode.thumb =
-                                        media.anime!!.kitsuEpisodes!![i]?.thumb ?: media.cover
-                                }
+                val episodes = loadedEpisodes[media.selected!!.source]
+                if (episodes != null) {
+                    episodes.forEach { (i, episode) ->
+                        if (media.anime?.fillerEpisodes != null) {
+                            if (media.anime!!.fillerEpisodes!!.containsKey(i)) {
+                                episode.title = episode.title ?: media.anime!!.fillerEpisodes!![i]?.title
+                                episode.filler = media.anime!!.fillerEpisodes!![i]?.filler ?: false
                             }
                         }
-
-                        //CHIP GROUP
-                        val total = episodes.size
-                        val divisions = total.toDouble() / 10
-                        val limit = when {
-                            (divisions < 25) -> 25
-                            (divisions < 50) -> 50
-                            else -> 100
-                        }
-
-                        if (total == 0) {
-                            rowsAdapter.removeItems(1, rowsAdapter.size() - 1)
-                            rowsAdapter.add(HeaderOnlyRow("No episodes found, try another source"))
-                        } else if (total > limit) {
-                            val arr = episodes.keys.toList()
-                            val numberOfChips = ceil((total).toDouble() / limit).toInt()
-
-
-                            for (index in 0..numberOfChips - 1) {
-                                val last =
-                                    if (index + 1 == numberOfChips) total else (limit * (index + 1))
-                                val startIndex = limit * (index)
-                                val start = arr[startIndex]
-                                val end = arr[last - 1]
-                                createEpisodePresenter("Episodes ${start} - ${end}").addAll(
-                                    0,
-                                    episodes.values.toList().subList(
-                                        startIndex,
-                                        min(startIndex + limit, episodes.values.size)
-                                    )
-                                )
+                        if (media.anime?.kitsuEpisodes != null) {
+                            if (media.anime!!.kitsuEpisodes!!.containsKey(i)) {
+                                episode.desc = episode.desc ?: media.anime!!.kitsuEpisodes!![i]?.desc
+                                episode.title = episode.title ?: media.anime!!.kitsuEpisodes!![i]?.title
+                                episode.thumb = episode.thumb?: media.anime!!.kitsuEpisodes!![i]?.thumb ?: FileUrl[media.cover]
                             }
+                        }
+                    }
+                    media.anime?.episodes = episodes
 
-                            focusLastViewedEpisode()
-                        } else {
-                            createEpisodePresenter("Episodes").addAll(
+                    //CHIP GROUP
+                    val total = episodes.size
+                    val divisions = total.toDouble() / 10
+                    val limit = when {
+                        (divisions < 25) -> 25
+                        (divisions < 50) -> 50
+                        else -> 100
+                    }
+
+                    clearEpisodes()
+                    if (total == 0) {
+                        rowsAdapter.add(HeaderOnlyRow("No episodes found, try another source"))
+                    } else if (total > limit) {
+                        val arr = episodes.keys.toList()
+                        val numberOfChips = ceil((total).toDouble() / limit).toInt()
+
+                        for (index in 0..numberOfChips - 1) {
+                            val last =
+                                if (index + 1 == numberOfChips) total else (limit * (index + 1))
+                            val startIndex = limit * (index)
+                            val start = arr[startIndex]
+                            val end = arr[last - 1]
+                            createEpisodePresenter("Episodes ${start} - ${end}").addAll(
                                 0,
-                                episodes.values.toList()
+                                episodes.values.toList().subList(
+                                    startIndex,
+                                    min(startIndex + limit, episodes.values.size)
+                                )
                             )
-                            focusLastViewedEpisode()
                         }
+                        focusLastViewedEpisode()
+                    } else {
+                        createEpisodePresenter("Episodes").addAll(
+                            0,
+                            episodes.values.toList()
+                        )
+                        focusLastViewedEpisode()
                     }
                 }
             }
@@ -237,8 +218,19 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
 
         model.getEpisode().observeForever(episodeObserver)
 
+
+        model.getKitsuEpisodes().observe(viewLifecycleOwner) { i ->
+            if (i != null)
+                media.anime?.kitsuEpisodes = i
+        }
+
+        model.getFillerEpisodes().observe(viewLifecycleOwner) { i ->
+            if (i != null)
+                media.anime?.fillerEpisodes = i
+        }
+
         val live = Refresh.activity.getOrPut(this.hashCode()) { MutableLiveData(true) }
-        live.observe(requireActivity()) {
+        live.observe(this) {
             if (it) {
                 scope.launch(Dispatchers.IO) {
                     model.loadMedia(media)
@@ -265,12 +257,12 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
         media.selected = model.loadSelected(media)
         CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
             media.selected?.let {
-                model.loadEpisodeStreams(episode, it.source)
+                model.loadEpisodeVideos(episode, it.source)
             }
         }
         linkSelector = TVSelectorFragment.newInstance(media)
         parentFragmentManager.beginTransaction().addToBackStack("detail")
-            .replace(R.id.main_tv_fragment, linkSelector!!)
+            .replace(R.id.main_detail_fragment, linkSelector!!)
             .commit()
     }
 
@@ -331,12 +323,13 @@ class TVAnimeDetailFragment(var media: Media) : DetailsSupportFragment() {
 
     private fun setupActions() {
         actions.clear()
-        val selectedSourceName: String? = model.watchAnimeWatchSources?.names?.get(
-            media!!.selected?.source
-                ?: 0
-        )
-        selectedSourceName?.let {
-            actions.add(Action(0, "Source: " + it))
+
+        val selected = model.loadSelected(media)
+        model.watchSources?.get(selected.source)?.showUserTextListener = null
+        media.selected = selected
+
+        selected.source.let {
+            actions.add(Action(0, "Source: " + model.watchSources?.get(selected.source)?.name))
         } ?: kotlin.run {
             actions.add(Action(0, "Select Source"))
         }

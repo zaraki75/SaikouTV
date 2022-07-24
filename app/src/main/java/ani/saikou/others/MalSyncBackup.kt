@@ -1,15 +1,18 @@
 package ani.saikou.others
 
-import ani.saikou.httpClient
-import ani.saikou.media.Source
-import com.fasterxml.jackson.annotation.JsonProperty
+import ani.saikou.client
+import ani.saikou.parsers.ShowResponse
+import ani.saikou.tryWithSuspend
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 object MalSyncBackup {
+    @Serializable
     data class MalBackUpSync(
-        @JsonProperty("Pages")
-        val pages: Map<String, Map<String, Page>>? = null
+        @SerialName("Pages") val pages: Map<String, Map<String, Page>>? = null
     )
 
+    @Serializable
     data class Page(
         val identifier: String,
         val title: String,
@@ -18,25 +21,20 @@ object MalSyncBackup {
         val active: Boolean? = null,
     )
 
-    suspend fun get(id: Int, name: String, dub: Boolean = false): Source? {
-        try {
+    suspend fun get(id: Int, name: String, dub: Boolean = false): ShowResponse? {
+        return tryWithSuspend {
             val json =
-                httpClient.get("https://raw.githubusercontent.com/MALSync/MAL-Sync-Backup/master/data/anilist/anime/$id.json")
+                client.get("https://raw.githubusercontent.com/MALSync/MAL-Sync-Backup/master/data/anilist/anime/$id.json")
             if (json.text != "404: Not Found")
                 json.parsed<MalBackUpSync>().pages?.get(name)?.forEach {
                     val page = it.value
-                    val slug = if (dub)
-                        if (page.title.lowercase().endsWith("(dub)")) {
-                            page.identifier
-                        } else null
-                    else page.identifier
-                    if(slug!=null && page.active==true){
-                        return Source(slug,page.title,page.image?:"")
+                    val isDub = page.title.lowercase().replace(" ", "").endsWith("(dub)")
+                    val slug = if (dub == isDub) page.identifier else null
+                    if (slug != null && page.active == true) {
+                        return@tryWithSuspend ShowResponse(page.title, slug, page.image ?: "")
                     }
                 }
-        } catch (e: Exception) {
-            logError(e)
+            return@tryWithSuspend null
         }
-        return null
     }
 }

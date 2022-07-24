@@ -14,13 +14,14 @@ import ani.saikou.media.Media
 import ani.saikou.setAnimation
 import ani.saikou.updateAnilistProgress
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.model.GlideUrl
 
 fun handleProgress(cont: LinearLayout, bar: View, empty: View, mediaId: Int, ep: String) {
     val curr = loadData<Long>("${mediaId}_${ep}")
     val max = loadData<Long>("${mediaId}_${ep}_max")
     if (curr != null && max != null) {
         cont.visibility = View.VISIBLE
-        val div = curr.toFloat() / max
+        val div = curr.toFloat() / max.toFloat()
         val barParams = bar.layoutParams as LinearLayout.LayoutParams
         barParams.weight = div
         bar.layoutParams = barParams
@@ -69,7 +70,8 @@ class EpisodeAdapter(
                 val binding = holder.binding
                 setAnimation(fragment.requireContext(), holder.binding.root, fragment.uiSettings)
 
-                Glide.with(binding.itemEpisodeImage).load(ep.thumb ?: media.cover).override(400, 0).into(binding.itemEpisodeImage)
+                val thumb = ep.thumb?.let { if(it.url.isNotEmpty()) GlideUrl(it.url) { it.headers } else null }
+                Glide.with(binding.itemEpisodeImage).load(thumb?:media.cover).override(400,0).into(binding.itemEpisodeImage)
                 binding.itemEpisodeNumber.text = ep.number
                 binding.itemEpisodeTitle.text = title
 
@@ -84,7 +86,7 @@ class EpisodeAdapter(
                 binding.itemEpisodeDesc.text = ep.desc ?: ""
 
                 if (media.userProgress != null) {
-                    if (ep.number.toFloatOrNull() ?: 9999f <= media.userProgress!!.toFloat()) {
+                    if ((ep.number.toFloatOrNull() ?: 9999f) <= media.userProgress!!.toFloat()) {
                         binding.itemEpisodeViewedCover.visibility = View.VISIBLE
                         binding.itemEpisodeViewed.visibility = View.VISIBLE
                     } else {
@@ -112,7 +114,10 @@ class EpisodeAdapter(
             is EpisodeGridViewHolder    -> {
                 val binding = holder.binding
                 setAnimation(fragment.requireContext(), holder.binding.root, fragment.uiSettings)
-                Glide.with(binding.itemEpisodeImage).load(ep.thumb ?: media.cover).override(400, 0).into(binding.itemEpisodeImage)
+
+                val thumb = ep.thumb?.let { if(it.url.isNotEmpty()) GlideUrl(it.url) { it.headers } else null }
+                Glide.with(binding.itemEpisodeImage).load(thumb?:media.cover).override(400,0).into(binding.itemEpisodeImage)
+
                 binding.itemEpisodeNumber.text = ep.number
                 binding.itemEpisodeTitle.text = title
                 if (ep.filler) {
@@ -123,7 +128,7 @@ class EpisodeAdapter(
                     binding.itemEpisodeFillerView.visibility = View.GONE
                 }
                 if (media.userProgress != null) {
-                    if (ep.number.toFloatOrNull() ?: 9999f <= media.userProgress!!.toFloat()) {
+                    if ((ep.number.toFloatOrNull() ?: 9999f) <= media.userProgress!!.toFloat()) {
                         binding.itemEpisodeViewedCover.visibility = View.VISIBLE
                         binding.itemEpisodeViewed.visibility = View.VISIBLE
                     } else {
@@ -153,7 +158,7 @@ class EpisodeAdapter(
                 binding.itemEpisodeNumber.text = ep.number
                 binding.itemEpisodeFillerView.visibility = if (ep.filler) View.VISIBLE else View.GONE
                 if (media.userProgress != null) {
-                    if (ep.number.toFloatOrNull() ?: 9999f <= media.userProgress!!.toFloat())
+                    if ((ep.number.toFloatOrNull() ?: 9999f) <= media.userProgress!!.toFloat())
                         binding.itemEpisodeViewedCover.visibility = View.VISIBLE
                     else {
                         binding.itemEpisodeViewedCover.visibility = View.GONE

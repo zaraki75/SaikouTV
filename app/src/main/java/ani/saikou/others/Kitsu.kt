@@ -1,13 +1,16 @@
 package ani.saikou.others
 
+import ani.saikou.FileUrl
 import ani.saikou.anime.Episode
-import ani.saikou.httpClient
+import ani.saikou.client
 import ani.saikou.logger
 import ani.saikou.media.Media
-import com.fasterxml.jackson.annotation.JsonProperty
+import ani.saikou.tryWithSuspend
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 object Kitsu {
-    private suspend fun getKitsuData(query: String): KitsuResponse {
+    private suspend fun getKitsuData(query: String): KitsuResponse? {
         val headers = mapOf(
             "Content-Type" to "application/json",
             "Accept" to "application/json",
@@ -15,115 +18,93 @@ object Kitsu {
             "DNT" to "1",
             "Origin" to "https://kitsu.io"
         )
-        val json = httpClient.post("https://kitsu.io/api/graphql",headers, data = mapOf("query" to query))
-        return json.parsed()
+        val json = tryWithSuspend { client.post("https://kitsu.io/api/graphql", headers, data = mapOf("query" to query)) }
+        return json?.parsed()
     }
 
-    suspend fun getKitsuEpisodesDetails(media: Media): MutableMap<String, Episode>? {
+    suspend fun getKitsuEpisodesDetails(media: Media): Map<String, Episode>? {
         val print = false
-        logger("Kitsu : title=${media.getMangaName()}", print)
-        try {
-            val query =
-                """query{searchAnimeByTitle(first:5,title:"${media.getMangaName()}"){nodes{id season startDate titles{localized}episodes(first:2000){nodes{number titles{canonical}description thumbnail{original{url}}}}}}}"""
-            val result = getKitsuData(query)
-            logger("Kitsu : result=$result", print)
-            var arr: MutableMap<String, Episode>?
-            if(result.data!=null){
-                result.data.searchAnimeByTitle?.nodes?.forEach{
-                    logger(it.season, print)
-                    if (
-                        it.season == media.anime!!.season &&
-                        (it.startDate?:return@forEach).split('-')[0] == media.anime.seasonYear.toString()
-                    ) {
-                        val episodes = it.episodes?.nodes?:return@forEach
-                        logger("Kitsu : episodes=$episodes", print)
-                        arr = mutableMapOf()
-                        episodes.forEach { ep ->
-                            logger("Kitsu : forEach=$it", print)
-                            if (ep!=null) {
-                                val num = ep.number.toString()
-                                arr!![num] = Episode(
-                                    number = num,
-                                    title = ep.titles?.canonical,
-                                    desc = ep.description?.en,
-                                    thumb = ep.thumbnail?.original?.url,
-                                )
-                                logger("Kitsu : arr[$num] = ${arr!![num]}", print)
-                            }
-                        }
-                        return arr
-                    }
-                }
+        logger("Kitsu : title=${media.mainName()}", print)
+        val query =
+            """
+query {
+  lookupMapping(externalId: ${media.id}, externalSite: ANILIST_ANIME) {
+    __typename
+    ... on Anime {
+      id
+      episodes(first: 2000) {
+        nodes {
+          number
+          titles {
+            canonical
+          }
+          description
+          thumbnail {
+            original {
+              url
             }
-        } catch (e: Exception) {
-            logError(e)
+          }
         }
-        return null
+      }
+    }
+  }
+}"""
+
+
+        val result = getKitsuData(query) ?: return null
+        logger("Kitsu : result=$result", print)
+        return (result.data?.lookupMapping?.episodes?.nodes?:return null).mapNotNull { ep ->
+            val num = ep?.num?.toString()?:return@mapNotNull null
+            num to Episode(
+                number = num,
+                title = ep.titles?.canonical,
+                desc = ep.description?.en,
+                thumb = FileUrl[ep.thumbnail?.original?.url],
+            )
+        }.toMap()
     }
 
-    private data class KitsuResponse (
-        val data: Data? = null
-    ){
+    @Serializable
+    private data class KitsuResponse(
+        @SerialName("data") val data: Data? = null
+    ) {
+        @Serializable
         data class Data (
-            val searchAnimeByTitle: SearchAnimeByTitle? = null
+            @SerialName("lookupMapping") val lookupMapping: LookupMapping? = null
         )
-
-        data class SearchAnimeByTitle (
-            val nodes: List<NodeElement>? = null
+        @Serializable
+        data class LookupMapping (
+            @SerialName("id") val id: String? = null,
+            @SerialName("episodes") val episodes: Episodes? = null
         )
-
-        data class NodeElement (
-            val id: String? = null,
-            val titles: FluffyTitles? = null,
-            val season: String? = null,
-            val startDate: String? = null,
-            val posterImage: PosterImage? = null,
-            val episodes: Episodes? = null
-        )
-
+        @Serializable
         data class Episodes (
-            val nodes: List<EpisodesNode?>? = null
+            @SerialName("nodes") val nodes: List<Node?>? = null
         )
-
-        data class EpisodesNode (
-            val number: Long? = null,
-            val titles: PurpleTitles? = null,
-            val description: Description? = null,
-            val thumbnail: PosterImage? = null
+        @Serializable
+        data class Node (
+            @SerialName("number") val num: Long? = null,
+            @SerialName("titles") val titles: Titles? = null,
+            @SerialName("description") val description: Description? = null,
+            @SerialName("thumbnail") val thumbnail: Thumbnail? = null
         )
-
+        @Serializable
         data class Description (
-            val en: String? = null
+            @SerialName("en") val en: String? = null
         )
-
-        data class PosterImage (
-            val original: Original? = null
+        @Serializable
+        data class Thumbnail (
+            @SerialName("original") val original: Original? = null
         )
-
+        @Serializable
         data class Original (
-            val url: String? = null
+            @SerialName("url") val url: String? = null
+        )
+        @Serializable
+        data class Titles (
+            @SerialName("canonical") val canonical: String? = null
         )
 
-        data class PurpleTitles (
-            val canonical: String? = null
-        )
-
-        data class FluffyTitles (
-            val localized: Localized? = null
-        )
-
-        data class Localized (
-            val en: String? = null,
-
-            @JsonProperty("en_jp")
-            val enJp: String? = null,
-
-            @JsonProperty("ja_jp")
-            val jaJp: String? = null,
-
-            @JsonProperty("en_us")
-            val enUs: String? = null
-        )
     }
 
 }

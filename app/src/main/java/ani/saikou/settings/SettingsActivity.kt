@@ -2,21 +2,21 @@ package ani.saikou.settings
 
 import android.content.Intent
 import android.graphics.drawable.Animatable
+import android.os.Build.*
+import android.os.Build.VERSION.*
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.ScrollView
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.setPadding
 import androidx.core.view.updateLayoutParams
 import ani.saikou.*
-import ani.saikou.anime.source.AnimeSources
 import ani.saikou.databinding.ActivitySettingsBinding
-import ani.saikou.manga.source.MangaSources
+import ani.saikou.others.CustomBottomDialog
+import ani.saikou.parsers.AnimeSources
+import ani.saikou.parsers.MangaSources
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -29,6 +29,28 @@ class SettingsActivity : AppCompatActivity() {
         initActivity(this)
 
         binding.settingsVersion.text = getString(R.string.version_current, BuildConfig.VERSION_NAME)
+        binding.settingsVersion.setOnLongClickListener {
+            fun getArch(): String {
+                SUPPORTED_ABIS.forEach {
+                    when (it) {
+                        "arm64-v8a" -> return "aarch64"
+                        "armeabi-v7a" -> return "arm"
+                        "x86_64" -> return "x86_64"
+                        "x86" -> return "i686"
+                    }
+                }
+                return System.getProperty("os.arch") ?: System.getProperty("os.product.cpu.abi") ?: "Unknown Architecture"
+            }
+            val info = """
+Saikou Version: ${BuildConfig.VERSION_NAME}
+Device: $BRAND $DEVICE
+Architecture: ${getArch()}
+OS Version: $CODENAME $RELEASE ($SDK_INT)
+            """.trimIndent()
+            copyToClipboard(info, false)
+            toast("Copied device info")
+            return@setOnLongClickListener true
+        }
 
         binding.settingsContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             topMargin = statusBarHeight
@@ -39,10 +61,10 @@ class SettingsActivity : AppCompatActivity() {
             onBackPressed()
         }
 
-        binding.animeSource.setText(AnimeSources.names[loadData("settings_default_anime_source") ?: 0], false)
+        binding.animeSource.setText(AnimeSources.names[loadData("settings_def_anime_source") ?: 0], false)
         binding.animeSource.setAdapter(ArrayAdapter(this, R.layout.item_dropdown, AnimeSources.names))
         binding.animeSource.setOnItemClickListener { _, _, i, _ ->
-            saveData("settings_default_anime_source", i)
+            saveData("settings_def_anime_source", i)
             binding.animeSource.clearFocus()
         }
 
@@ -69,16 +91,29 @@ class SettingsActivity : AppCompatActivity() {
             saveData("recently_list_only", isChecked)
         }
 
+        val dns = listOf("None", "Google", "Cloudflare", "AdGuard")
+        binding.settingsDns.setText(dns[loadData("settings_dns") ?: 0], false)
+        binding.settingsDns.setAdapter(ArrayAdapter(this, R.layout.item_dropdown, dns))
+        binding.settingsDns.setOnItemClickListener { _, _, i, _ ->
+            saveData("settings_dns", i)
+            initializeNetwork(this)
+            binding.settingsDns.clearFocus()
+        }
 
-        binding.mangaSource.setText(MangaSources.names[loadData("settings_default_manga_source") ?: 0], false)
+        binding.settingsPreferDub.isChecked = loadData("settings_prefer_dub") ?: false
+        binding.settingsPreferDub.setOnCheckedChangeListener { _, isChecked ->
+            saveData("settings_prefer_dub", isChecked)
+        }
+
+        binding.mangaSource.setText(MangaSources.names[loadData("settings_def_manga_source") ?: 0], false)
         binding.mangaSource.setAdapter(ArrayAdapter(this, R.layout.item_dropdown, MangaSources.names))
         binding.mangaSource.setOnItemClickListener { _, _, i, _ ->
-            saveData("settings_default_manga_source", i)
+            saveData("settings_def_manga_source", i)
             binding.mangaSource.clearFocus()
         }
 
         binding.settingsReader.setOnClickListener {
-            toastString("Warks in Porgassss", this)
+            startActivity(Intent(this, ReaderSettingsActivity::class.java))
         }
 
         val uiSettings: UserInterfaceSettings =
@@ -235,16 +270,17 @@ class SettingsActivity : AppCompatActivity() {
             DevelopersDialogFragment().show(supportFragmentManager,"dialog")
         }
         binding.settingsDisclaimer.setOnClickListener {
-            AlertDialog.Builder(this, R.style.DialogTheme).apply {
-                setTitle(R.string.disclaimer)
-                setView(ScrollView(context).apply {
-                    isVerticalScrollBarEnabled = true
-                    addView(TextView(context).apply {
-                        setPadding(32f.px)
-                        setText(R.string.full_disclaimer)
-                    })
-                })
-                show()
+            val title = getString(R.string.disclaimer)
+            val text = TextView(this)
+            text.setText(R.string.full_disclaimer)
+
+            CustomBottomDialog.newInstance().apply {
+                setTitleText(title)
+                addView(text)
+                setNegativeButton("Close"){
+                    dismiss()
+                }
+                show(supportFragmentManager, "dialog")
             }
         }
     }

@@ -19,7 +19,6 @@ import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.AnilistHomeViewModel
 import ani.saikou.media.MediaDetailsActivity
 import ani.saikou.others.AppUpdater
-import ani.saikou.others.DisableFirebase
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,8 +31,6 @@ class TVMainActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        DisableFirebase.handle()
 
         //For some reason reports are getting enqueued but never sent unless i call this
         FirebaseCrashlytics.getInstance().sendUnsentReports()
@@ -63,7 +60,12 @@ class TVMainActivity : FragmentActivity() {
                                     )
                                 }
                                 if (media != null) {
-                                    supportFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVAnimeDetailFragment(media)).commit()
+                                    startActivity(
+                                        Intent(
+                                            this@TVMainActivity,
+                                            TVDetailActivity::class.java
+                                        ).putExtra("media", media as Serializable)
+                                    )
                                 } else {
                                     //toastString("Seems like that wasn't found on Anilist.")
                                 }

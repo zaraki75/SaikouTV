@@ -36,6 +36,7 @@ import ani.saikou.tv.presenters.AnimePresenter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import java.io.Serializable
 import java.util.*
 
 class TVSearchFragment(var type: String, var genre: String? = null, var sortBy: String? = null): SearchFragment(), SearchSupportFragment.SearchResultProvider {
@@ -64,7 +65,11 @@ class TVSearchFragment(var type: String, var genre: String? = null, var sortBy: 
         listOnly = intent.getBooleanExtra("listOnly",false)
 
         setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
-            parentFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVAnimeDetailFragment(item as Media)).commit()
+            startActivity(
+                Intent(
+                    requireContext(),
+                    TVDetailActivity::class.java
+                ).putExtra("media", item as Serializable))
         }
 
         setOnItemViewSelectedListener { itemViewHolder, item, rowViewHolder, row ->

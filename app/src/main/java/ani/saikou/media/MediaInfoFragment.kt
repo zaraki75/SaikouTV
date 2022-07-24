@@ -66,12 +66,12 @@ class MediaInfoFragment : Fragment() {
                 loaded = true
                 binding.mediaInfoProgressBar.visibility = View.GONE
                 binding.mediaInfoContainer.visibility = View.VISIBLE
-                binding.mediaInfoName.text = "\t\t\t" + media.getMainName()
+                binding.mediaInfoName.text = "\t\t\t" + (media.name?:media.nameRomaji)
                 binding.mediaInfoName.setOnLongClickListener {
-                    copyToClipboard(media.getMainName())
+                    copyToClipboard(media.name?:media.nameRomaji)
                     true
                 }
-                if (media.name != "null") binding.mediaInfoNameRomajiContainer.visibility = View.VISIBLE
+                if (media.name != null) binding.mediaInfoNameRomajiContainer.visibility = View.VISIBLE
                 binding.mediaInfoNameRomaji.text = "\t\t\t" + media.nameRomaji
                 binding.mediaInfoNameRomaji.setOnLongClickListener {
                     copyToClipboard(media.nameRomaji)
@@ -79,19 +79,17 @@ class MediaInfoFragment : Fragment() {
                 }
                 binding.mediaInfoMeanScore.text = if (media.meanScore != null) (media.meanScore / 10.0).toString() else "??"
                 binding.mediaInfoStatus.text = media.status
-                binding.mediaInfoFormat.text = media.format?.replace("_", " ")
+                binding.mediaInfoFormat.text = media.format
                 binding.mediaInfoSource.text = media.source
-                binding.mediaInfoStart.text =
-                    if (media.startDate.toString() != "") media.startDate.toString() else "??"
-                binding.mediaInfoEnd.text =
-                    if (media.endDate.toString() != "") media.endDate.toString() else "??"
+                binding.mediaInfoStart.text = media.startDate?.toString() ?: "??"
+                binding.mediaInfoEnd.text =media.endDate?.toString() ?: "??"
                 if (media.anime != null) {
                     binding.mediaInfoDuration.text =
                         if (media.anime.episodeDuration != null) media.anime.episodeDuration.toString() else "??"
                     binding.mediaInfoDurationContainer.visibility = View.VISIBLE
                     binding.mediaInfoSeasonContainer.visibility = View.VISIBLE
                     binding.mediaInfoSeason.text =
-                        (media.anime.season ?: "??")+ " " + media.anime.seasonYear
+                        (media.anime.season ?: "??")+ " " + (media.anime.seasonYear ?: "??")
                     if (media.anime.mainStudio != null) {
                         binding.mediaInfoStudioContainer.visibility = View.VISIBLE
                         binding.mediaInfoStudio.text = media.anime.mainStudio!!.name
@@ -218,17 +216,9 @@ class MediaInfoFragment : Fragment() {
                         val first = a.indexOf('"').let { if (it != -1) it else return a } + 1
                         val end = a.indexOf('"', first).let { if (it != -1) it else return a }
                         val name = a.subSequence(first, end).toString()
-                        return "${
-                            a.subSequence(
-                                0,
-                                first
-                            )
-                        }[$name](https://www.youtube.com/results?search_query=${URLEncoder.encode(name, "utf-8")})${
-                            a.subSequence(
-                                end,
-                                a.length
-                            )
-                        }"
+                        return "${a.subSequence(0, first)}" +
+                                "[$name](https://www.youtube.com/results?search_query=${URLEncoder.encode(name, "utf-8")})" +
+                                "${a.subSequence(end, a.length)}"
                     }
 
                     fun makeText(textView: TextView, arr: ArrayList<String>) {

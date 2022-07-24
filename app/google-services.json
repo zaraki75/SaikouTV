@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "71148296899-fk1jokciegdamvjbv97e5tbj5fpe8fal.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ani.saikou",
+            "certificate_hash": "71bc71da9b878fb691da817070c610784b863409"
+          }
+        },
+        {
           "client_id": "71148296899-3tk4josah9mb0h32u6i276lka6hsbjio.apps.googleusercontent.com",
           "client_type": 3
         }

@@ -254,6 +254,222 @@
                 app:showText="false"
                 app:thumbTint="@color/button_switch_track" />
 
+            <Button
+                android:id="@+id/playerResizeMode"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginBottom="8dp"
+                android:fontFamily="@font/poppins_bold"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:text="@string/resize_mode_button"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+                android:textColor="@color/bg_opp"
+                app:cornerRadius="0dp"
+                app:icon="@drawable/ic_round_fullscreen_24"
+                app:iconPadding="16dp"
+                app:iconSize="24dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/poppins_bold"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:text="@string/subtitles"
+                android:textColor="?attr/colorSecondary"
+                tools:ignore="TextContrastCheck" />
+
+            <Button
+                android:id="@+id/videoSubColorPrimary"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginBottom="8dp"
+                android:fontFamily="@font/poppins_bold"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:text="@string/primary_sub_color_select"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+                android:textColor="@color/bg_opp"
+                app:cornerRadius="0dp"
+                app:icon="@drawable/ic_round_color_24"
+                app:iconPadding="16dp"
+                app:iconSize="24dp" />
+
+            <Button
+                android:id="@+id/videoSubColorSecondary"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginBottom="8dp"
+                android:fontFamily="@font/poppins_bold"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:text="@string/secondary_sub_color_select"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+                android:textColor="@color/bg_opp"
+                app:cornerRadius="0dp"
+                app:icon="@drawable/ic_round_color_24"
+                app:iconPadding="16dp"
+                app:iconSize="24dp" />
+
+            <Button
+                android:id="@+id/videoSubOutline"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginBottom="8dp"
+                android:fontFamily="@font/poppins_bold"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:text="@string/secondary_sub_outline_type_select"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+                android:textColor="@color/bg_opp"
+                app:cornerRadius="0dp"
+                app:icon="@drawable/ic_round_color_24"
+                app:iconPadding="16dp"
+                app:iconSize="24dp" />
+
+            <Button
+                android:id="@+id/videoSubFont"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginBottom="8dp"
+                android:fontFamily="@font/poppins_bold"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:text="@string/sub_font_select"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+                android:textColor="@color/bg_opp"
+                app:cornerRadius="0dp"
+                app:icon="@drawable/ic_round_format_text_24"
+                app:iconPadding="16dp"
+                app:iconSize="24dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-8dp"
+                android:layout_marginBottom="8dp"
+                android:alpha="0.58"
+                android:fontFamily="@font/poppins_family"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:text="@string/sub_color_info"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/subLang"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginBottom="8dp"
+                android:fontFamily="@font/poppins_bold"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:text="@string/subtitle_language_button"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+                android:textColor="@color/bg_opp"
+                app:cornerRadius="0dp"
+                app:icon="@drawable/ic_round_translate_variant_24"
+                app:iconPadding="16dp"
+                app:iconSize="24dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:alpha="0.58"
+                android:fontFamily="@font/poppins_family"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:text="@string/subtitle_language_info"
+                android:textSize="14sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginBottom="8dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:drawablePadding="16dp"
+                    android:fontFamily="@font/poppins_bold"
+                    android:text="@string/subtitle_font_size"
+                    app:drawableStartCompat="@drawable/ic_round_font_size_24"
+                    app:drawableTint="?attr/colorPrimary" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/subtitle_font_size_card"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="8dp"
+                    app:cardBackgroundColor="@color/nav_bg_inv"
+                    app:cardCornerRadius="16dp"
+                    app:rippleColor="#54FFFFFF">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:padding="8dp"
+                        tools:ignore="UseCompoundDrawables">
+
+                        <EditText
+                            android:id="@+id/subtitleFontSize"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:fontFamily="@font/poppins_bold"
+                            android:importantForAutofill="no"
+                            android:inputType="number"
+                            android:maxLength="3"
+                            android:minWidth="48dp"
+                            android:padding="4dp"
+                            android:text="20"
+                            android:textAlignment="center"
+                            android:textColor="?attr/colorSecondary"
+                            android:background="@android:color/transparent"
+                            android:textSize="14sp"
+                            tools:ignore="HardcodedText,LabelFor,TouchTargetSizeCheck" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -360,7 +576,7 @@
                 android:minHeight="64dp"
                 android:paddingStart="32dp"
                 android:paddingEnd="32dp"
-                android:text="@string/ask_update_progress"
+                android:text="@string/ask_update_progress_anime"
                 android:textAlignment="viewStart"
                 android:textColor="@color/bg_opp"
                 app:cornerRadius="0dp"
@@ -378,7 +594,7 @@
                 android:fontFamily="@font/poppins_family"
                 android:paddingStart="32dp"
                 android:paddingEnd="32dp"
-                android:text="@string/ask_update_progress_info"
+                android:text="@string/ask_update_progress_info_ep"
                 android:textSize="14sp" />
 
             <com.google.android.material.switchmaterial.SwitchMaterial
@@ -412,7 +628,7 @@
                 android:fontFamily="@font/poppins_bold"
                 android:paddingStart="32dp"
                 android:paddingEnd="32dp"
-                android:text="@string/complete_percentage"
+                android:text="@string/watch_complete_percentage"
                 app:drawableStartCompat="@drawable/ic_round_sync_24"
                 app:drawableTint="?attr/colorPrimary" />
 
@@ -441,7 +657,7 @@
                 android:fontFamily="@font/poppins_family"
                 android:paddingStart="32dp"
                 android:paddingEnd="32dp"
-                android:text="@string/complete_percentage_info"
+                android:text="@string/watch_complete_percentage_info"
                 android:textSize="14sp" />
 
             <TextView

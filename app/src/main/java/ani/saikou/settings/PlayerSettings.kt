@@ -7,6 +7,13 @@ data class PlayerSettings(
     var videoInfo: Boolean = true,
     var defaultSpeed: Int = 5,
     var cursedSpeeds: Boolean = false,
+    var resize: Int = 0,
+    var primaryColor: Int = 4,
+    var secondaryColor: Int = 0,
+    var outline: Int = 0,
+    var font: Int = 0,
+    var fontSize: Int = 20,
+    var locale: Int = 0,
 
     //Auto
     var autoPlay: Boolean = true,
@@ -25,7 +32,6 @@ data class PlayerSettings(
     var seekTime: Int = 10,
     var skipTime: Int = 85,
     var cast: Boolean = false,
-
     var pip: Boolean = true,
     var alwaysMinimize: Boolean = false,
 ) : Serializable

@@ -39,6 +39,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.Serializable
 
 class TVAnimeFragment: BrowseSupportFragment()  {
 
@@ -305,7 +306,11 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
 
             if (item is Media) {
-                parentFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVAnimeDetailFragment(item)).commit()
+                startActivity(
+                    Intent(
+                        requireContext(),
+                        TVDetailActivity::class.java
+                    ).putExtra("media", item as Serializable))
             } else if (item is Pair<*,*>) {
                 parentFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVSearchFragment("ANIME", item.first as String, "Trending")).commit()
                     //TODO deal with this when we have settings on TV

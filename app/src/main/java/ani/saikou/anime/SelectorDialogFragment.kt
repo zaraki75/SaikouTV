@@ -3,7 +3,9 @@ package ani.saikou.anime
 import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +20,7 @@ import ani.saikou.databinding.ItemStreamBinding
 import ani.saikou.databinding.ItemUrlBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
+import ani.saikou.parsers.VideoExtractor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -56,14 +59,16 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
             media = m
             if (media != null && !loaded) {
                 loaded = true
-                episode = media?.anime?.episodes?.get(media?.anime?.selectedEpisode)
-                if (episode != null) {
+                val ep =  media?.anime?.episodes?.get(media?.anime?.selectedEpisode)
+                episode = ep
+                if (ep != null) {
+
                     if (selected != null) {
                         binding.selectorListContainer.visibility = View.GONE
                         binding.selectorAutoListContainer.visibility = View.VISIBLE
                         binding.selectorAutoText.text = selected
                         binding.selectorCancel.setOnClickListener {
-                            media!!.selected!!.stream = null
+                            media!!.selected!!.server = null
                             model.saveSelected(media!!.id, media!!.selected!!, requireActivity())
                             dismiss()
                         }
@@ -73,17 +78,15 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
                         }
 
                         fun load() {
-                            if (episode?.streamLinks?.containsKey(selected) == true) {
-                                if (episode!!.streamLinks[selected]!!.quality.size >= media!!.selected!!.quality) {
-                                    media!!.anime!!.episodes?.get(media!!.anime!!.selectedEpisode!!)?.selectedStream =
-                                        selected
-                                    media!!.anime!!.episodes?.get(media!!.anime!!.selectedEpisode!!)?.selectedQuality =
-                                        media!!.selected!!.quality
-                                    startExoplayer(media!!)
-                                } else fail()
+                            val size = ep.extractors?.find { it.server.name == selected }?.videos?.size
+                            if (size!=null && size >= media!!.selected!!.video) {
+                                media!!.anime!!.episodes?.get(media!!.anime!!.selectedEpisode!!)?.selectedServer = selected
+                                media!!.anime!!.episodes?.get(media!!.anime!!.selectedEpisode!!)?.selectedVideo = media!!.selected!!.video
+                                startExoplayer(media!!)
                             } else fail()
                         }
-                        if (episode?.streamLinks?.isEmpty() == true || episode?.saveStreams == false) {
+                        
+                        if (ep.extractors.isNullOrEmpty()) {
                             model.getEpisode().observe(this) {
                                 if (it != null) {
                                     episode = it
@@ -92,14 +95,15 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
                             }
                             scope.launch {
                                 if (withContext(Dispatchers.IO) {
-                                        !model.loadEpisodeStream(
-                                            episode!!,
+                                        !model.loadEpisodeSingleVideo(
+                                            ep,
                                             media!!.selected!!
                                         )
                                     }) fail()
                             }
                         } else load()
-                    } else {
+                    }
+                    else {
                         binding.selectorRecyclerView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                             bottomMargin = navBarHeight
                         }
@@ -111,30 +115,32 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
                             makeDefault = binding.selectorMakeDefault.isChecked
                             saveData("make_default", makeDefault)
                         }
-                        fun load() {
-                            binding.selectorProgressBar.visibility = View.GONE
-                            media!!.anime?.episodes?.set(
-                                media!!.anime?.selectedEpisode ?: "",
-                                episode!!
-                            )
-                            binding.selectorRecyclerView.layoutManager = LinearLayoutManager(
-                                requireActivity(),
-                                LinearLayoutManager.VERTICAL,
-                                false
-                            )
-                            binding.selectorRecyclerView.adapter = StreamAdapter()
-                        }
-                        if (episode!!.streamLinks.isEmpty() || !episode!!.allStreams || episode?.saveStreams == false) {
+                        binding.selectorRecyclerView.layoutManager =
+                            LinearLayoutManager(requireActivity(), LinearLayoutManager.VERTICAL, false)
+                        val adapter = ExtractorAdapter()
+                        binding.selectorRecyclerView.adapter = adapter
+                        if (!ep.allStreams ) {
+                            ep.extractorCallback = {
+                                scope.launch {
+                                    adapter.add(it)
+                                }
+                            }
                             model.getEpisode().observe(this) {
                                 if (it != null) {
-                                    episode = it
-                                    load()
+                                    media!!.anime?.episodes?.set(media!!.anime?.selectedEpisode!!, ep)
                                 }
                             }
                             scope.launch(Dispatchers.IO) {
-                                model.loadEpisodeStreams(episode!!, media!!.selected!!.source)
+                                model.loadEpisodeVideos(ep, media!!.selected!!.source)
+                                withContext(Dispatchers.Main){
+                                    binding.selectorProgressBar.visibility = View.GONE
+                                }
                             }
-                        } else load()
+                        } else {
+                            media!!.anime?.episodes?.set(media!!.anime?.selectedEpisode!!, ep)
+                            adapter.addAll(ep.extractors)
+                            binding.selectorProgressBar.visibility = View.GONE
+                        }
                     }
                 }
             }
@@ -148,6 +154,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
 
         dismiss()
         if (launch!!) {
+            stopAddingToList()
             val intent = Intent(activity, ExoplayerView::class.java).apply {
                 putExtra("media", media)
             }
@@ -157,27 +164,45 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private inner class StreamAdapter : RecyclerView.Adapter<StreamAdapter.StreamViewHolder>() {
-        val links = episode!!.streamLinks
-        val keys = links.keys.toList()
+    private fun stopAddingToList() {
+        episode?.extractorCallback = null
+        episode?.also {
+            it.extractors = it.extractors?.toMutableList()
+        }
+    }
+
+    private inner class ExtractorAdapter : RecyclerView.Adapter<ExtractorAdapter.StreamViewHolder>() {
+        val links = mutableListOf<VideoExtractor>()
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StreamViewHolder =
             StreamViewHolder(ItemStreamBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
         override fun onBindViewHolder(holder: StreamViewHolder, position: Int) {
-            val server = if (position < keys.size) links[keys[position]]?.server else null
-            if (server != null) {
-                holder.binding.streamName.text = server
+            val extractor = links[position]
+            holder.binding.streamName.text = extractor.server.name
+
                 holder.binding.streamRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-                holder.binding.streamRecyclerView.adapter = QualityAdapter(server)
-            }
+                holder.binding.streamRecyclerView.adapter = VideoAdapter(extractor)
+
         }
 
         override fun getItemCount(): Int = links.size
+
+        fun add(videoExtractor: VideoExtractor){
+            if(videoExtractor.videos.isNotEmpty()) {
+                links.add(videoExtractor)
+                notifyItemInserted(links.size - 1)
+            }
+        }
+
+        fun addAll(extractors: List<VideoExtractor>?) {
+            links.addAll(extractors?:return)
+            notifyItemRangeInserted(0,extractors.size)
+        }
+
         private inner class StreamViewHolder(val binding: ItemStreamBinding) : RecyclerView.ViewHolder(binding.root)
     }
 
-    private inner class QualityAdapter(private val stream: String) : RecyclerView.Adapter<QualityAdapter.UrlViewHolder>() {
-        val urls = episode!!.streamLinks[stream]!!.quality
+    private inner class VideoAdapter(private val extractor : VideoExtractor) : RecyclerView.Adapter<VideoAdapter.UrlViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UrlViewHolder {
             return UrlViewHolder(ItemUrlBinding.inflate(LayoutInflater.from(parent.context), parent, false))
@@ -186,40 +211,56 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
         @SuppressLint("SetTextI18n")
         override fun onBindViewHolder(holder: UrlViewHolder, position: Int) {
             val binding = holder.binding
-            val url = urls[position]
-            binding.urlQuality.text = url.quality
-            binding.urlNote.text = url.note ?: ""
-            binding.urlNote.visibility = if (url.note != null) View.VISIBLE else View.GONE
-            if (url.quality != "Multi Quality") {
-                binding.urlSize.visibility = if (url.size != null) View.VISIBLE else View.GONE
+            val video = extractor.videos[position]
+            binding.urlQuality.text = if(video.quality!=null) "${video.quality}p" else "Default Quality"
+            binding.urlNote.text = video.extraNote ?: ""
+            binding.urlNote.visibility = if (video.extraNote != null) View.VISIBLE else View.GONE
+            if (!video.isM3U8) {
+                binding.urlSize.visibility = if (video.size != null) View.VISIBLE else View.GONE
                 binding.urlSize.text =
-                    (if (url.note != null) " : " else "") + DecimalFormat("#.##").format(url.size ?: 0).toString() + " MB"
+                    (if (video.extraNote != null) " : " else "") + DecimalFormat("#.##").format(video.size ?: 0).toString() + " MB"
                 binding.urlDownload.visibility = View.VISIBLE
-                binding.urlDownload.setOnClickListener {
-                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedStream = stream
-                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedQuality = position
+                binding.urlDownload.setSafeOnClickListener {
+                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedServer = extractor.server.name
+                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedVideo = position
+                    binding.urlDownload.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                     download(
                         requireActivity(),
                         media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!,
                         media!!.userPreferredName
                     )
+                    dismiss()
                 }
-            } else binding.urlDownload.visibility = View.GONE
+            }
+            else {
+                binding.urlQuality.text = "Multi Quality"
+                binding.urlDownload.visibility = View.GONE
+            }
         }
 
-        override fun getItemCount(): Int = urls.size
+        override fun getItemCount(): Int = extractor.videos.size
 
         private inner class UrlViewHolder(val binding: ItemUrlBinding) : RecyclerView.ViewHolder(binding.root) {
             init {
-                itemView.setOnClickListener {
-                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedStream = stream
-                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedQuality = bindingAdapterPosition
+                itemView.setSafeOnClickListener {
+                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedServer = extractor.server.name
+                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedVideo = bindingAdapterPosition
                     if (makeDefault) {
-                        media!!.selected!!.stream = stream
-                        media!!.selected!!.quality = bindingAdapterPosition
+                        media!!.selected!!.server = extractor.server.name
+                        media!!.selected!!.video = bindingAdapterPosition
                         model.saveSelected(media!!.id, media!!.selected!!, requireActivity())
                     }
                     startExoplayer(media!!)
+                }
+                itemView.setOnLongClickListener {
+                    val video = extractor.videos[bindingAdapterPosition]
+                    val intent= Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(Uri.parse(video.url.url),"video/*")
+                    }
+                    copyToClipboard(video.url.url,true)
+                    dismiss()
+                    startActivity(Intent.createChooser(intent,"Open Video in :"))
+                    true
                 }
             }
         }

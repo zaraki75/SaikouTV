@@ -4,26 +4,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.leanback.app.VerticalGridSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.Presenter
 import androidx.leanback.widget.VerticalGridPresenter
-import androidx.recyclerview.widget.RecyclerView
-import ani.saikou.anime.source.AnimeSources
-import ani.saikou.anime.source.HAnimeSources
-import ani.saikou.anime.source.WatchSources
-import ani.saikou.databinding.ItemEpisodeListBinding
 import ani.saikou.databinding.TvItemSourceBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 
 class TVSourceSelectorFragment(var media: Media): VerticalGridSupportFragment() {
 
-    open val watchSources: WatchSources = AnimeSources
-    val model : MediaDetailsViewModel by viewModels()
+    val model : MediaDetailsViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,11 +42,9 @@ class TVSourceSelectorFragment(var media: Media): VerticalGridSupportFragment() 
         }*/
 
         if (media != null) {
-
             val objectAdapter = ArrayObjectAdapter(SourceAdapter())
-            objectAdapter.addAll(0, watchSources.names)
+            objectAdapter.addAll(0, model.watchSources?.names)
             adapter = objectAdapter
-
         }
 
         super.onViewCreated(view, savedInstanceState)
@@ -62,11 +52,11 @@ class TVSourceSelectorFragment(var media: Media): VerticalGridSupportFragment() 
 
     fun onSourceChange(selectedSourceName: String) {
 
-        val selectedSourceIndex = watchSources.names.indexOfFirst { it == selectedSourceName }
+        val selectedSourceIndex = model.watchSources?.names?.indexOfFirst { it == selectedSourceName }
         media?.anime?.episodes = null
         val selected = model.loadSelected(media!!)
-        selected.source = selectedSourceIndex
-        selected.stream = null
+        selected.source = selectedSourceIndex!!
+        selected.server = null
         model.saveSelected(media!!.id, selected, requireActivity())
         media!!.selected = selected
         requireActivity().supportFragmentManager.popBackStack()

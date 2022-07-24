@@ -2,28 +2,28 @@ package ani.saikou.anilist
 
 import android.app.Activity
 import ani.saikou.*
-import ani.saikou.anilist.api.Data
 import ani.saikou.anilist.api.FuzzyDate
 import ani.saikou.anilist.api.Query
 import ani.saikou.anilist.api.User
 import ani.saikou.media.Character
 import ani.saikou.media.Media
 import ani.saikou.media.Studio
-import ani.saikou.others.logError
+import ani.saikou.others.Mal
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import java.io.Serializable
-import java.net.UnknownHostException
+import kotlin.system.measureTimeMillis
 
-suspend fun executeQuery(
+suspend inline fun <reified T : Any> executeQuery(
     query: String,
     variables: String = "",
     force: Boolean = false,
     useToken: Boolean = true,
-    show: Boolean = false
-): Data? {
-    try {
+    show: Boolean = false,
+    cache: Int? = null
+): T? {
+    return tryWithSuspend {
         val data = mapOf(
             "query" to query,
             "variables" to variables
@@ -35,15 +35,13 @@ suspend fun executeQuery(
 
         if (Anilist.token != null || force) {
             if (Anilist.token != null && useToken) headers["Authorization"] = "Bearer ${Anilist.token}"
-            val json = httpClient.post("https://graphql.anilist.co/", headers, data = data)
+
+            val json = client.post("https://graphql.anilist.co/", headers, data = data, cacheTime = cache ?: 10)
+            if(!json.text.startsWith("{")) throw Exception("Seems like Anilist is down, maybe try using a VPN or you can wait for it to comeback.")
             if (show) toastString("Response : ${json.text}")
-            return json.parsed<Query>().data
-        }
-    } catch (e: Exception) {
-        if (e is UnknownHostException) toastString("Network error, please Retry.")
-        else logError(e)
+            json.parsed()
+        } else null
     }
-    return null
 }
 
 data class SearchResults(
@@ -63,9 +61,12 @@ data class SearchResults(
 
 class AnilistQueries {
     suspend fun getUserData(): Boolean {
-        val response =
-            executeQuery("""{Viewer {name options{ displayAdultContent } avatar{medium} bannerImage id statistics{anime{episodesWatched}manga{chaptersRead}}}}""")
-        val user = response?.Viewer ?: return false
+        val response: Query.Viewer?
+        measureTimeMillis {
+            response =
+                executeQuery("""{Viewer {name options{ displayAdultContent } avatar{medium} bannerImage id statistics{anime{episodesWatched}manga{chaptersRead}}}}""")
+        }.also { println("time : $it") }
+        val user = response?.data?.user ?: return false
 
         Anilist.userid = user.id
         Anilist.username = user.name
@@ -78,24 +79,24 @@ class AnilistQueries {
     }
 
     suspend fun getMedia(id: Int, mal: Boolean = false): Media? {
-        val response = executeQuery(
+        val response = executeQuery<Query.Media>(
             """{Media(${if (!mal) "id:" else "idMal:"}$id){id idMal status chapters episodes nextAiringEpisode{episode}type meanScore isAdult isFavourite bannerImage coverImage{large}title{english romaji userPreferred}mediaListEntry{progress score(format:POINT_100)status}}}""",
             force = true
         )
-        val fetchedMedia = response?.Media ?: return null
+        val fetchedMedia = response?.data?.media ?: return null
         return Media(fetchedMedia)
     }
 
     fun mediaDetails(media: Media): Media {
         media.cameFromContinue = false
         val query =
-            """{Media(id:${media.id}){mediaListEntry{id status score(format:POINT_100) progress repeat updatedAt startedAt{year month day}completedAt{year month day}}isFavourite siteUrl idMal nextAiringEpisode{episode airingAt}source countryOfOrigin format duration season seasonYear startDate{year month day}endDate{year month day}genres studios(isMain:true){nodes{id name siteUrl}}description trailer { site id } synonyms tags { name rank isMediaSpoiler } characters(sort:[ROLE,FAVOURITES_DESC],perPage:25,page:1){edges{role node{id image{medium}name{userPreferred}}}}relations{edges{relationType(version:2)node{id idMal mediaListEntry{progress score(format:POINT_100) status} episodes chapters nextAiringEpisode{episode} popularity meanScore isAdult isFavourite title{english romaji userPreferred}type status(version:2)bannerImage coverImage{large}}}}recommendations(sort:RATING_DESC){nodes{mediaRecommendation{id idMal mediaListEntry{progress score(format:POINT_100) status} episodes chapters nextAiringEpisode{episode}meanScore isAdult isFavourite title{english romaji userPreferred}type status(version:2)bannerImage coverImage{large}}}}externalLinks{url site}}}"""
+            """{Media(id:${media.id}){id mediaListEntry{id status score(format:POINT_100) progress repeat updatedAt startedAt{year month day}completedAt{year month day}}isFavourite siteUrl idMal nextAiringEpisode{episode airingAt}source countryOfOrigin format duration season seasonYear startDate{year month day}endDate{year month day}genres studios(isMain:true){nodes{id name siteUrl}}description trailer { site id } synonyms tags { name rank isMediaSpoiler } characters(sort:[ROLE,FAVOURITES_DESC],perPage:25,page:1){edges{role node{id image{medium}name{userPreferred}}}}relations{edges{relationType(version:2)node{id idMal mediaListEntry{progress score(format:POINT_100) status} episodes chapters nextAiringEpisode{episode} popularity meanScore isAdult isFavourite title{english romaji userPreferred}type status(version:2)bannerImage coverImage{large}}}}recommendations(sort:RATING_DESC){nodes{mediaRecommendation{id idMal mediaListEntry{progress score(format:POINT_100) status} episodes chapters nextAiringEpisode{episode}meanScore isAdult isFavourite title{english romaji userPreferred}type status(version:2)bannerImage coverImage{large}}}}externalLinks{url site}}}"""
         runBlocking {
             val anilist = async {
-                var response = executeQuery(query, force = true)
+                var response = executeQuery<Query.Media>(query, force = true)
                 if (response != null) {
                     fun parse() {
-                        val fetchedMedia = response?.Media ?: return
+                        val fetchedMedia = response?.data?.media ?: return
 
                         media.source = fetchedMedia.source.toString()
                         media.countryOfOrigin = fetchedMedia.countryOfOrigin
@@ -126,7 +127,7 @@ class AnilistQueries {
                         fetchedMedia.tags?.apply {
                             media.tags = arrayListOf()
                             this.forEach { i ->
-                                if (i.isMediaSpoiler == true)
+                                if (i.isMediaSpoiler == false)
                                     media.tags.add("${i.name} : ${i.rank.toString()}%")
                             }
                         }
@@ -155,17 +156,16 @@ class AnilistQueries {
                                 val m = Media(mediaEdge)
                                 media.relations?.add(m)
                                 if (m.relation == "SEQUEL") {
-                                    media.sequel?.apply {
-                                        media.sequel = if (popularity ?: 0 < m.popularity ?: 0) m else this
-                                    }
+                                    media.sequel = if ((media.sequel?.popularity ?: 0) < (m.popularity ?: 0)) m else media.sequel
 
                                 } else if (m.relation == "PREQUEL") {
-                                    media.prequel?.apply {
-                                        media.prequel = if (popularity ?: 0 < m.popularity ?: 0) m else this
-                                    }
+                                    media.prequel =
+                                        if ((media.prequel?.popularity ?: 0) < (m.popularity ?: 0)) m else media.prequel
                                 }
                             }
                             media.relations?.sortByDescending { it.popularity }
+                            media.relations?.sortByDescending { it.startDate?.year }
+                            media.relations?.sortBy { it.relation }
                         }
                         if (fetchedMedia.recommendations != null) {
                             media.recommendations = arrayListOf()
@@ -220,8 +220,10 @@ class AnilistQueries {
                             media.anime.nextAiringEpisodeTime = fetchedMedia.nextAiringEpisode?.airingAt?.toLong()
 
                             fetchedMedia.externalLinks?.forEach { i ->
-                                if (i.site == "YouTube") {
-                                    media.anime.youtube = i.url
+                                when (i.site) {
+                                    "Youtube" -> media.anime.youtube = i.url
+                                    "Crunchyroll" -> media.crunchySlug = i.url?.split("/")?.getOrNull(3)
+                                    "VRV" -> media.vrvId = i.url?.split("/")?.getOrNull(4)
                                 }
                             }
                         } else if (media.manga != null) {
@@ -230,11 +232,11 @@ class AnilistQueries {
                         media.shareLink = fetchedMedia.siteUrl
                     }
 
-                    if (response.Media != null) parse()
+                    if (response.data?.media != null) parse()
                     else {
                         toastString("Adult Stuff? ( ͡° ͜ʖ ͡°)")
                         response = executeQuery(query, force = true, useToken = false)
-                        if (response?.Media != null) parse()
+                        if (response?.data?.media != null) parse()
                         else toastString("What did you even open?")
                     }
                 } else {
@@ -243,7 +245,7 @@ class AnilistQueries {
             }
             val mal = async {
                 if (media.idMAL != null) {
-                    getMalMedia(media)
+                    Mal.loadMedia(media)
                 }
             }
             awaitAll(anilist, mal)
@@ -257,8 +259,8 @@ class AnilistQueries {
         val statuses = arrayOf("CURRENT", "REPEATING")
         suspend fun repeat(status: String) {
             val response =
-                executeQuery(""" { MediaListCollection(userId: ${Anilist.userid}, type: $type, status: $status , sort: UPDATED_TIME ) { lists { entries { progress score(format:POINT_100) status media { id idMal type isAdult status chapters episodes nextAiringEpisode {episode} meanScore isFavourite bannerImage coverImage{large} title { english romaji userPreferred } } } } } } """)
-            response?.MediaListCollection?.lists?.forEach { li ->
+                executeQuery<Query.MediaListCollection>(""" { MediaListCollection(userId: ${Anilist.userid}, type: $type, status: $status , sort: UPDATED_TIME ) { lists { entries { progress score(format:POINT_100) status media { id idMal type isAdult status chapters episodes nextAiringEpisode {episode} meanScore isFavourite bannerImage coverImage{large} title { english romaji userPreferred } } } } } } """)
+            response?.data?.mediaListCollection?.lists?.forEach { li ->
                 li.entries?.reversed()?.forEach {
                     val m = Media(it)
                     m.cameFromContinue = true
@@ -284,8 +286,8 @@ class AnilistQueries {
         val responseArray = arrayListOf<Media>()
         try {
             val response =
-                executeQuery("""{User(id:${Anilist.userid}){favourites{${if (anime) "anime" else "manga"}(page:0){edges{favouriteOrder node{id idMal isAdult mediaListEntry{progress score(format:POINT_100)status}chapters isFavourite episodes nextAiringEpisode{episode}meanScore isFavourite title{english romaji userPreferred}type status(version:2)bannerImage coverImage{large}}}}}}}""")
-            val user: User = response?.User ?: return responseArray
+                executeQuery<Query.User>("""{User(id:${Anilist.userid}){id favourites{${if (anime) "anime" else "manga"}(page:0){edges{favouriteOrder node{id idMal isAdult mediaListEntry{progress score(format:POINT_100)status}chapters isFavourite episodes nextAiringEpisode{episode}meanScore isFavourite title{english romaji userPreferred}type status(version:2)bannerImage coverImage{large}}}}}}}""")
+            val user: User = response?.data?.user ?: return responseArray
             val favourites = user.favourites
             val apiMediaList = if (anime) favourites?.anime else favourites?.manga
             apiMediaList?.edges?.forEach {
@@ -303,50 +305,60 @@ class AnilistQueries {
 
     suspend fun recommendations(): ArrayList<Media> {
         val response =
-            executeQuery(""" { Page(page: 1, perPage:30) { pageInfo { total currentPage hasNextPage } recommendations(sort: RATING_DESC, onList: true) { rating userRating mediaRecommendation { id idMal isAdult mediaListEntry {progress score(format:POINT_100) status} chapters isFavourite episodes nextAiringEpisode {episode} meanScore isFavourite title {english romaji userPreferred } type status(version: 2) bannerImage coverImage { large } } } } } """)
-        val responseArray = arrayListOf<Media>()
-        val ids = arrayListOf<Int>()
-        response?.Page?.apply {
-            recommendations?.apply {
-                this.reversed().forEach {
-                    val json = it.mediaRecommendation
-                    if (json != null && json.id !in ids) {
-                        ids.add(json.id)
-                        val m = Media(json)
-                        m.relation = json.type.toString()
-                        responseArray.add(m)
+            executeQuery<Query.Page>(""" { Page(page: 1, perPage:30) { pageInfo { total currentPage hasNextPage } recommendations(sort: RATING_DESC, onList: true) { rating userRating mediaRecommendation { id idMal isAdult mediaListEntry {progress score(format:POINT_100) status} chapters isFavourite episodes nextAiringEpisode {episode} popularity meanScore isFavourite title {english romaji userPreferred } type status(version: 2) bannerImage coverImage { large } } } } } """)
+        val map = mutableMapOf<Int, Media>()
+        response?.data?.page?.apply {
+            recommendations?.onEach {
+                val json = it.mediaRecommendation
+                if (json != null) {
+                    val m = Media(json)
+                    m.relation = json.type?.toString()
+                    map[m.id] = m
+                }
+            }
+        }
+
+        val types = arrayOf("ANIME", "MANGA")
+        suspend fun repeat(type: String) {
+            val res =
+                executeQuery<Query.MediaListCollection>(""" { MediaListCollection(userId: ${Anilist.userid}, type: $type, status: PLANNING , sort: MEDIA_POPULARITY_DESC ) { lists { entries { media { id mediaListEntry {progress score(format:POINT_100) status} idMal type isAdult popularity status(version: 2) chapters episodes nextAiringEpisode {episode} meanScore isFavourite bannerImage coverImage{large} title { english romaji userPreferred } } } } } } """)
+            res?.data?.mediaListCollection?.lists?.forEach { li ->
+                li.entries?.forEach {
+                    val m = Media(it)
+                    if (m.status == "RELEASING" || m.status == "FINISHED") {
+                        m.relation = it.media?.type?.toString()
+                        map[m.id] = m
                     }
                 }
             }
         }
-        return responseArray
+        types.forEach { repeat(it) }
+
+        val list = ArrayList(map.values.toList())
+        list.sortByDescending { it.meanScore }
+        return list
     }
 
     private suspend fun bannerImage(type: String): String? {
         var image = loadData<BannerImage>("banner_$type")
         if (image == null || image.checkTime()) {
             val response =
-                executeQuery("""{ MediaListCollection(userId: ${Anilist.userid}, type: $type, chunk:1,perChunk:25, sort: [SCORE_DESC,UPDATED_TIME_DESC]) { lists { entries{ media { bannerImage } } } } } """)
-            val mediaListCollection = response?.MediaListCollection ?: return null
-            val allImages = arrayListOf<String>()
-            mediaListCollection.lists?.forEach {
-                it.entries?.forEach { entry ->
+                executeQuery<Query.MediaListCollection>("""{ MediaListCollection(userId: ${Anilist.userid}, type: $type, chunk:1,perChunk:25, sort: [SCORE_DESC,UPDATED_TIME_DESC]) { lists { entries{ media { id bannerImage } } } } } """)
+            val random = response?.data?.mediaListCollection?.lists?.mapNotNull {
+                it.entries?.mapNotNull { entry ->
                     val imageUrl = entry.media?.bannerImage
-                    if (imageUrl != null && imageUrl != "null") allImages.add(imageUrl)
+                    if (imageUrl != null && imageUrl != "null") imageUrl
+                    else null
                 }
-            }
+            }?.flatten()?.randomOrNull() ?: return null
 
-            if (allImages.isNotEmpty()) {
-                val rand = kotlin.random.Random.nextInt(0, allImages.size)
-                image = BannerImage(
-                    allImages[rand],
-                    System.currentTimeMillis()
-                )
-                saveData("banner_$type", image)
-                return image.url
-            }
+            image = BannerImage(
+                random,
+                System.currentTimeMillis()
+            )
+            saveData("banner_$type", image)
+            return image.url
         } else return image.url
-        return null
     }
 
     suspend fun getBannerImages(): ArrayList<String?> {
@@ -356,15 +368,15 @@ class AnilistQueries {
         return default
     }
 
-    suspend fun getMediaLists(anime: Boolean, userId: Int): MutableMap<String, ArrayList<Media>> {
+    suspend fun getMediaLists(anime: Boolean, userId: Int, sortOrder: String? = null): MutableMap<String, ArrayList<Media>> {
         val response =
-            executeQuery("""{ MediaListCollection(userId: $userId, type: ${if (anime) "ANIME" else "MANGA"}) { lists { name entries { status progress score(format:POINT_100) updatedAt media { id idMal isAdult type status chapters episodes nextAiringEpisode {episode} bannerImage meanScore isFavourite coverImage{large} title {english romaji userPreferred } } } } user { mediaListOptions { rowOrder animeList { sectionOrder } mangaList { sectionOrder } } } } }""")
+            executeQuery<Query.MediaListCollection>("""{ MediaListCollection(userId: $userId, type: ${if (anime) "ANIME" else "MANGA"}) { lists { name entries { status progress score(format:POINT_100) updatedAt media { id idMal isAdult type status chapters episodes nextAiringEpisode {episode} bannerImage meanScore isFavourite coverImage{large} title {english romaji userPreferred } } } } user { id mediaListOptions { rowOrder animeList { sectionOrder } mangaList { sectionOrder } } } } }""")
         val sorted = mutableMapOf<String, ArrayList<Media>>()
         val unsorted = mutableMapOf<String, ArrayList<Media>>()
         val all = arrayListOf<Media>()
         val allIds = arrayListOf<Int>()
 
-        response?.MediaListCollection?.lists?.forEach { i ->
+        response?.data?.mediaListCollection?.lists?.forEach { i ->
             val name = i.name.toString().trim('"')
             unsorted[name] = arrayListOf()
             i.entries?.forEach {
@@ -377,16 +389,16 @@ class AnilistQueries {
             }
         }
 
-        val options = response?.MediaListCollection?.user?.mediaListOptions
+        val options = response?.data?.mediaListCollection?.user?.mediaListOptions
         val mediaList = if (anime) options?.animeList else options?.mangaList
         mediaList?.sectionOrder?.forEach {
             if (unsorted.containsKey(it)) sorted[it] = unsorted[it]!!
         }
         val favResponse =
-            executeQuery("""{User(id:$userId){favourites{${if (anime) "anime" else "manga"}(page:0){edges{favouriteOrder node{id idMal isAdult mediaListEntry{progress score(format:POINT_100)status}chapters isFavourite episodes nextAiringEpisode{episode}meanScore isFavourite title{english romaji userPreferred}type status(version:2)bannerImage coverImage{large}}}}}}}""")
+            executeQuery<Query.User>("""{User(id:$userId){id favourites{${if (anime) "anime" else "manga"}(page:0){edges{favouriteOrder node{id idMal isAdult mediaListEntry{progress score(format:POINT_100)status}chapters isFavourite episodes nextAiringEpisode{episode}meanScore isFavourite title{english romaji userPreferred}type status(version:2)bannerImage coverImage{large}}}}}}}""")
 
 
-        favResponse?.User?.apply {
+        favResponse?.data?.user?.apply {
             sorted["Favourites"] = arrayListOf()
             val apiMediaList = if (anime) favourites?.anime else favourites?.manga
             apiMediaList?.edges?.forEach {
@@ -402,7 +414,7 @@ class AnilistQueries {
 
         sorted["All"] = all
 
-        val sort = options?.rowOrder
+        val sort = sortOrder ?: options?.rowOrder
         for (i in sorted.keys) {
             when (sort) {
                 "score"     -> sorted[i]?.sortWith { b, a -> compareValuesBy(a, b, { it.userScore }, { it.meanScore }) }
@@ -420,7 +432,11 @@ class AnilistQueries {
         var tags: ArrayList<String>? = loadData("tags_list", activity)
 
         if (genres == null) {
-            executeQuery("""{GenreCollection}""", force = true, useToken = false)?.GenreCollection?.apply {
+            executeQuery<Query.GenreCollection>(
+                """{GenreCollection}""",
+                force = true,
+                useToken = false
+            )?.data?.genreCollection?.apply {
                 genres = arrayListOf()
                 forEach {
                     genres?.add(it)
@@ -429,7 +445,10 @@ class AnilistQueries {
             }
         }
         if (tags == null) {
-            executeQuery("""{ MediaTagCollection { name isAdult } }""", force = true)?.MediaTagCollection?.apply {
+            executeQuery<Query.MediaTagCollection>(
+                """{ MediaTagCollection { name isAdult } }""",
+                force = true
+            )?.data?.mediaTagCollection?.apply {
                 tags = arrayListOf()
                 forEach { node ->
                     if (node.isAdult == true) tags?.add(node.name)
@@ -459,8 +478,8 @@ class AnilistQueries {
         if (genres.checkGenreTime(genre)) {
             try {
                 val genreQuery =
-                    """{ Page(perPage: 10){media(genre:"$genre", sort: TRENDING_DESC, type: ANIME, countryOfOrigin:"JP") {id bannerImage } } }"""
-                executeQuery(genreQuery, force = true)?.Page?.media?.forEach {
+                    """{ Page(perPage: 10){media(genre:"$genre", sort: TRENDING_DESC, type: ANIME, countryOfOrigin:"JP") {id bannerImage title{english romaji userPreferred} } } }"""
+                executeQuery<Query.Page>(genreQuery, force = true)?.data?.page?.media?.forEach {
                     if (genres.checkId(it.id) && it.bannerImage != null) {
                         genres[genre] = Genre(
                             genre,
@@ -548,7 +567,7 @@ query (${"$"}page: Int = 1, ${"$"}id: Int, ${"$"}type: MediaType, ${"$"}isAdult:
             ${if (genres?.isNotEmpty() == true) ""","genres":"${genres[0]}"""" else ""}
             ${if (tags?.isNotEmpty() == true) ""","tags":"${tags[0]}"""" else ""}
             }""".replace("\n", " ").replace("""  """, "")
-        val response = executeQuery(query, variables, true)?.Page
+        val response = executeQuery<Query.Page>(query, variables, true)?.data?.page
         if (response?.media != null) {
             val responseArray = arrayListOf<Media>()
             response.media?.forEach { i ->
@@ -626,7 +645,7 @@ Page(page:1,perPage:50) {
     }
 }
         }""".replace("\n", " ").replace("""  """, "")
-        val response = executeQuery(query, force = true)?.Page?.airingSchedules ?: return null
+        val response = executeQuery<Query.Page>(query, force = true)?.data?.page?.airingSchedules ?: return null
 
         val responseArray = arrayListOf<Media>()
         val idArr = arrayListOf<Int>()
@@ -696,7 +715,7 @@ Page(page:1,perPage:50) {
     }
   }
 }""".replace("\n", " ").replace("""  """, "")
-        executeQuery(query, force = true)?.Character?.apply {
+        executeQuery<Query.Character>(query, force = true)?.data?.character?.apply {
             character.age = age
             character.gender = gender
             character.description = description
@@ -714,6 +733,7 @@ Page(page:1,perPage:50) {
     suspend fun getStudioDetails(studio: Studio): Studio {
         fun query(page: Int = 0) = """ {
   Studio(id: ${studio.id}) {
+    id
     media(page: $page,sort:START_DATE_DESC) {
       pageInfo{
         hasNextPage
@@ -750,12 +770,13 @@ Page(page:1,perPage:50) {
     }
   }
 }""".replace("\n", " ").replace("""  """, "")
+
         var hasNextPage = true
         val yearMedia = mutableMapOf<String, ArrayList<Media>>()
         var page = 0
         while (hasNextPage) {
             page++
-            executeQuery(query(page), force = true)?.Studio?.media?.apply {
+            executeQuery<Query.Studio>(query(page), force = true)?.data?.studio?.media?.apply {
                 hasNextPage = pageInfo?.hasNextPage == true
                 edges?.forEach { i ->
                     i.node?.apply {
