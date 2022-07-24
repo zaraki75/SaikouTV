@@ -44,6 +44,7 @@ import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.ActivityExoplayerBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
+import ani.saikou.others.ResettableTimer
 import ani.saikou.parsers.*
 import ani.saikou.settings.PlayerSettings
 import ani.saikou.settings.UserInterfaceSettings
@@ -135,9 +136,6 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
     private var pipEnabled = false
     private var aspectRatio = Rational(16, 9)
-
-    private var t1 = Timer()
-    private var t2 = Timer()
 
     private var settings = PlayerSettings()
     private var uiSettings = UserInterfaceSettings()
@@ -426,15 +424,52 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
 
         val rewindText = playerView.findViewById<TextView>(R.id.exo_fast_rewind_anim)
-        rewindText.text = "-${settings.seekTime}"
         val forwardText = playerView.findViewById<TextView>(R.id.exo_fast_forward_anim)
-        forwardText.text = "+${settings.seekTime}"
-
         val fastForwardCard = playerView.findViewById<View>(R.id.exo_fast_forward)
         val fastRewindCard = playerView.findViewById<View>(R.id.exo_fast_rewind)
 
         //Screen Gestures
         if (settings.gestures || settings.doubleTap) {
+
+            val seekTimerF = ResettableTimer()
+            val seekTimerR = ResettableTimer()
+            var seekTimesF = 0
+            var seekTimesR = 0
+
+            fun doubleTap(view: View, event: MotionEvent?, text: TextView, dir: Boolean) {
+                if (!locked && isInitialized && settings.doubleTap) {
+                    if (dir) {
+                        text.text = "+${settings.seekTime * ++seekTimesF}"
+                        handler.post { exoPlayer.seekTo(exoPlayer.currentPosition + settings.seekTime * 1000) }
+                    }
+                    else {
+                        text.text = "-${settings.seekTime * ++seekTimesR}"
+                        handler.post { exoPlayer.seekTo(exoPlayer.currentPosition - settings.seekTime * 1000) }
+                    }
+                    startDoubleTapped(
+                        view,
+                        event,
+                        text
+                    )
+                    if(dir){
+                        seekTimerR.reset(object : TimerTask() {
+                            override fun run() {
+                                stopDoubleTapped(view, text)
+                                seekTimesF = 0
+                            }
+                        }, 850)
+                    }
+                    else {
+                        seekTimerF.reset(object : TimerTask() {
+                            override fun run() {
+                                stopDoubleTapped(view, text)
+                                seekTimesR = 0
+                            }
+                        }, 850)
+                    }
+                }
+            }
+
             //Brightness
             var brightnessTimer = Timer()
             exoBrightnessCont.visibility = View.GONE
@@ -462,14 +497,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             //FastRewind (Left Panel)
             val fastRewindDetector = GestureDetector(this, object : GesturesListener() {
                 override fun onDoubleClick(event: MotionEvent?) {
-                    if (!locked && isInitialized && settings.doubleTap) {
-                        exoPlayer.seekTo(exoPlayer.currentPosition - settings.seekTime * 1000)
-                        viewDoubleTapped(
-                            fastRewindCard,
-                            event,
-                            rewindText
-                        )
-                    }
+                    doubleTap(fastRewindCard, event, rewindText, false)
                 }
 
                 override fun onScrollYClick(y: Float) {
@@ -518,14 +546,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             //FastForward (Right Panel)
             val fastForwardDetector = GestureDetector(this, object : GesturesListener() {
                 override fun onDoubleClick(event: MotionEvent?) {
-                    if (!locked && isInitialized && settings.doubleTap) {
-                        exoPlayer.seekTo(exoPlayer.currentPosition + settings.seekTime * 1000)
-                        viewDoubleTapped(
-                            fastForwardCard,
-                            event,
-                            forwardText
-                        )
-                    }
+                    doubleTap(fastForwardCard, event, forwardText, true)
                 }
 
                 override fun onScrollYClick(y: Float) {
@@ -556,13 +577,13 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             playerView.findViewById<ImageButton>(R.id.exo_fast_forward_button).setOnClickListener {
                 if (isInitialized) {
                     exoPlayer.seekTo(exoPlayer.currentPosition + settings.seekTime * 1000)
-                    viewDoubleTapped(fastForwardCard, text = forwardText)
+                    startDoubleTapped(fastForwardCard, text = forwardText)
                 }
             }
             playerView.findViewById<ImageButton>(R.id.exo_fast_rewind_button).setOnClickListener {
                 if (isInitialized) {
                     exoPlayer.seekTo(exoPlayer.currentPosition - settings.seekTime * 1000)
-                    viewDoubleTapped(fastRewindCard, text = rewindText)
+                    startDoubleTapped(fastRewindCard, text = rewindText)
                 }
             }
         }
@@ -1171,29 +1192,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     }
 
     //Double Tap Animation
-    private fun hideLayer(v: View, text: View) {
-        val timerTask = object : TimerTask() {
-            override fun run() {
-                handler.post {
-                    ObjectAnimator.ofFloat(v, "alpha", v.alpha, 0f).setDuration(150).start()
-                    ObjectAnimator.ofFloat(text, "alpha", 1f, 0f).setDuration(150).start()
-                }
-            }
-        }
-        if (v.id == R.id.exo_fast_forward) {
-            t1.cancel()
-            t1.purge()
-            t1 = Timer()
-            t1.schedule(timerTask, 450)
-        } else {
-            t2.cancel()
-            t2.purge()
-            t2 = Timer()
-            t2.schedule(timerTask, 450)
-        }
-    }
-
-    private fun viewDoubleTapped(v: View, event: MotionEvent? = null, text: TextView) {
+    private fun startDoubleTapped(v: View, event: MotionEvent? = null, text: TextView) {
         ObjectAnimator.ofFloat(text, "alpha", 1f, 1f).setDuration(600).start()
         ObjectAnimator.ofFloat(text, "alpha", 0f, 1f).setDuration(150).start()
 
@@ -1207,12 +1206,16 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             ObjectAnimator.ofFloat(v, "alpha", 1f, 1f).setDuration(600).start()
             ObjectAnimator.ofFloat(v, "alpha", 0f, 1f).setDuration(300).start()
         }
-
-        v.postDelayed({
-            hideLayer(v, text)
-        }, 450)
     }
 
+    private fun stopDoubleTapped(v: View, text: TextView) {
+        v.post { handler.post {
+            ObjectAnimator.ofFloat(v, "alpha", v.alpha, 0f).setDuration(150).start()
+            ObjectAnimator.ofFloat(text, "alpha", 1f, 0f).setDuration(150).start()
+        } }
+    }
+
+    // Cast
     private fun cast() {
         val videoURL = video?.url?.url?:return
         val shareVideo = Intent(Intent.ACTION_VIEW)
