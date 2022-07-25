@@ -300,7 +300,9 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         })
 
         setOnSearchClickedListener {
-           parentFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVSearchFragment("ANIME")).commit()
+            val fragment = TVSearchFragment()
+            fragment.setArgs("ANIME", null, null)
+           parentFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, fragment).commit()
         }
 
         setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
@@ -312,7 +314,9 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                         TVDetailActivity::class.java
                     ).putExtra("media", item as Serializable))
             } else if (item is Pair<*,*>) {
-                parentFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, TVSearchFragment("ANIME", item.first as String, "Trending")).commit()
+                val fragment = TVSearchFragment()
+                fragment.setArgs("ANIME", item.first as String, "Trending")
+                parentFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, fragment).commit()
                     //TODO deal with this when we have settings on TV
                     /* if(item.lowercase()=="hentai") {
                         it.putExtra("hentai", true)
@@ -386,7 +390,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         val builder = PreviewProgram.Builder()
         builder.setChannelId(channelID)
             .setType(TvContractCompat.PreviewPrograms.TYPE_TV_SERIES)
-            .setTitle(media.name)
+            .setTitle(media.mainName())
             .setDescription(media.description)
             .setPosterArtUri(Uri.parse(media.banner?:media.cover))
             .setIntent(intent)

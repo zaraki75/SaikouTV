@@ -1,12 +1,11 @@
 package ani.saikou.tv.presenters
 
-import android.graphics.Color
+import ani.saikou.R
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.leanback.widget.Action
 import androidx.leanback.widget.Presenter
 import ani.saikou.databinding.TvDetailActionBinding
-import ani.saikou.tv.components.ButtonListRow
 
 class DetailActionsPresenter(): Presenter() {
 
@@ -15,14 +14,14 @@ class DetailActionsPresenter(): Presenter() {
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder?, item: Any?) {
-        if(item is SourceAction) {
-            (viewHolder as DetailActionsViewHolder)?.let {
-                it.binding.title.text = (item as Action).label1.toString().uppercase()
-            }
-        } else if(item is ChangeAction) {
-            (viewHolder as DetailActionsViewHolder)?.let {
-                it.binding.title.text = (item as Action).label1.toString().uppercase()
-                //it.binding.background.setBackgroundColor(Color.BLACK)
+        (viewHolder as DetailActionsViewHolder)?.let {
+            it.binding.title.text = (item as Action).label1.toString().uppercase()
+            it.binding.background.setOnFocusChangeListener { view, b ->
+                if(b){
+                    view.setBackgroundColor(view.context.getColor(R.color.pink_700))
+                } else {
+                    view.setBackgroundColor(view.context.getColor(R.color.bg_black))
+                }
             }
         }
     }
@@ -30,7 +29,8 @@ class DetailActionsPresenter(): Presenter() {
     override fun onUnbindViewHolder(viewHolder: ViewHolder?) {}
 
     inner class DetailActionsViewHolder(val binding: TvDetailActionBinding) : Presenter.ViewHolder(binding.root) {}
+
+    class SourceAction(id: Long, label: String): Action(id, label) {}
+    class ChangeAction(id: Long, label: String): Action(id, label) {}
 }
 
-class SourceAction(id: Long, label: String): Action(id, label) {}
-class ChangeAction(id: Long, label: String): Action(id, label) {}

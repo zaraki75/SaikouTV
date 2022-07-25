@@ -53,6 +53,12 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
     private var linkSelector: TVSelectorFragment? = null
     private var descriptionPresenter: DetailsDescriptionPresenter? = null
 
+    private lateinit var detailsBackground: DetailsSupportFragmentBackgroundController
+
+    private lateinit var rowsAdapter: ArrayObjectAdapter
+    var episodePresenters = mutableListOf<ArrayObjectAdapter>()
+    private lateinit var detailsOverview: DetailsOverviewRow
+
     private var episodeObserver = Observer<Episode?> {
         if (it != null){
             MainScope().launch {
@@ -61,11 +67,6 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
             }
         }
     }
-    private lateinit var detailsBackground: DetailsSupportFragmentBackgroundController
-
-    private lateinit var rowsAdapter: ArrayObjectAdapter
-    var episodePresenters = mutableListOf<ArrayObjectAdapter>()
-    private lateinit var detailsOverview: DetailsOverviewRow
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -349,14 +350,13 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
         actions.clear()
 
         val selected = model.loadSelected(media)
-        //model.watchSources?.get(selected.source)?.showUserTextListener = null
         media.selected = selected
 
         selected.source.let {
-            actions.add(SourceAction(0, "Source: " + model.watchSources?.get(selected.source)?.name))
+            actions.add(DetailActionsPresenter.SourceAction(0, "Source: " + model.watchSources?.get(selected.source)?.name))
         }
 
-        actions.add(ChangeAction(1, "Wrong title?"))
+        actions.add(DetailActionsPresenter.ChangeAction(1, "Wrong title?"))
     }
 
 }

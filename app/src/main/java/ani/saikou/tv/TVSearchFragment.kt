@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
 import java.io.Serializable
 import java.util.*
 
-class TVSearchFragment(var type: String, var genre: String? = null, var sortBy: String? = null): SearchFragment(), SearchSupportFragment.SearchResultProvider {
+class TVSearchFragment(): SearchFragment(), SearchSupportFragment.SearchResultProvider {
 
     private val PAGING_THRESHOLD = 40
 
@@ -47,6 +47,10 @@ class TVSearchFragment(var type: String, var genre: String? = null, var sortBy: 
     private val scope = lifecycleScope
 
     val model: AnilistSearch by viewModels()
+
+    lateinit var type: String
+    var genre: String? = null
+    var sortBy: String? = null
 
     var searchText: String? = null
     var _tag: String? = null
@@ -84,6 +88,12 @@ class TVSearchFragment(var type: String, var genre: String? = null, var sortBy: 
         setObservers()
         search(null,genre,tag,sortBy,adult,listOnly)
         setLoadingVisibility(View.VISIBLE)
+    }
+
+    fun setArgs(t: String, g: String? = null, s: String? = null){
+        type = t
+        genre = g
+        sortBy = s
     }
 
     private fun isNearEndOfList(adapter: ArrayObjectAdapter, item: Any): Boolean {

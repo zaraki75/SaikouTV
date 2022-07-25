@@ -254,9 +254,9 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
             }
         })
 
-        playerGlue = VideoPlayerGlue(requireActivity(), LeanbackPlayerAdapter(requireActivity(), exoPlayer, 16), false,this)
+        playerGlue = VideoPlayerGlue(requireActivity(), LeanbackPlayerAdapter(requireActivity(), exoPlayer, 16), true,this)
         playerGlue.host = VideoSupportFragmentGlueHost(this)
-        playerGlue.title = media.name
+        playerGlue.title = media.mainName()
 
         if(!episode.title.isNullOrEmpty())
             playerGlue.subtitle = "Episode "+ episode.number + ": "+ episode.title
@@ -304,7 +304,7 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
     private fun initPopupQuality(): Dialog {
         val trackSelectionDialogBuilder =
             TrackSelectionDialogBuilder(requireContext(), "Available Qualities", exoPlayer, C.TRACK_TYPE_VIDEO)
-        trackSelectionDialogBuilder.setTheme(R.style.DialogTheme)
+        trackSelectionDialogBuilder.setTheme(R.style.QualitySelectorDialogTheme)
         trackSelectionDialogBuilder.setTrackNameProvider {
             if (it.frameRate > 0f) it.height.toString() + "p" else it.height.toString() + "p (fps : N/A)"
         }
