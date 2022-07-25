@@ -26,14 +26,12 @@ import ani.saikou.anime.Episode
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.parsers.AnimeSources
+import ani.saikou.parsers.BaseParser
 import ani.saikou.parsers.HAnimeSources
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.tv.components.CustomListRowPresenter
 import ani.saikou.tv.components.HeaderOnlyRow
-import ani.saikou.tv.presenters.DetailActionsPresenter
-import ani.saikou.tv.presenters.DetailsDescriptionPresenter
-import ani.saikou.tv.presenters.HeaderRowPresenter
-import ani.saikou.tv.presenters.EpisodePresenter
+import ani.saikou.tv.presenters.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -53,6 +51,7 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
     lateinit var media: Media
 
     private var linkSelector: TVSelectorFragment? = null
+    private var descriptionPresenter: DetailsDescriptionPresenter? = null
 
     private var episodeObserver = Observer<Episode?> {
         if (it != null){
@@ -93,10 +92,13 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
     }
 
     private fun buildDetails() {
-        media.selected = model.loadSelected(media)
+        model.watchSources = if (media.isAdult) HAnimeSources else AnimeSources
+        val selected = model.loadSelected(media)
+        media.selected = selected
 
         val selector = ClassPresenterSelector().apply {
-            FullWidthDetailsOverviewRowPresenter(DetailsDescriptionPresenter()).also {
+            descriptionPresenter = DetailsDescriptionPresenter()
+            FullWidthDetailsOverviewRowPresenter(descriptionPresenter).also {
                 it.backgroundColor = ContextCompat.getColor(requireContext(), R.color.bg_black)
                 it.actionsBackgroundColor = ContextCompat.getColor(requireContext(), R.color.bg_black)
                 it.setOnActionClickedListener {
@@ -105,6 +107,14 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
                             .replace(
                                 R.id.main_detail_fragment,
                                 TVSourceSelectorFragment(media)
+                            ).commit()
+                    }
+
+                    if (it.id.toInt() == 1) {
+                        parentFragmentManager.beginTransaction().addToBackStack(null)
+                            .replace(
+                                R.id.main_detail_fragment,
+                                TVGridSelectorFragment(media.selected!!.source, media.id)
                             ).commit()
                     }
                 }
@@ -135,7 +145,19 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
                 media.selected = model.loadSelected(media)
 
                 if (!loaded) {
-                    model.watchSources = if (media.isAdult) HAnimeSources else AnimeSources
+                    media.selected?.let { sel ->
+                        model.watchSources?.get(sel.source)?.let {parser ->
+                            descriptionPresenter?.userText = parser.showUserText
+                            parser.showUserTextListener = {
+                                MainScope().launch {
+                                    descriptionPresenter?.userText = it
+                                    adapter.notifyItemRangeChanged(0, 1)
+                                    model.watchSources?.get(sel.source)?.showUserTextListener = null
+                                }
+                            }
+                        }
+                    }
+
                     setupActions()
 
                     lifecycleScope.launch(Dispatchers.IO) {
@@ -143,6 +165,7 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
                             async { model.loadKitsuEpisodes(media) },
                             async { model.loadFillerEpisodes(media) }
                         )
+
                         model.loadEpisodes(media, media.selected!!.source)
                     }
 
@@ -156,6 +179,7 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
         model.getEpisodes().observe(viewLifecycleOwner) { loadedEpisodes ->
             loadedEpisodes?.let { epMap ->
                 val episodes = loadedEpisodes[media.selected!!.source]
+
                 if (episodes != null) {
                     episodes.forEach { (i, episode) ->
                         if (media.anime?.fillerEpisodes != null) {
@@ -325,14 +349,14 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
         actions.clear()
 
         val selected = model.loadSelected(media)
-        model.watchSources?.get(selected.source)?.showUserTextListener = null
+        //model.watchSources?.get(selected.source)?.showUserTextListener = null
         media.selected = selected
 
         selected.source.let {
-            actions.add(Action(0, "Source: " + model.watchSources?.get(selected.source)?.name))
-        } ?: kotlin.run {
-            actions.add(Action(0, "Select Source"))
+            actions.add(SourceAction(0, "Source: " + model.watchSources?.get(selected.source)?.name))
         }
+
+        actions.add(ChangeAction(1, "Wrong title?"))
     }
 
 }
