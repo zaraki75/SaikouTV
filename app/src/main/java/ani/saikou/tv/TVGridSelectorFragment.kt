@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.leanback.app.VerticalGridSupportFragment
@@ -71,7 +72,7 @@ class TVGridSelectorFragment(val sourceId: Int, val mediaId: Int): VerticalGridS
                             arrayAdapter.addAll(0, list!!)
                             adapter = arrayAdapter
                         } else {
-                            //TODO show some empty results message
+                            Toast.makeText(requireContext(), "Nothing found, try another source.", Toast.LENGTH_LONG).show()
                         }
                         progressBarManager.hide()
                     }
