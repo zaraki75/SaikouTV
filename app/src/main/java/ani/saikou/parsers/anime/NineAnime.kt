@@ -1,10 +1,13 @@
 package ani.saikou.parsers.anime
 
-import ani.saikou.*
+import ani.saikou.FileUrl
+import ani.saikou.asyncMap
+import ani.saikou.client
 import ani.saikou.parsers.*
 import ani.saikou.parsers.anime.extractors.StreamTape
 import ani.saikou.parsers.anime.extractors.VideoVard
 import ani.saikou.parsers.anime.extractors.VizCloud
+import ani.saikou.tryWithSuspend
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
@@ -21,13 +24,16 @@ class NineAnime : AnimeParser() {
     override val isDubAvailableSeparately = true
 
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
-        val animeId = animeLink.substringAfterLast(".")
-        val vrf = encode(getVrf(animeId))
-        val body = client.get("${host()}/ajax/anime/servers?id=$animeId&vrf=$vrf").parsed<Response>()
-        return Jsoup.parse(body.html).body().select("ul.episodes li a").map {
-            val num = it.attr("data-base")
-            val text = it.text()
-            Episode(text, "${host()}/ajax/anime/servers?id=$animeId&vrf=$vrf&episode=$num")
+        println(animeLink)
+        val animeId = client.get(animeLink).document.select("#watch-main").attr("data-id")
+        val body = client.get("${host()}/ajax/episode/list/$animeId?vrf=${encodeVrf(animeId)}").parsed<Response>().result
+        return Jsoup.parse(body).body().select("ul > li > a").mapNotNull {
+            val id = it.attr("data-ids").split(",")
+                .getOrNull(if (selectDub) 1 else 0) ?: return@mapNotNull null
+            val num = it.attr("data-num")
+            val title = it.selectFirst("span.d-title")?.text()
+            val filler = it.hasClass("filler")
+            Episode(num, "${host()}/ajax/server/list/$id?vrf=${encodeVrf(id)}", title, isFiller = filler)
         }
     }
 
@@ -35,44 +41,46 @@ class NineAnime : AnimeParser() {
 
     override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
         val list = mutableListOf<VideoServer>()
-        val body = client.get(episodeLink).parsed<Response>().html
+        val body = client.get(episodeLink).parsed<Response>().result
         val document = Jsoup.parse(body)
-        val rawJson = document.select(".episodes li a").select(".active").attr("data-sources")
-        val dataSources = Mapper.parse<Map<String, String>>(rawJson)
 
-        var videoVardDownload: VideoServer?=null
+        var videoVardDownload: VideoServer? = null
 
-        list.addAll(document.select(".tabs span").mapNotNull {
+        list.addAll(document.select("li").mapNotNull {
             val name = it.text()
-            val encodedStreamUrl = getEpisodeLinks(dataSources[it.attr("data-id")].toString())?.url ?: return@mapNotNull null
-            val realLink = FileUrl(getLink(encodedStreamUrl), embedHeaders)
-            if(name=="VideoVard") videoVardDownload = VideoServer("$name Mp4", realLink)
+            val encodedStreamUrl = getEpisodeLinks(it.attr("data-link-id"))?.result?.url ?: return@mapNotNull null
+            val realLink = FileUrl(decodeVrf(encodedStreamUrl), embedHeaders)
+
+            if (name == "VideoVard") videoVardDownload = VideoServer("$name Mp4", realLink)
+
             VideoServer(name, realLink)
         })
+
         videoVardDownload?.also { list.add(it) }
         return list
     }
 
     override suspend fun getVideoExtractor(server: VideoServer): VideoExtractor? {
         val extractor: VideoExtractor? = when (server.name) {
-            "Vidstream"  -> VizCloud(server)
-            "MyCloud"    -> VizCloud(server)
-            "VideoVard"  -> VideoVard(server)
-            "VideoVard Mp4"  -> VideoVard(server,true)
-            "Streamtape" -> StreamTape(server)
-            else         -> null
+            "Vidstream"     -> VizCloud(server)
+            "MyCloud"       -> VizCloud(server)
+            "VideoVard"     -> VideoVard(server)
+            "VideoVard Mp4" -> VideoVard(server, true)
+            "Streamtape"    -> StreamTape(server)
+            else            -> null
         }
         return extractor
     }
 
     override suspend fun search(query: String): List<ShowResponse> {
-        val vrf = getVrf(query)
+        val vrf = encodeVrf(query)
         val searchLink =
-            "${host()}/filter?language%5B%5D=${if (selectDub) "dubbed" else "subbed"}&keyword=${encode(query)}&vrf=${encode(vrf)}&page=1"
-        return client.get(searchLink).document.select("ul.anime-list li").map {
-            val link = it.select("a.name").attr("href")
-            val title = it.select("a.name").text()
-            val cover = it.select("a.poster img").attr("src")
+            "${host()}/filter?language%5B%5D=${if (selectDub) "dubbed" else "subbed"}&keyword=${encode(query)}&vrf=${vrf}&page=1"
+        return client.get(searchLink).document.select("#list-items div.ani.poster.tip > a").map {
+            val link = host() + it.attr("href")
+            val img = it.select("img")
+            val title = img.attr("alt")
+            val cover = img.attr("src")
             ShowResponse(title, link, cover)
         }
     }
@@ -89,7 +97,7 @@ class NineAnime : AnimeParser() {
                                 load()
                                 callback.invoke(this)
                             }
-                        }else {
+                        } else {
                             load()
                             callback.invoke(this)
                         }
@@ -100,12 +108,16 @@ class NineAnime : AnimeParser() {
     }
 
     @Serializable
-    private data class Links(val url: String?)
-    @Serializable
-    data class Response(val html: String)
+    private data class Links(val result: Url?) {
+        @Serializable
+        data class Url(val url: String?)
+    }
 
-    private suspend fun getEpisodeLinks(source: String): Links? {
-        return tryWithSuspend { client.get("${host()}/ajax/anime/episode?id=${source.replace("\"", "")}").parsed() }
+    @Serializable
+    data class Response(val result: String)
+
+    private suspend fun getEpisodeLinks(id: String): Links? {
+        return tryWithSuspend { client.get("${host()}/ajax/server/$id?vrf=${encodeVrf(id)}").parsed() }
     }
 
 
@@ -122,21 +134,19 @@ class NineAnime : AnimeParser() {
             return "https://$host"
         }
 
-        private const val nineAnimeKey = "c/aUAorINHBLxWTy3uRiPt8J+vjsOheFG1E0q2X9CYwDZlnmd4Kb5M6gSVzfk7pQ"
+        private const val nineAnimeKey = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+        private const val cipherKey = "rTKp3auwu0ULA6II"
 
-        private fun getVrf(id: String): String {
-            val reversed = encrypt(Companion.encode(id) + "0000000", nineAnimeKey).slice(0..5).reversed()
-            return reversed + encrypt(cipher(reversed, Companion.encode(id)), nineAnimeKey).replace("""=+$""".toRegex(), "")
+        private fun encodeVrf(text: String): String {
+            return encode(encrypt(cipher(cipherKey, encode(text)), nineAnimeKey).replace("""=+$""".toRegex(), ""))
         }
 
-        private fun getLink(url: String): String {
-            val i = url.slice(0..5)
-            val n = url.slice(6..url.lastIndex)
-            return decode(cipher(i, decrypt(n, nineAnimeKey)))
+        private fun decodeVrf(text: String): String {
+            return decode(cipher(cipherKey, decrypt(text, nineAnimeKey)))
         }
 
-        fun encrypt(input: String,key:String): String {
-            if (input.any { it.code >= 256 }) throw Exception("illegal characters!")
+        fun encrypt(input: String, key: String): String {
+            if (input.any { it.code > 255 }) throw Exception("illegal characters!")
             var output = ""
             for (i in input.indices step 3) {
                 val a = intArrayOf(-1, -1, -1, -1)
@@ -160,32 +170,32 @@ class NineAnime : AnimeParser() {
             return output
         }
 
-        private fun cipher(key: String, text: String): String {
+        fun cipher(key: String, text: String): String {
             val arr = IntArray(256) { it }
-            var output = ""
+
             var u = 0
             var r: Int
-            for (a in arr.indices) {
-                u = (u + arr[a] + key[a % key.length].code) % 256
-                r = arr[a]
-                arr[a] = arr[u]
+            arr.indices.forEach {
+                u = (u + arr[it] + key[it % key.length].code) % 256
+                r = arr[it]
+                arr[it] = arr[u]
                 arr[u] = r
             }
             u = 0
             var c = 0
-            for (f in text.indices) {
-                c = (c + f) % 256
+
+            return text.indices.map { j ->
+                c = (c + 1) % 256
                 u = (u + arr[c]) % 256
                 r = arr[c]
                 arr[c] = arr[u]
                 arr[u] = r
-                output += (text[f].code xor arr[(arr[c] + arr[u]) % 256]).toChar()
-            }
-            return output
+                (text[j].code xor arr[(arr[c] + arr[u]) % 256]).toChar()
+            }.joinToString("")
         }
 
         @Suppress("SameParameterValue")
-        private fun decrypt(input: String, key:String): String {
+        private fun decrypt(input: String, key: String): String {
             val t = if (input.replace("""[\t\n\f\r]""".toRegex(), "").length % 4 == 0) {
                 input.replace("""==?$""".toRegex(), "")
             } else input

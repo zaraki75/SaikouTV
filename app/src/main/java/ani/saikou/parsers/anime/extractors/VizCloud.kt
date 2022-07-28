@@ -6,6 +6,7 @@ import ani.saikou.parsers.Video
 import ani.saikou.parsers.VideoContainer
 import ani.saikou.parsers.VideoExtractor
 import ani.saikou.parsers.VideoServer
+import ani.saikou.parsers.anime.NineAnime.Companion.cipher
 import ani.saikou.parsers.anime.NineAnime.Companion.encrypt
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -18,30 +19,6 @@ class VizCloud(override val server: VideoServer) : VideoExtractor() {
     @Serializable private data class Response(val data: Data)
 
     private val regex = Regex("(.+?/)e(?:mbed)?/([a-zA-Z0-9]+)")
-
-    private fun cipher(key: String, text: String): String {
-        val arr = IntArray(256) { it }
-        var u = 0
-
-        arr.indices.forEach { 
-            u = (u + arr[it] + key[it % key.length].code) % 256
-            val r = arr[it]
-            arr[it] = arr[u]
-            arr[u] = r
-        }
-
-        u = 0
-        var c = 0
-
-        return text.indices.map {
-            c = (c + 1) % 256
-            u = (u + arr[c]) % 256
-            val r = arr[c]
-            arr[c] = arr[u]
-            arr[u] = r
-            (text[it].code xor arr[(arr[c] + arr[u]) % 256]).toChar()
-        }.joinToString("")
-    }
 
     override suspend fun extract(): VideoContainer {
 
