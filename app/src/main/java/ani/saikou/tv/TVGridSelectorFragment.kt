@@ -16,7 +16,6 @@ import ani.saikou.*
 import ani.saikou.databinding.TvAnimeCardBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
-import ani.saikou.media.MediaListDialogSmallFragment
 import ani.saikou.parsers.*
 import ani.saikou.settings.UserInterfaceSettings
 import kotlinx.coroutines.Dispatchers

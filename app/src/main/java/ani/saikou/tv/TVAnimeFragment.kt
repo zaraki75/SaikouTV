@@ -315,12 +315,9 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                     ).putExtra("media", item as Serializable))
             } else if (item is Pair<*,*>) {
                 val fragment = TVSearchFragment()
-                fragment.setArgs("ANIME", item.first as String, "Trending")
+                val genre = item.first as String
+                fragment.setArgs("ANIME", genre, "Trending", genre.lowercase() == "hentai")
                 parentFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_tv_fragment, fragment).commit()
-                    //TODO deal with this when we have settings on TV
-                    /* if(item.lowercase()=="hentai") {
-                        it.putExtra("hentai", true)
-                    }*/
             }
         }
 

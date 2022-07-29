@@ -47,8 +47,6 @@ class AnimePresenter(var type: Int,
                 if(media!=null) {
                     if (matchParent) itemView.updateLayoutParams { width=-1 }
                     itemView.setSafeOnClickListener { clicked(media) }
-                    itemView.setOnLongClickListener { longClicked(media) }
-
 
                     b.itemCompactImage.loadImage(media.cover)
                     b.itemCompactOngoing.visibility = if (media.status == "RELEASING") View.VISIBLE else View.GONE
@@ -73,8 +71,6 @@ class AnimePresenter(var type: Int,
                 if(media!=null) {
                     if (matchParent) itemView.updateLayoutParams { width=-1 }
                     itemView.setSafeOnClickListener { clicked(media) }
-                    itemView.setOnLongClickListener { longClicked(media) }
-
 
                     b.itemCompactImage.loadImage(media.cover)
                     b.itemCompactBanner.loadImage(media.banner?:media.cover,400)
@@ -99,8 +95,6 @@ class AnimePresenter(var type: Int,
                 if(media!=null) {
                     b.itemCompactImage.setSafeOnClickListener { clicked(media) }
                     itemView.setOnTouchListener { _, _ -> true}
-                    b.itemCompactImage.setOnLongClickListener { longClicked(media) }
-
 
                     b.itemCompactImage.loadImage(media.cover)
                     if(uiSettings.bannerAnimations)
@@ -150,14 +144,6 @@ class AnimePresenter(var type: Int,
                 media as Serializable
             ),null
         )
-    }
-
-    fun longClicked(media: Media): Boolean{
-        if(activity.supportFragmentManager.findFragmentByTag("list") == null) {
-            MediaListDialogSmallFragment.newInstance(media).show(activity.supportFragmentManager, "list")
-            return true
-        }
-        return false
     }
 
     override fun onUnbindViewHolder(viewHolder: ViewHolder?) {

@@ -65,7 +65,7 @@ class TVSearchFragment(): SearchFragment(), SearchSupportFragment.SearchResultPr
 
         val intent = requireActivity().intent
         //style = loadData<Int>("searchStyle") ?: 0
-        adult = if (Anilist.adult) intent.getBooleanExtra("hentai", false) else false
+        //adult = intent.getBooleanExtra("hentai", false)
         listOnly = intent.getBooleanExtra("listOnly",false)
 
         setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
@@ -90,10 +90,11 @@ class TVSearchFragment(): SearchFragment(), SearchSupportFragment.SearchResultPr
         setLoadingVisibility(View.VISIBLE)
     }
 
-    fun setArgs(t: String, g: String? = null, s: String? = null){
+    fun setArgs(t: String, g: String? = null, s: String? = null, h: Boolean = false){
         type = t
         genre = g
         sortBy = s
+        adult = Anilist.adult || h
     }
 
     private fun isNearEndOfList(adapter: ArrayObjectAdapter, item: Any): Boolean {
@@ -152,7 +153,7 @@ class TVSearchFragment(): SearchFragment(), SearchSupportFragment.SearchResultPr
         genre: String? = null,
         tag: String? = null,
         sort: String? = null,
-        adult: Boolean = false,
+        adult: Boolean = this.adult,
         listOnly: Boolean? = null
     ) {
         model.searchResults.results.clear()
