@@ -128,6 +128,7 @@ class TVMainActivity : FragmentActivity() {
     companion object {
         final val defaultChannelIDKey = "default_tv_channel_id"
         final val defaultChannelProgramsKey = "default_tv_programs_list_id"
+        final val watchNextChannelIDKey = "watchNext_program_id"
 
     }
 }

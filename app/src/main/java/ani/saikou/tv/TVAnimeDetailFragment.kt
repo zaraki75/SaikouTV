@@ -1,19 +1,15 @@
 package ani.saikou.tv
 
 import android.graphics.Bitmap
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.util.Log
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.leanback.app.BackgroundManager
 import androidx.leanback.app.DetailsSupportFragment
 import androidx.leanback.app.DetailsSupportFragmentBackgroundController
 import androidx.leanback.widget.*
@@ -26,7 +22,6 @@ import ani.saikou.anime.Episode
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.parsers.AnimeSources
-import ani.saikou.parsers.BaseParser
 import ani.saikou.parsers.HAnimeSources
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.tv.components.CustomListRowPresenter
@@ -36,9 +31,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import kotlinx.coroutines.*
-import kotlinx.coroutines.selects.select
 import kotlin.math.ceil
-import kotlin.math.max
 import kotlin.math.min
 
 class TVAnimeDetailFragment() : DetailsSupportFragment() {
@@ -229,13 +222,13 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
                                 )
                             )
                         }
-                        focusLastViewedEpisode()
+                        focusLastViewedEpisode(episodes)
                     } else {
                         createEpisodePresenter("Episodes").addAll(
                             0,
                             episodes.values.toList()
                         )
-                        focusLastViewedEpisode()
+                        focusLastViewedEpisode(episodes)
                     }
                 }
             }
@@ -265,8 +258,22 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
         }
     }
 
-    fun focusLastViewedEpisode() {
-        //TODO Implement this
+    fun focusLastViewedEpisode(episodes: MutableMap<String, Episode>?) {
+        Handler(Looper.getMainLooper()).post (java.lang.Runnable {
+            media.userProgress?.let { progress ->
+                val episode = episodes?.values?.firstOrNull() { it.number.toFloatOrNull()?:9999f>=progress.toFloat()}
+                episode.let {
+                    episodePresenters.forEachIndexed { row, arrayObjectAdapter ->
+                        val index = arrayObjectAdapter.indexOf(episode)
+                        if (index != -1) {
+                            rowsSupportFragment.setSelectedPosition(row+1, false, ListRowPresenter.SelectItemViewHolderTask(index+1))
+                            rowsSupportFragment.setSelectedPosition(0,false, ListRowPresenter.SelectItemViewHolderTask(0))
+                            return@Runnable
+                        }
+                    }
+                }
+            }
+        })
     }
 
     fun onEpisodeClick(i: String) {

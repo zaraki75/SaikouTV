@@ -1,6 +1,7 @@
 package ani.saikou.tv.utils
 
 import android.content.Context
+import android.view.KeyEvent
 import androidx.leanback.media.PlaybackTransportControlGlue
 import androidx.leanback.widget.Action
 import androidx.leanback.widget.ArrayObjectAdapter
@@ -41,6 +42,9 @@ class VideoPlayerGlue(
         fun onResize()
 
         fun onQuality()
+
+        fun onPlayerPause()
+
     }
 
     //private val mRepeatAction: RepeatAction
@@ -90,8 +94,14 @@ class VideoPlayerGlue(
             dispatchAction(action)
             return
         }
+
         // Super class handles play/pause and delegates to abstract methods next()/previous().
         super.onActionClicked(action)
+
+        //Extra callbacks
+        if (action.respondsToKeyCode(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)) {
+            mActionListener.onPlayerPause()
+        }
     }
 
     // Should dispatch actions that the super class does not supply callbacks for.

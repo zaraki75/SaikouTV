@@ -1,7 +1,11 @@
 package ani.saikou.tv
 
+import android.app.AlertDialog
 import android.app.Dialog
 import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import android.util.DisplayMetrics
@@ -16,6 +20,8 @@ import androidx.leanback.media.PlaybackGlue
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.lifecycle.lifecycleScope
 import androidx.media.session.MediaButtonReceiver
+import androidx.tvprovider.media.tv.TvContractCompat
+import androidx.tvprovider.media.tv.WatchNextProgram
 import ani.saikou.*
 import ani.saikou.anilist.Anilist
 import ani.saikou.anime.Episode
@@ -45,10 +51,16 @@ import com.lagradost.nicehttp.ignoreAllSSLErrors
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import java.lang.Runnable
+import java.net.URI
+import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.roundToInt
 
 class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.OnActionClickedListener, Player.Listener {
+
+    private val resumeWindow = "resumeWindow"
+    private val resumePosition = "resumePosition"
 
     private lateinit var exoPlayer: ExoPlayer
     private lateinit var cacheFactory : CacheDataSource.Factory
@@ -60,6 +72,7 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
     private var isInitialized = false
     private lateinit var episodeArr: List<String>
 
+    private var currentWindow = 0
     private var originalAspectRatio: Float? = null
     private var screenHeight: Int = 0
     private var screenWidth: Int = 0
@@ -105,6 +118,11 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
         settings = loadData("player_settings") ?: PlayerSettings().apply { saveData("player_settings",this) }
         uiSettings = loadData("ui_settings") ?: UserInterfaceSettings().apply { saveData("ui_settings",this) }
 
+        if (savedInstanceState != null) {
+            currentWindow = savedInstanceState.getInt(resumeWindow)
+            playbackPosition = savedInstanceState.getLong(resumePosition)
+        }
+
         linkSelector = null
 
         val episodeObserverRunnable = Runnable {
@@ -141,8 +159,13 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
                         if(!isInitialized) {
                             episodeArr = episodes.keys.toList()
                             currentEpisodeIndex = episodeArr.indexOf(media.anime!!.selectedEpisode!!)
+                            playbackPosition = loadData("${media.id}_${it.number}", requireActivity()) ?: 0
                             mediaItem = MediaItem.Builder().setUri(video?.url?.url).build()
-                            initVideo()
+                            if (playbackPosition != 0L) {
+                                showContinuePlaying()
+                            } else {
+                                initVideo()
+                            }
                         }
                     }
                 }
@@ -155,6 +178,7 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
                     progress {
                         isEnabled = false
                         isInitialized = false
+                        playbackPosition = exoPlayer.currentPosition
                         exoPlayer.stop()
                         exoPlayer.release()
                         VideoCache.release()
@@ -180,6 +204,34 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
         model.setEpisode(episodes[media.anime!!.selectedEpisode!!]!!,"invoke")
         episodeArr = episodes.keys.toList()
         currentEpisodeIndex = episodeArr.indexOf(media.anime!!.selectedEpisode!!)
+    }
+
+    fun showContinuePlaying() {
+            val time = String.format(
+                "%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(playbackPosition),
+                TimeUnit.MILLISECONDS.toMinutes(playbackPosition) - TimeUnit.HOURS.toMinutes(
+                    TimeUnit.MILLISECONDS.toHours(
+                        playbackPosition
+                    )
+                ),
+                TimeUnit.MILLISECONDS.toSeconds(playbackPosition) - TimeUnit.MINUTES.toSeconds(
+                    TimeUnit.MILLISECONDS.toMinutes(
+                        playbackPosition
+                    )
+                )
+            )
+            AlertDialog.Builder(requireContext(), R.style.TVDialogTheme).setTitle("Continue from ${time}?").apply {
+                setCancelable(false)
+                setPositiveButton("Yes") { d, _ ->
+                    initVideo()
+                    d.dismiss()
+                }
+                setNegativeButton("No") { d, _ ->
+                    playbackPosition = 0L
+                    initVideo()
+                    d.dismiss()
+                }
+            }.show()
     }
 
     fun initVideo() {
@@ -295,6 +347,14 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        if (isInitialized) {
+            outState.putInt(resumeWindow, exoPlayer.currentMediaItemIndex)
+            outState.putLong(resumePosition, exoPlayer.currentPosition)
+        }
+        super.onSaveInstanceState(outState)
+    }
+
     override fun onTracksChanged(tracks: Tracks) {
         super.onTracksChanged(tracks)
         playerGlue.shouldShowQualityAction = tracks.groups.size > 2
@@ -331,6 +391,55 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
     override fun onNext() {
         if(isInitialized) {
             nextEpisode{ i-> progress { change(currentEpisodeIndex + i) } }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        savePlaybackProgress()
+    }
+
+    override fun onPlayerPause() {
+        savePlaybackProgress()
+    }
+
+    fun savePlaybackProgress() {
+        media.anime?.let { anime ->
+            saveData("${media.id}_${anime.selectedEpisode}", exoPlayer.currentPosition, requireActivity())
+            updateWatchNextChannel()
+        }
+    }
+
+    fun updateWatchNextChannel() {
+        val sharedPref = requireActivity().getPreferences(Context.MODE_PRIVATE) ?: return
+
+        val intent = Intent(requireContext(), TVMainActivity::class.java)
+        intent.putExtra("media", media.id)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        val builder = WatchNextProgram.Builder()
+        builder.setType(TvContractCompat.WatchNextPrograms.TYPE_TV_SERIES)
+            .setWatchNextType(TvContractCompat.WatchNextPrograms.WATCH_NEXT_TYPE_CONTINUE)
+            .setLastEngagementTimeUtcMillis(Date().time)
+            .setTitle(media.mainName())
+            .setEpisodeNumber(episode.number.toIntOrNull() ?: 0)
+            .setEpisodeTitle(episode.title)
+            .setDescription(episode.desc)
+            .setPosterArtUri(Uri.parse(episode.thumb?.url))
+            .setIntent(intent)
+
+        val watchNextID = sharedPref.getString(TVMainActivity.watchNextChannelIDKey, null)
+        watchNextID?.let {
+            requireContext().contentResolver.update(Uri.parse(it), builder.build().toContentValues(), null)
+        } ?: run {
+            val watchNextProgramUri = requireContext().contentResolver
+                .insert(TvContractCompat.WatchNextPrograms.CONTENT_URI,
+                    builder.build().toContentValues())
+
+            with(sharedPref.edit()) {
+                putString(TVMainActivity.watchNextChannelIDKey,watchNextProgramUri.toString())
+                apply()
+            }
         }
     }
 
