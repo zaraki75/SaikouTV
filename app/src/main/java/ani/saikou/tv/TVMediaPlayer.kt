@@ -57,10 +57,12 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.OnActionClickedListener, Player.Listener {
+class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedListener, Player.Listener {
 
     private val resumeWindow = "resumeWindow"
     private val resumePosition = "resumePosition"
+
+    lateinit var media: Media
 
     private lateinit var exoPlayer: ExoPlayer
     private lateinit var cacheFactory : CacheDataSource.Factory
@@ -430,7 +432,7 @@ class TVMediaPlayer(var media: Media): VideoSupportFragment(), VideoPlayerGlue.O
 
         val watchNextID = sharedPref.getString(TVMainActivity.watchNextChannelIDKey, null)
         watchNextID?.let {
-            requireContext().contentResolver.update(Uri.parse(it), builder.build().toContentValues(), null)
+            requireContext().contentResolver.update(Uri.parse(it), builder.build().toContentValues(), null, null)
         } ?: run {
             val watchNextProgramUri = requireContext().contentResolver
                 .insert(TvContractCompat.WatchNextPrograms.CONTENT_URI,

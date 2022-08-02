@@ -82,7 +82,9 @@ class TVSelectorFragment(var media: Media, val fromPlayer: Boolean): VerticalGri
     }
 
     fun startExoplayer(media: Media){
-        requireActivity().supportFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_detail_fragment, TVMediaPlayer(media)).commit()
+        val player = TVMediaPlayer()
+        player.media = media
+        requireActivity().supportFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.main_detail_fragment, player).commit()
     }
 
     fun cancel() {

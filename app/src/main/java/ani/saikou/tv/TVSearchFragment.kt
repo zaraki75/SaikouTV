@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
 import java.io.Serializable
 import java.util.*
 
-class TVSearchFragment(): SearchFragment(), SearchSupportFragment.SearchResultProvider {
+class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProvider {
 
     private val PAGING_THRESHOLD = 40
 
