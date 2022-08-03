@@ -29,10 +29,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.DecimalFormat
 
-class TVSelectorFragment(var media: Media, val fromPlayer: Boolean): VerticalGridSupportFragment() {
+class TVSelectorFragment(): VerticalGridSupportFragment() {
 
     lateinit var links: MutableList<VideoExtractor>
     private var selected:String?=null
+    lateinit var media: Media
+    var fromPlayer: Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -93,8 +96,13 @@ class TVSelectorFragment(var media: Media, val fromPlayer: Boolean): VerticalGri
     }
 
     companion object {
-        fun newInstance(media: Media, fromPlayer: Boolean = false): TVSelectorFragment =
-            TVSelectorFragment(media, fromPlayer)
+        fun newInstance(media: Media, fromPlayer: Boolean = false): TVSelectorFragment
+        {
+            val fragment = TVSelectorFragment()
+            fragment.media = media
+            fragment.fromPlayer = fromPlayer
+            return fragment
+        }
     }
 
     private data class StreamItem(val server: String, val video: Video, val videoIndex: Int)

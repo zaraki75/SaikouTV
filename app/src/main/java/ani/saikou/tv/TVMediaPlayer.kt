@@ -85,6 +85,8 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
     private lateinit var episodes: MutableMap<String,Episode>
     private lateinit var playerGlue : VideoPlayerGlue
 
+    private var mediaSession: MediaSessionCompat? = null
+
     private var extractor: VideoExtractor? = null
     private var video: Video? = null
     private var subtitle: Subtitle? = null
@@ -293,6 +295,7 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
         exoPlayer.addListener(this)
         val mediaButtonReceiver = ComponentName(requireActivity(), MediaButtonReceiver::class.java)
         MediaSessionCompat(requireContext(), "Player", mediaButtonReceiver, null).let { media ->
+            mediaSession = media
             val mediaSessionConnector = MediaSessionConnector(media)
             mediaSessionConnector.setPlayer(exoPlayer)
             mediaSessionConnector.setClearMediaItemsOnStop(true)
@@ -390,6 +393,11 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        mediaSession?.release()
+    }
+
     override fun onNext() {
         if(isInitialized) {
             nextEpisode{ i-> progress { change(currentEpisodeIndex + i) } }
@@ -427,8 +435,15 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
             .setEpisodeNumber(episode.number.toIntOrNull() ?: 0)
             .setEpisodeTitle(episode.title)
             .setDescription(episode.desc)
-            .setPosterArtUri(Uri.parse(episode.thumb?.url))
             .setIntent(intent)
+
+        episode.thumb?.let {
+            builder.setPosterArtUri(Uri.parse(it.url))
+        }
+
+        media.cover?.let {
+            builder.setThumbnailUri(Uri.parse(it))
+        }
 
         val watchNextID = sharedPref.getString(TVMainActivity.watchNextChannelIDKey, null)
         watchNextID?.let {

@@ -13,7 +13,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.CompletionInfo
-import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
@@ -340,10 +339,14 @@ open class SearchFragment : Fragment() {
     }
 
     private fun releaseRecognizer() {
-        if (null != mSpeechRecognizer) {
-            mSearchBar!!.setSpeechRecognizer(null)
-            mSpeechRecognizer!!.destroy()
-            mSpeechRecognizer = null
+        try {
+            if (null != mSpeechRecognizer) {
+                mSearchBar!!.setSpeechRecognizer(null)
+                mSpeechRecognizer!!.destroy()
+                mSpeechRecognizer = null
+            }
+        } catch (e: IllegalArgumentException) { // fix Service not registered: android.speech.SpeechRecognizer$Connection
+            e.printStackTrace()
         }
     }
 
