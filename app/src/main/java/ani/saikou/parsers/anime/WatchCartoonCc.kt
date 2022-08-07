@@ -8,11 +8,11 @@ import ani.saikou.parsers.anime.extractors.VizCloud
 import ani.saikou.sortByTitle
 import ani.saikou.tryWithSuspend
 
-class AnimeKisa : AnimeParser() {
+class WatchCartoonCc : AnimeParser() {
 
-    override val name = "AnimeKisa"
-    override val saveName = "anime_kisa_in"
-    override val hostUrl = "https://animekisa.in"
+    override val name = "WatchCartoon.CC"
+    override val saveName = "watch_cartoon_cc"
+    override val hostUrl = "https://wcostream.cc"
     override val isDubAvailableSeparately = true
 
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {

@@ -11,9 +11,9 @@ import ani.saikou.sortByTitle
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-class MangaSee : MangaParser() {
+open class Manga4Life : MangaParser() {
 
-    override val name = "MangaSee"
+    override val name = "Manga4Life"
     override val saveName = "manga_see"
     override val hostUrl = host
 
@@ -60,7 +60,7 @@ class MangaSee : MangaParser() {
     }
 
     companion object {
-        private const val host = "https://mangasee123.com"
+        private const val host = "https://manga4life.com"
         private var response: List<ShowResponse>? = null
         suspend fun getSearchData(): List<ShowResponse> {
             response = if (response != null) response ?: listOf()

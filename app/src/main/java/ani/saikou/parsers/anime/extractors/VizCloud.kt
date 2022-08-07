@@ -30,7 +30,7 @@ class VizCloud(override val server: VideoServer) : VideoExtractor() {
         val id = encrypt(
             cipher(
                 viz.cipherKey,
-                encrypt(group[2].also { println(it) }, viz.encryptKey).also { println(it) }
+                group[2].also { println(it) }
             ).also { println(it) },
             viz.encryptKey
         ).also { println(it) }
