@@ -126,15 +126,32 @@ class NineAnime : AnimeParser() {
             return "https://$defaultHost"
         }
 
-        private const val nineAnimeKey = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-        private const val cipherKey = "kMXzgyNzT3k5dYab"
-
-        private fun encodeVrf(text: String): String {
-            return encode(encrypt(cipher(cipherKey, encode(text)), nineAnimeKey))
+        private var lastChecked = 0L
+        private const val jsonLink = "https://raw.githubusercontent.com/chenkaslowankiya/BruvFlow/main/keys.json"
+        private var cipherKey: Key? = null
+        private suspend fun getKey(): Key {
+            cipherKey = if (cipherKey != null && (lastChecked - System.currentTimeMillis()) < 1000 * 60 * 30) cipherKey!!
+            else {
+                lastChecked = System.currentTimeMillis()
+                client.get(jsonLink).parsed()
+            }
+            return cipherKey!!
         }
 
-        private fun decodeVrf(text: String): String {
-            return decode(cipher(cipherKey, decrypt(text, nineAnimeKey)))
+        @Serializable
+        data class Key(
+            val cipher: String,
+            val decipher: String,
+        )
+
+        private const val nineAnimeKey = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+        private suspend fun encodeVrf(text: String): String {
+            return encode(encrypt(cipher(getKey().cipher, encode(text)), nineAnimeKey))
+        }
+
+        private suspend fun decodeVrf(text: String): String {
+            return decode(cipher(getKey().decipher, decrypt(text, nineAnimeKey)))
         }
 
         fun encrypt(input: String, key: String): String {
