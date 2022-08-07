@@ -31,8 +31,11 @@ class AnimePahe : AnimeParser() {
         val resp = client.get(episodeLink).parsed<KwikUrls>()
         val servers = mutableListOf<VideoServer>()
         resp.data.forEach { it.entries.map { o -> servers.add(
-            VideoServer(name = "Kwik - ${o.key}p (${if (o.value.audio == "eng") "DUB" else "SUB"})", embedUrl = o.value.kwik.toString())
-        )} }
+            VideoServer(
+                name = "Kwik - ${o.key}p (${if (o.value.audio == "eng") "DUB" else "SUB"})",
+                embedUrl = o.value.kwik.toString()
+            )
+        ) } }
         return servers
     }
 
@@ -48,8 +51,9 @@ class AnimePahe : AnimeParser() {
             val i = obfUrl?.split('|')?.reversed()!!
             val m3u8Url = "${i[0]}://${i[1]}-${i[2]}.${i[3]}.${i[4]}.${i[5]}/${i[6]}/${i[7]}/${i[8]}/${i[9]}.${i[10]}"
             return VideoContainer(
-                videos = listOf(Video(quality = null, isM3U8 = true,
-                    url = FileUrl(m3u8Url, mapOf("Referer" to "https://kwik.cx/", "Accept" to "*/*"))))
+                videos = listOf(
+                    Video(quality = null, isM3U8 = true, url = FileUrl(m3u8Url, mapOf("Referer" to "https://kwik.cx/", "Accept" to "*/*")))
+                )
             )
         }
     }
@@ -63,7 +67,7 @@ class AnimePahe : AnimeParser() {
             resp.data!!.map { ep ->
                 val kwikEpLink = "$hostUrl/api?m=links&id=${ep.anime_id}&session=${ep.session}&p=kwik"
                 episodes.add(
-                    Episode(number = ep.episode.toString(), link = kwikEpLink, title = ep.title)
+                    Episode(number = ep.episode.toString().substringBefore(".0"), link = kwikEpLink, title = ep.title)
                 )
             }
         }
@@ -91,7 +95,7 @@ class AnimePahe : AnimeParser() {
 
         @Serializable
         data class ReleaseResponse(
-            @SerialName("episode") val episode: Int,
+            @SerialName("episode") val episode: Float,
             @SerialName("anime_id") val anime_id: Int,
             @SerialName("title") val title: String,
             @SerialName("snapshot") val snapshot: String,
