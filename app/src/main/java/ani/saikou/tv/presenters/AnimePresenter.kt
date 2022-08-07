@@ -3,6 +3,8 @@ package ani.saikou.tv.presenters
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -65,65 +67,50 @@ class AnimePresenter(var type: Int,
                 }
             }
             1->{
-                val itemView = (viewHolder as MediaLargeViewHolder).view
-                val b = (viewHolder as MediaLargeViewHolder).binding
+                val itemView = (viewHolder as MediaViewHolder).view
+                val b = (viewHolder as MediaViewHolder).binding
                 setAnimation(activity,b.root,uiSettings)
                 val media = item as Media
                 if(media!=null) {
                     if (matchParent) itemView.updateLayoutParams { width=-1 }
 
+                    b.itemExtraInfo.visibility = View.GONE
                     b.itemCompactImage.loadImage(media.cover)
-                    b.itemCompactBanner.loadImage(media.banner?:media.cover,400)
-                    b.itemCompactOngoing.visibility = if (media.status=="RELEASING")  View.VISIBLE else View.GONE
+                    b.itemCompactOngoing.visibility = if (media.status == "RELEASING") View.VISIBLE else View.GONE
                     b.itemCompactTitle.text = media.mainName()
-                    b.itemCompactScore.text = ((if(media.userScore==0) (media.meanScore?:0) else media.userScore)/10.0).toString()
-                    b.itemCompactScoreBG.background = ContextCompat.getDrawable(b.root.context,(if (media.userScore!=0) R.drawable.item_user_score else R.drawable.item_score))
-                    if (media.anime!=null){
-                        b.itemTotal.text = "Episodes"
-                        b.itemCompactTotal.text = if (media.anime.nextAiringEpisode!=null) (media.anime.nextAiringEpisode.toString()+" / "+(media.anime.totalEpisodes?:"~").toString()) else (media.anime.totalEpisodes?:"~").toString()
+                    b.itemCompactScore.text = ((if (media.userScore == 0) (media.meanScore ?: 0) else media.userScore) / 10.0).toString()
+                    b.itemCompactScoreBG.background = ContextCompat.getDrawable(b.root.context, (if (media.userScore != 0) R.drawable.item_user_score else R.drawable.item_score))
+                    b.itemCompactUserProgress.text = (media.userProgress ?: "~").toString()
+
+                    if (media.relation != null) {
+                        b.itemCompactRelation.text = "${media.relation}  "
+                        b.itemCompactType.visibility = View.VISIBLE
+                        b.itemCompactTypeImage.imageTintList = ColorStateList.valueOf(Color.WHITE)
+                    } else {
+                        b.itemCompactType.visibility = View.GONE
                     }
-                    else if(media.manga!=null){
-                        b.itemTotal.text = "Chapters"
-                        b.itemCompactTotal.text = "${media.manga.totalChapters?:"~"}"
+
+                    if (media.anime != null) {
+                        if (media.relation != null) b.itemCompactTypeImage.setImageDrawable(
+                            AppCompatResources.getDrawable(
+                                activity,
+                                R.drawable.ic_round_movie_filter_24
+                            )
+                        )
+                        b.itemCompactTotal.text = " | ${if (media.anime.nextAiringEpisode != null) (media.anime.nextAiringEpisode.toString() + " | " + (media.anime.totalEpisodes ?: "~").toString()) else (media.anime.totalEpisodes ?: "~").toString()}"
+                    }
+                    else if (media.manga != null) {
+                        if (media.relation != null) b.itemCompactTypeImage.setImageDrawable(
+                            AppCompatResources.getDrawable(
+                                activity,
+                                R.drawable.ic_round_import_contacts_24
+                            )
+                        )
+                        b.itemCompactTotal.text = " | ${media.manga.totalChapters ?: "~"}"
                     }
                 }
             }
             2->{
-                val itemView = (viewHolder as MediaPageViewHolder).view
-                val b = (viewHolder as MediaPageViewHolder).binding
-                val media = item as Media
-                if(media!=null) {
-                    itemView.setOnTouchListener { _, _ -> true}
-
-                    b.itemCompactImage.loadImage(media.cover)
-                    if(uiSettings.bannerAnimations)
-                        b.itemCompactBanner.setTransitionGenerator(
-                            RandomTransitionGenerator(
-                                (10000 + 15000 * (uiSettings.animationSpeed)).toLong(),
-                                AccelerateDecelerateInterpolator()
-                            )
-                        )
-                    val banner = if(uiSettings.bannerAnimations) b.itemCompactBanner else b.itemCompactBannerNoKen
-                    val context = b.itemCompactBanner.context
-                    if(!(context as Activity).isDestroyed)
-                        Glide.with(context)
-                            .load(GlideUrl(media.banner?:media.cover))
-                            .diskCacheStrategy(DiskCacheStrategy.ALL).override(400)
-                            .apply(RequestOptions.bitmapTransform(BlurTransformation(2, 3)))
-                            .into(banner)
-                    b.itemCompactOngoing.visibility = if (media.status=="RELEASING")  View.VISIBLE else View.GONE
-                    b.itemCompactTitle.text = media.userPreferredName
-                    b.itemCompactScore.text = ((if(media.userScore==0) (media.meanScore?:0) else media.userScore)/10.0).toString()
-                    b.itemCompactScoreBG.background = ContextCompat.getDrawable(b.root.context,(if (media.userScore!=0) R.drawable.item_user_score else R.drawable.item_score))
-                    if (media.anime!=null){
-                        b.itemTotal.text = "Episodes"
-                        b.itemCompactTotal.text = if (media.anime.nextAiringEpisode!=null) (media.anime.nextAiringEpisode.toString()+" / "+(media.anime.totalEpisodes?:"~").toString()) else (media.anime.totalEpisodes?:"~").toString()
-                    }
-                    else if(media.manga!=null){
-                        b.itemTotal.text = "Chapters"
-                        b.itemCompactTotal.text = "${media.manga.totalChapters?:"~"}"
-                    }
-                }
             }
         }
     }

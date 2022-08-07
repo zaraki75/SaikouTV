@@ -5,8 +5,10 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.leanback.app.DetailsSupportFragment
 import androidx.leanback.app.DetailsSupportFragmentBackgroundController
@@ -55,8 +57,11 @@ class TVAnimeDetailInfoFragment() : DetailsSupportFragment() {
             ?: UserInterfaceSettings().apply { saveData("ui_settings", this) }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onResume() {
+        super.onResume()
+        progressBarManager.setRootView(this.view as ViewGroup)
+        progressBarManager.initialDelay =0
+        progressBarManager.show()
         buildDetails()
     }
 
@@ -72,7 +77,6 @@ class TVAnimeDetailInfoFragment() : DetailsSupportFragment() {
                 it.backgroundColor = ContextCompat.getColor(requireContext(), R.color.bg_black)
                 it.actionsBackgroundColor = ContextCompat.getColor(requireContext(), R.color.bg_black)
                 actions.add(DetailInfoActionPresenter.TitleAction(1, media.mainName()))
-                //it.setOnActionClickedListener { }
                 addClassPresenter(DetailsOverviewRow::class.java, it)
             }
             val presenter = CustomListRowPresenter(FocusHighlight.ZOOM_FACTOR_MEDIUM, false)
@@ -111,6 +115,7 @@ class TVAnimeDetailInfoFragment() : DetailsSupportFragment() {
                 val fragment = TVSearchFragment()
                 val genre = item.first as String
                 fragment.setArgs("ANIME", genre, "Trending", genre.lowercase() == "hentai")
+                parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                 parentFragmentManager.beginTransaction().replace(R.id.main_detail_fragment, fragment).commit()
             }
         }
@@ -128,7 +133,14 @@ class TVAnimeDetailInfoFragment() : DetailsSupportFragment() {
 
         if(!media.genres.isNullOrEmpty()) {
             val genresAdapter = ArrayObjectAdapter(GenresPresenter(false))
-            loadGenres(genresAdapter)
+            if (genresModel.genres.isNullOrEmpty()) {
+                loadGenres(genresAdapter)
+            } else {
+                genresModel.genres?.forEach {
+                    genresAdapter.add(it.toPair())
+                }
+                progressBarManager.hide()
+            }
             rowsAdapter.add(ListRow(HeaderItem(0, getString(R.string.genres)), genresAdapter))
         }
 
@@ -141,7 +153,7 @@ class TVAnimeDetailInfoFragment() : DetailsSupportFragment() {
         }
 
         if(!media.relations.isNullOrEmpty()) {
-            val relations = ArrayObjectAdapter(AnimePresenter(0,requireActivity()))
+            val relations = ArrayObjectAdapter(AnimePresenter(1,requireActivity()))
             media.relations?.forEach() {
                 relations.add(it)
             }
@@ -164,6 +176,7 @@ class TVAnimeDetailInfoFragment() : DetailsSupportFragment() {
                     val genre = it.first as String
                     if (media.genres.contains(genre))
                         adapter.add(it)
+                    progressBarManager.hide()
                 }
             }
         }
