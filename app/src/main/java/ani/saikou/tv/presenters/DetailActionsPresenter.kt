@@ -32,5 +32,6 @@ class DetailActionsPresenter(): Presenter() {
 
     class SourceAction(id: Long, label: String): Action(id, label) {}
     class ChangeAction(id: Long, label: String): Action(id, label) {}
+    class InfoAction(id: Long, label: String): Action(id, label) {}
 }
 

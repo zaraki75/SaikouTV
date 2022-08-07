@@ -191,7 +191,9 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                         model.loadPopular("ANIME", sort = "Popular")
                         genresModel.loadGenres(Anilist.genres?: loadData("genres_list") ?: arrayListOf()) {
                             MainScope().launch {
-                                genresAdapter.add(it)
+                                val genre = it.first as String
+                                if (genre.lowercase() != "hentai" || Anilist.adult)
+                                    genresAdapter.add(it)
                             }
                         }
                         homeModel.setListImages()

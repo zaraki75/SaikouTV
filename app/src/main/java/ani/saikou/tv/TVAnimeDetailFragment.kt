@@ -44,7 +44,7 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
     lateinit var media: Media
 
     private var linkSelector: TVSelectorFragment? = null
-    private var descriptionPresenter: DetailsDescriptionPresenter? = null
+    private var descriptionPresenter: DetailsWatchPresenter? = null
 
     private lateinit var detailsBackground: DetailsSupportFragmentBackgroundController
 
@@ -91,24 +91,37 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
         media.selected = selected
 
         val selector = ClassPresenterSelector().apply {
-            descriptionPresenter = DetailsDescriptionPresenter()
+            descriptionPresenter = DetailsWatchPresenter()
             FullWidthDetailsOverviewRowPresenter(descriptionPresenter).also {
                 it.backgroundColor = ContextCompat.getColor(requireContext(), R.color.bg_black)
                 it.actionsBackgroundColor = ContextCompat.getColor(requireContext(), R.color.bg_black)
-                it.setOnActionClickedListener {
-                    if (it.id.toInt() == 0) {
+                it.setOnActionClickedListener { action ->
+                    if (action.id.toInt() == 0) {
+                        val sourceSelector = TVSourceSelectorFragment()
+                        sourceSelector.media = media
                         parentFragmentManager.beginTransaction().addToBackStack(null)
                             .replace(
                                 R.id.main_detail_fragment,
-                                TVSourceSelectorFragment(media)
+                                sourceSelector
                             ).commit()
-                    }
-
-                    if (it.id.toInt() == 1) {
+                    } else
+                    if (action.id.toInt() == 1) {
+                        val infoFragment = TVAnimeDetailInfoFragment()
+                        infoFragment.media = media
                         parentFragmentManager.beginTransaction().addToBackStack(null)
                             .replace(
                                 R.id.main_detail_fragment,
-                                TVGridSelectorFragment(media.selected!!.source, media.id)
+                                infoFragment
+                            ).commit()
+                    } else
+                    if (action.id.toInt() == 2) {
+                        val gridSelector = TVGridSelectorFragment()
+                        gridSelector.sourceId = media.selected!!.source
+                        gridSelector.mediaId = media.id
+                        parentFragmentManager.beginTransaction().addToBackStack(null)
+                            .replace(
+                                R.id.main_detail_fragment,
+                                gridSelector
                             ).commit()
                     }
                 }
@@ -146,7 +159,6 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
                                 MainScope().launch {
                                     descriptionPresenter?.userText = it
                                     adapter.notifyItemRangeChanged(0, 1)
-                                    model.watchSources?.get(sel.source)?.showUserTextListener = null
                                 }
                             }
                         }
@@ -258,6 +270,13 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        media.selected?.let { sel ->
+            model.watchSources?.get(sel.source)?.showUserTextListener = null
+        }
+    }
+
     fun focusLastViewedEpisode(episodes: MutableMap<String, Episode>?) {
         Handler(Looper.getMainLooper()).post (java.lang.Runnable {
             media.userProgress?.let { progress ->
@@ -363,7 +382,9 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
             actions.add(DetailActionsPresenter.SourceAction(0, "Source: " + model.watchSources?.get(selected.source)?.name))
         }
 
-        actions.add(DetailActionsPresenter.ChangeAction(1, "Wrong title?"))
+        actions.add(DetailActionsPresenter.InfoAction(1, "+Info"))
+
+        actions.add(DetailActionsPresenter.ChangeAction(2, "Wrong title?"))
     }
 
 }

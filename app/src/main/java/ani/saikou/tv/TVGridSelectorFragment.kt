@@ -22,7 +22,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class TVGridSelectorFragment(val sourceId: Int, val mediaId: Int): VerticalGridSupportFragment() {
+class TVGridSelectorFragment: VerticalGridSupportFragment() {
+
+    var sourceId: Int = 0
+    var mediaId: Int = 0
 
     val model: MediaDetailsViewModel by activityViewModels()
     var media: Media? = null

@@ -69,11 +69,22 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
         listOnly = intent.getBooleanExtra("listOnly",false)
 
         setOnItemViewClickedListener { itemViewHolder, item, rowViewHolder, row ->
-            startActivity(
-                Intent(
-                    requireContext(),
-                    TVDetailActivity::class.java
-                ).putExtra("media", item as Serializable))
+            if (requireActivity()::class.java.isAssignableFrom(TVDetailActivity::class.java)) {
+                startActivity(
+                    Intent(
+                        requireContext(),
+                        TVDetailActivity::class.java
+                    ).putExtra("media", item as Serializable)
+                )
+                requireActivity().finish()
+            } else {
+                startActivity(
+                    Intent(
+                        requireContext(),
+                        TVDetailActivity::class.java
+                    ).putExtra("media", item as Serializable)
+                )
+            }
         }
 
         setOnItemViewSelectedListener { itemViewHolder, item, rowViewHolder, row ->
@@ -94,7 +105,7 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
         type = t
         genre = g
         sortBy = s
-        adult = Anilist.adult || h
+        adult = h
     }
 
     private fun isNearEndOfList(adapter: ArrayObjectAdapter, item: Any): Boolean {

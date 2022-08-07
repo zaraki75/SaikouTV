@@ -19,6 +19,8 @@ import ani.saikou.databinding.ItemMediaPageBinding
 import ani.saikou.databinding.TvAnimeCardBinding
 import ani.saikou.media.*
 import ani.saikou.settings.UserInterfaceSettings
+import ani.saikou.tv.TVAnimeDetailFragment
+import ani.saikou.tv.TVDetailActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.GlideUrl
@@ -46,7 +48,6 @@ class AnimePresenter(var type: Int,
                 val media = item as Media
                 if(media!=null) {
                     if (matchParent) itemView.updateLayoutParams { width=-1 }
-                    itemView.setSafeOnClickListener { clicked(media) }
 
                     b.itemCompactImage.loadImage(media.cover)
                     b.itemCompactOngoing.visibility = if (media.status == "RELEASING") View.VISIBLE else View.GONE
@@ -70,7 +71,6 @@ class AnimePresenter(var type: Int,
                 val media = item as Media
                 if(media!=null) {
                     if (matchParent) itemView.updateLayoutParams { width=-1 }
-                    itemView.setSafeOnClickListener { clicked(media) }
 
                     b.itemCompactImage.loadImage(media.cover)
                     b.itemCompactBanner.loadImage(media.banner?:media.cover,400)
@@ -93,7 +93,6 @@ class AnimePresenter(var type: Int,
                 val b = (viewHolder as MediaPageViewHolder).binding
                 val media = item as Media
                 if(media!=null) {
-                    b.itemCompactImage.setSafeOnClickListener { clicked(media) }
                     itemView.setOnTouchListener { _, _ -> true}
 
                     b.itemCompactImage.loadImage(media.cover)
@@ -135,16 +134,6 @@ class AnimePresenter(var type: Int,
 
     @SuppressLint("ClickableViewAccessibility")
     inner class MediaPageViewHolder(val binding: ItemMediaPageBinding) : Presenter.ViewHolder(binding.root) {}
-
-    fun clicked(media: Media){
-        ContextCompat.startActivity(
-            activity,
-            Intent(activity, MediaDetailsActivity::class.java).putExtra(
-                "media",
-                media as Serializable
-            ),null
-        )
-    }
 
     override fun onUnbindViewHolder(viewHolder: ViewHolder?) {
     }

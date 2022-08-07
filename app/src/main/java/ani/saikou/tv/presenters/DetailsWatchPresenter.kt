@@ -9,7 +9,7 @@ import ani.saikou.databinding.TvAnimeDetailBinding
 import ani.saikou.media.Media
 import ani.saikou.parsers.BaseParser
 
-class DetailsDescriptionPresenter(): Presenter() {
+class DetailsWatchPresenter(): Presenter() {
 
     var userText: String? = null
 

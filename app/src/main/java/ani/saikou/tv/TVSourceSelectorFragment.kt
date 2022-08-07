@@ -13,7 +13,9 @@ import ani.saikou.databinding.TvItemSourceBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 
-class TVSourceSelectorFragment(var media: Media): VerticalGridSupportFragment() {
+class TVSourceSelectorFragment(): VerticalGridSupportFragment() {
+
+    lateinit var media: Media
 
     val model : MediaDetailsViewModel by activityViewModels()
 
