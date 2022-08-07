@@ -14,6 +14,7 @@ import ani.saikou.parsers.anime.extractors.StreamSB
 import org.jsoup.Jsoup
 
 
+//not used because the servers is too slow 
 class Henaojara : AnimeParser() {
     override val name = "Henaojara(Experimental)"
     override val saveName = "henaojara"

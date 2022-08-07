@@ -1,4 +1,4 @@
-package ani.saikou.parsers.anime
+package ani.saikou.parsers.anime;
 
 import android.net.Uri
 import android.util.Log
