@@ -28,9 +28,10 @@ class MangaRead: MangaParser() {
     override suspend fun loadChapters(mangaLink: String, extra: Map<String, String>?): List<MangaChapter> {
         val doc = client.get(mangaLink).document
         val chapters = doc.select("div.page-content-listing.single-page > div > ul > li > a").reversed()
+        val chapRegex = Regex("Chapter (\\d+)")
         return chapters.mapIndexed { index, chapter ->
             MangaChapter(
-                number = "${index + 1}",
+                number = chapRegex.find(chapter.text())?.groupValues?.get(1).toString(),
                 link = chapter.attr("href"),
                 title = chapter.text()
             )

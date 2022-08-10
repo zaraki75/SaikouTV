@@ -57,11 +57,11 @@ class Kamyroll : AnimeParser() {
             epMap.map {
                 if (it.value.thumb != null)
                     Episode(
-                        it.key.toString().replace(".0",""),
+                        it.key.toString().replace(".0", ""),
                         it.value.type,
                         it.value.title,
                         it.value.thumb!!,
-                        it.value.description,
+                        if (epMap.size < 700) it.value.description else null,
                         false,
                         it.value.series.toMap()
                     )
@@ -207,9 +207,9 @@ class Kamyroll : AnimeParser() {
     }
 
     companion object {
-        private val player = "player_settings"
+        private const val player = "player_settings"
         val settings = loadData<PlayerSettings>(player, toast = false) ?: PlayerSettings().apply { saveData(player, this) }
-        private val locale = when(settings.locale) {
+        private val locale = when (settings.locale) {
             0 -> "en-US"
             1 -> "es-ES"
             2 -> "pt-PT"
