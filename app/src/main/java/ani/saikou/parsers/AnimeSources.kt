@@ -9,6 +9,7 @@ object AnimeSources : WatchSources() {
         "Monoschinos" to ::Monoschinos,
         "Animefenix" to ::Animefenix,
         "Jkanime" to ::Jkanime,
+        "AnimeLatinoHD" to ::Animelatinohd,
         "AllAnime" to ::AllAnime,
         "Gogo" to ::Gogo,
         "Zoro" to ::Zoro,
