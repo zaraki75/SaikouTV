@@ -9,6 +9,9 @@ import ani.saikou.parsers.anime.extractors.GogoCDN
 import ani.saikou.parsers.anime.extractors.OK
 import ani.saikou.parsers.anime.extractors.StreamSB
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.*
+import org.json.JSONObject
 
 
 class Animelatinohd : AnimeParser() {
@@ -34,10 +37,36 @@ class Animelatinohd : AnimeParser() {
             true -> 1
             else -> 0
         }
-        return Mapper.parse<AnimeDetails>(animeJson).props!!.pageProps!!.data!!.players[lang].map {
-            val server = it.server!!.title!!
-            val embed = it.code!!
-            VideoServer(server,embed)
+        return try {
+            logger("bruh aaaa")
+            Mapper.parse<AnimeDetails>(animeJson).props!!.pageProps!!.data!!.players[lang].map {
+                val server = it.server!!.title!!
+                val embed = it.code!!
+                VideoServer(server,embed)
+            }
+        }catch (e: Exception){
+            logger("bruh bbbb")
+            val props = JSONObject(animeJson)["props"]
+            val pageprops = JSONObject(props.toString())["pageProps"]
+            val data = JSONObject(pageprops.toString())["data"]
+            val players = JSONObject(data.toString())["players"]
+            return if(lang == 0) {
+                val servers = JSONObject(players.toString())["0"]
+                Json.decodeFromString<JsonArray>(servers.toString()).map {
+                    val server =
+                        it.jsonObject["server"]?.jsonObject?.get("title")?.jsonPrimitive?.content.toString()
+                    val embed = it.jsonObject["code"]?.jsonPrimitive?.content.toString()
+                    VideoServer(server, embed)
+                }
+            }else{
+                val servers = JSONObject(players.toString())["1"]
+                Json.decodeFromString<JsonArray>(servers.toString()).map {
+                    val server =
+                        it.jsonObject["server"]?.jsonObject?.get("title")?.jsonPrimitive?.content.toString()
+                    val embed = it.jsonObject["code"]?.jsonPrimitive?.content.toString()
+                    VideoServer(server, embed)
+                }
+            }
         }
     }
 
@@ -93,6 +122,7 @@ data class Props (
     var pageProps : PageProps? = PageProps(),
     var _NSSP     : Boolean?   = null
 )
+
 
 @Serializable
 data class PageProps (
