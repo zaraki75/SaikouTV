@@ -175,8 +175,4 @@ class JkanimeExtractor(override val server: VideoServer): VideoExtractor() {
 
     }
 }
-@Serializable
-data class VideoResponse(
-    val url: String,
-    val type: String
-)
+
