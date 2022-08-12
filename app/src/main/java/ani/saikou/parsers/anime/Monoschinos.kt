@@ -65,7 +65,7 @@ class Monoschinos : AnimeParser() {
         val encoded = encode(query + if(selectDub) " (Sub)" else "")
         return client.get("$hostUrl/buscar?q=$encoded").document.select("div.heromain div.row div.col-md-4").map {
                 val link = it.select("a").attr("href")
-                val title = it.select("a div.series div.seriesdetails h5").text()
+                val title = it.select("a div.series div.seriesdetails h3").text()
                 val cover = it.select("a div.series div.seriesimg img").attr("src")
                 ShowResponse(title, link, cover)
             }
