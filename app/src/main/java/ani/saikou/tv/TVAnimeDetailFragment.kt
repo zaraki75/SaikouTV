@@ -96,34 +96,7 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
                 it.backgroundColor = ContextCompat.getColor(requireContext(), R.color.bg_black)
                 it.actionsBackgroundColor = ContextCompat.getColor(requireContext(), R.color.bg_black)
                 it.setOnActionClickedListener { action ->
-                    if (action.id.toInt() == 0) {
-                        val sourceSelector = TVSourceSelectorFragment()
-                        sourceSelector.media = media
-                        parentFragmentManager.beginTransaction().addToBackStack(null)
-                            .replace(
-                                R.id.main_detail_fragment,
-                                sourceSelector
-                            ).commit()
-                    } else
-                    if (action.id.toInt() == 1) {
-                        val infoFragment = TVAnimeDetailInfoFragment()
-                        infoFragment.media = media
-                        parentFragmentManager.beginTransaction().addToBackStack(null)
-                            .replace(
-                                R.id.main_detail_fragment,
-                                infoFragment
-                            ).commit()
-                    } else
-                    if (action.id.toInt() == 2) {
-                        val gridSelector = TVGridSelectorFragment()
-                        gridSelector.sourceId = media.selected!!.source
-                        gridSelector.mediaId = media.id
-                        parentFragmentManager.beginTransaction().addToBackStack(null)
-                            .replace(
-                                R.id.main_detail_fragment,
-                                gridSelector
-                            ).commit()
-                    }
+                    processAction(action)
                 }
                 addClassPresenter(DetailsOverviewRow::class.java, it)
             }
@@ -279,18 +252,31 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
 
     fun focusLastViewedEpisode(episodes: MutableMap<String, Episode>?) {
         Handler(Looper.getMainLooper()).post (java.lang.Runnable {
-            media.userProgress?.let { progress ->
-                val episode = episodes?.values?.firstOrNull() { it.number.toFloatOrNull()?:9999f>=progress.toFloat()}
-                episode.let {
-                    episodePresenters.forEachIndexed { row, arrayObjectAdapter ->
-                        val index = arrayObjectAdapter.indexOf(episode)
-                        if (index != -1) {
-                            rowsSupportFragment.setSelectedPosition(row+1, false, ListRowPresenter.SelectItemViewHolderTask(index+1))
-                            rowsSupportFragment.setSelectedPosition(0,false, ListRowPresenter.SelectItemViewHolderTask(0))
-                            return@Runnable
+            try {
+                media.userProgress?.let { progress ->
+                    val episode =
+                        episodes?.values?.firstOrNull() { it.number.toFloatOrNull() ?: 9999f >= progress.toFloat() }
+                    episode.let {
+                        episodePresenters.forEachIndexed { row, arrayObjectAdapter ->
+                            val index = arrayObjectAdapter.indexOf(episode)
+                            if (index != -1) {
+                                rowsSupportFragment.setSelectedPosition(
+                                    row + 1,
+                                    false,
+                                    ListRowPresenter.SelectItemViewHolderTask(index + 1)
+                                )
+                                rowsSupportFragment.setSelectedPosition(
+                                    0,
+                                    false,
+                                    ListRowPresenter.SelectItemViewHolderTask(0)
+                                )
+                                return@Runnable
+                            }
                         }
                     }
                 }
+            }catch (e: Exception){
+
             }
         })
     }
@@ -379,12 +365,57 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
         media.selected = selected
 
         selected.source.let {
-            actions.add(DetailActionsPresenter.SourceAction(0, "Source: " + model.watchSources?.get(selected.source)?.name))
+            val source = model.watchSources?.get(selected.source)
+            actions.add(DetailActionsPresenter.SourceAction(0, "Source: " + source?.name))
+            if(source?.isDubAvailableSeparately == true){
+                actions.add(DetailActionsPresenter.SwitchAction(3,  getString(R.string.dubbed), selected.preferDub))
+            }
         }
 
         actions.add(DetailActionsPresenter.InfoAction(1, "+Info"))
 
         actions.add(DetailActionsPresenter.ChangeAction(2, "Wrong title?"))
+    }
+
+    private fun processAction(action: Action){
+        if (action.id.toInt() == 0) {
+            val sourceSelector = TVSourceSelectorFragment()
+            sourceSelector.media = media
+            parentFragmentManager.beginTransaction().addToBackStack(null)
+                .replace(
+                    R.id.main_detail_fragment,
+                    sourceSelector
+                ).commit()
+        } else
+        if (action.id.toInt() == 1) {
+            val infoFragment = TVAnimeDetailInfoFragment()
+            infoFragment.media = media
+            parentFragmentManager.beginTransaction().addToBackStack(null)
+                .replace(
+                    R.id.main_detail_fragment,
+                    infoFragment
+                ).commit()
+        } else
+        if (action.id.toInt() == 2) {
+            val gridSelector = TVGridSelectorFragment()
+            gridSelector.sourceId = media.selected!!.source
+            gridSelector.mediaId = media.id
+            parentFragmentManager.beginTransaction().addToBackStack(null)
+                .replace(
+                    R.id.main_detail_fragment,
+                    gridSelector
+                ).commit()
+        } else
+        if (action.id.toInt() == 3){
+            val checked = !media.selected!!.preferDub
+            val selected = model.loadSelected(media)
+            model.watchSources?.get(selected.source)?.selectDub = checked
+            selected.preferDub = checked
+            model.saveSelected(media.id, selected, requireActivity())
+            media.selected = selected
+            lifecycleScope.launch(Dispatchers.IO) { model.forceLoadEpisode(media, selected.source) }
+            setupActions()
+        }
     }
 
 }

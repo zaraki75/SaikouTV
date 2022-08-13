@@ -47,6 +47,8 @@ import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import com.google.android.exoplayer2.video.VideoSize
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
 import com.lagradost.nicehttp.ignoreAllSSLErrors
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
@@ -178,6 +180,7 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
 
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+                savePlaybackProgress()
                 if(isInitialized)
                     progress {
                         isEnabled = false
@@ -414,9 +417,15 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
     }
 
     fun savePlaybackProgress() {
-        media.anime?.let { anime ->
-            saveData("${media.id}_${anime.selectedEpisode}", exoPlayer.currentPosition, requireActivity())
-            updateWatchNextChannel()
+        if(isInitialized) {
+            media.anime?.let { anime ->
+                saveData(
+                    "${media.id}_${anime.selectedEpisode}",
+                    exoPlayer.currentPosition,
+                    requireActivity()
+                )
+                updateWatchNextChannel()
+            }
         }
     }
 
@@ -445,18 +454,29 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
             builder.setThumbnailUri(Uri.parse(it))
         }
 
-        val watchNextID = sharedPref.getString(TVMainActivity.watchNextChannelIDKey, null)
-        watchNextID?.let {
-            requireContext().contentResolver.update(Uri.parse(it), builder.build().toContentValues(), null, null)
-        } ?: run {
-            val watchNextProgramUri = requireContext().contentResolver
-                .insert(TvContractCompat.WatchNextPrograms.CONTENT_URI,
-                    builder.build().toContentValues())
+        try {
+            val watchNextID = sharedPref.getString(TVMainActivity.watchNextChannelIDKey, null)
+            watchNextID?.let {
+                requireContext().contentResolver.update(
+                    Uri.parse(it),
+                    builder.build().toContentValues(),
+                    null,
+                    null
+                )
+            } ?: run {
+                val watchNextProgramUri = requireContext().contentResolver
+                    .insert(
+                        TvContractCompat.WatchNextPrograms.CONTENT_URI,
+                        builder.build().toContentValues()
+                    )
 
-            with(sharedPref.edit()) {
-                putString(TVMainActivity.watchNextChannelIDKey,watchNextProgramUri.toString())
-                apply()
+                with(sharedPref.edit()) {
+                    putString(TVMainActivity.watchNextChannelIDKey, watchNextProgramUri.toString())
+                    apply()
+                }
             }
+        }catch (e: Exception) {
+            Firebase.crashlytics.log("Error updating watchnext "+e.message)
         }
     }
 
