@@ -18,21 +18,21 @@ import java.net.URLEncoder.encode
 class NineAnime : AnimeParser() {
 
     override val name = "9anime"
-    override val saveName = "9anime_to"
-    override val hostUrl = "https://$defaultHost"
+    override val saveName = "9anime_id"
+    override val hostUrl = "https://9anime.id"
     override val malSyncBackupName = "9anime"
     override val isDubAvailableSeparately = true
 
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
         val animeId = client.get(animeLink).document.select("#watch-main").attr("data-id")
-        val body = client.get("${host()}/ajax/episode/list/$animeId?vrf=${encodeVrf(animeId)}").parsed<Response>().result
+        val body = client.get("$hostUrl/ajax/episode/list/$animeId?vrf=${encodeVrf(animeId)}").parsed<Response>().result
         return Jsoup.parse(body).body().select("ul > li > a").mapNotNull {
             val id = it.attr("data-ids").split(",")
                 .getOrNull(if (selectDub) 1 else 0) ?: return@mapNotNull null
             val num = it.attr("data-num")
             val title = it.selectFirst("span.d-title")?.text()
             val filler = it.hasClass("filler")
-            Episode(num, "${host()}/ajax/server/list/$id?vrf=${encodeVrf(id)}", title, isFiller = filler)
+            Episode(num, "$hostUrl/ajax/server/list/$id?vrf=${encodeVrf(id)}", title, isFiller = filler)
         }
     }
 
@@ -74,9 +74,9 @@ class NineAnime : AnimeParser() {
     override suspend fun search(query: String): List<ShowResponse> {
         val vrf = encodeVrf(query)
         val searchLink =
-            "${host()}/filter?language%5B%5D=${if (selectDub) "dubbed" else "subbed"}&keyword=${encode(query)}&vrf=${vrf}&page=1"
+            "$hostUrl/filter?language%5B%5D=${if (selectDub) "dubbed" else "subbed"}&keyword=${encode(query)}&vrf=${vrf}&page=1"
         return client.get(searchLink).document.select("#list-items div.ani.poster.tip > a").map {
-            val link = host() + it.attr("href")
+            val link = hostUrl + it.attr("href")
             val img = it.select("img")
             val title = img.attr("alt")
             val cover = img.attr("src")
@@ -116,16 +116,11 @@ class NineAnime : AnimeParser() {
     data class Response(val result: String)
 
     private suspend fun getEpisodeLinks(id: String): Links? {
-        return tryWithSuspend { client.get("${host()}/ajax/server/$id?vrf=${encodeVrf(id)}").parsed() }
+        return tryWithSuspend { client.get("$hostUrl/ajax/server/$id?vrf=${encodeVrf(id)}").parsed() }
     }
 
 
     companion object {
-        private const val defaultHost = "9anime.id"
-        fun host(): String {
-            return "https://$defaultHost"
-        }
-
         private var lastChecked = 0L
         private const val jsonLink = "https://raw.githubusercontent.com/chenkaslowankiya/BruvFlow/main/keys.json"
         private var cipherKey: Key? = null

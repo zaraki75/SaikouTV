@@ -220,10 +220,10 @@ class AnilistQueries {
                             media.anime.nextAiringEpisodeTime = fetchedMedia.nextAiringEpisode?.airingAt?.toLong()
 
                             fetchedMedia.externalLinks?.forEach { i ->
-                                when (i.site) {
-                                    "Youtube" -> media.anime.youtube = i.url
-                                    "Crunchyroll" -> media.crunchySlug = i.url?.split("/")?.getOrNull(3)
-                                    "VRV" -> media.vrvId = i.url?.split("/")?.getOrNull(4)
+                                when (i.site.lowercase()) {
+                                    "youtube" -> media.anime.youtube = i.url
+                                    "crunchyroll" -> media.crunchySlug = i.url?.split("/")?.getOrNull(3)
+                                    "vrv" -> media.vrvId = i.url?.split("/")?.getOrNull(4)
                                 }
                             }
                         } else if (media.manga != null) {
