@@ -1,4 +1,4 @@
-package ani.saikou.parsers.anime
+package ani.saikou.parsers.anime;
 
 import android.net.Uri
 import android.util.Log
@@ -175,8 +175,4 @@ class JkanimeExtractor(override val server: VideoServer): VideoExtractor() {
 
     }
 }
-@Serializable
-data class VideoResponse(
-    val url: String,
-    val type: String
-)
+

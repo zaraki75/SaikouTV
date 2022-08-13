@@ -18,7 +18,7 @@ object AnimeSources : WatchSources() {
         "Monoschinos" to ::Monoschinos,
         "Animefenix" to ::Animefenix,
         "Jkanime" to ::Jkanime,
-
+        "AnimeLatinoHD" to ::Animelatinohd,
     )
 }
 

@@ -3,7 +3,6 @@ package ani.saikou.parsers.anime
 import android.util.Base64
 import ani.saikou.*
 import android.net.Uri
-import android.util.Log
 import ani.saikou.FileUrl
 import ani.saikou.client
 import ani.saikou.parsers.*
@@ -29,7 +28,7 @@ class Monoschinos : AnimeParser() {
             val thumb1 = it.select("a div.animedtlsmain div.animeimgdiv img.animeimghv").attr("data-src")
             logger("url2-$url")
             logger("thumb-$thumb1")
-            ani.saikou.parsers.Episode(epNum,url,thumbnail = thumb1)
+            Episode(epNum,url,thumbnail = thumb1)
             }
         }
 
@@ -41,7 +40,6 @@ class Monoschinos : AnimeParser() {
             val url1 = Base64.decode(urlBase64, Base64.DEFAULT)
             val url = String(url1).replace("https://monoschinos2.com/reproductor?url=", "")
             val embed = FileUrl(url,mapOf("referer" to hostUrl))
-            Log.i("bruh",url)
             VideoServer(server,embed)
 
         }
@@ -65,7 +63,7 @@ class Monoschinos : AnimeParser() {
         val encoded = encode(query + if(selectDub) " (Sub)" else "")
         return client.get("$hostUrl/buscar?q=$encoded").document.select("div.heromain div.row div.col-md-4").map {
                 val link = it.select("a").attr("href")
-                val title = it.select("a div.series div.seriesdetails h5").text()
+                val title = it.select("a div.series div.seriesdetails h3").text()
                 val cover = it.select("a div.series div.seriesimg img").attr("src")
                 ShowResponse(title, link, cover)
             }
