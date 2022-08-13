@@ -319,9 +319,9 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
         playerGlue.title = media.mainName()
 
         if(!episode.title.isNullOrEmpty())
-            playerGlue.subtitle = "Episode "+ episode.number + ": "+ episode.title
+            playerGlue.subtitle = getString(R.string.ep)+ " "+ episode.number + ": "+ episode.title
         else
-            playerGlue.subtitle = "Episode "+ episode.number
+            playerGlue.subtitle = getString(R.string.ep)+ " "+ episode.number
 
 
         playerGlue.playWhenPrepared()

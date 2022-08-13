@@ -109,12 +109,12 @@ class TVAnimeFragment: BrowseSupportFragment()  {
         popularAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
         updatedAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
 
-        continueRow = ListRow(HeaderItem("Continue Watching"), continueAdapter)
-        recommendedRow = ListRow(HeaderItem("Recommended"), recommendedAdapter)
-        genresRow = ListRow(HeaderItem("Genres"), genresAdapter)
-        trendingRow = ListRow(HeaderItem("Trending"), trendingAdapter)
-        popularRow = ListRow(HeaderItem("Popular"), popularAdapter)
-        updatedRow = ListRow(HeaderItem("Updated"), updatedAdapter)
+        continueRow = ListRow(HeaderItem(getString(R.string.continue_watching)), continueAdapter)
+        recommendedRow = ListRow(HeaderItem(getString(R.string.recommended)), recommendedAdapter)
+        genresRow = ListRow(HeaderItem(getString(R.string.genres)), genresAdapter)
+        trendingRow = ListRow(HeaderItem(getString(R.string.trending_anime)), trendingAdapter)
+        popularRow = ListRow(HeaderItem(getString(R.string.popular_anime)), popularAdapter)
+        updatedRow = ListRow(HeaderItem(getString(R.string.updated)), updatedAdapter)
 
         progressBarManager.initialDelay = 0
         progressBarManager.show()
@@ -215,7 +215,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                 rowAdapter.add(trendingRow)
                 rowAdapter.add(popularRow)
                 rowAdapter.add(updatedRow)
-                rowAdapter.add(ButtonListRow("Login", object : ButtonListRow.OnClickListener {
+                rowAdapter.add(ButtonListRow(getString(R.string.login), object : ButtonListRow.OnClickListener {
                     override fun onClick() {
                         requireActivity().supportFragmentManager.beginTransaction()
                             .replace(R.id.main_tv_fragment, TVLoginFragment()).addToBackStack("home")
@@ -232,7 +232,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                 rowAdapter.add(trendingRow)
                 rowAdapter.add(popularRow)
                 rowAdapter.add(updatedRow)
-                rowAdapter.add(ButtonListRow("Logout", object : ButtonListRow.OnClickListener {
+                rowAdapter.add(ButtonListRow(getString(R.string.logout), object : ButtonListRow.OnClickListener {
                     override fun onClick() {
                         Anilist.removeSavedToken(requireContext())
                         reloadScreen()

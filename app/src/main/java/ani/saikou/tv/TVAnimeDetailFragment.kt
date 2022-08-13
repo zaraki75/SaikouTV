@@ -188,7 +188,7 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
 
                     clearEpisodes()
                     if (total == 0) {
-                        rowsAdapter.add(HeaderOnlyRow("No episodes found, try another source"))
+                        rowsAdapter.add(HeaderOnlyRow(getString(R.string.source_not_found)))
                     } else if (total > limit) {
                         val arr = episodes.keys.toList()
                         val numberOfChips = ceil((total).toDouble() / limit).toInt()
@@ -199,7 +199,7 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
                             val startIndex = limit * (index)
                             val start = arr[startIndex]
                             val end = arr[last - 1]
-                            createEpisodePresenter("Episodes ${start} - ${end}").addAll(
+                            createEpisodePresenter(getString(R.string.eps) + " ${start} - ${end}").addAll(
                                 0,
                                 episodes.values.toList().subList(
                                     startIndex,
@@ -209,7 +209,7 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
                         }
                         focusLastViewedEpisode(episodes)
                     } else {
-                        createEpisodePresenter("Episodes").addAll(
+                        createEpisodePresenter(getString(R.string.eps)).addAll(
                             0,
                             episodes.values.toList()
                         )
@@ -366,7 +366,7 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
 
         selected.source.let {
             val source = model.watchSources?.get(selected.source)
-            actions.add(DetailActionsPresenter.SourceAction(0, "Source: " + source?.name))
+            actions.add(DetailActionsPresenter.SourceAction(0, getString(R.string.source) +": " + source?.name))
             if(source?.isDubAvailableSeparately == true){
                 actions.add(DetailActionsPresenter.SwitchAction(3,  getString(R.string.dubbed), selected.preferDub))
             }
@@ -374,7 +374,7 @@ class TVAnimeDetailFragment() : DetailsSupportFragment() {
 
         actions.add(DetailActionsPresenter.InfoAction(1, "+Info"))
 
-        actions.add(DetailActionsPresenter.ChangeAction(2, "Wrong title?"))
+        actions.add(DetailActionsPresenter.ChangeAction(2, getString(R.string.wrong)))
     }
 
     private fun processAction(action: Action){
