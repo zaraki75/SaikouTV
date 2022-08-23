@@ -12,6 +12,8 @@ data class FuzzyDate(
     @SerialName("day") val day: Int? = null,
 ) : Serializable {
     override fun toString(): String {
+        if(day==null && year==null && month==null)
+            return "??"
         val a = if (month != null) DateFormatSymbols().months[month - 1] else ""
         return (if (day != null) "$day " else "") + a + (if (year != null) ", $year" else "")
     }

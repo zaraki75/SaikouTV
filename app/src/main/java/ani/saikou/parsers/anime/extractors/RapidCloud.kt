@@ -31,7 +31,7 @@ class RapidCloud(override val server: VideoServer) : VideoExtractor() {
         if (key != null && number != null && sId != null) {
             captcha(embed.url, key)?.apply {
 
-                val jsonLink = "https://rapid-cloud.ru/ajax/embed-6/getSources?id=${
+                val jsonLink = "https://rapid-cloud.co/ajax/embed-6/getSources?id=${
                     embed.url.findBetween("/embed-6/", "?z=")!!
                 }&_token=${this}&_number=$number&sId=$sId"
 
@@ -92,7 +92,7 @@ class RapidCloud(override val server: VideoServer) : VideoExtractor() {
             }
         }
         webSocket = client.newWebSocket(
-            Request.Builder().url("wss://ws1.rapid-cloud.ru/socket.io/?EIO=4&transport=websocket").build(),
+            Request.Builder().url("wss://ws1.rapid-cloud.co/socket.io/?EIO=4&transport=websocket").build(),
             listener
         )
         latch.await(30, TimeUnit.SECONDS)

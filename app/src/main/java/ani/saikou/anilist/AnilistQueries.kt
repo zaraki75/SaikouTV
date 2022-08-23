@@ -38,7 +38,7 @@ suspend inline fun <reified T : Any> executeQuery(
 
             val json = client.post("https://graphql.anilist.co/", headers, data = data, cacheTime = cache ?: 10)
             if(!json.text.startsWith("{")) throw Exception("Seems like Anilist is down, maybe try using a VPN or you can wait for it to comeback.")
-            if (show) toastString("Response : ${json.text}")
+            if (show) println("Response : ${json.text}")
             json.parsed()
         } else null
     }
@@ -93,7 +93,7 @@ class AnilistQueries {
             """{Media(id:${media.id}){id mediaListEntry{id status score(format:POINT_100) progress repeat updatedAt startedAt{year month day}completedAt{year month day}}isFavourite siteUrl idMal nextAiringEpisode{episode airingAt}source countryOfOrigin format duration season seasonYear startDate{year month day}endDate{year month day}genres studios(isMain:true){nodes{id name siteUrl}}description trailer { site id } synonyms tags { name rank isMediaSpoiler } characters(sort:[ROLE,FAVOURITES_DESC],perPage:25,page:1){edges{role node{id image{medium}name{userPreferred}}}}relations{edges{relationType(version:2)node{id idMal mediaListEntry{progress score(format:POINT_100) status} episodes chapters nextAiringEpisode{episode} popularity meanScore isAdult isFavourite title{english romaji userPreferred}type status(version:2)bannerImage coverImage{large}}}}recommendations(sort:RATING_DESC){nodes{mediaRecommendation{id idMal mediaListEntry{progress score(format:POINT_100) status} episodes chapters nextAiringEpisode{episode}meanScore isAdult isFavourite title{english romaji userPreferred}type status(version:2)bannerImage coverImage{large}}}}externalLinks{url site}}}"""
         runBlocking {
             val anilist = async {
-                var response = executeQuery<Query.Media>(query, force = true)
+                var response = executeQuery<Query.Media>(query, force = true, show = true)
                 if (response != null) {
                     fun parse() {
                         val fetchedMedia = response?.data?.media ?: return
@@ -101,6 +101,9 @@ class AnilistQueries {
                         media.source = fetchedMedia.source.toString()
                         media.countryOfOrigin = fetchedMedia.countryOfOrigin
                         media.format = fetchedMedia.format.toString()
+
+                        media.startDate = fetchedMedia.startDate
+                        media.endDate = fetchedMedia.endDate
 
                         if (fetchedMedia.genres != null) {
                             media.genres = arrayListOf()
@@ -204,8 +207,6 @@ class AnilistQueries {
                             media.anime.episodeDuration = fetchedMedia.duration
                             media.anime.season = fetchedMedia.season?.toString()
                             media.anime.seasonYear = fetchedMedia.seasonYear
-                            media.startDate = fetchedMedia.startDate
-                            media.endDate = fetchedMedia.endDate
 
                             fetchedMedia.studios?.nodes?.apply {
                                 if (isNotEmpty()) {

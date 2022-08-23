@@ -26,10 +26,7 @@ import android.util.Rational
 import android.util.TypedValue
 import android.view.*
 import android.view.animation.AnimationUtils
-import android.widget.AdapterView
-import android.widget.ImageButton
-import android.widget.Spinner
-import android.widget.TextView
+import android.widget.*
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -123,6 +120,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     private var extractor: VideoExtractor? = null
     private var video: Video? = null
     private var subtitle: Subtitle? = null
+    private val player = "player_settings"
 
     private var notchHeight: Int = 0
     private var currentWindow = 0
@@ -358,6 +356,33 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             playerView.findViewById<View>(R.id.exo_skip).setOnClickListener {
                 if (isInitialized)
                     exoPlayer.seekTo(exoPlayer.currentPosition + settings.skipTime * 1000)
+            }
+            playerView.findViewById<View>(R.id.exo_skip).setOnLongClickListener {
+                val dialog = Dialog(this, R.style.DialogTheme)
+                dialog.setContentView(R.layout.item_seekbar_dialog)
+                dialog.setCancelable(true)
+                dialog.setCanceledOnTouchOutside(true)
+                dialog.window?.setLayout(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                if (settings.skipTime <= 120){ dialog.findViewById<Slider>(R.id.seekbar).value = settings.skipTime.toFloat() }
+                else { dialog.findViewById<Slider>(R.id.seekbar).value = 120f }
+                dialog.findViewById<Slider>(R.id.seekbar).addOnChangeListener { _, value, _ ->
+                    settings.skipTime = value.toInt()
+                    saveData(player, settings)
+                    playerView.findViewById<TextView>(R.id.exo_skip_time).text = settings.skipTime.toString()
+                    dialog.findViewById<TextView>(R.id.seekbar_value).text = settings.skipTime.toString()
+                }
+                dialog.findViewById<Slider>(R.id.seekbar).addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+                    override fun onStartTrackingTouch(slider: Slider) {}
+                    override fun onStopTrackingTouch(slider: Slider) {dialog.dismiss()}
+                })
+                dialog.findViewById<TextView>(R.id.seekbar_title).text = getString(R.string.skip_time)
+                dialog.findViewById<TextView>(R.id.seekbar_value).text = settings.skipTime.toString()
+                dialog.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                dialog.show()
+                true
             }
         } else {
             playerView.findViewById<View>(R.id.exo_skip).visibility = View.GONE

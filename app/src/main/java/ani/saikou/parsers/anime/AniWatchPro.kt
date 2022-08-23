@@ -8,11 +8,11 @@ import ani.saikou.parsers.anime.extractors.VizCloud
 import ani.saikou.sortByTitle
 import ani.saikou.tryWithSuspend
 
-class WatchCartoonCc : AnimeParser() {
+class AniWatchPro : AnimeParser() {
 
-    override val name = "WatchCartoon.CC"
-    override val saveName = "watch_cartoon_cc"
-    override val hostUrl = "https://wcostream.cc"
+    override val name = "AniWatch.pro"
+    override val saveName = "ani_watch_pro"
+    override val hostUrl = "https://aniwatch.pro"
     override val isDubAvailableSeparately = true
 
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {

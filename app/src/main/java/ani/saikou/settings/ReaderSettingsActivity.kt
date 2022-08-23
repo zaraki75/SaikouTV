@@ -125,6 +125,12 @@ class ReaderSettingsActivity : AppCompatActivity() {
             settings.default.keepScreenOn = isChecked
             saveData(reader, settings)
         }
+
+        binding.readerSettingsHidePageNumbers.isChecked = settings.default.hidePageNumbers
+        binding.readerSettingsHidePageNumbers.setOnCheckedChangeListener { _, isChecked ->
+            settings.default.hidePageNumbers = isChecked
+            saveData(reader, settings)
+        }
         
         //Update Progress
         binding.readerSettingsAskUpdateProgress.isChecked = settings.askIndividual

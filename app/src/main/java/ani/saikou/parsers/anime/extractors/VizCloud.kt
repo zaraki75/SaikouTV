@@ -47,7 +47,7 @@ class VizCloud(override val server: VideoServer) : VideoExtractor() {
 
     companion object {
         private var lastChecked = 0L
-        private const val jsonLink = "https://raw.githubusercontent.com/chenkaslowankiya/BruhFlow/main/keys.json"
+        private const val jsonLink = "https://raw.githubusercontent.com/AnimeJeff/OverFlow/main/keys.json"
         private var cipherKey: VizCloudKey? = null
         suspend fun getKey(): VizCloudKey {
             cipherKey = if (cipherKey != null && (lastChecked - System.currentTimeMillis()) < 1000 * 60 * 30) cipherKey!!
