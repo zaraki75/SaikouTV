@@ -11,6 +11,7 @@ data class CurrentReaderSettings(
     var padding: Boolean = true,
     var horizontalScrollBar: Boolean = true,
     var keepScreenOn: Boolean = false,
+    var hidePageNumbers: Boolean = false
 ) : Serializable {
 
     enum class Directions {

@@ -298,7 +298,7 @@ class MangaReaderActivity : AppCompatActivity() {
             } else {
                 binding.mangaReaderSlider.visibility = View.GONE
             }
-            binding.mangaReaderPageNumber.text = "${currentChapterPage}/$maxChapterPage"
+            binding.mangaReaderPageNumber.text = if (settings.default.hidePageNumbers) "" else "${currentChapterPage}/$maxChapterPage"
 
         }
 
@@ -489,7 +489,7 @@ class MangaReaderActivity : AppCompatActivity() {
         if (currentChapterPage != page) {
             currentChapterPage = page
             saveData("${media.id}_${chapter.number}", page, this)
-            binding.mangaReaderPageNumber.text = "${currentChapterPage}/$maxChapterPage"
+            binding.mangaReaderPageNumber.text = if (settings.default.hidePageNumbers) "" else "${currentChapterPage}/$maxChapterPage"
             if (!sliding) binding.mangaReaderSlider.apply {
                 value = clamp(currentChapterPage.toFloat(),1f,valueTo)
             }

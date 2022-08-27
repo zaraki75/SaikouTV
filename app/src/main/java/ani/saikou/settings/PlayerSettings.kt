@@ -13,7 +13,7 @@ data class PlayerSettings(
     var outline: Int = 0,
     var font: Int = 0,
     var fontSize: Int = 20,
-    var locale: Int = 0,
+    var locale: Int = 2,
 
     //Auto
     var autoPlay: Boolean = true,

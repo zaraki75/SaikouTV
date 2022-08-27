@@ -75,6 +75,7 @@ class NineAnime : AnimeParser() {
         val vrf = encodeVrf(query)
         val searchLink =
             "$hostUrl/filter?language%5B%5D=${if (selectDub) "dubbed" else "subbed"}&keyword=${encode(query)}&vrf=${vrf}&page=1"
+        println(searchLink)
         return client.get(searchLink).document.select("#list-items div.ani.poster.tip > a").map {
             val link = hostUrl + it.attr("href")
             val img = it.select("img")
@@ -135,18 +136,18 @@ class NineAnime : AnimeParser() {
 
         @Serializable
         data class Key(
-            val cipher: String,
-            val decipher: String,
+            val decryptKey: String,
+            val encryptKey: String,
         )
 
         private const val nineAnimeKey = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
         private suspend fun encodeVrf(text: String): String {
-            return encode(encrypt(cipher(getKey().cipher, encode(text)), nineAnimeKey))
+            return encode(encrypt(cipher(getKey().encryptKey, encode(text)), nineAnimeKey))
         }
 
         private suspend fun decodeVrf(text: String): String {
-            return decode(cipher(getKey().decipher, decrypt(text, nineAnimeKey)))
+            return decode(cipher(getKey().decryptKey, decrypt(text, nineAnimeKey)))
         }
 
         fun encrypt(input: String, key: String): String {

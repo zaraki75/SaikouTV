@@ -108,6 +108,12 @@ class ReaderSettingsDialogFragment : BottomSheetDialogFragment() {
             settings.keepScreenOn = isChecked
             activity.applySettings()
         }
+
+        binding.readerHidePageNumbers.isChecked = settings.hidePageNumbers
+        binding.readerHidePageNumbers.setOnCheckedChangeListener { _,isChecked ->
+            settings.hidePageNumbers = isChecked
+            activity.applySettings()
+        }
     }
 
     override fun onDestroy() {

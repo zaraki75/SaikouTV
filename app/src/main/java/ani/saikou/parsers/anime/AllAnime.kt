@@ -140,7 +140,7 @@ class AllAnime : AnimeParser() {
 
     private suspend fun getEpisodeInfos(showId: String): List<EpisodeInfo>? {
         val variables = """{"_id": "$showId"}"""
-        val show = graphqlQuery(variables, "bea0b50519809a797e72b9bd5131d453de6bd1841ea7e720765c5af143a0d6f0").data?.show
+        val show = graphqlQuery(variables, "af4b72c51f94ed3b1bd6405ab279881ad84b3ba519ebc2382a1736d34c3c1bf6").data?.show
         if (show != null) {
             val epCount = if (selectDub) show.availableEpisodes.dub else show.availableEpisodes.sub
             val epVariables = """{"showId":"$showId","episodeNumStart":0,"episodeNumEnd":${epCount}}"""

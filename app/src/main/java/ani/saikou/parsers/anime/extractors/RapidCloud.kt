@@ -7,12 +7,15 @@ import ani.saikou.client
 import ani.saikou.findBetween
 import ani.saikou.okHttpClient
 import ani.saikou.parsers.*
-import ani.saikou.parsers.anime.extractors.RapidCloud.SocketHandler.webSocket
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import okhttp3.*
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 import java.util.concurrent.*
 
+@Suppress("BlockingMethodInNonBlockingContext")
 class RapidCloud(override val server: VideoServer) : VideoExtractor() {
 
     override suspend fun extract(): VideoContainer {
@@ -26,9 +29,9 @@ class RapidCloud(override val server: VideoServer) : VideoExtractor() {
         val key = soup.findBetween("var recaptchaSiteKey = '", "',")
         val number = soup.findBetween("recaptchaNumber = '", "';")
 
-        val sId = wss(okHttpClient)
+        val sId = wss()
 
-        if (key != null && number != null && sId != null) {
+        if (key != null && number != null && sId.isNotEmpty()) {
             captcha(embed.url, key)?.apply {
 
                 val jsonLink = "https://rapid-cloud.co/ajax/embed-6/getSources?id=${
@@ -53,59 +56,58 @@ class RapidCloud(override val server: VideoServer) : VideoExtractor() {
         return VideoContainer(videos, subtitles)
     }
 
-    private suspend fun captcha(url: String, key: String): String? {
-        val uri = Uri.parse(url)
-        val domain = (Base64.encodeToString(
-            (uri.scheme + "://" + uri.host + ":443").encodeToByteArray(),
-            Base64.NO_PADDING
-        ) + ".").replace("\n", "")
-        val vToken =
-            client.get("https://www.google.com/recaptcha/api.js?render=$key", referer = (uri.scheme + "://" + uri.host))
-                .text.replace("\n", "")
-                .findBetween("/releases/", "/recaptcha") ?: return null
-        val recapToken =
-            client.get("https://www.google.com/recaptcha/api2/anchor?ar=1&hl=en&size=invisible&cb=kr60249sk&k=$key&co=$domain&v=$vToken")
-                .document.selectFirst("#recaptcha-token")?.attr("value") ?: return null
-        return client.post(
-            "https://www.google.com/recaptcha/api2/reload?k=$key",
-            data = mutableMapOf("v" to vToken, "k" to key, "c" to recapToken, "co" to domain, "sa" to "", "reason" to "q")
-        )
-            .text.replace("\n", "").findBetween("rresp\",\"", "\",null")
-    }
-
-    private fun wss(client: OkHttpClient): String? {
-        val latch = CountDownLatch(1)
-        var sId: String? = null
-        val listener = object : WebSocketListener() {
-            override fun onOpen(webSocket: WebSocket, response: Response) {
-                webSocket.send("40")
-            }
-
-            override fun onMessage(webSocket: WebSocket, text: String) {
-                when {
-                    text.startsWith("40") -> {
-                        sId = text.findBetween("40{\"sid\":\"", "\"}")
-                        latch.countDown()
-                    }
-                    text == "2"           -> webSocket.send("3")
-                }
-            }
+    companion object{
+        private suspend fun captcha(url: String, key: String): String? {
+            val uri = Uri.parse(url)
+            val domain = (Base64.encodeToString(
+                (uri.scheme + "://" + uri.host + ":443").encodeToByteArray(),
+                Base64.NO_PADDING
+            ) + ".").replace("\n", "")
+            val vToken =
+                client.get("https://www.google.com/recaptcha/api.js?render=$key", referer = (uri.scheme + "://" + uri.host))
+                    .text.replace("\n", "")
+                    .findBetween("/releases/", "/recaptcha") ?: return null
+            val recapToken =
+                client.get("https://www.google.com/recaptcha/api2/anchor?ar=1&hl=en&size=invisible&cb=kr60249sk&k=$key&co=$domain&v=$vToken")
+                    .document.selectFirst("#recaptcha-token")?.attr("value") ?: return null
+            return client.post(
+                "https://www.google.com/recaptcha/api2/reload?k=$key",
+                data = mutableMapOf("v" to vToken, "k" to key, "c" to recapToken, "co" to domain, "sa" to "", "reason" to "q")
+            )
+                .text.replace("\n", "").findBetween("rresp\",\"", "\",null")
         }
-        webSocket = client.newWebSocket(
-            Request.Builder().url("wss://ws1.rapid-cloud.co/socket.io/?EIO=4&transport=websocket").build(),
-            listener
-        )
-        latch.await(30, TimeUnit.SECONDS)
-        return sId
+
+        private suspend fun wss(): String {
+            var sId = client.get("https://api.enime.moe/tool/rapid-cloud/server-id").text
+            if(sId.isEmpty()){
+                val latch = CountDownLatch(1)
+                val listener = object : WebSocketListener() {
+                    override fun onOpen(webSocket: WebSocket, response: Response) {
+                        webSocket.send("40")
+                    }
+
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        when {
+                            text.startsWith("40") -> {
+                                sId = text.findBetween("40{\"sid\":\"", "\"}")?:""
+                                latch.countDown()
+                            }
+                            text == "2"           -> webSocket.send("3")
+                        }
+                    }
+                }
+                okHttpClient.newWebSocket(
+                    Request.Builder().url("wss://ws1.rapid-cloud.co/socket.io/?EIO=4&transport=websocket").build(),
+                    listener
+                )
+                latch.await(30, TimeUnit.SECONDS)
+            }
+            return sId
+        }
     }
 
-    override suspend fun onVideoPlayed(video: Video?) {
-        webSocket?.send("3")
-    }
 
-    override suspend fun onVideoStopped(video: Video?) {
-        webSocket?.close(4969, "Just got Saikou-ed")
-    }
+
 
     @Serializable
     private data class SourceResponse(
@@ -122,7 +124,4 @@ class RapidCloud(override val server: VideoServer) : VideoExtractor() {
         )
     }
 
-    object SocketHandler {
-        var webSocket: WebSocket? = null
-    }
 }
