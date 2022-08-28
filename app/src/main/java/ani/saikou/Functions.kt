@@ -545,6 +545,7 @@ abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
 
     override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
         onScrollYClick(distanceY)
+        onScrollXClick(distanceX)
         return super.onScroll(e1, e2, distanceX, distanceY)
     }
 
@@ -567,7 +568,7 @@ abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
             cancel()
             purge()
         }
-        onDoubleClick(e) //Do what ever u want on Double Click
+        onDoubleClick(e)
     }
 
     private fun processLongClickEvent(e: MotionEvent?) {
@@ -575,12 +576,13 @@ abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
             cancel()
             purge()
         }
-        onLongClick(e) //Do what ever u want on Double Click
+        onLongClick(e)
     }
 
     open fun onSingleClick(event: MotionEvent?) {}
     open fun onDoubleClick(event: MotionEvent?) {}
     open fun onScrollYClick(y: Float) {}
+    open fun onScrollXClick(y: Float) {}
     open fun onLongClick(event: MotionEvent?) {}
 }
 

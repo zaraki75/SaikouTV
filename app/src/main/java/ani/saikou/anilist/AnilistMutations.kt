@@ -17,18 +17,19 @@ class AnilistMutations {
         progress: Int? = null,
         score: Int? = null,
         status: String? = null,
+        private:Boolean = false,
         startedAt: FuzzyDate? = null,
-        completedAt: FuzzyDate? = null
+        completedAt: FuzzyDate? = null,
     ) {
         val query = """
-            mutation ( ${"$"}mediaID: Int, ${"$"}progress: Int, ${"$"}scoreRaw:Int, ${"$"}status:MediaListStatus, ${"$"}start:FuzzyDateInput${if (startedAt != null) "=" + startedAt.toVariableString() else ""}, ${"$"}completed:FuzzyDateInput${if (completedAt != null) "=" + completedAt.toVariableString() else ""} ) {
-                SaveMediaListEntry( mediaId: ${"$"}mediaID, progress: ${"$"}progress, scoreRaw: ${"$"}scoreRaw, status:${"$"}status, startedAt: ${"$"}start, completedAt: ${"$"}completed ) {
+            mutation ( ${"$"}mediaID: Int, ${"$"}progress: Int,${"$"}private:Boolean, ${"$"}scoreRaw:Int, ${"$"}status:MediaListStatus, ${"$"}start:FuzzyDateInput${if (startedAt != null) "=" + startedAt.toVariableString() else ""}, ${"$"}completed:FuzzyDateInput${if (completedAt != null) "=" + completedAt.toVariableString() else ""} ) {
+                SaveMediaListEntry( mediaId: ${"$"}mediaID, progress: ${"$"}progress, private: ${"$"}private, scoreRaw: ${"$"}scoreRaw, status:${"$"}status, startedAt: ${"$"}start, completedAt: ${"$"}completed ) {
                     score(format:POINT_10_DECIMAL) startedAt{year month day} completedAt{year month day}
                 }
             }
         """.replace("\n", "").replace("""    """, "")
 
-        val variables = """{"mediaID":$mediaID
+        val variables = """{"mediaID":$mediaID,"private":$private
             ${if (progress != null) ""","progress":$progress""" else ""}
             ${if (score != null) ""","scoreRaw":$score""" else ""}
             ${if (status != null) ""","status":"$status"""" else ""}

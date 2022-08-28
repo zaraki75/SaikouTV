@@ -131,6 +131,24 @@ class ReaderSettingsActivity : AppCompatActivity() {
             settings.default.hidePageNumbers = isChecked
             saveData(reader, settings)
         }
+
+        binding.readerSettingsOverscroll.isChecked = settings.default.overScrollMode
+        binding.readerSettingsOverscroll.setOnCheckedChangeListener { _,isChecked ->
+            settings.default.overScrollMode = isChecked
+            saveData(reader, settings)
+        }
+
+        binding.readerSettingsVolumeButton.isChecked = settings.default.volumeButtons
+        binding.readerSettingsVolumeButton.setOnCheckedChangeListener { _,isChecked ->
+            settings.default.volumeButtons = isChecked
+            saveData(reader, settings)
+        }
+
+        binding.readerSettingsWrapImages.isChecked = settings.default.wrapImages
+        binding.readerSettingsWrapImages.setOnCheckedChangeListener { _,isChecked ->
+            settings.default.wrapImages = isChecked
+            saveData(reader, settings)
+        }
         
         //Update Progress
         binding.readerSettingsAskUpdateProgress.isChecked = settings.askIndividual

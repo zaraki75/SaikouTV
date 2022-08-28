@@ -8,14 +8,14 @@ plugins {
 }
 
 android {
-    compileSdk 31
+    compileSdk 32
 
     defaultConfig {
         applicationId "ani.saikou"
         minSdk 21
-        targetSdk 31
-        versionCode 58
-        versionName "1.2.0.17.2"
+        targetSdk 32
+        versionCode 60
+        versionName "1.2.0.19"
         signingConfig signingConfigs.debug
     }
 
@@ -42,14 +42,14 @@ android {
 
 dependencies {
 //    Core
-    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.appcompat:appcompat:1.5.0'
     implementation "androidx.browser:browser:1.4.0"
     implementation "androidx.core:core-ktx:1.8.0"
-    implementation 'androidx.fragment:fragment-ktx:1.5.0'
+    implementation 'androidx.fragment:fragment-ktx:1.5.2'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.multidex:multidex:2.0.1'
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.7.0"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.7.10"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3"
@@ -67,11 +67,11 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
 //    Exoplayer
-    implementation 'com.google.android.exoplayer:exoplayer-core:2.18.0'
-    implementation 'com.google.android.exoplayer:exoplayer-ui:2.18.0'
-    implementation 'com.google.android.exoplayer:exoplayer-hls:2.18.0'
-    implementation 'com.google.android.exoplayer:extension-okhttp:2.18.0'
-    implementation 'com.google.android.exoplayer:extension-mediasession:2.18.0'
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.18.1'
+    implementation 'com.google.android.exoplayer:exoplayer-ui:2.18.1'
+    implementation 'com.google.android.exoplayer:exoplayer-hls:2.18.1'
+    implementation 'com.google.android.exoplayer:extension-okhttp:2.18.1'
+    implementation 'com.google.android.exoplayer:extension-mediasession:2.18.1'
 
 //    UI
     implementation 'com.google.android.material:material:1.6.1'

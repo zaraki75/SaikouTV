@@ -15,6 +15,7 @@ import android.graphics.Color
 import android.graphics.drawable.Animatable
 import android.hardware.SensorManager
 import android.media.AudioManager
+import android.media.AudioManager.*
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -26,7 +27,10 @@ import android.util.Rational
 import android.util.TypedValue
 import android.view.*
 import android.view.animation.AnimationUtils
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ImageButton
+import android.widget.Spinner
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -47,6 +51,7 @@ import ani.saikou.settings.PlayerSettings
 import ani.saikou.settings.UserInterfaceSettings
 import com.bumptech.glide.Glide
 import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.C.AUDIO_CONTENT_TYPE_MOVIE
 import com.google.android.exoplayer2.C.TRACK_TYPE_VIDEO
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource
@@ -212,6 +217,15 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         playerView.controllerShowTimeoutMs = 5000
 
         val audioManager = applicationContext.getSystemService(AUDIO_SERVICE) as AudioManager
+
+        @Suppress("DEPRECATION")
+        audioManager.requestAudioFocus({ focus ->
+            when (focus) {
+                AUDIOFOCUS_LOSS_TRANSIENT, AUDIOFOCUS_LOSS -> if(isInitialized) exoPlayer.pause()
+                AUDIOFOCUS_GAIN                            -> if(isInitialized) exoPlayer.play()
+            }
+        }, AUDIO_CONTENT_TYPE_MOVIE, AUDIOFOCUS_GAIN)
+
         if (System.getInt(contentResolver, System.ACCELEROMETER_ROTATION, 0) != 1) {
             requestedOrientation = rotation
             exoRotate.setOnClickListener {
@@ -232,48 +246,48 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             orientationListener?.enable()
         }
 
-        val primaryColor = when(settings.primaryColor) {
-            0 -> Color.BLACK
-            1 -> Color.DKGRAY
-            2 -> Color.GRAY
-            3 -> Color.LTGRAY
-            4 -> Color.WHITE
-            5 -> Color.RED
-            6 -> Color.YELLOW
-            7 -> Color.GREEN
-            8 -> Color.CYAN
-            9 -> Color.BLUE
-            10 -> Color.MAGENTA
-            11 -> Color.TRANSPARENT
+        val primaryColor = when (settings.primaryColor) {
+            0    -> Color.BLACK
+            1    -> Color.DKGRAY
+            2    -> Color.GRAY
+            3    -> Color.LTGRAY
+            4    -> Color.WHITE
+            5    -> Color.RED
+            6    -> Color.YELLOW
+            7    -> Color.GREEN
+            8    -> Color.CYAN
+            9    -> Color.BLUE
+            10   -> Color.MAGENTA
+            11   -> Color.TRANSPARENT
             else -> Color.WHITE
         }
-        val secondaryColor = when(settings.secondaryColor) {
-            0 -> Color.BLACK
-            1 -> Color.DKGRAY
-            2 -> Color.GRAY
-            3 -> Color.LTGRAY
-            4 -> Color.WHITE
-            5 -> Color.RED
-            6 -> Color.YELLOW
-            7 -> Color.GREEN
-            8 -> Color.CYAN
-            9 -> Color.BLUE
-            10 -> Color.MAGENTA
-            11 -> Color.TRANSPARENT
+        val secondaryColor = when (settings.secondaryColor) {
+            0    -> Color.BLACK
+            1    -> Color.DKGRAY
+            2    -> Color.GRAY
+            3    -> Color.LTGRAY
+            4    -> Color.WHITE
+            5    -> Color.RED
+            6    -> Color.YELLOW
+            7    -> Color.GREEN
+            8    -> Color.CYAN
+            9    -> Color.BLUE
+            10   -> Color.MAGENTA
+            11   -> Color.TRANSPARENT
             else -> Color.BLACK
         }
-        val outline = when(settings.outline) {
-            0 -> EDGE_TYPE_OUTLINE // Normal
-            1 -> EDGE_TYPE_DEPRESSED // Shine
-            2 -> EDGE_TYPE_DROP_SHADOW // Drop shadow
-            3 -> EDGE_TYPE_NONE // No outline
+        val outline = when (settings.outline) {
+            0    -> EDGE_TYPE_OUTLINE // Normal
+            1    -> EDGE_TYPE_DEPRESSED // Shine
+            2    -> EDGE_TYPE_DROP_SHADOW // Drop shadow
+            3    -> EDGE_TYPE_NONE // No outline
             else -> EDGE_TYPE_OUTLINE // Normal
         }
-        val font = when(settings.font) {
-            0 -> ResourcesCompat.getFont(this, R.font.poppins_semi_bold)
-            1 -> ResourcesCompat.getFont(this, R.font.poppins_bold)
-            2 -> ResourcesCompat.getFont(this, R.font.poppins)
-            3 -> ResourcesCompat.getFont(this, R.font.poppins_thin)
+        val font = when (settings.font) {
+            0    -> ResourcesCompat.getFont(this, R.font.poppins_semi_bold)
+            1    -> ResourcesCompat.getFont(this, R.font.poppins_bold)
+            2    -> ResourcesCompat.getFont(this, R.font.poppins)
+            3    -> ResourcesCompat.getFont(this, R.font.poppins_thin)
             else -> ResourcesCompat.getFont(this, R.font.poppins_semi_bold)
         }
 
@@ -366,8 +380,11 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 )
-                if (settings.skipTime <= 120){ dialog.findViewById<Slider>(R.id.seekbar).value = settings.skipTime.toFloat() }
-                else { dialog.findViewById<Slider>(R.id.seekbar).value = 120f }
+                if (settings.skipTime <= 120) {
+                    dialog.findViewById<Slider>(R.id.seekbar).value = settings.skipTime.toFloat()
+                } else {
+                    dialog.findViewById<Slider>(R.id.seekbar).value = 120f
+                }
                 dialog.findViewById<Slider>(R.id.seekbar).addOnChangeListener { _, value, _ ->
                     settings.skipTime = value.toInt()
                     saveData(player, settings)
@@ -376,10 +393,13 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                 }
                 dialog.findViewById<Slider>(R.id.seekbar).addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
                     override fun onStartTrackingTouch(slider: Slider) {}
-                    override fun onStopTrackingTouch(slider: Slider) {dialog.dismiss()}
+                    override fun onStopTrackingTouch(slider: Slider) {
+                        dialog.dismiss()
+                    }
                 })
                 dialog.findViewById<TextView>(R.id.seekbar_title).text = getString(R.string.skip_time)
                 dialog.findViewById<TextView>(R.id.seekbar_value).text = settings.skipTime.toString()
+                @Suppress("DEPRECATION")
                 dialog.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 dialog.show()
                 true
@@ -466,8 +486,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                     if (dir) {
                         text.text = "+${settings.seekTime * ++seekTimesF}"
                         handler.post { exoPlayer.seekTo(exoPlayer.currentPosition + settings.seekTime * 1000) }
-                    }
-                    else {
+                    } else {
                         text.text = "-${settings.seekTime * ++seekTimesR}"
                         handler.post { exoPlayer.seekTo(exoPlayer.currentPosition - settings.seekTime * 1000) }
                     }
@@ -476,15 +495,14 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                         event,
                         text
                     )
-                    if(dir){
+                    if (dir) {
                         seekTimerR.reset(object : TimerTask() {
                             override fun run() {
                                 stopDoubleTapped(view, text)
                                 seekTimesF = 0
                             }
                         }, 850)
-                    }
-                    else {
+                    } else {
                         seekTimerF.reset(object : TimerTask() {
                             override fun run() {
                                 stopDoubleTapped(view, text)
@@ -549,8 +567,8 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             var volumeTimer = Timer()
             exoVolumeCont.visibility = View.GONE
 
-            val volumeMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-            exoVolume.value = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat() / volumeMax * 10
+            val volumeMax = audioManager.getStreamMaxVolume(STREAM_MUSIC)
+            exoVolume.value = audioManager.getStreamVolume(STREAM_MUSIC).toFloat() / volumeMax * 10
             fun volumeHide() {
                 volumeTimer.cancel()
                 volumeTimer.purge()
@@ -564,7 +582,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             }
             exoVolume.addOnChangeListener { _, value, _ ->
                 val volume = (value / 10 * volumeMax).roundToInt()
-                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0)
+                audioManager.setStreamVolume(STREAM_MUSIC, volume, 0)
                 volumeHide()
             }
 
@@ -824,12 +842,12 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         if (showProgressDialog && Anilist.userid != null && if (media.isAdult) settings.updateForH else true)
             AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Auto Update progress for ${media.userPreferredName}?")
                 .apply {
-//                    setMultiChoiceItems(arrayOf("Don't ask again for "), booleanArrayOf(true)) { _, _, isChecked ->
-//                        if (isChecked) {
-//                            saveData("${media.id}_progressDialog", isChecked)
-//                        }
-//                        showProgressDialog = isChecked
-//                    }
+                    //                    setMultiChoiceItems(arrayOf("Don't ask again for "), booleanArrayOf(true)) { _, _, isChecked ->
+                    //                        if (isChecked) {
+                    //                            saveData("${media.id}_progressDialog", isChecked)
+                    //                        }
+                    //                        showProgressDialog = isChecked
+                    //                    }
                     setOnCancelListener { hideSystemBars() }
                     setCancelable(false)
                     setPositiveButton("Yes") { dialog, _ ->
@@ -860,7 +878,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         set.add(media.id)
         saveData("continue_ANIME", set, this)
 
-        lifecycleScope.launch(Dispatchers.IO){
+        lifecycleScope.launch(Dispatchers.IO) {
             extractor?.onVideoStopped(video)
         }
 
@@ -868,7 +886,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         video = extractor?.videos?.getOrNull(episode.selectedVideo) ?: return
         subtitle = extractor?.subtitles?.find { it.language == "English" }
 
-        lifecycleScope.launch(Dispatchers.IO){
+        lifecycleScope.launch(Dispatchers.IO) {
             extractor?.onVideoPlayed(video)
         }
 
@@ -906,11 +924,13 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             MediaItem.SubtitleConfiguration
                 .Builder(Uri.parse(subtitle!!.url.url))
                 .setSelectionFlags(C.SELECTION_FLAG_FORCED)
-                .setMimeType(when(subtitle?.type) {
-                    "vtt" -> MimeTypes.TEXT_VTT
-                    "ass","ssa" -> MimeTypes.TEXT_SSA
-                    else -> MimeTypes.TEXT_UNKNOWN
-                })
+                .setMimeType(
+                    when (subtitle?.type) {
+                        "vtt"        -> MimeTypes.TEXT_VTT
+                        "ass", "ssa" -> MimeTypes.TEXT_SSA
+                        else         -> MimeTypes.TEXT_UNKNOWN
+                    }
+                )
                 .build()
         else null
 
@@ -1123,7 +1143,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
     override fun onPlayerError(error: PlaybackException) {
         when (error.errorCode) {
-            PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS,PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
+            PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS, PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
             -> {
                 toast("Source Exception : ${error.message}")
                 isPlayerPlaying = true
@@ -1234,15 +1254,17 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     }
 
     private fun stopDoubleTapped(v: View, text: TextView) {
-        v.post { handler.post {
-            ObjectAnimator.ofFloat(v, "alpha", v.alpha, 0f).setDuration(150).start()
-            ObjectAnimator.ofFloat(text, "alpha", 1f, 0f).setDuration(150).start()
-        } }
+        v.post {
+            handler.post {
+                ObjectAnimator.ofFloat(v, "alpha", v.alpha, 0f).setDuration(150).start()
+                ObjectAnimator.ofFloat(text, "alpha", 1f, 0f).setDuration(150).start()
+            }
+        }
     }
 
     // Cast
     private fun cast() {
-        val videoURL = video?.url?.url?:return
+        val videoURL = video?.url?.url ?: return
         val shareVideo = Intent(Intent.ACTION_VIEW)
         shareVideo.setDataAndType(Uri.parse(videoURL), "video/*")
         shareVideo.setPackage("com.instantbits.cast.webvideo")

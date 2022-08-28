@@ -1,4 +1,4 @@
-package ani.saikou.media
+package ani.saikou.others
 
 import android.graphics.Color
 import android.text.Spannable

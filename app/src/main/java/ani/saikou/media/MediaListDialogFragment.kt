@@ -167,6 +167,11 @@ class MediaListDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
 
+                binding.mediaListPrivate.isChecked = media?.isListPrivate ?: false
+                binding.mediaListPrivate.setOnCheckedChangeListener { _, checked ->
+                    media?.isListPrivate = checked
+                }
+
                 binding.mediaListSave.setOnClickListener {
                     scope.launch {
                         withContext(Dispatchers.IO) {
@@ -178,6 +183,7 @@ class MediaListDialogFragment : BottomSheetDialogFragment() {
                                     if (_binding?.mediaListScore?.text.toString() != "") (_binding?.mediaListScore?.text.toString()
                                         .toDouble() * 10).toInt() else null,
                                     if (_binding?.mediaListStatus?.text.toString() != "") _binding?.mediaListStatus?.text.toString() else null,
+                                    media?.isListPrivate?:false,
                                     if (start.date.year != null) start.date else null,
                                     if (end.date.year != null) end.date else null,
                                 )

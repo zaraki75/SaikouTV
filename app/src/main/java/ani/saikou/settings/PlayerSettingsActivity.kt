@@ -238,7 +238,7 @@ class PlayerSettingsActivity : AppCompatActivity() {
             show()
         }
     }
-        val locales = arrayOf("Raw","[ja-JP] Japanese","[en-US] English","[de-DE] German","[es-419] Spanish","[es-ES] Spanish (Spain)","[fr-FR] French","[it-IT] Italian","[ar-SA] Arabic (Saudi Arabia)","[ar-ME] Arabic (Montenegro)","[pt-BR] Portuguese (Brazil)","[pt-PT] Portuguese (Portugal)","[ru-RU] Russian","[zh-CN] Chinese","[tr-TR] Turkish")
+        val locales = arrayOf("Default (en-US)","[ja-JP] Japanese","[en-US] English","[de-DE] German","[es-419] Spanish","[es-ES] Spanish (Spain)","[fr-FR] French","[it-IT] Italian","[ar-SA] Arabic (Saudi Arabia)","[ar-ME] Arabic (Montenegro)","[pt-BR] Portuguese (Brazil)","[pt-PT] Portuguese (Portugal)","[ru-RU] Russian","[zh-CN] Chinese","[tr-TR] Turkish")
         val localeDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Subtitle Language")
         binding.subLang.setOnClickListener {
             localeDialog.setSingleChoiceItems(locales, settings.locale) { dialog, count5 ->
