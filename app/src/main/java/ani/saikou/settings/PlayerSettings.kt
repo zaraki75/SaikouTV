@@ -8,6 +8,7 @@ data class PlayerSettings(
     var defaultSpeed: Int = 5,
     var cursedSpeeds: Boolean = false,
     var resize: Int = 0,
+    var subtitles: Boolean = true,
     var primaryColor: Int = 4,
     var secondaryColor: Int = 0,
     var outline: Int = 0,

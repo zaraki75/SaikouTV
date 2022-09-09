@@ -285,6 +285,39 @@
                 android:textColor="?attr/colorSecondary"
                 tools:ignore="TextContrastCheck" />
 
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/subSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:checked="true"
+                android:drawableStart="@drawable/ic_round_subtitles_24"
+                android:drawablePadding="16dp"
+                app:drawableTint="?attr/colorPrimary"
+                android:elegantTextHeight="false"
+                android:fontFamily="@font/poppins_bold"
+                android:minHeight="64dp"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:text="@string/subtitle_toggle"
+                android:textAlignment="viewStart"
+                android:textColor="@color/bg_opp"
+                app:cornerRadius="0dp"
+                app:showText="false"
+                app:thumbTint="@color/button_switch_track" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-8dp"
+                android:layout_marginBottom="8dp"
+                android:alpha="0.58"
+                android:fontFamily="@font/poppins_family"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:text="@string/subtitle_toggle_kamyroll"
+                android:textSize="14sp" />
+
             <Button
                 android:id="@+id/videoSubColorPrimary"
                 style="@style/Widget.Material3.Button.TextButton"
@@ -376,6 +409,7 @@
                 android:orientation="horizontal">
 
                 <TextView
+                    android:id="@+id/subtitle_font_size_text"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"

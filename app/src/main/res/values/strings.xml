@@ -180,6 +180,8 @@
     <string name="cursed_speeds">Cursed Speeds</string>
     <string name="resize_mode_button">Default Resize Mode</string>
     <string name="subtitles">Subtitles</string>
+    <string name="subtitle_toggle">Subtitles</string>
+    <string name="subtitle_toggle_kamyroll">For this to take effect in Kamyroll, please restart the app.</string>
     <string name="primary_sub_color_select">Subtitle Color</string>
     <string name="secondary_sub_color_select">Subtitle Outline Color</string>
     <string name="secondary_sub_outline_type_select">Subtitle Outline Type</string>

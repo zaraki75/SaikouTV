@@ -212,7 +212,7 @@ class Kamyroll : AnimeParser() {
     companion object {
         private const val player = "player_settings"
         val settings = loadData<PlayerSettings>(player, toast = false) ?: PlayerSettings().apply { saveData(player, this) }
-        private val locale = when (settings.locale) {
+        private val subLocale = when (settings.locale) {
             0, 2 -> "en-US"
             1    -> "ja-JP"
             3    -> "de-DE"
@@ -228,6 +228,10 @@ class Kamyroll : AnimeParser() {
             13   -> "zh-CN"
             14   -> "tr-TR"
             else -> "en-US"
+        }
+        private val locale = when(settings.subtitles){
+            true -> subLocale
+            false -> ""
         }
         private const val apiUrl = "https://kamyroll.herokuapp.com"
         private const val channel = "crunchyroll"

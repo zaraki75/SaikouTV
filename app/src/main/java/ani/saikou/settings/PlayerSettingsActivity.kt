@@ -188,6 +188,59 @@ class PlayerSettingsActivity : AppCompatActivity() {
                 dialog.dismiss()
             }.show()
         }
+        fun restartApp() {
+            Snackbar.make(
+                binding.root,
+                R.string.restart_app, Snackbar.LENGTH_SHORT
+            ).apply {
+                val mainIntent =
+                    Intent.makeRestartActivityTask(context.packageManager.getLaunchIntentForPackage(context.packageName)!!.component)
+                setAction("Do it!") {
+                    context.startActivity(mainIntent)
+                    Runtime.getRuntime().exit(0)
+                }
+                show()
+            }
+        }
+        fun toggleButton(button: android.widget.Button, toggle: Boolean){
+            button.isClickable = toggle
+            button.alpha = when(toggle) {
+                true -> 1f
+                false -> 0.5f
+            }
+        }
+        fun toggleSubOptions(isChecked: Boolean){
+            toggleButton(binding.videoSubColorPrimary,isChecked)
+            toggleButton(binding.videoSubColorSecondary,isChecked)
+            toggleButton(binding.videoSubOutline,isChecked)
+            toggleButton(binding.videoSubFont,isChecked)
+            toggleButton(binding.subLang,isChecked)
+            binding.subtitleFontSizeCard.isEnabled = isChecked
+            binding.subtitleFontSizeCard.isClickable = isChecked
+            binding.subtitleFontSizeCard.alpha = when(isChecked) {
+                true -> 1f
+                false -> 0.5f
+            }
+            binding.subtitleFontSize.isEnabled = isChecked
+            binding.subtitleFontSize.isClickable = isChecked
+            binding.subtitleFontSize.alpha = when(isChecked) {
+                true -> 1f
+                false -> 0.5f
+            }
+            ActivityPlayerSettingsBinding.bind(binding.root).subtitleFontSizeText.isEnabled = isChecked
+            ActivityPlayerSettingsBinding.bind(binding.root).subtitleFontSizeText.isClickable = isChecked
+            ActivityPlayerSettingsBinding.bind(binding.root).subtitleFontSizeText.alpha = when(isChecked) {
+                true -> 1f
+                false -> 0.5f
+            }
+        }
+        binding.subSwitch.isChecked = settings.subtitles
+        binding.subSwitch.setOnCheckedChangeListener { _, isChecked ->
+            settings.subtitles = isChecked
+            saveData(player, settings)
+            toggleSubOptions(isChecked)
+            restartApp()
+        }
         val colorsPrimary = arrayOf("Black","Dark Gray","Gray","Light Gray","White","Red","Yellow","Green","Cyan","Blue","Magenta")
         val primaryColorDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Primary Sub Color")
         binding.videoSubColorPrimary.setOnClickListener {
@@ -224,20 +277,6 @@ class PlayerSettingsActivity : AppCompatActivity() {
                 dialog.dismiss()
             }.show()
         }
-        fun restartApp() {
-        Snackbar.make(
-            binding.root,
-            R.string.restart_app, Snackbar.LENGTH_SHORT
-        ).apply {
-            val mainIntent =
-                Intent.makeRestartActivityTask(context.packageManager.getLaunchIntentForPackage(context.packageName)!!.component)
-            setAction("Do it!") {
-                context.startActivity(mainIntent)
-                Runtime.getRuntime().exit(0)
-            }
-            show()
-        }
-    }
         val locales = arrayOf("Default (en-US)","[ja-JP] Japanese","[en-US] English","[de-DE] German","[es-419] Spanish","[es-ES] Spanish (Spain)","[fr-FR] French","[it-IT] Italian","[ar-SA] Arabic (Saudi Arabia)","[ar-ME] Arabic (Montenegro)","[pt-BR] Portuguese (Brazil)","[pt-PT] Portuguese (Portugal)","[ru-RU] Russian","[zh-CN] Chinese","[tr-TR] Turkish")
         val localeDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Subtitle Language")
         binding.subLang.setOnClickListener {
@@ -262,5 +301,6 @@ class PlayerSettingsActivity : AppCompatActivity() {
                 saveData(player, settings)
             }
         }
+        toggleSubOptions(settings.subtitles)
     }
 }
