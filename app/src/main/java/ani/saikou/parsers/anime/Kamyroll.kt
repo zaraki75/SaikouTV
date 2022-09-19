@@ -131,7 +131,6 @@ class Kamyroll : AnimeParser() {
             val vid = listOf(Video(null, true, link))
             val subtitle = if (foundSub) eps.subtitles?.find { it.locale == locale || it.locale == "en-GB" }
                 .let { listOf(Subtitle("English", it?.url ?: return@let null, "ass")) } else null
-            println("vid: $vid \nsub: $subtitle")
             return VideoContainer(vid, subtitle ?: listOf())
         }
 

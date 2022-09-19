@@ -31,6 +31,7 @@ import ani.saikou.anilist.Anilist
 import ani.saikou.anime.AnimeWatchFragment
 import ani.saikou.databinding.ActivityMediaBinding
 import ani.saikou.manga.MangaReadFragment
+import ani.saikou.others.ImageViewDialog
 import ani.saikou.settings.UserInterfaceSettings
 import com.flaviofaria.kenburnsview.RandomTransitionGenerator
 import com.google.android.material.appbar.AppBarLayout
@@ -99,7 +100,13 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         media.selected = model.loadSelected(media)
 
         binding.mediaCoverImage.loadImage(media.cover)
-        binding.mediaCoverImage.setOnLongClickListener { openLinkInBrowser(media.cover);true }
+        binding.mediaCoverImage.setOnLongClickListener {
+            ImageViewDialog.newInstance(
+                this,
+                media.userPreferredName + "[Cover]",
+                media.cover
+            )
+        }
         banner.loadImage(media.banner ?: media.cover, 400)
         val gestureDetector = GestureDetector(this, object : GesturesListener() {
             override fun onDoubleClick(event: MotionEvent?) {
@@ -112,7 +119,11 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
             }
 
             override fun onLongClick(event: MotionEvent?) {
-                openLinkInBrowser(media.banner ?: media.cover)
+                ImageViewDialog.newInstance(
+                    this@MediaDetailsActivity,
+                    media.userPreferredName + "[Banner]",
+                    media.banner ?: media.cover
+                )
                 banner.performClick()
             }
         })
@@ -357,8 +368,8 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
             if (uiSettings.bannerAnimations) binding.mediaBanner.resume()
             if (!uiSettings.immersiveMode) this.window.statusBarColor = ContextCompat.getColor(this, R.color.nav_bg_inv)
         }
-        if(percentage==1 && model.scrolledToTop.value != false) model.scrolledToTop.postValue(false)
-        if(percentage==0 && model.scrolledToTop.value != true) model.scrolledToTop.postValue(true)
+        if (percentage == 1 && model.scrolledToTop.value != false) model.scrolledToTop.postValue(false)
+        if (percentage == 0 && model.scrolledToTop.value != true) model.scrolledToTop.postValue(true)
     }
 
     inner class PopImageButton(

@@ -27,6 +27,7 @@ import ani.saikou.databinding.ActivityMangaReaderBinding
 import ani.saikou.manga.MangaChapter
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
+import ani.saikou.others.ImageViewDialog
 import ani.saikou.parsers.HMangaSources
 import ani.saikou.parsers.MangaImage
 import ani.saikou.parsers.MangaSources
@@ -353,7 +354,8 @@ class MangaReaderActivity : AppCompatActivity() {
                 binding.mangaReaderSwipy.onLeftSwiped = {
                     binding.mangaReaderNextChapter.performClick()
                 }
-            } else {
+            }
+            else {
                 binding.RightSwipeText.text = chaptersTitleArr.getOrNull(currentChapterIndex - 1) ?: "No Chapter"
                 binding.LeftSwipeText.text = chaptersTitleArr.getOrNull(currentChapterIndex + 1) ?: "No Chapter"
                 binding.mangaReaderSwipy.onLeftSwiped = {
@@ -383,15 +385,19 @@ class MangaReaderActivity : AppCompatActivity() {
             binding.mangaReaderRecyclerContainer.controller.settings.isRotationEnabled = settings.default.rotation
 
             val detector = GestureDetectorCompat(this, object : GesturesListener() {
-                override fun onLongPress(e: MotionEvent?) {
-                    e ?: return
+                override fun onLongPress(e: MotionEvent) {
                     if (binding.mangaReaderRecycler.findChildViewUnder(e.x, e.y).let { child ->
                             child ?: return@let false
-                            imageAdapter?.loadImage(
-                                binding.mangaReaderRecycler.getChildAdapterPosition(child),
-                                child as GestureFrameLayout
-                            ) == true
-                        }) binding.mangaReaderRecycler.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                            val pos = binding.mangaReaderRecycler.getChildAdapterPosition(child)
+                            val image = chapImages?.getOrNull(pos) ?: return@let false
+
+                            onImageLongClicked(pos, image) { dialog ->
+                                imageAdapter?.loadImage(pos, child as GestureFrameLayout)
+                                binding.mangaReaderRecycler.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                                dialog.dismiss()
+                            }
+                        }
+                    ) binding.mangaReaderRecycler.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                     super.onLongPress(e)
                 }
 
@@ -402,8 +408,10 @@ class MangaReaderActivity : AppCompatActivity() {
 
             val manager = PreloadLinearLayoutManager(
                 this,
-                if (settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == BOTTOM_TO_TOP) RecyclerView.VERTICAL
-                else RecyclerView.HORIZONTAL,
+                if (settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == BOTTOM_TO_TOP)
+                    RecyclerView.VERTICAL
+                else
+                    RecyclerView.HORIZONTAL,
                 !(settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == LEFT_TO_RIGHT)
             )
             manager.preloadItemCount = 5
@@ -448,16 +456,16 @@ class MangaReaderActivity : AppCompatActivity() {
 
                 onVolumeUp = {
                     if ((settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == BOTTOM_TO_TOP))
-                        smoothScrollBy(0,-500)
+                        smoothScrollBy(0, -500)
                     else
-                        smoothScrollBy(-500,0)
+                        smoothScrollBy(-500, 0)
                 }
 
                 onVolumeDown = {
                     if ((settings.default.direction == TOP_TO_BOTTOM || settings.default.direction == BOTTOM_TO_TOP))
-                        smoothScrollBy(0,500)
+                        smoothScrollBy(0, 500)
                     else
-                        smoothScrollBy(500,0)
+                        smoothScrollBy(500, 0)
                 }
 
                 scrollToPosition(currentPage - 1)
@@ -496,18 +504,17 @@ class MangaReaderActivity : AppCompatActivity() {
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         return when (event.keyCode) {
             KEYCODE_VOLUME_UP, KEYCODE_DPAD_UP, KEYCODE_PAGE_UP       -> {
-                if(event.keyCode == KEYCODE_VOLUME_UP)
-                    if(!settings.default.volumeButtons)
+                if (event.keyCode == KEYCODE_VOLUME_UP)
+                    if (!settings.default.volumeButtons)
                         return false
                 if (event.action == ACTION_DOWN) {
-                    println("on volume up")
                     onVolumeUp?.invoke()
                     true
                 } else false
             }
             KEYCODE_VOLUME_DOWN, KEYCODE_DPAD_DOWN, KEYCODE_PAGE_DOWN -> {
-                if(event.keyCode == KEYCODE_VOLUME_DOWN)
-                    if(!settings.default.volumeButtons)
+                if (event.keyCode == KEYCODE_VOLUME_DOWN)
+                    if (!settings.default.volumeButtons)
                         return false
                 if (event.action == ACTION_DOWN) {
                     onVolumeDown?.invoke()
@@ -654,6 +661,17 @@ class MangaReaderActivity : AppCompatActivity() {
 
     fun getTransformation(mangaImage: MangaImage): Transformation<File>? {
         return model.loadTransformation(mangaImage, media.selected!!.source)
+    }
+
+    fun onImageLongClicked(pos: Int, image: MangaImage, callback: ((ImageViewDialog) -> Unit)? = null): Boolean {
+        val title = "(Page ${pos + 1}) ${chaptersTitleArr.getOrNull(currentChapterIndex)?.replace(" : "," - ") ?: ""} [${media.userPreferredName}]"
+
+        ImageViewDialog.newInstance(title, image.url, true).apply {
+            trans = getTransformation(image)
+            onReloadPressed = callback
+            show(supportFragmentManager, "image")
+        }
+        return true
     }
 
     override fun onBackPressed() {

@@ -279,5 +279,14 @@
     <string name="list_private">Private</string>
     <string name="wrap_images">Wrap Images</string>
     <string name="wrap_images_info">Mostly useful for larger Devices, removes space between images, if they exist.</string>
+    <string name="reload">Reload</string>
+    <string name="share">Share</string>
+    <string name="skip">Skip</string>
+    <string name="show_skip_time_stamp_button">Show Skip Time Stamp Button</string>
+    <string name="always_load_time_stamps">Always Load Time Stamps</string>
+    <string name="timestamps">Time Stamps</string>
+    <string name="other">Other</string>
+    <string name="auto_skip_op_ed">Auto Skip OP / ED</string>
+    <string name="requires_time_stamps_to_be_enabled">Requires Time Stamps to be Enabled</string>
 
 </resources>

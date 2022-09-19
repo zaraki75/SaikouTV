@@ -56,7 +56,7 @@ class RapidCloud(override val server: VideoServer) : VideoExtractor() {
         return VideoContainer(videos, subtitles)
     }
 
-    companion object{
+    companion object {
         private suspend fun captcha(url: String, key: String): String? {
             val uri = Uri.parse(url)
             val domain = (Base64.encodeToString(
@@ -78,8 +78,8 @@ class RapidCloud(override val server: VideoServer) : VideoExtractor() {
         }
 
         private suspend fun wss(): String {
-            var sId = client.get("https://api.enime.moe/tool/rapid-cloud/server-id").text
-            if(sId.isEmpty()){
+            var sId = client.get("https://api.enime.moe/tool/rapid-cloud/decryption-key", mapOf("User-Agent" to "Saikou")).text
+            if (sId.isEmpty()) {
                 val latch = CountDownLatch(1)
                 val listener = object : WebSocketListener() {
                     override fun onOpen(webSocket: WebSocket, response: Response) {
@@ -89,7 +89,7 @@ class RapidCloud(override val server: VideoServer) : VideoExtractor() {
                     override fun onMessage(webSocket: WebSocket, text: String) {
                         when {
                             text.startsWith("40") -> {
-                                sId = text.findBetween("40{\"sid\":\"", "\"}")?:""
+                                sId = text.findBetween("40{\"sid\":\"", "\"}") ?: ""
                                 latch.countDown()
                             }
                             text == "2"           -> webSocket.send("3")
@@ -105,8 +105,6 @@ class RapidCloud(override val server: VideoServer) : VideoExtractor() {
             return sId
         }
     }
-
-
 
 
     @Serializable

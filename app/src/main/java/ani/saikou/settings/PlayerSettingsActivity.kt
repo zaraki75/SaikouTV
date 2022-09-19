@@ -80,7 +80,27 @@ class PlayerSettingsActivity : AppCompatActivity() {
             saveData(player, settings)
         }
 
+        //Time Stamp
+        binding.playerSettingsTimeStamps.isChecked = settings.timeStampsEnabled
+        binding.playerSettingsTimeStamps.setOnCheckedChangeListener { _, isChecked ->
+            settings.timeStampsEnabled = isChecked
+            saveData(player, settings)
+        }
+
+        binding.playerSettingsShowTimeStamp.isChecked = settings.showTimeStampButton
+        binding.playerSettingsShowTimeStamp.setOnCheckedChangeListener { _, isChecked ->
+            settings.showTimeStampButton = isChecked
+            saveData(player, settings)
+        }
+
+
         //Auto
+        binding.playerSettingsAutoSkipOpEd.isChecked = settings.autoSkipOPED
+        binding.playerSettingsAutoSkipOpEd.setOnCheckedChangeListener { _, isChecked ->
+            settings.autoSkipOPED = isChecked
+            saveData(player, settings)
+        }
+
         binding.playerSettingsAutoPlay.isChecked = settings.autoPlay
         binding.playerSettingsAutoPlay.setOnCheckedChangeListener { _, isChecked ->
             settings.autoPlay = isChecked
@@ -122,6 +142,7 @@ class PlayerSettingsActivity : AppCompatActivity() {
             settings.focusPause = isChecked
             saveData(player, settings)
         }
+
         binding.playerSettingsVerticalGestures.isChecked = settings.gestures
         binding.playerSettingsVerticalGestures.setOnCheckedChangeListener { _, isChecked ->
             settings.gestures = isChecked
@@ -155,7 +176,7 @@ class PlayerSettingsActivity : AppCompatActivity() {
             }
         }
 
-
+        //Other
         binding.playerSettingsPiP.apply {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 visibility = View.VISIBLE
@@ -165,12 +186,6 @@ class PlayerSettingsActivity : AppCompatActivity() {
                     saveData(player, settings)
                 }
             } else visibility = View.GONE
-        }
-
-        binding.playerSettingsAlwaysMinimize.isChecked = settings.alwaysMinimize
-        binding.playerSettingsAlwaysMinimize.setOnCheckedChangeListener { _, isChecked ->
-            settings.alwaysMinimize = isChecked
-            saveData(player, settings)
         }
 
         binding.playerSettingsCast.isChecked = settings.cast

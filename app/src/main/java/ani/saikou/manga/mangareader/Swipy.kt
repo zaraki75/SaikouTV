@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewConfiguration
 import android.widget.FrameLayout
 
-class VerticalSwipy @JvmOverloads constructor(
+class Swipy @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
 
@@ -110,7 +110,7 @@ class VerticalSwipy @JvmOverloads constructor(
             }
             MotionEvent.ACTION_MOVE                          -> {
                 if (activePointerId == INVALID_POINTER) {
-                    println("Got ACTION_MOVE event but don't have an active pointer id.")
+                    //("Got ACTION_MOVE event but don't have an active pointer id.")
                     return false
                 }
                 pointerIndex = ev.findPointerIndex(activePointerId)
@@ -144,7 +144,7 @@ class VerticalSwipy @JvmOverloads constructor(
             MotionEvent.ACTION_MOVE         -> {
                 pointerIndex = ev.findPointerIndex(activePointerId)
                 if (pointerIndex < 0) {
-                    println("Got ACTION_MOVE event but have an invalid active pointer id.")
+                    //("Got ACTION_MOVE event but have an invalid active pointer id.")
                     return false
                 }
                 val pos = if (vertical) ev.getY(pointerIndex) else ev.getX(pointerIndex)
@@ -177,7 +177,7 @@ class VerticalSwipy @JvmOverloads constructor(
             MotionEvent.ACTION_POINTER_DOWN -> {
                 pointerIndex = ev.actionIndex
                 if (pointerIndex < 0) {
-                    println("Got ACTION_POINTER_DOWN event but have an invalid action index.")
+                    //("Got ACTION_POINTER_DOWN event but have an invalid action index.")
                     return false
                 }
                 activePointerId = ev.getPointerId(pointerIndex)
@@ -193,7 +193,7 @@ class VerticalSwipy @JvmOverloads constructor(
                 }
                 pointerIndex = ev.findPointerIndex(activePointerId)
                 if (pointerIndex < 0) {
-                    println("Got ACTION_UP event but don't have an active pointer id.")
+                    //("Got ACTION_UP event but don't have an active pointer id.")
                     return false
                 }
                 if (isBeingDragged) {
