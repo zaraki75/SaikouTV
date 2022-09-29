@@ -32,7 +32,7 @@ class Animefenix : AnimeParser() {
                val videoUrl = jsoup.select("body script").toString()
                    .substringAfter("[{\"file\":\"")
                    .substringBefore("\",").replace("\\", "")
-               videos.add(Video(720, false, videoUrl))
+               videos.add(Video(null, VideoType.CONTAINER, videoUrl))
 
                return VideoContainer(videos)
            }
@@ -50,7 +50,6 @@ class Animefenix : AnimeParser() {
             .substringBefore("'")
             .replace("%2F","/")
             .replace("%3A",":")
-        Log.i("bruh","ThubURL: $thumbUrl")
 
         return thumbUrl
 
@@ -67,7 +66,7 @@ class Animefenix : AnimeParser() {
             val epNum = it.select("a span").text().replace("Episodio", "")
             val url = it.select("a").attr("href")
 
-            ani.saikou.parsers.Episode(number = epNum,link = url,thumbnail = thumbUrl)
+            Episode(number = epNum,link = url,thumbnail = thumbUrl)
         }
     }
 
@@ -84,7 +83,7 @@ class Animefenix : AnimeParser() {
                     .substringAfter("code=")
                     .substringBefore("&amp")
 
-            var url = when(serverName.lowercase()){
+            val url = when(serverName.lowercase()){
                "fembed" -> "https://www.fembed.com/v/$serverCode"
                "ru" -> "https://ok.ru/videoembed/$serverCode"
                "amazon" -> "https://www.animefenix.com/stream/amz.php?v=$serverCode"

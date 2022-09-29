@@ -1,12 +1,9 @@
 package ani.saikou.parsers.anime.extractors
 
 import android.util.Log
-import ani.saikou.parsers.Video
-import ani.saikou.parsers.VideoContainer
-import ani.saikou.parsers.VideoExtractor
-import ani.saikou.parsers.VideoServer
 import ani.saikou.client
 import ani.saikou.getSize
+import ani.saikou.parsers.*
 
 
 class OK(override val server: VideoServer) : VideoExtractor() {
@@ -49,7 +46,7 @@ class OK(override val server: VideoServer) : VideoExtractor() {
 
 
             if (videoUrl.startsWith("https://")) {
-                videos.add(Video(videoQuality.toInt(),false, videoUrl,size = getSize(videoUrl),extraNote = extraNote))
+                videos.add(Video(videoQuality.toInt(),VideoType.CONTAINER, videoUrl,size = getSize(videoUrl),extraNote = extraNote))
             }
         }
         return VideoContainer(videos)

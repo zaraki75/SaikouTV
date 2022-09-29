@@ -1,5 +1,6 @@
 package ani.saikou.parsers.anime;
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
 import ani.saikou.*
@@ -44,6 +45,7 @@ class Jkanime : AnimeParser() {
         }
 
 
+    @SuppressLint("SuspiciousIndentation")
     override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
         val videos = mutableListOf<VideoServer>()
           client.get(episodeLink).document.select("div.col-lg-12.rounded.bg-servers.text-white.p-3.mt-2 a").forEach{ it ->
@@ -160,9 +162,9 @@ class JkanimeExtractor(override val server: VideoServer): VideoExtractor() {
                 val type = data.toString().substringAfter("type: '").substringBefore("'")
 
                     if(type == "hls" || type == "custom"){
-                        videos.add( Video(null,true,videoUrl))
+                        videos.add( Video(null,VideoType.M3U8,videoUrl))
                     }else{
-                        videos.add( Video(null,false,videoUrl))
+                        videos.add( Video(null,VideoType.CONTAINER,videoUrl))
                     }
 
 
