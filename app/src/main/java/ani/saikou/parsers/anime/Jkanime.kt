@@ -146,12 +146,13 @@ class Jkanime : AnimeParser() {
 
 
 class JkanimeExtractor(override val server: VideoServer): VideoExtractor() {
+    @SuppressLint("SuspiciousIndentation")
     override suspend fun extract(): VideoContainer {
         val videos = mutableListOf<Video>()
         val url = server.embed.url.replace("um2","um")
 
         if(url.contains("jk.php")){
-            return VideoContainer(listOf(Video(null,false,url.replace("jk.php?u=",""))))
+            return VideoContainer(listOf(Video(null,VideoType.CONTAINER,url.replace("jk.php?u=",""))))
         }
         client.get(url).document.select("script").forEach{script ->
             if(script.data().contains("var parts = {")){
