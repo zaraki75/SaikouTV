@@ -3,10 +3,7 @@ package ani.saikou.parsers.anime.extractors
 import android.net.Uri
 import android.util.Base64
 import ani.saikou.*
-import ani.saikou.parsers.Video
-import ani.saikou.parsers.VideoContainer
-import ani.saikou.parsers.VideoExtractor
-import ani.saikou.parsers.VideoServer
+import ani.saikou.parsers.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import javax.crypto.Cipher
@@ -54,14 +51,14 @@ class GogoCDN(override val server: VideoServer) : VideoExtractor() {
                     list.add(
                         Video(
                             label.replace(" ", "").replace("p", "").toIntOrNull(),
-                            false,
+                            VideoType.CONTAINER,
                             fileURL,
                             if (!backup) getSize(fileURL) else null,
                             if (backup) "Backup" else null
                         )
                     )
                 } else list.add(
-                    Video(null, true, fileURL, null, if (backup) "Backup" else null)
+                    Video(null, VideoType.M3U8, fileURL, null, if (backup) "Backup" else null)
                 )
             }
 
@@ -82,7 +79,7 @@ class GogoCDN(override val server: VideoServer) : VideoExtractor() {
                     }
                 ) {
                     list.add(
-                        Video(null, true, file)
+                        Video(null, VideoType.M3U8, file)
                     )
                 }
             }

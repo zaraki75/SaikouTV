@@ -130,15 +130,22 @@
 
             </com.google.android.material.switchmaterial.SwitchMaterial>
 
+        <ani.saikou.others.Xpandable
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
             <TextView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="64dp"
                 android:layout_marginTop="8dp"
                 android:fontFamily="@font/poppins_bold"
                 android:paddingStart="32dp"
                 android:paddingEnd="32dp"
+                android:gravity="center_vertical"
                 android:text="@string/default_settings"
                 android:textColor="?attr/colorSecondary"
+                app:drawableEndCompat="@drawable/ic_round_arrow_drop_down_24"
                 tools:ignore="TextContrastCheck" />
 
             <com.google.android.material.switchmaterial.SwitchMaterial
@@ -625,6 +632,9 @@
                 android:paddingEnd="32dp"
                 android:text="@string/wrap_images_info"
                 android:textSize="14sp" />
+
+        </ani.saikou.others.Xpandable>
+
 
             <TextView
                 android:layout_width="match_parent"

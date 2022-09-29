@@ -7,12 +7,10 @@ import kotlinx.serialization.Serializable
 object AniSkip {
 
     suspend fun getResult(malId: Int, episodeNumber: Int, episodeLength: Long): List<Stamp>? {
-        println("mal : $malId, num : $episodeNumber, len : $episodeLength")
         val url =
             "https://api.aniskip.com/v2/skip-times/$malId/$episodeNumber?types[]=ed&types[]=mixed-ed&types[]=mixed-op&types[]=op&types[]=recap&episodeLength=$episodeLength"
         return tryWithSuspend {
             val a = client.get(url)
-            println("res : $a")
             val res = a.parsed<AniSkipResponse>()
             if (res.found) res.results else null
         }

@@ -3,10 +3,7 @@ package ani.saikou.parsers.anime.extractors
 import ani.saikou.asyncMap
 import ani.saikou.client
 import ani.saikou.getSize
-import ani.saikou.parsers.Video
-import ani.saikou.parsers.VideoContainer
-import ani.saikou.parsers.VideoExtractor
-import ani.saikou.parsers.VideoServer
+import ani.saikou.parsers.*
 import kotlinx.serialization.Serializable
 
 class FPlayer(override val server: VideoServer) : VideoExtractor() {
@@ -20,7 +17,7 @@ class FPlayer(override val server: VideoServer) : VideoExtractor() {
                 return VideoContainer(json.data?.asyncMap {
                     Video(
                         it.label.replace("p", "").toIntOrNull(),
-                        false,
+                        VideoType.CONTAINER,
                         it.file,
                         getSize(it.file)
                     )

@@ -137,7 +137,6 @@ class MediaDetailsViewModel : ViewModel() {
     val timeStamps = MutableLiveData<List<AniSkip.Stamp>?>()
     private val timeStampsMap : MutableMap<Int, List<AniSkip.Stamp>?> = mutableMapOf()
     suspend fun loadTimeStamps(malId:Int?, episodeNum: Int?, duration:Long){
-        println("bruh mal : $malId, num : $episodeNum, len : $duration")
         malId ?: return
         episodeNum ?: return
         if (timeStampsMap.containsKey(episodeNum))

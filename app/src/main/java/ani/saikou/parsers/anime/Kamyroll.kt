@@ -112,32 +112,57 @@ class Kamyroll : AnimeParser() {
                     "id" to server.embed.url,
                     localeHeader,
                     "type" to "adaptive_hls",
-                    "format" to "srt",
+                    "format" to "vtt",
                     "service" to service,
                 ),
                 timeout = 60
             ).parsed<StreamsResponse>()
 
-            var foundSub = false
-            val link = FileUrl(
-                eps.streams?.find {
-                    it.hardsubLocale == locale
-                }?.url ?: eps.streams?.find {
-                    it.hardsubLocale == ""
-                }?.also { foundSub = true }?.url ?: return VideoContainer(listOf()),
-                mapOf("accept" to "*/*", "accept-encoding" to "gzip")
-            )
-            if (link.url.contains("pstream.net")) return PStream(VideoServer("PStream", link.url)).extract()
-            val vid = listOf(Video(null, true, link))
-            val subtitle = if (foundSub) eps.subtitles?.find { it.locale == locale || it.locale == "en-GB" }
-                .let { listOf(Subtitle("English", it?.url ?: return@let null, "ass")) } else null
-            return VideoContainer(vid, subtitle ?: listOf())
+            val video = eps.streams?.mapNotNull {
+                it.url ?: return@mapNotNull null
+                if (it.url.contains("pstream.net"))
+                    return PStream(VideoServer("PStream", it.url)).extract()
+                Video(
+                    null,
+                    VideoType.M3U8,
+                    FileUrl(
+                        it.url,
+                        mapOf("accept" to "*/*", "accept-encoding" to "gzip")
+                    ),
+                    null,
+                    when (it.hardsubLocale){
+                        "ja-JP" -> "[ja-JP] Japanese"
+                        "en-US" -> "[en-US] English"
+                        "de-DE" -> "[de-DE] German"
+                        "es-ES" -> "[es-ES] Spanish"
+                        "es-419" -> "[es-419] Spanish"
+                        "fr-FR" -> "[fr-FR] French"
+                        "it-IT" -> "[it-IT] Italian"
+                        "pt-BR" -> "[pt-BR] Portuguese (Brazil)"
+                        "pt-PT" -> "[pt-PT] Portuguese (Portugal)"
+                        "ru-RU" -> "[ru-RU] Russian"
+                        "zh-CN" -> "[zh-CN] Chinese (Simplified)"
+                        "tr-TR" -> "[tr-TR] Turkish"
+                        "ar-ME" -> "[ar-ME] Arabic"
+                        else -> "[${it.hardsubLocale}] "
+                    } + if(it.hardsubLocale != "") " Hard-Subbed" else "Soft/No Subs",
+                )
+            }
+
+            val subtitle = eps.subtitles?.mapNotNull {
+                Subtitle(
+                    it.locale ?: return@mapNotNull null,
+                    it.url ?: return@mapNotNull null,
+                    SubtitleType.VTT
+                )
+            }
+            return VideoContainer(video ?: listOf(), subtitle ?: listOf())
         }
 
         @Serializable
         private data class StreamsResponse(
             @SerialName("subtitles") val subtitles: List<Subtitle>? = null,
-            @SerialName("streams") val streams: List<Stream>? = null
+            @SerialName("streams") var streams: List<Stream>? = null
         ) {
             @Serializable
             data class Stream(
@@ -228,8 +253,8 @@ class Kamyroll : AnimeParser() {
             14   -> "tr-TR"
             else -> "en-US"
         }
-        private val locale = when(settings.subtitles){
-            true -> subLocale
+        private val locale = when (settings.subtitles) {
+            true  -> subLocale
             false -> ""
         }
         private const val apiUrl = "https://kamyroll.herokuapp.com"

@@ -30,8 +30,13 @@ object MalSyncBackup {
                     val page = it.value
                     val isDub = page.title.lowercase().replace(" ", "").endsWith("(dub)")
                     val slug = if (dub == isDub) page.identifier else null
-                    if (slug != null && page.active == true) {
-                        return@tryWithSuspend ShowResponse(page.title, slug, page.image ?: "")
+                    if (slug != null && page.active == true && page.url != null) {
+                        val url = when(name){
+                            "9anime" -> page.url.replace("9anime.to","9anime.id")
+                            "Gogoanime"  -> slug
+                            else -> page.url
+                        }
+                        return@tryWithSuspend ShowResponse(page.title, url, page.image ?: "")
                     }
                 }
             return@tryWithSuspend null

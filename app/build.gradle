@@ -14,8 +14,8 @@ android {
         applicationId "ani.saikou"
         minSdk 21
         targetSdk 32
-        versionCode 61
-        versionName "1.2.0.19"
+        versionCode 62
+        versionName "1.2.0.22"
         signingConfig signingConfigs.debug
     }
 
@@ -71,6 +71,7 @@ dependencies {
     implementation 'com.google.android.exoplayer:exoplayer-core:2.18.1'
     implementation 'com.google.android.exoplayer:exoplayer-ui:2.18.1'
     implementation 'com.google.android.exoplayer:exoplayer-hls:2.18.1'
+    implementation 'com.google.android.exoplayer:exoplayer-dash:2.18.1'
     implementation 'com.google.android.exoplayer:extension-okhttp:2.18.1'
     implementation 'com.google.android.exoplayer:extension-mediasession:2.18.1'
 

@@ -128,6 +128,7 @@ class MediaListDialogSmallFragment : BottomSheetDialogFragment() {
                             .toInt() else null,
                         if (_binding?.mediaListScore?.text.toString() != "") (_binding?.mediaListScore?.text.toString()
                             .toDouble() * 10).toInt() else null,
+                        null,
                         if (_binding?.mediaListStatus?.text.toString() != "") _binding?.mediaListStatus?.text.toString() else null,
                         media.isListPrivate
                     )

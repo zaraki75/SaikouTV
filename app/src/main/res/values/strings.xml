@@ -3,7 +3,7 @@
     <string name="repo">Diegopyl1209/saikouSP</string>
 
     <string name="app_name">Saikou</string>
-    <string name="slogan">La Mejor Aplicacion de Anime y Manga en Android.</string>
+    <string name="slogan">La Mejor Aplicacion de Anime &amp; Manga en Android.</string>
 
     <string name="login">Iniciar Sesion</string>
     <string name="logout">Cerrar Sesion</string>
@@ -159,13 +159,16 @@
         <item>Internet sucks? search taking too much time? try spam-Clicking the Progress Bar</item>
         <item>Challenge: Go to the very bottom of the Popular Anime &amp; Manga</item>
         <item>Try Long Clicking the Show\'s Title.</item>
-        <item>Don\'t be like lonely, they meant the Kuro App.</item>
         <item>Damn, why are you wasting your Time?</item>
         <item>Looks like someone likes this Animation.</item>
-        <item>Upgrade to Android 12 to get this every time you open the App.</item>
-        <item>Lord &amp; Saviour - brahmkshatriya</item>
         <item>You can Long Click to copy this Message.</item>
         <item>Saikou!</item>
+        <item>OMG LOOK YOU! FOUND AN EASTER EGG!?!?</item>
+        <item>You know who else likes this Animation?</item>
+        <item>My Mom!</item>
+        <item>9anime be crying</item>
+        <item>MAL support? bruh.</item>
+        <item>Novels? more like NO vels.</item>
     </string-array>
 
     <string name="video">Video</string>
@@ -181,15 +184,18 @@
     <string name="resize_mode_button">Default Resize Mode</string>
     <string name="subtitles">Subtitles</string>
     <string name="subtitle_toggle">Subtitles</string>
-    <string name="subtitle_toggle_kamyroll">For this to take effect in Kamyroll, please restart the app.</string>
+    <string name="subtitle_toggle_kamyroll">For this to take effect in Hard-Subbed Kamyroll, please restart the app. (Or use Soft-Sub and select none as subtitle)</string>
     <string name="primary_sub_color_select">Subtitle Color</string>
     <string name="secondary_sub_color_select">Subtitle Outline Color</string>
     <string name="secondary_sub_outline_type_select">Subtitle Outline Type</string>
-    <string name="sub_color_info"><b>Note:</b> Changing Subtitle formatting only works with Zoro!</string>
+    <string name="sub_background_color_select">Subtitle Background Color</string>
+    <string name="sub_window_color_select">Subtitle Window Color</string>
+    <string name="sub_window_color_info">"The subtitle window is the part left and right from them. (where the background isn't)"</string>
+    <string name="sub_color_info"><b>Note:</b> Changing Subtitle formatting only works with Soft-Subbed Sources such as Zoro and Kamyroll!</string>
     <string name="sub_font_select">Subtitle Font</string>
     <string name="subtitle_font_size">Subtitle Size</string>
     <string name="subtitle_language_button">Subtitle Language</string>
-    <string name="subtitle_language_info"><b>Note:</b> The Subtitle-language can only be changed for <b>Kamyroll</b>. Changing it will restart the app. <b>Some languages might not work!</b></string>
+    <string name="subtitle_language_info"><b>Note:</b> The episode title- and description language can only be changed for <b>Kamyroll</b>. For changes to take effect the app needs to restart. <b>Some languages might not work!</b></string>
 
     <string name="auto">Auto</string>
     <string name="auto_play_next_episode">Autoplay Next Episode</string>
@@ -288,5 +294,9 @@
     <string name="other">Other</string>
     <string name="auto_skip_op_ed">Auto Skip OP / ED</string>
     <string name="requires_time_stamps_to_be_enabled">Requires Time Stamps to be Enabled</string>
+    <string name="total_repeats">TOTAL REPEATS</string>
+    <string name="custom_lists">Custom Lists</string>
+    <string name="donate_desc">Want to support Saikou\'s Creator?\nConsider Donating</string>
+    <string name="donate_goal">(We just reached a goal of $100!)</string>
 
 </resources>

@@ -5,10 +5,7 @@ import ani.saikou.FileUrl
 import ani.saikou.Mapper
 import ani.saikou.client
 import ani.saikou.findBetween
-import ani.saikou.parsers.Video
-import ani.saikou.parsers.VideoContainer
-import ani.saikou.parsers.VideoExtractor
-import ani.saikou.parsers.VideoServer
+import ani.saikou.parsers.*
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -30,6 +27,6 @@ class PStream(override val server: VideoServer) : VideoExtractor() {
         val jsonText = Base64.decode(base64, Base64.NO_WRAP).decodeToString().substring(2)
         val json = Mapper.parse<JsonObject>(jsonText)
         val link = json[key]?.jsonPrimitive?.content ?: return VideoContainer(listOf())
-        return VideoContainer(listOf(Video(null, true, FileUrl(link, headers))))
+        return VideoContainer(listOf(Video(null, VideoType.M3U8, FileUrl(link, headers))))
     }
 }

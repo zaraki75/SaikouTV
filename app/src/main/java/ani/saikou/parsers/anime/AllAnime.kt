@@ -26,18 +26,16 @@ class AllAnime : AnimeParser() {
 
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
         val responseArray = mutableListOf<Episode>()
-        tryWithSuspend {
-            val showId = idRegex.find(animeLink)?.groupValues?.get(1)
-            if (showId != null) {
-                val episodeInfos = getEpisodeInfos(showId)
-                val format = DecimalFormat("#####.#####")
-                episodeInfos?.sortedBy { it.episodeIdNum }?.forEach { epInfo ->
-                    val link = """${hostUrl}/anime/$showId/episodes/${if (selectDub) "dub" else "sub"}/${epInfo.episodeIdNum}"""
-                    val epNum = format.format(epInfo.episodeIdNum).toString()
-                    val thumbnail = epInfo.thumbnails?.let { if (it.isNotEmpty()) FileUrl(it[0]) else null }
-                    responseArray.add(Episode(epNum, link = link, epInfo.notes, thumbnail))
-                }
 
+        val showId = idRegex.find(animeLink)?.groupValues?.get(1)
+        if (showId != null) {
+            val episodeInfos = getEpisodeInfos(showId)
+            val format = DecimalFormat("#####.#####")
+            episodeInfos?.sortedBy { it.episodeIdNum }?.forEach { epInfo ->
+                val link = """${hostUrl}/anime/$showId/episodes/${if (selectDub) "dub" else "sub"}/${epInfo.episodeIdNum}"""
+                val epNum = format.format(epInfo.episodeIdNum).toString()
+                val thumbnail = epInfo.thumbnails?.let { if (it.isNotEmpty()) FileUrl(it[0]) else null }
+                responseArray.add(Episode(epNum, link = link, epInfo.notes, thumbnail))
             }
         }
         return responseArray
@@ -48,30 +46,30 @@ class AllAnime : AnimeParser() {
         val videoServers = mutableListOf<VideoServer>()
         val episodeNum = epNumRegex.find(episodeLink)?.groupValues?.get(1)
         if (showId != null && episodeNum != null) {
-            tryWithSuspend {
-                val variables =
-                    """{"showId":"$showId","translationType":"${if (selectDub) "dub" else "sub"}","episodeString":"$episodeNum"}"""
-                graphqlQuery(
-                    variables,
-                    "29f49ce1a69320b2ab11a475fd114e5c07b03a7dc683f77dd502ca42b26df232"
-                ).data?.episode?.sourceUrls?.forEach { source ->
-                    // It can be that two different actual sources share the same sourceName
-                    var serverName = source.sourceName
-                    var sourceNum = 2
-                    // Sometimes provides relative links just because ¯\_(ツ)_/¯
-                    while (videoServers.any { it.name == serverName }) {
-                        serverName = "${source.sourceName} ($sourceNum)"
-                        sourceNum++
-                    }
 
-                    if (source.sourceUrl.toHttpUrlOrNull() == null) {
-                        val jsonUrl = """${apiHost}${source.sourceUrl.replace("clock", "clock.json").substring(1)}"""
-                        videoServers.add(VideoServer(serverName, jsonUrl))
-                    } else {
-                        videoServers.add(VideoServer(serverName, source.sourceUrl))
-                    }
+            val variables =
+                """{"showId":"$showId","translationType":"${if (selectDub) "dub" else "sub"}","episodeString":"$episodeNum"}"""
+            graphqlQuery(
+                variables,
+                "29f49ce1a69320b2ab11a475fd114e5c07b03a7dc683f77dd502ca42b26df232"
+            ).data?.episode?.sourceUrls?.forEach { source ->
+                // It can be that two different actual sources share the same sourceName
+                var serverName = source.sourceName
+                var sourceNum = 2
+                // Sometimes provides relative links just because ¯\_(ツ)_/¯
+                while (videoServers.any { it.name == serverName }) {
+                    serverName = "${source.sourceName} ($sourceNum)"
+                    sourceNum++
+                }
+
+                if (source.sourceUrl.toHttpUrlOrNull() == null) {
+                    val jsonUrl = """${apiHost}${source.sourceUrl.replace("clock", "clock.json").substring(1)}"""
+                    videoServers.add(VideoServer(serverName, jsonUrl))
+                } else {
+                    videoServers.add(VideoServer(serverName, source.sourceUrl))
                 }
             }
+
         }
         return videoServers
     }
@@ -84,7 +82,7 @@ class AllAnime : AnimeParser() {
             "gogo" in domain    -> GogoCDN(server)
             "goload" in domain  -> GogoCDN(server)
             "sb" in domain      -> StreamSB(server)
-            "sss" in domain      -> StreamSB(server)
+            "sss" in domain     -> StreamSB(server)
             "fplayer" in domain -> FPlayer(server)
             "fembed" in domain  -> FPlayer(server)
             "apivtwo" in path   -> AllAnimeExtractor(server)
@@ -95,34 +93,34 @@ class AllAnime : AnimeParser() {
 
     override suspend fun search(query: String): List<ShowResponse> {
         val responseArray = arrayListOf<ShowResponse>()
-        tryWithSuspend {
-            val variables =
-                """{"search":{"allowAdult":${Anilist.adult},"query":"$query"},"translationType":"${if (selectDub) "dub" else "sub"}"}"""
-            val edges =
-                graphqlQuery(variables, "d2670e3e27ee109630991152c8484fce5ff5e280c523378001f9a23dc1839068").data?.shows?.edges
-            if (!edges.isNullOrEmpty()) {
-                for (show in edges) {
-                    val link = """${hostUrl}/anime/${show.id}"""
-                    val otherNames = mutableListOf<String>()
-                    show.englishName?.let { otherNames.add(it) }
-                    show.nativeName?.let { otherNames.add(it) }
-                    show.altNames?.forEach { otherNames.add(it) }
-                    if (show.thumbnail == null) {
-                        toastString(""""Could not get thumbnail for ${show.id}""")
-                        continue
-                    }
-                    responseArray.add(
-                        ShowResponse(
-                            show.name,
-                            link,
-                            show.thumbnail,
-                            otherNames,
-                            show.availableEpisodes.let { if (selectDub) it.dub else it.sub })
-                    )
-                }
 
+        val variables =
+            """{"search":{"allowAdult":${Anilist.adult},"query":"$query"},"translationType":"${if (selectDub) "dub" else "sub"}"}"""
+        val edges =
+            graphqlQuery(variables, "9c7a8bc1e095a34f2972699e8105f7aaf9082c6e1ccd56eab99c2f1a971152c6").data?.shows?.edges
+        if (!edges.isNullOrEmpty()) {
+            for (show in edges) {
+                val link = """${hostUrl}/anime/${show.id}"""
+                val otherNames = mutableListOf<String>()
+                show.englishName?.let { otherNames.add(it) }
+                show.nativeName?.let { otherNames.add(it) }
+                show.altNames?.forEach { otherNames.add(it) }
+                if (show.thumbnail == null) {
+                    toastString(""""Could not get thumbnail for ${show.id}""")
+                    continue
+                }
+                responseArray.add(
+                    ShowResponse(
+                        show.name,
+                        link,
+                        show.thumbnail,
+                        otherNames,
+                        show.availableEpisodes.let { if (selectDub) it.dub else it.sub })
+                )
             }
+
         }
+
         return responseArray
     }
 
@@ -187,13 +185,13 @@ class AllAnime : AnimeParser() {
                 val urlPath = Uri.parse(it).path
                 if (urlPath != null) {
                     if (urlPath.endsWith(".m3u8")) {
-                        videos.add(Video(null, true, fileUrl, getSize(fileUrl)))
+                        videos.add(Video(null, VideoType.M3U8, fileUrl))
                     }
                     if (urlPath.endsWith(".mp4")) {
                         if ("king.stronganime" in it) {
                             headers["Referer"] = "https://allanime.site"
                         }
-                        videos.add(Video(null, false, fileUrl, getSize(fileUrl)))
+                        videos.add(Video(null, VideoType.CONTAINER, fileUrl, getSize(fileUrl)))
                     }
                 }
             }
@@ -246,15 +244,15 @@ class AllAnime : AnimeParser() {
             // @SerialName("raw") val raw: Int,
         )
 
-//        data class LastEpisodeInfos(
-//            @SerialName("sub") val sub: LastEpisodeInfo?,
-//            @SerialName("dub") val dub: LastEpisodeInfo?,
-//        )
-//
-//        data class LastEpisodeInfo(
-//            @SerialName("episodeString") val episodeString: String?,
-//            @SerialName("notes") val notes: String?
-//        )
+        //        data class LastEpisodeInfos(
+        //            @SerialName("sub") val sub: LastEpisodeInfo?,
+        //            @SerialName("dub") val dub: LastEpisodeInfo?,
+        //        )
+        //
+        //        data class LastEpisodeInfo(
+        //            @SerialName("episodeString") val episodeString: String?,
+        //            @SerialName("notes") val notes: String?
+        //        )
 
         @Serializable
         data class AllAnimeEpisode(

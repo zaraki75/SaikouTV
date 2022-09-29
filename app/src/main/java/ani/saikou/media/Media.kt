@@ -39,6 +39,7 @@ data class Media(
     var userUpdatedAt: Long? = null,
     var userStartedAt: FuzzyDate = FuzzyDate(),
     var userCompletedAt: FuzzyDate = FuzzyDate(),
+    var inCustomListsOf: MutableMap<String, Boolean>?= null,
     var userFavOrder: Int? = null,
 
     val status: String? = null,

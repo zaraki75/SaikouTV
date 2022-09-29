@@ -14,11 +14,13 @@ import android.content.res.Configuration
 import android.content.res.Resources.getSystem
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.media.MediaScannerConnection
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities.*
 import android.net.Uri
 import android.os.*
 import android.provider.Settings
+import android.telephony.TelephonyManager
 import android.text.InputFilter
 import android.text.Spanned
 import android.util.AttributeSet
@@ -523,28 +525,28 @@ abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
     private var timer: Timer? = null //at class level;
     private val delay: Long = 200
 
-    override fun onSingleTapUp(e: MotionEvent): Boolean {
+    override fun onSingleTapUp(e: MotionEvent?): Boolean {
         processSingleClickEvent(e)
         return super.onSingleTapUp(e)
     }
 
-    override fun onLongPress(e: MotionEvent) {
+    override fun onLongPress(e: MotionEvent?) {
         processLongClickEvent(e)
         super.onLongPress(e)
     }
 
-    override fun onDoubleTap(e: MotionEvent): Boolean {
+    override fun onDoubleTap(e: MotionEvent?): Boolean {
         processDoubleClickEvent(e)
         return super.onDoubleTap(e)
     }
 
-    override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
+    override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
         onScrollYClick(distanceY)
         onScrollXClick(distanceX)
         return super.onScroll(e1, e2, distanceX, distanceY)
     }
 
-    private fun processSingleClickEvent(e: MotionEvent) {
+    private fun processSingleClickEvent(e: MotionEvent?) {
         val handler = Handler(Looper.getMainLooper())
         val mRunnable = Runnable {
             onSingleClick(e)
@@ -581,10 +583,10 @@ abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
     open fun onLongClick(event: MotionEvent?) {}
 }
 
-fun View.circularReveal(ex: Int, ey: Int, subX:Boolean, time: Long) {
+fun View.circularReveal(ex: Int, ey: Int, subX: Boolean, time: Long) {
     ViewAnimationUtils.createCircularReveal(
         this,
-        if(subX) (ex - x.toInt()) else ex,
+        if (subX) (ex - x.toInt()) else ex,
         ey - y.toInt(),
         0f,
         max(height, width).toFloat()
@@ -600,7 +602,7 @@ fun openLinkInBrowser(link: String?) {
 
 fun download(activity: Activity, episode: Episode, animeTitle: String) {
     val manager = activity.getSystemService(AppCompatActivity.DOWNLOAD_SERVICE) as DownloadManager
-    val extractor = episode.extractors?.find { it.server.name == episode.selectedServer } ?: return
+    val extractor = episode.extractors?.find { it.server.name == episode.selectedExtractor } ?: return
     val video =
         if (extractor.videos.size > episode.selectedVideo) extractor.videos[episode.selectedVideo] else return
     val regex = "[\\\\/:*?\"<>|]".toRegex()
@@ -678,7 +680,14 @@ fun saveImage(image: Bitmap, path: String, imageFileName: String): File? {
         val fOut: OutputStream = FileOutputStream(imageFile)
         image.compress(Bitmap.CompressFormat.PNG, 0, fOut)
         fOut.close()
+        scanFile(imageFile.absolutePath, currActivity()!!)
         imageFile
+    }
+}
+
+private fun scanFile(path: String, context: Context) {
+    MediaScannerConnection.scanFile(context, arrayOf(path), null) { p, _ ->
+        logger("Finished scanning $p")
     }
 }
 
@@ -947,3 +956,19 @@ fun brightnessConverter(it: Float, fromLog: Boolean) =
             if (fromLog) log2((it * 256f)) * 12.5f / 100f else 2f.pow(it * 100f / 12.5f) / 256f
         else it, 0.001f, 1f
     )
+
+
+fun checkCountry(context: Context): Boolean {
+    val telMgr = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+    return when (telMgr.simState) {
+        TelephonyManager.SIM_STATE_ABSENT -> {
+            val tz = TimeZone.getDefault().id
+            tz.equals("Asia/Kolkata", ignoreCase = true)
+        }
+        TelephonyManager.SIM_STATE_READY  -> {
+            val countryCodeValue = telMgr.networkCountryIso
+            countryCodeValue.equals("in", ignoreCase = true)
+        }
+        else                              -> false
+    }
+}

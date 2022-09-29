@@ -13,6 +13,7 @@ open class Tenshi : AnimeParser() {
     override val name: String = "Tenshi"
     override val saveName: String = "tenshi_moe"
     override val hostUrl: String = "https://tenshi.moe"
+    override val malSyncBackupName: String = "Tenshi"
     override val isDubAvailableSeparately: Boolean = false
 
     private var cookieHeader = "Cookie" to "__ddg1_=;__ddg2_=;loop-view=thumb"
@@ -79,7 +80,7 @@ open class Tenshi : AnimeParser() {
             return VideoContainer(json.sources.mapNotNull {
                 if (it.src != null) {
                     val fileUrl = FileUrl(it.src, headers)
-                    Video(it.size, false, fileUrl, getSize(fileUrl))
+                    Video(it.size, VideoType.CONTAINER, fileUrl, getSize(fileUrl))
                 } else null
             })
         }

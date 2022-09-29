@@ -19,8 +19,7 @@ open class Manga4Life : MangaParser() {
 
     override suspend fun loadChapters(mangaLink: String, extra: Map<String, String>?): List<MangaChapter> {
 
-        val json = client.get("$hostUrl/manga/$mangaLink").document.select("script")
-            .lastOrNull()?.toString()?.findBetween("vm.Chapters = ", ";") ?: return listOf()
+        val json = client.get("$hostUrl/manga/$mangaLink").text.findBetween("vm.Chapters = ", ";")!!
 
         return Mapper.parse<List<MangaResponse>>(json).reversed().map {
             val chap = it.chapter
@@ -37,8 +36,7 @@ open class Manga4Life : MangaParser() {
     }
 
     override suspend fun loadImages(chapterLink: String): List<MangaImage> {
-        val res = client.get(chapterLink).document.select("script").lastOrNull()
-        val str = res?.toString() ?: return listOf()
+        val str = client.get(chapterLink).text
         val server = str.findBetween("vm.CurPathName = ", ";")?.trim('"') ?: return listOf()
         var slug = str.findBetween("vm.IndexName = ", ";")?.trim('"') ?: return listOf()
         val json = Mapper.parse<ChapterResponse>(
@@ -65,11 +63,10 @@ open class Manga4Life : MangaParser() {
         suspend fun getSearchData(): List<ShowResponse> {
             response = if (response != null) response ?: listOf()
             else {
-                val json = client.get("$host/search/").document.select("script")
-                    .last().toString().findBetween("vm.Directory = ", "\n")!!.replace(";", "")
+                val json = client.get("$host/search/").text.findBetween("vm.Directory = ", "\n")!!.replace(";", "")
                 Mapper.parse<List<SearchResponse>>(json).map {
                     ShowResponse(
-                        it.s, it.i, "https://cover.nep.li/cover/${it.i}.jpg"
+                        it.s, it.i, "https://temp.compsci88.com/cover/${it.i}.jpg"
                     )
                 }
             }

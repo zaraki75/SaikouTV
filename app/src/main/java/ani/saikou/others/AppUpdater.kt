@@ -51,10 +51,11 @@ object AppUpdater {
                     setPositiveButton("Let's Go") {
                         MainScope().launch(Dispatchers.IO) {
                             try {
-                                client.get("https://api.github.com/repos/$repo/releases/tags/v$version").parsed<GithubResponse>().assets?.find {
+                                client.get("https://api.github.com/repos/$repo/releases/tags/v$version")
+                                    .parsed<GithubResponse>().assets?.find {
                                     it.browserDownloadURL.endsWith("apk")
                                 }?.browserDownloadURL.apply {
-                                    if(this!=null) activity.downloadUpdate(version,this)
+                                    if (this != null) activity.downloadUpdate(version, this)
                                     else openLinkInBrowser("https://github.com/repos/$repo/releases/tag/v$version")
                                 }
                             } catch (e: Exception) {
@@ -73,16 +74,27 @@ object AppUpdater {
     }
 
     private fun compareVersion(version: String): Boolean {
-        return try {
-            version.replace(".", "").toInt() > BuildConfig.VERSION_NAME.replace(".", "").toInt()
-        } catch (e: Exception) {
-            false
+
+        fun toDouble(list: List<String>): Double {
+            return list.mapIndexed { i: Int, s: String ->
+                when (i) {
+                    0 -> s.toDouble() * 100
+                    1 -> s.toDouble() * 10
+                    2 -> s.toDouble()
+                    3 -> "0.$s".toDouble()
+                    else -> s.toDouble()
+                }
+            }.sum()
         }
+
+        val new = toDouble(version.split("."))
+        val curr = toDouble(BuildConfig.VERSION_NAME.split("."))
+        return new > curr
     }
 
 
     //Blatantly kanged from https://github.com/LagradOst/CloudStream-3/blob/master/app/src/main/java/com/lagradost/cloudstream3/utils/InAppUpdater.kt
-    private fun Activity.downloadUpdate(version:String,url: String): Boolean {
+    private fun Activity.downloadUpdate(version: String, url: String): Boolean {
 
         toast("Downloading Update $version")
 
@@ -160,8 +172,9 @@ object AppUpdater {
             logError(e)
         }
     }
+
     @Serializable
-    data class GithubResponse (
+    data class GithubResponse(
         val assets: List<Asset>? = null
     ) {
         @Serializable

@@ -2,25 +2,19 @@ package ani.saikou.parsers.anime.extractors
 
 import ani.saikou.client
 import ani.saikou.findBetween
-import ani.saikou.parsers.Video
-import ani.saikou.parsers.VideoContainer
-import ani.saikou.parsers.VideoExtractor
-import ani.saikou.parsers.VideoServer
+import ani.saikou.parsers.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 class StreamSB(override val server: VideoServer) : VideoExtractor() {
     override suspend fun extract(): VideoContainer {
-        println("b : ${server.embed.url}")
         val videos = mutableListOf<Video>()
         val id = server.embed.url.let { it.findBetween("/e/", ".html") ?: it.split("/e/")[1] }
         val jsonLink =
             "https://streamsss.net/sources48/${bytesToHex("||$id||||streamsb".toByteArray())}/"
-        val json = client.get(jsonLink, mapOf("watchsb" to "sbstream")).also {
-            println("c : ${it.text}")
-        }.parsed<Response>()
+        val json = client.get(jsonLink, mapOf("watchsb" to "sbstream")).parsed<Response>()
         if (json.statusCode == 200) {
-            videos.add(Video(null, true, json.streamData!!.file))
+            videos.add(Video(null, VideoType.M3U8, json.streamData!!.file))
         }
         return VideoContainer(videos)
     }

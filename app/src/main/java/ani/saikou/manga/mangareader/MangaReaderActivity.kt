@@ -356,8 +356,8 @@ class MangaReaderActivity : AppCompatActivity() {
                 }
             }
             else {
-                binding.RightSwipeText.text = chaptersTitleArr.getOrNull(currentChapterIndex - 1) ?: "No Chapter"
-                binding.LeftSwipeText.text = chaptersTitleArr.getOrNull(currentChapterIndex + 1) ?: "No Chapter"
+                binding.RightSwipeText.text = chaptersTitleArr.getOrNull(currentChapterIndex + 1) ?: "No Chapter"
+                binding.LeftSwipeText.text = chaptersTitleArr.getOrNull(currentChapterIndex - 1) ?: "No Chapter"
                 binding.mangaReaderSwipy.onLeftSwiped = {
                     binding.mangaReaderNextChapter.performClick()
                 }
@@ -385,8 +385,8 @@ class MangaReaderActivity : AppCompatActivity() {
             binding.mangaReaderRecyclerContainer.controller.settings.isRotationEnabled = settings.default.rotation
 
             val detector = GestureDetectorCompat(this, object : GesturesListener() {
-                override fun onLongPress(e: MotionEvent) {
-                    if (binding.mangaReaderRecycler.findChildViewUnder(e.x, e.y).let { child ->
+                override fun onLongPress(e: MotionEvent?) {
+                    if (e!=null && binding.mangaReaderRecycler.findChildViewUnder(e.x, e.y).let { child ->
                             child ?: return@let false
                             val pos = binding.mangaReaderRecycler.getChildAdapterPosition(child)
                             val image = chapImages?.getOrNull(pos) ?: return@let false
@@ -424,7 +424,7 @@ class MangaReaderActivity : AppCompatActivity() {
                 adapter = imageAdapter
                 layoutManager = manager
                 setOnTouchListener { _, event ->
-                    detector.onTouchEvent(event)
+                    if(event!=null) detector.onTouchEvent(event) else false
                 }
 
                 addOnScrollListener(object : RecyclerView.OnScrollListener() {

@@ -3,10 +3,7 @@ package ani.saikou.parsers.anime.extractors
 import ani.saikou.FileUrl
 import ani.saikou.client
 import ani.saikou.getSize
-import ani.saikou.parsers.Video
-import ani.saikou.parsers.VideoContainer
-import ani.saikou.parsers.VideoExtractor
-import ani.saikou.parsers.VideoServer
+import ani.saikou.parsers.*
 import ani.saikou.tryWithSuspend
 import kotlinx.coroutines.delay
 import kotlinx.serialization.SerialName
@@ -40,7 +37,7 @@ class VideoVard(override val server: VideoServer, private val download:Boolean=f
                     )
                 ).also { if(!it.text.startsWith("{")) throw Exception("Video Not Found") }.parsed<SetupResponse>()
                 val mp4 = FileUrl(decode(setup.link!!, setup.seed), headers)
-                Video(null, false, mp4, getSize(mp4))
+                Video(null, VideoType.CONTAINER, mp4, getSize(mp4))
             }
         } else {
             tryWithSuspend{
@@ -55,7 +52,7 @@ class VideoVard(override val server: VideoServer, private val download:Boolean=f
                     )
                 ).also { if(!it.text.startsWith("{")) throw Exception("Video Not Found") }.parsed<SetupResponse>()
                 val m3u8 = FileUrl(decode(res.src!!, res.seed), headers)
-                Video(null, true, m3u8)
+                Video(null, VideoType.M3U8, m3u8)
             }
         }
         return if(video!=null) VideoContainer(listOf(video))
