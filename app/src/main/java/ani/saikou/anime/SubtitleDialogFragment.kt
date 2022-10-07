@@ -1,5 +1,6 @@
 package ani.saikou.anime
 
+import android.app.Activity
 import android.graphics.Color.TRANSPARENT
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,8 +13,10 @@ import ani.saikou.BottomSheetDialogFragment
 import ani.saikou.R
 import ani.saikou.databinding.BottomSheetSubtitlesBinding
 import ani.saikou.databinding.ItemSubtitleTextBinding
+import ani.saikou.loadData
 import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.parsers.Subtitle
+import ani.saikou.saveData
 
 class SubtitleDialogFragment : BottomSheetDialogFragment() {
     private var _binding: BottomSheetSubtitlesBinding? = null
@@ -47,19 +50,54 @@ class SubtitleDialogFragment : BottomSheetDialogFragment() {
             val binding = holder.binding
             if (position == 0) {
                 binding.subtitleTitle.setText(R.string.none)
-                if(episode.selectedSubtitle!=null) binding.root.setCardBackgroundColor(TRANSPARENT)
+                model.getMedia().observe(viewLifecycleOwner) { media ->
+                    val mediaID: Int = media.id
+                    val selSubs: String? = loadData("subLang_${mediaID}", activity)
+                    if (episode.selectedSubtitle != null && selSubs != "None") {
+                        binding.root.setCardBackgroundColor(TRANSPARENT)
+                    }
+                }
                 binding.root.setOnClickListener {
                     episode.selectedSubtitle = null
                     model.setEpisode(episode, "Subtitle")
+                    model.getMedia().observe(viewLifecycleOwner){media ->
+                        val mediaID: Int = media.id
+                        saveData("subLang_${mediaID}", "None", activity)
+                    }
                     dismiss()
                 }
             } else {
-                binding.subtitleTitle.text = subtitles[position - 1].language
-                if(episode.selectedSubtitle != position-1)
-                    binding.root.setCardBackgroundColor(TRANSPARENT)
+                binding.subtitleTitle.text = when (subtitles[position - 1].language) {
+                    "ja-JP" -> "[ja-JP] Japanese"
+                    "en-US" -> "[en-US] English"
+                    "de-DE" -> "[de-DE] German"
+                    "es-ES" -> "[es-ES] Spanish"
+                    "es-419" -> "[es-419] Spanish"
+                    "fr-FR" -> "[fr-FR] French"
+                    "it-IT" -> "[it-IT] Italian"
+                    "pt-BR" -> "[pt-BR] Portuguese (Brazil)"
+                    "pt-PT" -> "[pt-PT] Portuguese (Portugal)"
+                    "ru-RU" -> "[ru-RU] Russian"
+                    "zh-CN" -> "[zh-CN] Chinese (Simplified)"
+                    "tr-TR" -> "[tr-TR] Turkish"
+                    "ar-ME" -> "[ar-ME] Arabic"
+                    else -> "[${subtitles[position - 1].language}]"
+                }
+                model.getMedia().observe(viewLifecycleOwner) { media ->
+                    val mediaID: Int = media.id
+                    val selSubs: String? = loadData("subLang_${mediaID}", activity)
+                    if (episode.selectedSubtitle != position - 1 && selSubs != subtitles[position - 1].language) {
+                        binding.root.setCardBackgroundColor(TRANSPARENT)
+                    }
+                }
+                val activity: Activity = requireActivity() as ExoplayerView
                 binding.root.setOnClickListener {
                     episode.selectedSubtitle = position - 1
                     model.setEpisode(episode, "Subtitle")
+                    model.getMedia().observe(viewLifecycleOwner){media ->
+                        val mediaID: Int = media.id
+                        saveData("subLang_${mediaID}", subtitles[position - 1].language, activity)
+                    }
                     dismiss()
                 }
             }
