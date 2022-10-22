@@ -1,6 +1,7 @@
 package ani.saikou
 
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -47,6 +48,7 @@ class MangaFragment : Fragment() {
         super.onDestroyView();_binding = null
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val scope = viewLifecycleOwner.lifecycleScope
@@ -171,13 +173,33 @@ class MangaFragment : Fragment() {
             }
         }
 
+        var oldIncludeList = true
+
+        mangaPageAdapter.onIncludeListClick = { checked ->
+            oldIncludeList = !checked
+            loading = true
+            model.searchResults.results.clear()
+            popularAdaptor.notifyDataSetChanged()
+            scope.launch(Dispatchers.IO) {
+                model.loadPopular("MANGA", sort = "Popular", onList = checked)
+            }
+        }
+
         model.getPopular().observe(viewLifecycleOwner) {
             if (it != null) {
+                println("old : $oldIncludeList & it ${it.onList ?: true}")
+                if (oldIncludeList == (it.onList != false)) {
+                    val prev = model.searchResults.results.size
+                    model.searchResults.results.addAll(it.results)
+                    popularAdaptor.notifyItemRangeInserted(prev, it.results.size)
+                } else {
+                    model.searchResults.results.addAll(it.results)
+                    popularAdaptor.notifyDataSetChanged()
+                    oldIncludeList = it.onList ?: true
+                }
+                model.searchResults.onList = it.onList
                 model.searchResults.hasNextPage = it.hasNextPage
                 model.searchResults.page = it.page
-                val prev = model.searchResults.results.size
-                model.searchResults.results.addAll(it.results)
-                popularAdaptor.notifyItemRangeInserted(prev, it.results.size)
                 if (it.hasNextPage)
                     progressAdaptor.bar?.visibility = View.VISIBLE
                 else {

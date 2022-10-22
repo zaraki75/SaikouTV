@@ -81,7 +81,13 @@ class SubtitleDialogFragment : BottomSheetDialogFragment() {
                     "zh-CN" -> "[zh-CN] Chinese (Simplified)"
                     "tr-TR" -> "[tr-TR] Turkish"
                     "ar-ME" -> "[ar-ME] Arabic"
-                    else -> "[${subtitles[position - 1].language}]"
+                    "ar-SA" -> "[ar-SA] Arabic (Saudi Arabia)"
+                    "uk-UK" -> "[uk-UK] Ukrainian"
+                    "he-IL" -> "[he-IL] Hebrew"
+                    "pl-PL" -> "[pl-PL] Polish"
+                    "ro-RO" -> "[ro-RO] Romanian"
+                    "sv-SE" -> "[sv-SE] Swedish"
+                    else -> if(subtitles[position - 1].language matches Regex("([a-z]{2})-([A-Z]{2}|\\d{3})")) "[${subtitles[position - 1].language}]" else subtitles[position - 1].language
                 }
                 model.getMedia().observe(viewLifecycleOwner) { media ->
                     val mediaID: Int = media.id

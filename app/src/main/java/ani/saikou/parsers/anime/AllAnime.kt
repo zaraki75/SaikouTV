@@ -34,7 +34,18 @@ class AllAnime : AnimeParser() {
             episodeInfos?.sortedBy { it.episodeIdNum }?.forEach { epInfo ->
                 val link = """${hostUrl}/anime/$showId/episodes/${if (selectDub) "dub" else "sub"}/${epInfo.episodeIdNum}"""
                 val epNum = format.format(epInfo.episodeIdNum).toString()
-                val thumbnail = epInfo.thumbnails?.let { if (it.isNotEmpty()) FileUrl(it[0]) else null }
+                val thumbnail = epInfo.thumbnails?.let {
+
+                    if (it.isNotEmpty()) {
+                        var url = it[0];
+                        if (!url.startsWith("https")) {
+                            url = "https://wp.youtube-anime.com/aln.youtube-anime.com" + url;
+                        }
+                        FileUrl(url)
+                    } else {
+                        null
+                    }
+                }
                 responseArray.add(Episode(epNum, link = link, epInfo.notes, thumbnail))
             }
         }
@@ -126,7 +137,7 @@ class AllAnime : AnimeParser() {
 
     private suspend fun graphqlQuery(variables: String, persistHash: String): Query {
         val extensions = """{"persistedQuery":{"version":1,"sha256Hash":"$persistHash"}}"""
-        val graphqlUrl = ("$hostUrl/graphql").toHttpUrl().newBuilder()
+        val graphqlUrl = ("$hostUrl/allanimeapi").toHttpUrl().newBuilder()
             .addQueryParameter("variables", variables)
             .addQueryParameter("extensions", extensions)
             .build().toString()

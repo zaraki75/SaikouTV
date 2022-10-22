@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.ItemAnimePageBinding
+import ani.saikou.media.CalendarActivity
 import ani.saikou.media.MediaAdaptor
 import ani.saikou.media.SearchActivity
 import ani.saikou.settings.SettingsDialogFragment
@@ -64,8 +65,18 @@ class AnimePageAdapter : RecyclerView.Adapter<AnimePageAdapter.AnimePageViewHold
             SettingsDialogFragment().show((it.context as AppCompatActivity).supportFragmentManager, "dialog")
         }
 
-        binding.animeGenreImage.loadImage("https://bit.ly/31bsIHq")
-        binding.animeTopScoreImage.loadImage("https://bit.ly/2ZGfcuG")
+        binding.animeThisSeason.setOnClickListener{
+            onSeasonClick.invoke(1)
+        }
+        binding.animeNextSeason.setOnClickListener{
+            onSeasonClick.invoke(2)
+        }
+        binding.animePreviousSeason.setOnClickListener{
+            onSeasonClick.invoke(0)
+        }
+
+        binding.animeGenreImage.loadImage("https://s4.anilist.co/file/anilistcdn/media/anime/banner/16498-8jpFCOcDmneX.jpg")
+        binding.animeCalendarImage.loadImage("https://s4.anilist.co/file/anilistcdn/media/anime/banner/125367-hGPJLSNfprO3.jpg")
 
         binding.animeGenre.setOnClickListener {
             ContextCompat.startActivity(
@@ -74,17 +85,23 @@ class AnimePageAdapter : RecyclerView.Adapter<AnimePageAdapter.AnimePageViewHold
                 null
             )
         }
-        binding.animeTopScore.setOnClickListener {
+        binding.animeCalendar.setOnClickListener {
             ContextCompat.startActivity(
                 it.context,
-                Intent(it.context, SearchActivity::class.java).putExtra("type", "ANIME")
-                    .putExtra("sortBy", "Score"),
+                Intent(it.context, CalendarActivity::class.java),
                 null
             )
+        }
+
+        binding.animeIncludeList.setOnCheckedChangeListener { _, isChecked ->
+            onIncludeListClick.invoke(isChecked)
         }
         if (ready.value == false)
             ready.postValue(true)
     }
+
+    lateinit var onSeasonClick : ((Int)->Unit)
+    lateinit var onIncludeListClick : ((Boolean)->Unit)
 
     override fun getItemCount(): Int = 1
 
@@ -116,6 +133,7 @@ class AnimePageAdapter : RecyclerView.Adapter<AnimePageAdapter.AnimePageViewHold
         binding.animeTrendingViewPager.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings), 0.25f)
         binding.animeTitleContainer.startAnimation(setSlideUp(uiSettings))
         binding.animeListContainer.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings), 0.25f)
+        binding.animeSeasonsCont.layoutAnimation = LayoutAnimationController(setSlideIn(uiSettings), 0.25f)
     }
 
     fun updateRecent(adaptor: MediaAdaptor) {

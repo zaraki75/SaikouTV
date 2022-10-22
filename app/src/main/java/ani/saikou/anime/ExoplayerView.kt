@@ -42,6 +42,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import androidx.media.session.MediaButtonReceiver
 import ani.saikou.*
+import ani.saikou.R
 import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.ActivityExoplayerBinding
 import ani.saikou.media.Media
@@ -61,11 +62,8 @@ import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.google.android.exoplayer2.ui.CaptionStyleCompat
+import com.google.android.exoplayer2.ui.*
 import com.google.android.exoplayer2.ui.CaptionStyleCompat.*
-import com.google.android.exoplayer2.ui.StyledPlayerView
-import com.google.android.exoplayer2.ui.TrackSelectionDialogBuilder
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
@@ -101,6 +99,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     private lateinit var exoSource: ImageButton
     private lateinit var exoSettings: ImageButton
     private lateinit var exoSubtitle: ImageButton
+    private lateinit var exoSubtitleView: SubtitleView
     private lateinit var exoRotate: ImageButton
     private lateinit var exoQuality: ImageButton
     private lateinit var exoSpeed: ImageButton
@@ -304,6 +303,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         exoSource = playerView.findViewById(R.id.exo_source)
         exoSettings = playerView.findViewById(R.id.exo_settings)
         exoSubtitle = playerView.findViewById(R.id.exo_sub)
+        exoSubtitleView = playerView.findViewById(R.id.exo_subtitles)
         exoRotate = playerView.findViewById(R.id.exo_rotate)
         exoSpeed = playerView.findViewById(R.id.exo_playback_speed)
         exoScreen = playerView.findViewById(R.id.exo_screen)
@@ -748,6 +748,15 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             epChanging = !it
         }
 
+        // Subtitle View Margin fix for Kamyroll
+        if(model.watchSources!!.names[media.selected!!.source] == "Kamyroll" && (settings.kamySubType == 0 || settings.kamySubType == 2)) {
+            val marginInt = -19 // This gets rounded to -18dp
+            val margin = (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, marginInt.toFloat(), getResources().getDisplayMetrics())).roundToInt()
+            exoSubtitleView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = margin
+            }
+        }
+
         //Anime Title
         animeTitle.text = media.userPreferredName
 
@@ -873,6 +882,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             saveData("${media.id}_${media.anime!!.selectedEpisode}", exoPlayer.currentPosition, this)
             val intent = Intent(this, PlayerSettingsActivity::class.java).apply {
                 putExtra("media", media)
+                putExtra("subtitle", subtitle)
             }
             finish()
             startActivity(intent)
@@ -1022,20 +1032,34 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             subClick()
         }
 
-        val sub = if (subtitle != null)
-            MediaItem.SubtitleConfiguration
-                .Builder(Uri.parse(subtitle!!.url.url))
-                .setSelectionFlags(C.SELECTION_FLAG_FORCED)
-                .setMimeType(
-                    when (subtitle?.type) {
+        val newSub: Subtitle? = intent.getSerializableExtra("subtitle") as Subtitle?
+        var sub: MediaItem.SubtitleConfiguration? = null
+        if(newSub == null && subtitle != null) {
+            sub = MediaItem.SubtitleConfiguration
+                    .Builder(Uri.parse(subtitle!!.url.url))
+                    .setSelectionFlags(C.SELECTION_FLAG_FORCED)
+                    .setMimeType(
+                        when (subtitle?.type) {
+                            SubtitleType.VTT -> MimeTypes.TEXT_VTT
+                            SubtitleType.ASS -> MimeTypes.TEXT_SSA
+                            SubtitleType.SRT -> MimeTypes.APPLICATION_SUBRIP
+                            else             -> MimeTypes.TEXT_UNKNOWN
+                        }
+                    )
+                    .build()
+        }
+        if(newSub != null){
+            sub = MediaItem.SubtitleConfiguration
+                    .Builder(Uri.parse(newSub.url.url))
+                    .setSelectionFlags(C.SELECTION_FLAG_FORCED)
+                    .setMimeType(when (newSub.type) {
                         SubtitleType.VTT -> MimeTypes.TEXT_VTT
                         SubtitleType.ASS -> MimeTypes.TEXT_SSA
                         SubtitleType.SRT -> MimeTypes.APPLICATION_SUBRIP
-                        else             -> MimeTypes.TEXT_UNKNOWN
-                    }
-                )
-                .build()
-        else null
+                        }
+                    )
+                    .build()
+        }
 
         lifecycleScope.launch(Dispatchers.IO) {
             ext.onVideoPlayed(video)

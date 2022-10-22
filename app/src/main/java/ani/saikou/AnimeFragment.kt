@@ -1,6 +1,7 @@
 package ani.saikou
 
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -52,6 +53,7 @@ class AnimeFragment : Fragment() {
         super.onDestroyView();_binding = null
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -81,6 +83,7 @@ class AnimeFragment : Fragment() {
         binding.animePageRecyclerView.updatePaddingRelative(bottom = navBarHeight + 160f.px)
 
         val animePageAdapter = AnimePageAdapter()
+
         var loading = true
         if (model.notSet) {
             model.notSet = false
@@ -88,7 +91,7 @@ class AnimeFragment : Fragment() {
                 "ANIME",
                 isAdult = false,
                 onList = false,
-                results = arrayListOf(),
+                results = mutableListOf(),
                 hasNextPage = true,
                 sort = "Popular"
             )
@@ -121,6 +124,42 @@ class AnimeFragment : Fragment() {
             binding.animePageRecyclerView.smoothScrollToPosition(0)
         }
 
+        var oldIncludeList = true
+
+        animePageAdapter.onIncludeListClick = { checked ->
+            oldIncludeList = !checked
+            loading = true
+            model.searchResults.results.clear()
+            popularAdaptor.notifyDataSetChanged()
+            scope.launch(Dispatchers.IO) {
+                model.loadPopular("ANIME", sort = "Popular", onList = checked)
+            }
+        }
+
+        model.getPopular().observe(viewLifecycleOwner) {
+            if (it != null) {
+                println("old : $oldIncludeList & it ${it.onList ?: true}")
+                if (oldIncludeList == (it.onList != false)) {
+                    val prev = model.searchResults.results.size
+                    model.searchResults.results.addAll(it.results)
+                    popularAdaptor.notifyItemRangeInserted(prev, it.results.size)
+                } else {
+                    model.searchResults.results.addAll(it.results)
+                    popularAdaptor.notifyDataSetChanged()
+                    oldIncludeList = it.onList ?: true
+                }
+                model.searchResults.onList = it.onList
+                model.searchResults.hasNextPage = it.hasNextPage
+                model.searchResults.page = it.page
+                if (it.hasNextPage)
+                    progressAdaptor.bar?.visibility = View.VISIBLE
+                else {
+                    toastString("DAMN! YOU TRULY ARE JOBLESS\nYOU REACHED THE END")
+                    progressAdaptor.bar?.visibility = View.GONE
+                }
+                loading = false
+            }
+        }
 
         binding.animePageRecyclerView.addOnScrollListener(object :
             RecyclerView.OnScrollListener() {
@@ -152,7 +191,7 @@ class AnimeFragment : Fragment() {
             }
         })
         animePageAdapter.ready.observe(viewLifecycleOwner) { i ->
-            if (i == true) {
+            if (i) {
                 model.getUpdated().observe(viewLifecycleOwner) {
                     if (it != null) {
                         animePageAdapter.updateRecent(MediaAdaptor(0, it, requireActivity()))
@@ -178,25 +217,15 @@ class AnimeFragment : Fragment() {
             }
         }
 
-        model.getPopular().observe(viewLifecycleOwner) {
-            if (it != null) {
-                model.searchResults.hasNextPage = it.hasNextPage
-                model.searchResults.page = it.page
-                val prev = model.searchResults.results.size
-                model.searchResults.results.addAll(it.results)
-                popularAdaptor.notifyItemRangeInserted(prev, it.results.size)
-                if (it.hasNextPage)
-                    progressAdaptor.bar?.visibility = View.VISIBLE
-                else {
-                    toastString("DAMN! YOU TRULY ARE JOBLESS\nYOU REACHED THE END")
-                    progressAdaptor.bar?.visibility = View.GONE
-                }
-                loading = false
-            }
-        }
 
         fun load() = scope.launch(Dispatchers.Main) {
             animePageAdapter.updateAvatar()
+        }
+
+        animePageAdapter.onSeasonClick = { i ->
+            scope.launch(Dispatchers.IO) {
+                model.loadTrending(i)
+            }
         }
 
         val live = Refresh.activity.getOrPut(this.hashCode()) { MutableLiveData(false) }
@@ -208,7 +237,7 @@ class AnimeFragment : Fragment() {
                             load()
                         }
                         model.loaded = true
-                        model.loadTrending()
+                        model.loadTrending(1)
                         model.loadUpdated()
                         model.loadPopular("ANIME", sort = "Popular")
                     }

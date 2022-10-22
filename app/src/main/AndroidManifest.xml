@@ -44,6 +44,9 @@
             android:name=".media.StudioActivity"
             android:exported="true" />
         <activity
+            android:name=".media.CalendarActivity"
+            android:exported="true" />
+        <activity
             android:name=".user.ListActivity"
             android:exported="true" />
         <activity

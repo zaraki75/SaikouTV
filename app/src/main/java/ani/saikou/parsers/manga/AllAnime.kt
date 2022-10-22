@@ -63,7 +63,7 @@ class AllAnime : MangaParser() {
 
     private suspend fun graphqlQuery(variables: String, persistHash: String): Query? {
         val extensions = """{"persistedQuery":{"version":1,"sha256Hash":"$persistHash"}}"""
-        val graphqlUrl = ("$hostUrl/graphql").toHttpUrl().newBuilder().addQueryParameter("variables", variables)
+        val graphqlUrl = ("$hostUrl/allanimeapi").toHttpUrl().newBuilder().addQueryParameter("variables", variables)
             .addQueryParameter("extensions", extensions).build()
         println(variables)
         val headers = mutableMapOf<String, String>()

@@ -645,7 +645,7 @@ fun download(activity: Activity, episode: Episode, animeTitle: String) {
 }
 
 fun saveImageToDownloads(title: String, bitmap: Bitmap, context: Context) {
-    val contentUri = FileProvider.getUriForFile(
+    FileProvider.getUriForFile(
         context,
         BuildConfig.APPLICATION_ID + ".provider",
         saveImage(
@@ -654,9 +654,6 @@ fun saveImageToDownloads(title: String, bitmap: Bitmap, context: Context) {
             title
         ) ?: return
     )
-    val intent = Intent(Intent.ACTION_VIEW)
-    intent.setDataAndType(contentUri, "image/*").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    context.startActivity(intent)
 }
 
 fun shareImage(title: String, bitmap: Bitmap, context: Context) {
@@ -681,6 +678,7 @@ fun saveImage(image: Bitmap, path: String, imageFileName: String): File? {
         image.compress(Bitmap.CompressFormat.PNG, 0, fOut)
         fOut.close()
         scanFile(imageFile.absolutePath, currActivity()!!)
+        toast("Saved to:\n$path")
         imageFile
     }
 }

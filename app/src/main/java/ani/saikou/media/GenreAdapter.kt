@@ -40,8 +40,12 @@ class GenreAdapter(
             itemView.setOnClickListener {
                 ContextCompat.startActivity(
                     itemView.context,
-                    Intent(itemView.context, SearchActivity::class.java).putExtra("type", type)
-                        .putExtra("genre", pos[bindingAdapterPosition]).putExtra("sortBy", "Trending").also {
+                    Intent(itemView.context, SearchActivity::class.java)
+                        .putExtra("type", type)
+                        .putExtra("genre", pos[bindingAdapterPosition])
+                        .putExtra("sortBy", "Trending")
+                        .putExtra("search", true)
+                        .also {
                         if (pos[bindingAdapterPosition].lowercase() == "hentai") {
                             if (!Anilist.adult) Toast.makeText(
                                 itemView.context,

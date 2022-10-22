@@ -14,6 +14,7 @@ import ani.saikou.*
 import ani.saikou.anime.ExoplayerView
 import ani.saikou.databinding.ActivityPlayerSettingsBinding
 import ani.saikou.media.Media
+import ani.saikou.parsers.*
 import com.google.android.material.snackbar.Snackbar
 import kotlin.math.roundToInt
 
@@ -23,10 +24,37 @@ class PlayerSettingsActivity : AppCompatActivity() {
     private val player = "player_settings"
 
     var media:Media?=null
+    var subtitle:Subtitle?=null
     override fun onBackPressed() {
+        val settings = loadData<PlayerSettings>(player, toast = false) ?: PlayerSettings().apply { saveData(player, this) }
         if(media!=null) {
+            var newSubtitle: Subtitle? = null
+            if(subtitle != null){
+                // Change Kamyroll Subtitle Type
+                val oldUrl = subtitle?.url?.url
+                if (oldUrl?.contains("api.kamyroll.tech", true) == true) {
+                var newUrl: FileUrl? = subtitle?.url
+                var newType: SubtitleType? = null
+                when(settings.kamySubType){
+                    0 -> {
+                        newType = SubtitleType.ASS
+                        newUrl = FileUrl(oldUrl.replace("&out=vtt", "&out=ass").replace("&out=srt", "&out=ass"))
+                    }
+                    1 -> {
+                        newType = SubtitleType.VTT
+                        newUrl = FileUrl(oldUrl.replace("&out=ass", "&out=vtt").replace("&out=srt", "&out=vtt"))
+                    }
+                    2 -> {
+                        newType = SubtitleType.SRT
+                        newUrl = FileUrl(oldUrl.replace("&out=ass", "&out=srt").replace("&out=vtt", "&out=srt"))
+                    }
+                }
+                val newLanguage: String = subtitle!!.language
+                if(newUrl != null && newType != null) newSubtitle = Subtitle(newLanguage, newUrl, newType) }
+                }
             val intent = Intent(this, ExoplayerView::class.java).apply {
                 putExtra("media", media)
+                if(newSubtitle != null) putExtra("subtitle", newSubtitle)
             }
             finish()
             startActivity(intent)
@@ -45,6 +73,7 @@ class PlayerSettingsActivity : AppCompatActivity() {
 
         try {
             media = intent.getSerializableExtra("media") as? Media
+            subtitle = intent.getSerializableExtra("subtitle") as? Subtitle
         } catch (e: Exception) {
             toast(e.toString())
         }
@@ -255,7 +284,7 @@ class PlayerSettingsActivity : AppCompatActivity() {
             toggleButton(binding.videoSubColorSecondary, isChecked)
             toggleButton(binding.videoSubOutline, isChecked)
             toggleButton(binding.videoSubFont, isChecked)
-            toggleButton(binding.subLang, isChecked)
+            toggleButton(binding.kamyLang, isChecked)
             binding.subtitleFontSizeCard.isEnabled = isChecked
             binding.subtitleFontSizeCard.isClickable = isChecked
             binding.subtitleFontSizeCard.alpha = when (isChecked) {
@@ -282,12 +311,22 @@ class PlayerSettingsActivity : AppCompatActivity() {
             toggleSubOptions(isChecked)
             restartApp()
         }
+        val subtitleTypes =
+            arrayOf("ASS", "VTT", "SRT")
+        val kamyrollSubTypeDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Primary Sub Color")
+        binding.kamySubtitleType.setOnClickListener {
+            kamyrollSubTypeDialog.setSingleChoiceItems(subtitleTypes, settings.kamySubType) { dialog, count ->
+                settings.kamySubType = count
+                saveData(player, settings)
+                dialog.dismiss()
+            }.show()
+        }
         val colorsPrimary =
             arrayOf("Black", "Dark Gray", "Gray", "Light Gray", "White", "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta")
         val primaryColorDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Primary Sub Color")
         binding.videoSubColorPrimary.setOnClickListener {
-            primaryColorDialog.setSingleChoiceItems(colorsPrimary, settings.primaryColor) { dialog, count1 ->
-                settings.primaryColor = count1
+            primaryColorDialog.setSingleChoiceItems(colorsPrimary, settings.primaryColor) { dialog, count ->
+                settings.primaryColor = count
                 saveData(player, settings)
                 dialog.dismiss()
             }.show()
@@ -308,8 +347,8 @@ class PlayerSettingsActivity : AppCompatActivity() {
         )
         val secondaryColorDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Outline Sub Color")
         binding.videoSubColorSecondary.setOnClickListener {
-            secondaryColorDialog.setSingleChoiceItems(colorsSecondary, settings.secondaryColor) { dialog, count2 ->
-                settings.secondaryColor = count2
+            secondaryColorDialog.setSingleChoiceItems(colorsSecondary, settings.secondaryColor) { dialog, count ->
+                settings.secondaryColor = count
                 saveData(player, settings)
                 dialog.dismiss()
             }.show()
@@ -317,8 +356,8 @@ class PlayerSettingsActivity : AppCompatActivity() {
         val typesOutline = arrayOf("Outline", "Shine", "Drop Shadow", "None")
         val outlineDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Outline Type")
         binding.videoSubOutline.setOnClickListener {
-            outlineDialog.setSingleChoiceItems(typesOutline, settings.outline) { dialog, count3 ->
-                settings.outline = count3
+            outlineDialog.setSingleChoiceItems(typesOutline, settings.outline) { dialog, count ->
+                settings.outline = count
                 saveData(player, settings)
                 dialog.dismiss()
             }.show()
@@ -339,8 +378,8 @@ class PlayerSettingsActivity : AppCompatActivity() {
         )
         val subBackgroundDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Outline Sub Color")
         binding.videoSubColorBackground.setOnClickListener {
-            subBackgroundDialog.setSingleChoiceItems(colorsSubBackground, settings.subBackground) { dialog, count2 ->
-                settings.subBackground = count2
+            subBackgroundDialog.setSingleChoiceItems(colorsSubBackground, settings.subBackground) { dialog, count ->
+                settings.subBackground = count
                 saveData(player, settings)
                 dialog.dismiss()
             }.show()
@@ -362,8 +401,8 @@ class PlayerSettingsActivity : AppCompatActivity() {
         )
         val subWindowDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Outline Sub Color")
         binding.videoSubColorWindow.setOnClickListener {
-            subWindowDialog.setSingleChoiceItems(colorsSubWindow, settings.subWindow) { dialog, count2 ->
-                settings.subWindow = count2
+            subWindowDialog.setSingleChoiceItems(colorsSubWindow, settings.subWindow) { dialog, count ->
+                settings.subWindow = count
                 saveData(player, settings)
                 dialog.dismiss()
             }.show()
@@ -371,8 +410,8 @@ class PlayerSettingsActivity : AppCompatActivity() {
         val fonts = arrayOf("Poppins Semi Bold", "Poppins Bold", "Poppins", "Poppins Thin")
         val fontDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Subtitle Font")
         binding.videoSubFont.setOnClickListener {
-            fontDialog.setSingleChoiceItems(fonts, settings.font) { dialog, count4 ->
-                settings.font = count4
+            fontDialog.setSingleChoiceItems(fonts, settings.font) { dialog, count ->
+                settings.font = count
                 saveData(player, settings)
                 dialog.dismiss()
             }.show()
@@ -394,8 +433,8 @@ class PlayerSettingsActivity : AppCompatActivity() {
             "[zh-CN] Chinese",
             "[tr-TR] Turkish"
         )
-        val localeDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Subtitle Language")
-        binding.subLang.setOnClickListener {
+        val localeDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Kamyroll Language")
+        binding.kamyLang.setOnClickListener {
             localeDialog.setSingleChoiceItems(locales, settings.locale) { dialog, count ->
                 settings.locale = count
                 saveData(player, settings)
