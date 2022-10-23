@@ -1,25 +1,25 @@
 <resources>
 
-    <string name="repo">saikou-app/saikou</string>
+    <string name="repo">Diegopyl1209/saikouSP</string>
 
     <string name="app_name">Saikou</string>
-    <string name="slogan">The Best Anime &amp; Manga app for Android.</string>
+    <string name="slogan">La Mejor Aplicacion de Anime &amp; Manga en Android.</string>
 
-    <string name="login">Login</string>
-    <string name="logout">Logout</string>
+    <string name="login">Iniciar Sesion</string>
+    <string name="logout">Cerrar Sesion</string>
 
     <string name="discord">https://discord.gg/5TXAWTU5qr</string>
     <string name="telegram">https://telegram.me/saikou_app</string>
-    <string name="github">https://github.com/saikou-app/saikou</string>
+    <string name="github">https://github.com/Diegopyl1209/saikouSP</string>
 
     <string name="home">Home</string>
     <string name="anime">Anime</string>
-    <string name="browse_anime">Browse Anime</string>
+    <string name="browse_anime">Buscar Anime</string>
     <string name="manga">Manga</string>
-    <string name="browse_manga">Browse Manga</string>
+    <string name="browse_manga">Buscar Manga</string>
     <string name="info">Info</string>
-    <string name="watch">Watch</string>
-    <string name="read">Read</string>
+    <string name="watch">Ver</string>
+    <string name="read">Leer</string>
 
     <string name="anime_list">Anime List</string>
     <string name="manga_list">Manga List</string>
@@ -28,36 +28,36 @@
     <string name="oh">:o</string>
     <string name="colon">\u0008:\u0008</string>
 
-    <string name="no_internet">No Internet Connection</string>
-    <string name="refresh">Refresh</string>
+    <string name="no_internet">Sin coneccion a internet</string>
+    <string name="refresh">Refrescar</string>
 
-    <string name="search">Search</string>
-    <string name="search_results">Search Results</string>
-    <string name="sort_by">Sort By</string>
-    <string name="genre">Genre</string>
-    <string name="top_score">Top Score</string>
-    <string name="updated">Recently Updated</string>
-    <string name="trending_anime">Trending Anime</string>
-    <string name="popular_anime">Popular Anime</string>
+    <string name="search">Buscar</string>
+    <string name="search_results">Resultados de Busqueda</string>
+    <string name="sort_by">Ordenar Por</string>
+    <string name="genre">Genero</string>
+    <string name="top_score">Puntuacion</string>
+    <string name="updated">Actualizado recientemente</string>
+    <string name="trending_anime">Anime en Tendencia</string>
+    <string name="popular_anime">Animes Populares</string>
     <string name="trending_manga">Trending Manga</string>
     <string name="trending_novel">Trending Novel</string>
     <string name="popular_manga">Popular Manga</string>
 
-    <string name="username">Username</string>
+    <string name="username">Nombre de Usuario</string>
     <string name="chapters_read">Chapters Read\u0008</string>
-    <string name="episodes_watched">Episodes Watched\u0008</string>
+    <string name="episodes_watched">Episodios Vistos\u0008</string>
     <string name="continue_reading">Continue Reading</string>
-    <string name="continue_watching">Continue Watching</string>
-    <string name="recommended">Recommended</string>
+    <string name="continue_watching">Continuar Viendo</string>
+    <string name="recommended">Recomendado</string>
 
-    <string name="get_recommendations">Watch/Read some Anime or Manga to get Recommendations</string>
-    <string name="empty">All caught up, when New?</string>
-    <string name="action_settings">Settings</string>
+    <string name="get_recommendations">Mira/Lee Mangas o Animes para obtener recomendaciones</string>
+    <string name="empty">Todo esta vacio, cuando algo Nuevo?</string>
+    <string name="action_settings">Configuracion</string>
 
-    <string name="add">Add to List</string>
-    <string name="list_editor">List Editor</string>
-    <string name="add_fav">Add to Favourites</string>
-    <string name="notifications">Notifications</string>
+    <string name="add">Añadir a la Lista</string>
+    <string name="list_editor">Editor de Lista</string>
+    <string name="add_fav">Añadir a Favoritos</string>
+    <string name="notifications">Notificaciones</string>
     <string name="status">STATUS</string>
     <string-array name="status">
         <item>PLANNING</item>
@@ -75,58 +75,58 @@
     <string name="save">Save</string>
     <string name="delete">Delete</string>
 
-    <string name="name">Name</string>
-    <string name="name_romaji">Name Romaji</string>
-    <string name="mean_score">Mean Score</string>
-    <string name="format">Format</string>
-    <string name="status_title">Status</string>
-    <string name="total_eps">Total Episodes</string>
-    <string name="total_chaps">Total Chapters</string>
-    <string name="ep_duration">Average Duration</string>
+    <string name="name">Nombre</string>
+    <string name="name_romaji">Nombre en Romaji</string>
+    <string name="mean_score">Puntuacion Media</string>
+    <string name="format">Formato</string>
+    <string name="status_title">Estado</string>
+    <string name="total_eps">Total de Episodios</string>
+    <string name="total_chaps">Total de Capitulos</string>
+    <string name="ep_duration">Duracion Media</string>
     <string name="min">\u0008min</string>
-    <string name="season">Season</string>
-    <string name="start_date">Start Date</string>
-    <string name="end_date">End Date</string>
-    <string name="source">Source</string>
-    <string name="main_studio">Studio</string>
-    <string name="genres">Genres</string>
+    <string name="season">Temporada</string>
+    <string name="start_date">Fecha de Inicio</string>
+    <string name="end_date">Fecha de Termino</string>
+    <string name="source">Fuente</string>
+    <string name="main_studio">Estudio</string>
+    <string name="genres">Generos</string>
     <string name="description">Synopsis</string>
-    <string name="characters">Characters</string>
-    <string name="relations">Relations</string>
+    <string name="characters">Personajes</string>
+    <string name="relations">Relacionados</string>
 
     <string name="roles">Roles</string>
-    <string name="details">Details</string>
+    <string name="details">Detalles</string>
 
-    <string name="play_yt">Play on Youtube</string>
-    <string name="eps">Episodes</string>
-    <string name="ep">Episode</string>
-    <string name="chaps">Chapters</string>
-    <string name="chap">Chapter</string>
-    <string name="wrong"><u>Wrong Title?</u></string>
+    <string name="play_yt">Ver en Youtube (eng)</string>
+    <string name="eps">Episodios</string>
+    <string name="ep">Episodio</string>
+    <string name="chaps">Capitulos</string>
+    <string name="chap">Capitulor</string>
+    <string name="wrong"><u>Anime Incorrecto?</u></string>
     <string name="source_not_found">
-        Couldn\'t find anything X( \n
-        Try another source.
+        No Pude Encontrar Nada X( \n
+        Intenta con otro Servidor.
     </string>
-    <string name="not_supported">%1$s is not supported yet!</string>
-    <string name="server_selector">Select Server</string>
-    <string name="auto_select_server">Auto Selecting Server</string>
-    <string name="make_default">Make Default</string>
-    <string name="filler">Filler</string>
-    <string name="adult">Adult</string>
-    <string name="list_only">List Only</string>
-    <string name="tag">Tag</string>
-    <string name="tags">Tags</string>
-    <string name="synonyms">Synonyms</string>
+    <string name="not_supported">%1$s No esta soportado!</string>
+    <string name="server_selector">Selecciona un servidor</string>
+    <string name="auto_select_server">Seleccion Automatica</string>
+    <string name="make_default">Marcar por Defecto</string>
+    <string name="filler">Relleno</string>
+    <string name="adult">Adulto</string>
+    <string name="list_only">Solo en mi Lista</string>
+    <string name="tag">Etiqueta</string>
+    <string name="tags">Etiquetas</string>
+    <string name="synonyms">Sinonimos</string>
     <string name="trailer">Trailer</string>
     <string name="opening">Opening</string>
     <string name="ending">Ending</string>
-    <string name="prequel">Prequel</string>
-    <string name="sequel">Sequel</string>
+    <string name="prequel">Precuela</string>
+    <string name="sequel">Secuela</string>
 
-    <string name="anilist_settings">Anilist Settings</string>
-    <string name="downloads">Downloads</string>
-    <string name="settings">Settings</string>
-    <string name="player_settings">Player Settings</string>
+    <string name="anilist_settings">Configuracion de Anilist</string>
+    <string name="downloads">Descargas</string>
+    <string name="settings">Configuracion</string>
+    <string name="player_settings">Configuracion del Reproductor</string>
     <string name="recentlyListOnly">Only show My Shows in Recently Updated</string>
     <string name="downloadInSd">Download in SD card</string>
     <string name="noSdFound">No SD card was Found.</string>
@@ -257,8 +257,8 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="current_page">Current Page</string>
-    <string name="dubbed">Dubbed</string>
-    <string name="prefer_dub">Prefer Dubbed Anime</string>
+    <string name="dubbed">Doblado</string>
+    <string name="prefer_dub">Preferir anime doblado</string>
     <string name="none">None</string>
     <string name="selected_dns">Selected DNS</string>
     <string name="dns_info">Change, If your ISP blocks any Source</string>
@@ -297,17 +297,17 @@
     <string name="auto_skip_op_ed">Auto Skip OP / ED</string>
     <string name="requires_time_stamps_to_be_enabled">Requires Time Stamps to be Enabled</string>
     <string name="total_repeats">TOTAL REPEATS</string>
-    <string name="custom_lists">Custom Lists</string>
+    <string name="custom_lists">Listas Custom</string>
     <string name="donate_desc">Want to support Saikou\'s Creator?\nConsider Donating</string>
     <string name="donate_goal">(We just reached a goal of $100!)</string>
-    <string name="filter">Filter</string>
-    <string name="year">Year</string>
-    <string name="apply">Apply</string>
-    <string name="cancel">Cancel</string>
-    <string name="this_season">This Season</string>
-    <string name="next_season">Next Season</string>
-    <string name="previous_season">Previous Season</string>
-    <string name="include_media_in_list">Include List</string>
-    <string name="release_calendar">Calendar</string>
+    <string name="filter">Filtro</string>
+    <string name="year">Año</string>
+    <string name="apply">Aplicar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="this_season">Esta Temporada</string>
+    <string name="next_season">Siguiente Temporada</string>
+    <string name="previous_season">Temporada Anterior</string>
+    <string name="include_media_in_list">Incluir Lista</string>
+    <string name="release_calendar">Calendario</string>
 
 </resources>
