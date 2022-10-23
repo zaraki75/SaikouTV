@@ -10,12 +10,15 @@ import android.content.Context.UI_MODE_SERVICE
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources.getSystem
+import android.graphics.Bitmap
 import android.graphics.Color
+import android.media.MediaScannerConnection
 import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
+import android.net.NetworkCapabilities.*
 import android.net.Uri
 import android.os.*
 import android.provider.Settings
+import android.telephony.TelephonyManager
 import android.text.InputFilter
 import android.text.Spanned
 import android.util.AttributeSet
@@ -27,6 +30,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat.getExternalFilesDirs
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.FileProvider
 import androidx.core.math.MathUtils.clamp
 import androidx.core.view.*
 import androidx.fragment.app.DialogFragment
@@ -210,26 +214,18 @@ fun isOnline(context: Context): Boolean {
     val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     return tryWith {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-            return@tryWith if (capabilities != null) {
+            val cap = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            return@tryWith if (cap != null) {
                 when {
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
-                        logger("Device on Cellular")
-                        true
-                    }
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)     -> {
-                        logger("Device on Wifi")
-                        true
-                    }
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
-                        logger("Device on Ethernet, TF man?")
-                        true
-                    }
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)      -> {
-                        logger("Device on VPN")
-                        true
-                    }
-                    else                                                              -> false
+                    cap.hasTransport(TRANSPORT_BLUETOOTH) ||
+                            cap.hasTransport(TRANSPORT_CELLULAR) ||
+                            cap.hasTransport(TRANSPORT_ETHERNET) ||
+                            cap.hasTransport(TRANSPORT_LOWPAN) ||
+                            cap.hasTransport(TRANSPORT_USB) ||
+                            cap.hasTransport(TRANSPORT_VPN) ||
+                            cap.hasTransport(TRANSPORT_WIFI) ||
+                            cap.hasTransport(TRANSPORT_WIFI_AWARE) -> true
+                    else                                           -> false
                 }
             } else false
         } else true
@@ -413,7 +409,7 @@ fun String.findBetween(a: String, b: String): String? {
 
 fun ImageView.loadImage(url: String?, size: Int = 0) {
     if (!url.isNullOrEmpty()) {
-        loadImage(FileUrl(url),size)
+        loadImage(FileUrl(url), size)
     }
 }
 
@@ -451,7 +447,7 @@ fun View.setSafeOnClickListener(onSafeClick: (View) -> Unit) {
 
 suspend fun getSize(file: FileUrl): Double? {
     return tryWithSuspend {
-        client.head(file.url, file.headers, timeout = 1000).size?.toDouble()?.div(1024*1024)
+        client.head(file.url, file.headers, timeout = 1000).size?.toDouble()?.div(1024 * 1024)
     }
 }
 
@@ -495,6 +491,7 @@ class FTActivityLifecycleCallbacks : Application.ActivityLifecycleCallbacks {
     override fun onActivityStarted(p0: Activity) {
         currentActivity = p0
     }
+
     override fun onActivityResumed(p0: Activity) {
         currentActivity = p0
     }
@@ -544,6 +541,7 @@ abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
 
     override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
         onScrollYClick(distanceY)
+        onScrollXClick(distanceX)
         return super.onScroll(e1, e2, distanceX, distanceY)
     }
 
@@ -566,7 +564,7 @@ abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
             cancel()
             purge()
         }
-        onDoubleClick(e) //Do what ever u want on Double Click
+        onDoubleClick(e)
     }
 
     private fun processLongClickEvent(e: MotionEvent?) {
@@ -574,17 +572,24 @@ abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
             cancel()
             purge()
         }
-        onLongClick(e) //Do what ever u want on Double Click
+        onLongClick(e)
     }
 
     open fun onSingleClick(event: MotionEvent?) {}
     open fun onDoubleClick(event: MotionEvent?) {}
     open fun onScrollYClick(y: Float) {}
+    open fun onScrollXClick(y: Float) {}
     open fun onLongClick(event: MotionEvent?) {}
 }
 
-fun View.circularReveal(x: Int, y: Int, time: Long) {
-    ViewAnimationUtils.createCircularReveal(this, x, y, 0f, max(height, width).toFloat()).setDuration(time).start()
+fun View.circularReveal(ex: Int, ey: Int, subX: Boolean, time: Long) {
+    ViewAnimationUtils.createCircularReveal(
+        this,
+        if (subX) (ex - x.toInt()) else ex,
+        ey - y.toInt(),
+        0f,
+        max(height, width).toFloat()
+    ).setDuration(time).start()
 }
 
 fun openLinkInBrowser(link: String?) {
@@ -596,7 +601,7 @@ fun openLinkInBrowser(link: String?) {
 
 fun download(activity: Activity, episode: Episode, animeTitle: String) {
     val manager = activity.getSystemService(AppCompatActivity.DOWNLOAD_SERVICE) as DownloadManager
-    val extractor = episode.extractors?.find { it.server.name == episode.selectedServer } ?: return
+    val extractor = episode.extractors?.find { it.server.name == episode.selectedExtractor } ?: return
     val video =
         if (extractor.videos.size > episode.selectedVideo) extractor.videos[episode.selectedVideo] else return
     val regex = "[\\\\/:*?\"<>|]".toRegex()
@@ -635,6 +640,51 @@ fun download(activity: Activity, episode: Episode, animeTitle: String) {
         } catch (e: Exception) {
             toast(e.toString())
         }
+    }
+}
+
+fun saveImageToDownloads(title: String, bitmap: Bitmap, context: Context) {
+    FileProvider.getUriForFile(
+        context,
+        BuildConfig.APPLICATION_ID + ".provider",
+        saveImage(
+            bitmap,
+            Environment.getExternalStorageDirectory().absolutePath + "/" + Environment.DIRECTORY_DOWNLOADS,
+            title
+        ) ?: return
+    )
+}
+
+fun shareImage(title: String, bitmap: Bitmap, context: Context) {
+
+    val contentUri = FileProvider.getUriForFile(
+        context,
+        BuildConfig.APPLICATION_ID + ".provider",
+        saveImage(bitmap, context.cacheDir.absolutePath, title) ?: return
+    )
+
+    val intent = Intent(Intent.ACTION_SEND)
+    intent.type = "image/png"
+    intent.putExtra(Intent.EXTRA_TEXT, title)
+    intent.putExtra(Intent.EXTRA_STREAM, contentUri)
+    context.startActivity(Intent.createChooser(intent, "Share $title"))
+}
+
+fun saveImage(image: Bitmap, path: String, imageFileName: String): File? {
+    val imageFile = File(path, "$imageFileName.png")
+    return tryWith {
+        val fOut: OutputStream = FileOutputStream(imageFile)
+        image.compress(Bitmap.CompressFormat.PNG, 0, fOut)
+        fOut.close()
+        scanFile(imageFile.absolutePath, currActivity()!!)
+        toast("Saved to:\n$path")
+        imageFile
+    }
+}
+
+private fun scanFile(path: String, context: Context) {
+    MediaScannerConnection.scanFile(context, arrayOf(path), null) { p, _ ->
+        logger("Finished scanning $p")
     }
 }
 
@@ -904,6 +954,22 @@ fun brightnessConverter(it: Float, fromLog: Boolean) =
             if (fromLog) log2((it * 256f)) * 12.5f / 100f else 2f.pow(it * 100f / 12.5f) / 256f
         else it, 0.001f, 1f
     )
+
+
+fun checkCountry(context: Context): Boolean {
+    val telMgr = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+    return when (telMgr.simState) {
+        TelephonyManager.SIM_STATE_ABSENT -> {
+            val tz = TimeZone.getDefault().id
+            tz.equals("Asia/Kolkata", ignoreCase = true)
+        }
+        TelephonyManager.SIM_STATE_READY  -> {
+            val countryCodeValue = telMgr.networkCountryIso
+            countryCodeValue.equals("in", ignoreCase = true)
+        }
+        else                              -> false
+    }
+}
 
 fun isOnTV(activity: Activity): Boolean {
     val uiModeManager = activity.getSystemService(UI_MODE_SERVICE) as UiModeManager

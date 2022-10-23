@@ -3,9 +3,11 @@ package ani.saikou.parsers.anime
 import ani.saikou.*
 import ani.saikou.media.Media
 import ani.saikou.parsers.*
+import ani.saikou.parsers.anime.extractors.PStream
 import ani.saikou.settings.PlayerSettings
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.math.floor
 
 class Kamyroll : AnimeParser() {
 
@@ -51,8 +53,9 @@ class Kamyroll : AnimeParser() {
                 }
             }.flatten()
             dataList.forEach {
-                epMap[it.first] = epMap[it.first] ?: it.second
-                epMap[it.first]?.series?.putAll(it.second.series)
+                val key = it.first ?: return@forEach
+                epMap[key] = epMap[key] ?: it.second
+                epMap[key]?.series?.putAll(it.second.series)
             }
             epMap.map {
                 if (it.value.thumb != null)
@@ -108,34 +111,74 @@ class Kamyroll : AnimeParser() {
                 params = mapOf(
                     channelHeader,
                     "id" to server.embed.url,
-                    localeHeader,
                     "type" to "adaptive_hls",
-                    "format" to "srt",
-                    "service" to service,
+                    "format" to when(settings.kamySubType){
+                        0 -> "ass"
+                        1 -> "vtt"
+                        2 -> "srt"
+                        else -> "vtt"
+                    },
                 ),
                 timeout = 60
             ).parsed<StreamsResponse>()
 
-            var foundSub = false
-            val link = FileUrl(
-                eps.streams?.find {
-                    it.hardsubLocale == locale
-                }?.url ?: eps.streams?.find {
-                    it.hardsubLocale == ""
-                }?.also { foundSub = true }?.url ?: return VideoContainer(listOf()),
-                mapOf("accept" to "*/*", "accept-encoding" to "gzip")
-            )
-            val vid = listOf(Video(null, true, link))
-            val subtitle = if (foundSub) eps.subtitles?.find { it.locale == locale || it.locale == "en-GB" }
-                .let { listOf(Subtitle("English", it?.url ?: return@let null, "ass")) } else null
-            println("vid: $vid \nsub: $subtitle")
-            return VideoContainer(vid, subtitle ?: listOf())
+            val video = eps.streams?.mapNotNull {
+                it.url ?: return@mapNotNull null
+                if (it.url.contains("pstream.net"))
+                    return PStream(VideoServer("PStream", it.url)).extract()
+                Video(
+                    null,
+                    VideoType.M3U8,
+                    FileUrl(
+                        it.url,
+                        mapOf("accept" to "*/*", "accept-encoding" to "gzip")
+                    ),
+                    null,
+                    when (it.hardsubLocale){
+                        "ja-JP" -> "[ja-JP] Japanese"
+                        "en-US" -> "[en-US] English"
+                        "de-DE" -> "[de-DE] German"
+                        "es-ES" -> "[es-ES] Spanish"
+                        "es-419" -> "[es-419] Spanish"
+                        "fr-FR" -> "[fr-FR] French"
+                        "it-IT" -> "[it-IT] Italian"
+                        "pt-BR" -> "[pt-BR] Portuguese (Brazil)"
+                        "pt-PT" -> "[pt-PT] Portuguese (Portugal)"
+                        "ru-RU" -> "[ru-RU] Russian"
+                        "zh-CN" -> "[zh-CN] Chinese (Simplified)"
+                        "tr-TR" -> "[tr-TR] Turkish"
+                        "ar-ME" -> "[ar-ME] Arabic"
+                        "ar-SA" -> "[ar-SA] Arabic (Saudi Arabia)"
+                        "uk-UK" -> "[uk-UK] Ukrainian"
+                        "he-IL" -> "[he-IL] Hebrew"
+                        "pl-PL" -> "[pl-PL] Polish"
+                        "ro-RO" -> "[ro-RO] Romanian"
+                        "sv-SE" -> "[sv-SE] Swedish"
+                        ""      -> ""
+                        else -> "[${it.hardsubLocale}] "
+                    } + if(it.hardsubLocale != "") " Hard-Subbed" else "Soft/No Subs",
+                )
+            }
+
+            val subtitle = eps.subtitles?.mapNotNull {
+                Subtitle(
+                    it.locale ?: return@mapNotNull null,
+                    it.url ?: return@mapNotNull null,
+                    when(settings.kamySubType){
+                        0 -> SubtitleType.ASS
+                        1 -> SubtitleType.VTT
+                        2 -> SubtitleType.SRT
+                        else -> SubtitleType.VTT
+                    }
+                )
+            }
+            return VideoContainer(video ?: listOf(), subtitle ?: listOf())
         }
 
         @Serializable
         private data class StreamsResponse(
             @SerialName("subtitles") val subtitles: List<Subtitle>? = null,
-            @SerialName("streams") val streams: List<Stream>? = null
+            @SerialName("streams") var streams: List<Stream>? = null
         ) {
             @Serializable
             data class Stream(
@@ -187,9 +230,8 @@ class Kamyroll : AnimeParser() {
             getHeaders(),
             params = mapOf(
                 channelHeader,
-                localeHeader,
                 "limit" to "25",
-                "query" to query
+                "query" to encode(query)
             )
         ).parsed<SearchResponse>()
         return (res.items ?: listOf()).map { item ->
@@ -199,7 +241,7 @@ class Kamyroll : AnimeParser() {
                 ShowResponse(
                     name = it.title,
                     link = it.id,
-                    coverUrl = it.images?.posterTall?.getOrNull(5)?.source ?: "",
+                    coverUrl = it.images?.posterTall?.getOrNull(floor((it.images.posterTall.size / 2).toDouble()).toInt())?.source ?: "",
                     extra = if (filter == null) mapOf(type) else mapOf(type, "filter" to filter)
                 )
             }
@@ -209,46 +251,68 @@ class Kamyroll : AnimeParser() {
     companion object {
         private const val player = "player_settings"
         val settings = loadData<PlayerSettings>(player, toast = false) ?: PlayerSettings().apply { saveData(player, this) }
-        private val locale = when (settings.locale) {
-            0 -> ""
-            1 -> "ja-JP"
-            2 -> "en-US"
-            3 -> "de-DE"
-            4 -> "es-419"
-            5 -> "es-ES"
-            6 -> "fr-FR"
-            7 -> "it-IT"
-            8 -> "ar-SA"
-            9 -> "ar-ME"
-            10 -> "pt-BR"
-            11 -> "pt-PT"
-            12 -> "ru-RU"
-            13 -> "zh-CN"
-            14 -> "tr-TR"
+        private val subLocale = when (settings.locale) {
+            0, 2 -> "en-US"
+            1    -> "ja-JP"
+            3    -> "de-DE"
+            4    -> "es-419"
+            5    -> "es-ES"
+            6    -> "fr-FR"
+            7    -> "it-IT"
+            8    -> "ar-SA"
+            9    -> "ar-ME"
+            10   -> "pt-BR"
+            11   -> "pt-PT"
+            12   -> "ru-RU"
+            13   -> "zh-CN"
+            14   -> "tr-TR"
+            15   -> "ar-SA"
+            16   -> "uk-UK"
+            17   -> "he-IL"
+            18   -> "pl-PL"
+            19   -> "ro-RO"
+            20   -> "sv-SE"
             else -> "en-US"
         }
-        private const val apiUrl = "https://kamyroll.herokuapp.com"
+        private val locale = when (settings.subtitles) {
+            true  -> subLocale
+            false -> ""
+        }
+        private const val apiUrl = "https://api.kamyroll.tech"
         private const val channel = "crunchyroll"
-        private const val service = "google"
 
         private var headers: Map<String, String>? = null
         private val channelHeader = "channel_id" to channel
         private val localeHeader = "locale" to locale
 
-        suspend fun getHeaders(): Map<String, String> {
+        private suspend fun newToken(): Map<String, String>{
             headers = headers ?: let {
                 val res = client.post(
                     "$apiUrl/auth/v1/token",
-                    mapOf(
-                        "authorization" to "Basic vrvluizpdr2eby+RjSKM17dOLacExxq1HAERdxQDO6+2pHvFHTKKnByPD7b6kZVe1dJXifb6SG5NWMz49ABgJA=="
-                    ),
                     data = mapOf(
-                        "refresh_token" to "IV+FtTI+SYR0d5CQy2KOc6Q06S6aEVPIjZdWA6mmO7nDWrMr04cGjSkk4o6urP/6yDmE4yzccSX/rP/OIgDgK4ildzNf2G/pPS9Ze1XbEyJAEUyN+oKT7Gs1PhVTFdz/vYXvxp/oZmLWQGoGgSQLwgoRqnJddWjqk0ageUbgT1FwLazdL3iYYKdNN98BqGFbs/baeqqa8aFre5SzF/4G62y201uLnsElgd07OAh1bnJOy8PTNHpGqEBxxbo1VENqtYilG9ZKY18nEz8vLPQBbin/IIEjKITjSa+LvSDQt/0AaxCkhClNDUX2uUZ8q7fKuSDisJtEyIFDXtuZGFhaaA==",
-                        "grant_type" to "refresh_token",
-                        "scope" to "offline_access",
+                        "device_id" to "com.service.data",
+                        "device_type" to "ani.saikou",
+                        "access_token" to "HMbQeThWmZq4t7w",
                     )
                 ).parsed<AccessToken>()
                 mapOf("authorization" to "${res.tokenType} ${res.accessToken}")
+            }
+            val timestamp = System.currentTimeMillis()
+            saveData("kamyrollTokenCreationDate", timestamp)
+            saveData("kamyrollToken", headers)
+            return headers as Map<String, String>
+        }
+
+        suspend fun getHeaders(): Map<String, String> {
+            val timestamp = System.currentTimeMillis()
+            val lastTime = loadData<Long>("kamyrollTokenCreationDate", currActivity(), false)
+
+            if(lastTime == null || (timestamp - lastTime) >= 604800000){
+                       newToken()
+                }
+            else{
+                val headers: Map<String, String>? = loadData<Map<String, String>>("kamyrollToken", currActivity(), false)
+                return headers!!
             }
             return headers!!
         }
@@ -298,7 +362,7 @@ class Kamyroll : AnimeParser() {
         @SerialName("episode") val episode: String? = null,
 
         @SerialName("sequence_number")
-        val sequenceNumber: Float,
+        val sequenceNumber: Float? = null,
 
         @SerialName("title")
         val title: String? = null,

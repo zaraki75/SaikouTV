@@ -52,7 +52,7 @@ class HentaiMama : AnimeParser() {
             val doc = client.get(server.embed.url)
 
             doc.document.selectFirst("video>source")?.attr("src")?.apply {
-                return VideoContainer(listOf(Video(null, false, this, getSize(this))))
+                return VideoContainer(listOf(Video(null, VideoType.CONTAINER, this, getSize(this))))
             }
             val unSanitized = doc.text.findBetween("sources: [", "],") ?: return VideoContainer(listOf())
             val json = Mapper.parse<List<ResponseElement>>(
@@ -64,9 +64,10 @@ class HentaiMama : AnimeParser() {
             )
 
             return VideoContainer(json.map {
-                (it.type == "hls").let { m3u8 ->
-                    Video(null, m3u8, it.file, if (!m3u8) getSize(it.file) else null)
-                }
+                if (it.type == "hls")
+                    Video(null, VideoType.M3U8, it.file, null)
+                else
+                    Video(null,VideoType.CONTAINER, it.file, getSize(it.file))
             })
         }
 

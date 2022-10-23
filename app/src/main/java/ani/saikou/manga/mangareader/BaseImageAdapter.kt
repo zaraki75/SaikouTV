@@ -1,6 +1,7 @@
 package ani.saikou.manga.mangareader
 
 import android.annotation.SuppressLint
+import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -59,7 +60,13 @@ abstract class BaseImageAdapter(
                     false
                 }
                 setOnLongClickListener {
-                    loadImage(holder.bindingAdapterPosition, view)
+                    val pos = holder.bindingAdapterPosition
+                    val image = images.getOrNull(pos) ?: return@setOnLongClickListener false
+                    activity.onImageLongClicked(pos,image){ dialog ->
+                        loadImage(pos, view)
+                        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                        dialog.dismiss()
+                    }
                 }
             }
         }

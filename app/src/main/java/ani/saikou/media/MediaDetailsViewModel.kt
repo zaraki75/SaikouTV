@@ -12,6 +12,7 @@ import ani.saikou.anilist.Anilist
 import ani.saikou.anime.Episode
 import ani.saikou.anime.SelectorDialogFragment
 import ani.saikou.manga.MangaChapter
+import ani.saikou.others.AniSkip
 import ani.saikou.others.AnimeFillerList
 import ani.saikou.others.Kitsu
 import ani.saikou.parsers.*
@@ -133,6 +134,18 @@ class MediaDetailsViewModel : ViewModel() {
         }
     }
 
+    val timeStamps = MutableLiveData<List<AniSkip.Stamp>?>()
+    private val timeStampsMap : MutableMap<Int, List<AniSkip.Stamp>?> = mutableMapOf()
+    suspend fun loadTimeStamps(malId:Int?, episodeNum: Int?, duration:Long){
+        malId ?: return
+        episodeNum ?: return
+        if (timeStampsMap.containsKey(episodeNum))
+            return timeStamps.postValue(timeStampsMap[episodeNum])
+        val result = AniSkip.getResult(malId, episodeNum, duration)
+        timeStampsMap[episodeNum] = result
+        timeStamps.postValue(result)
+    }
+
     suspend fun loadEpisodeSingleVideo(ep: Episode, selected: Selected, post: Boolean = true): Boolean {
         if (ep.extractors.isNullOrEmpty()) {
 
@@ -215,6 +228,5 @@ class MediaDetailsViewModel : ViewModel() {
 
     fun loadTransformation(mangaImage: MangaImage, source: Int): Transformation<File>? {
         return if (mangaImage.useTransformation) mangaReadSources?.get(source)?.getTransformation() else null
-
     }
 }

@@ -84,16 +84,17 @@ data class Video(
     val quality: Int?,
 
     /**
-     * If the video is an M3U8 file, set this variable to true,
+     * Mime type / Format of the video,
      *
-     * This makes the app show it as a "Multi Quality" Link
+     * If not a "CONTAINER" format, the app show video as a "Multi Quality" Link
+     * "CONTAINER" formats are Mp4 & Mkv
      * **/
-    val isM3U8: Boolean,
+    val format: VideoType,
 
     /**
      * The direct url to the Video
      *
-     * Supports mp4,mkv & m3u8 for now, afaik
+     * Supports mp4,mkv, dash & m3u8, afaik
      * **/
     val url: FileUrl,
 
@@ -112,14 +113,14 @@ data class Video(
     val extraNote: String? = null,
 ) : Serializable {
 
-    constructor(quality: Int? = null, isM3U8: Boolean, url: String, size: Double?, extraNote: String? = null)
-            : this(quality, isM3U8, FileUrl(url), size, extraNote)
+    constructor(quality: Int? = null, videoType: VideoType, url: String, size: Double?, extraNote: String? = null)
+            : this(quality, videoType, FileUrl(url), size, extraNote)
 
-    constructor(quality: Int? = null, isM3U8: Boolean, url: String, size: Double?)
-            : this(quality, isM3U8, FileUrl(url), size)
+    constructor(quality: Int? = null, videoType: VideoType, url: String, size: Double?)
+            : this(quality, videoType, FileUrl(url), size)
 
-    constructor(quality: Int? = null, isM3U8: Boolean, url: String)
-            : this(quality, isM3U8, FileUrl(url))
+    constructor(quality: Int? = null, videoType: VideoType, url: String)
+            : this(quality, videoType, FileUrl(url))
 }
 
 /**
@@ -142,9 +143,17 @@ data class Subtitle(
     /**
      * format of the Subtitle
      *
-     * Supports vtt & ass
+     * Supports VTT, SRT & ASS
      * **/
-    val type:String="vtt",
+    val type:SubtitleType = SubtitleType.VTT,
 ) : Serializable {
-    constructor(language: String, url: String,type:String="vtt") : this(language, FileUrl(url), type)
+    constructor(language: String, url: String, type: SubtitleType = SubtitleType.VTT) : this(language, FileUrl(url), type)
+}
+
+enum class VideoType{
+    CONTAINER, M3U8, DASH
+}
+
+enum class SubtitleType{
+    VTT, ASS, SRT
 }

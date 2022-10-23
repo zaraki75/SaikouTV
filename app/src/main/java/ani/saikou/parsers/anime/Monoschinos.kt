@@ -26,8 +26,6 @@ class Monoschinos : AnimeParser() {
             logger("Episode-$epNum")
             val url = it.select("a").attr("href")
             val thumb1 = it.select("a div.animedtlsmain div.animeimgdiv img.animeimghv").attr("data-src")
-            logger("url2-$url")
-            logger("thumb-$thumb1")
             Episode(epNum,url,thumbnail = thumb1)
             }
         }

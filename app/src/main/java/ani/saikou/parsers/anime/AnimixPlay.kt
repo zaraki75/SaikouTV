@@ -1,6 +1,8 @@
 package ani.saikou.parsers.anime
 
-import ani.saikou.*
+import ani.saikou.FileUrl
+import ani.saikou.Mapper
+import ani.saikou.client
 import ani.saikou.parsers.*
 import ani.saikou.parsers.anime.extractors.GogoCDN
 import kotlinx.serialization.Serializable
@@ -55,7 +57,7 @@ class AnimixPlay : AnimeParser()  {
         return listOf(VideoServer(name = "Goload", FileUrl(episodeLink)))
     }
 
-    override suspend fun getVideoExtractor(server: VideoServer): VideoExtractor?  = GogoCDN(server)
+    override suspend fun getVideoExtractor(server: VideoServer): VideoExtractor  = GogoCDN(server)
 
 
     @Serializable

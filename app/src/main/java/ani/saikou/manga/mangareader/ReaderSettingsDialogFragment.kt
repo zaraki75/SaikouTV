@@ -114,6 +114,24 @@ class ReaderSettingsDialogFragment : BottomSheetDialogFragment() {
             settings.hidePageNumbers = isChecked
             activity.applySettings()
         }
+
+        binding.readerOverscroll.isChecked = settings.overScrollMode
+        binding.readerOverscroll.setOnCheckedChangeListener { _,isChecked ->
+            settings.overScrollMode = isChecked
+            activity.applySettings()
+        }
+
+        binding.readerVolumeButton.isChecked = settings.volumeButtons
+        binding.readerVolumeButton.setOnCheckedChangeListener { _,isChecked ->
+            settings.volumeButtons = isChecked
+            activity.applySettings()
+        }
+
+        binding.readerWrapImage.isChecked = settings.wrapImages
+        binding.readerWrapImage.setOnCheckedChangeListener { _,isChecked ->
+            settings.wrapImages = isChecked
+            activity.applySettings()
+        }
     }
 
     override fun onDestroy() {

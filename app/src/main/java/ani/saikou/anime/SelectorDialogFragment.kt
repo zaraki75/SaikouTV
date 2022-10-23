@@ -21,6 +21,7 @@ import ani.saikou.databinding.ItemUrlBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.parsers.VideoExtractor
+import ani.saikou.parsers.VideoType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -80,7 +81,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
                         fun load() {
                             val size = ep.extractors?.find { it.server.name == selected }?.videos?.size
                             if (size!=null && size >= media!!.selected!!.video) {
-                                media!!.anime!!.episodes?.get(media!!.anime!!.selectedEpisode!!)?.selectedServer = selected
+                                media!!.anime!!.episodes?.get(media!!.anime!!.selectedEpisode!!)?.selectedExtractor = selected
                                 media!!.anime!!.episodes?.get(media!!.anime!!.selectedEpisode!!)?.selectedVideo = media!!.selected!!.video
                                 startExoplayer(media!!)
                             } else fail()
@@ -215,13 +216,13 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
             binding.urlQuality.text = if(video.quality!=null) "${video.quality}p" else "Default Quality"
             binding.urlNote.text = video.extraNote ?: ""
             binding.urlNote.visibility = if (video.extraNote != null) View.VISIBLE else View.GONE
-            if (!video.isM3U8) {
+            if (video.format == VideoType.CONTAINER) {
                 binding.urlSize.visibility = if (video.size != null) View.VISIBLE else View.GONE
                 binding.urlSize.text =
                     (if (video.extraNote != null) " : " else "") + DecimalFormat("#.##").format(video.size ?: 0).toString() + " MB"
                 binding.urlDownload.visibility = View.VISIBLE
                 binding.urlDownload.setSafeOnClickListener {
-                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedServer = extractor.server.name
+                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedExtractor = extractor.server.name
                     media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedVideo = position
                     binding.urlDownload.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                     download(
@@ -243,7 +244,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
         private inner class UrlViewHolder(val binding: ItemUrlBinding) : RecyclerView.ViewHolder(binding.root) {
             init {
                 itemView.setSafeOnClickListener {
-                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedServer = extractor.server.name
+                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedExtractor = extractor.server.name
                     media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedVideo = bindingAdapterPosition
                     if (makeDefault) {
                         media!!.selected!!.server = extractor.server.name

@@ -1,11 +1,13 @@
 package ani.saikou.manga.mangareader
 
 import android.animation.ObjectAnimator
+import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.R
@@ -58,13 +60,13 @@ class ImageAdapter(
 
                     override fun onResourceReady(resource: File, transition: Transition<in File>?) {
                         imageView.visibility = View.VISIBLE
+                        val bitmap = if(settings.wrapImages) BitmapFactory.decodeFile(resource.absolutePath, BitmapFactory.Options()) else null
                         if (settings.layout != PAGED)
                             parent.updateLayoutParams {
                                 if (settings.direction != LEFT_TO_RIGHT && settings.direction != RIGHT_TO_LEFT)
-                                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                                    height = bitmap?.height ?: WRAP_CONTENT
                                 else
-                                    width = ViewGroup.LayoutParams.WRAP_CONTENT
-
+                                    width = bitmap?.width ?: WRAP_CONTENT
                             }
                         view.setImage(ImageSource.uri(Uri.fromFile(resource)))
                         ObjectAnimator.ofFloat(parent, "alpha", 0f, 1f).setDuration((400 * uiSettings.animationSpeed).toLong())

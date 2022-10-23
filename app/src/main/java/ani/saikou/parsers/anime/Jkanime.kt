@@ -1,5 +1,6 @@
 package ani.saikou.parsers.anime;
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
 import ani.saikou.*
@@ -44,6 +45,7 @@ class Jkanime : AnimeParser() {
         }
 
 
+    @SuppressLint("SuspiciousIndentation")
     override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
         val videos = mutableListOf<VideoServer>()
           client.get(episodeLink).document.select("div.col-lg-12.rounded.bg-servers.text-white.p-3.mt-2 a").forEach{ it ->
@@ -144,12 +146,13 @@ class Jkanime : AnimeParser() {
 
 
 class JkanimeExtractor(override val server: VideoServer): VideoExtractor() {
+    @SuppressLint("SuspiciousIndentation")
     override suspend fun extract(): VideoContainer {
         val videos = mutableListOf<Video>()
         val url = server.embed.url.replace("um2","um")
 
         if(url.contains("jk.php")){
-            return VideoContainer(listOf(Video(null,false,url.replace("jk.php?u=",""))))
+            return VideoContainer(listOf(Video(null,VideoType.CONTAINER,url.replace("jk.php?u=",""))))
         }
         client.get(url).document.select("script").forEach{script ->
             if(script.data().contains("var parts = {")){
@@ -160,9 +163,9 @@ class JkanimeExtractor(override val server: VideoServer): VideoExtractor() {
                 val type = data.toString().substringAfter("type: '").substringBefore("'")
 
                     if(type == "hls" || type == "custom"){
-                        videos.add( Video(null,true,videoUrl))
+                        videos.add( Video(null,VideoType.M3U8,videoUrl))
                     }else{
-                        videos.add( Video(null,false,videoUrl))
+                        videos.add( Video(null,VideoType.CONTAINER,videoUrl))
                     }
 
 

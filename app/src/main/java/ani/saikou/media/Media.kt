@@ -31,6 +31,7 @@ data class Media(
     var notify: Boolean = false,
 
     var userListId: Int? = null,
+    var isListPrivate: Boolean = false,
     var userProgress: Int? = null,
     var userStatus: String? = null,
     var userScore: Int = 0,
@@ -38,6 +39,7 @@ data class Media(
     var userUpdatedAt: Long? = null,
     var userStartedAt: FuzzyDate = FuzzyDate(),
     var userCompletedAt: FuzzyDate = FuzzyDate(),
+    var inCustomListsOf: MutableMap<String, Boolean>?= null,
     var userFavOrder: Int? = null,
 
     val status: String? = null,
@@ -59,7 +61,7 @@ data class Media(
     var relations: ArrayList<Media>? = null,
     var recommendations: ArrayList<Media>? = null,
 
-    var vrvId : String? = null,
+    var vrvId: String? = null,
     var crunchySlug: String? = null,
 
     var nameMAL: String? = null,
@@ -81,6 +83,7 @@ data class Media(
         status = apiMedia.status.toString(),
         isFav = apiMedia.isFavourite!!,
         isAdult = apiMedia.isAdult ?: false,
+        isListPrivate = apiMedia.mediaListEntry?.private ?: false,
         userProgress = apiMedia.mediaListEntry?.progress,
         userScore = apiMedia.mediaListEntry?.score?.toInt() ?: 0,
         userStatus = apiMedia.mediaListEntry?.status?.toString(),
@@ -94,6 +97,7 @@ data class Media(
 
     constructor(mediaList: MediaList) : this(mediaList.media!!) {
         this.userProgress = mediaList.progress
+        this.isListPrivate = mediaList.private ?: false
         this.userScore = mediaList.score?.toInt() ?: 0
         this.userStatus = mediaList.status?.toString()
         this.userUpdatedAt = mediaList.updatedAt?.toLong()

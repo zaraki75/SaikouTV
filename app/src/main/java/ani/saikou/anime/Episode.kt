@@ -11,8 +11,9 @@ data class Episode(
     var desc: String? = null,
     var thumb: FileUrl? = null,
     var filler: Boolean = false,
-    var selectedServer: String? = null,
+    var selectedExtractor: String? = null,
     var selectedVideo: Int = 0,
+    var selectedSubtitle: Int? = -1,
     var extractors: MutableList<VideoExtractor>?=null,
     @Transient var extractorCallback: ((VideoExtractor) -> Unit)?=null,
     var allStreams: Boolean = false,
@@ -20,6 +21,6 @@ data class Episode(
     var maxLength: Long? = null,
     val extra: Any?=null,
 
-) : Serializable
+    ) : Serializable
 
 

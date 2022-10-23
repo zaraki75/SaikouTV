@@ -6,30 +6,190 @@
     android:layout_height="match_parent"
     tools:context=".manga.mangareader.MangaReaderActivity">
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/mangaReaderPager"
+    <ani.saikou.manga.mangareader.Swipy
+        android:id="@+id/mangaReaderSwipy"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        tools:ignore="SpeakableTextPresentCheck" />
+        android:layout_height="match_parent">
 
-    <com.alexvasilkov.gestures.views.GestureFrameLayout
-        android:id="@+id/mangaReaderRecyclerContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:gest_doubleTapZoom="3"
-        app:gest_maxZoom="6"
-        app:gest_restrictRotation="true"
-        app:gest_rotationEnabled="true">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/mangaReaderRecycler"
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/mangaReaderPager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clipToPadding="false"
-            tools:listitem="@layout/item_dual_page"
+            android:orientation="vertical"
             tools:ignore="SpeakableTextPresentCheck" />
-    </com.alexvasilkov.gestures.views.GestureFrameLayout>
+
+        <com.alexvasilkov.gestures.views.GestureFrameLayout
+            android:id="@+id/mangaReaderRecyclerContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:gest_doubleTapZoom="3"
+            app:gest_maxZoom="6"
+            app:gest_restrictRotation="true"
+            app:gest_rotationEnabled="true">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/mangaReaderRecycler"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                tools:ignore="SpeakableTextPresentCheck"
+                tools:listitem="@layout/item_dual_page" />
+
+        </com.alexvasilkov.gestures.views.GestureFrameLayout>
+    </ani.saikou.manga.mangareader.Swipy>
+
+    <FrameLayout
+        android:id="@+id/BottomSwipeContainer"
+        android:layout_width="match_parent"
+        android:layout_height="192dp"
+        android:layout_gravity="bottom"
+        android:alpha="0">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:srcCompat="@drawable/linear_gradient_black"
+            tools:ignore="ContentDescription" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            app:cardBackgroundColor="#000000"
+            app:cardCornerRadius="16dp"
+            app:contentPadding="8dp"
+            app:strokeColor="?attr/colorSecondary"
+            app:strokeWidth="2dp">
+
+            <TextView
+                android:id="@+id/BottomSwipeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:fontFamily="@font/poppins_bold"
+                android:text="@string/app_name"
+                android:textColor="@color/bg_white"
+                android:textSize="16sp" />
+        </com.google.android.material.card.MaterialCardView>
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/TopSwipeContainer"
+        android:layout_width="match_parent"
+        android:layout_height="192dp"
+        android:alpha="0">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:rotation="180"
+            app:srcCompat="@drawable/linear_gradient_black"
+            tools:ignore="ContentDescription" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            app:cardBackgroundColor="#000000"
+            app:cardCornerRadius="16dp"
+            app:contentPadding="8dp"
+            app:strokeColor="?attr/colorSecondary"
+            app:strokeWidth="2dp">
+
+            <TextView
+                android:id="@+id/TopSwipeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:fontFamily="@font/poppins_bold"
+                android:text="@string/app_name"
+                android:textColor="@color/bg_white"
+                android:textSize="16sp" />
+        </com.google.android.material.card.MaterialCardView>
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/RightSwipeContainer"
+        android:layout_width="192dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="right"
+        android:alpha="0"
+        tools:ignore="RtlHardcoded">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:rotation="180"
+            app:srcCompat="@drawable/linear_gradient_black_horizontal"
+            tools:ignore="ContentDescription" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            app:cardBackgroundColor="#000000"
+            app:cardCornerRadius="16dp"
+            app:contentPadding="8dp"
+            app:strokeColor="?attr/colorSecondary"
+            app:strokeWidth="2dp">
+
+            <TextView
+                android:id="@+id/RightSwipeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:fontFamily="@font/poppins_bold"
+                android:text="@string/app_name"
+                android:textColor="@color/bg_white"
+                android:textSize="16sp" />
+        </com.google.android.material.card.MaterialCardView>
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/LeftSwipeContainer"
+        android:layout_width="192dp"
+        android:layout_height="match_parent"
+        android:alpha="0">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:srcCompat="@drawable/linear_gradient_black_horizontal"
+            tools:ignore="ContentDescription" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            app:cardBackgroundColor="#000000"
+            app:cardCornerRadius="16dp"
+            app:contentPadding="8dp"
+            app:strokeColor="?attr/colorSecondary"
+            app:strokeWidth="2dp">
+
+            <TextView
+                android:id="@+id/LeftSwipeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:fontFamily="@font/poppins_bold"
+                android:text="@string/app_name"
+                android:textColor="@color/bg_white"
+                android:textSize="16sp" />
+        </com.google.android.material.card.MaterialCardView>
+
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/mangaReaderCont"

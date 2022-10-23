@@ -29,7 +29,7 @@ class MangaRead: MangaParser() {
         val doc = client.get(mangaLink).document
         val chapters = doc.select("div.page-content-listing.single-page > div > ul > li > a").reversed()
         val chapRegex = Regex("Chapter (\\d+)")
-        return chapters.mapIndexed { index, chapter ->
+        return chapters.mapIndexed { _, chapter ->
             MangaChapter(
                 number = chapRegex.find(chapter.text())?.groupValues?.get(1).toString(),
                 link = chapter.attr("href"),

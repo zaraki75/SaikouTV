@@ -15,6 +15,7 @@ import ani.saikou.*
 import ani.saikou.anilist.Anilist
 import ani.saikou.anilist.api.FuzzyDate
 import ani.saikou.databinding.BottomSheetMediaListBinding
+import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,7 +38,7 @@ class MediaListDialogFragment : BottomSheetDialogFragment() {
         val model: MediaDetailsViewModel by activityViewModels()
         val scope = viewLifecycleOwner.lifecycleScope
 
-        model.getMedia().observe(this) {
+        model.getMedia().observe(this) { it ->
             media = it
             if (media != null) {
                 binding.mediaListProgressBar.visibility = View.GONE
@@ -134,7 +135,6 @@ class MediaListDialogFragment : BottomSheetDialogFragment() {
                 var progressBackup: String? = null
                 binding.mediaListStatus.setOnItemClickListener { _, _, i, _ ->
                     if (i == 2 && total != null) {
-
                         startBackupDate = start.date
                         endBackupDate = end.date
                         progressBackup = binding.mediaListProgress.text.toString()
@@ -167,6 +167,32 @@ class MediaListDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
 
+                binding.mediaListPrivate.isChecked = media?.isListPrivate ?: false
+                binding.mediaListPrivate.setOnCheckedChangeListener { _, checked ->
+                    media?.isListPrivate = checked
+                }
+
+                media?.userRepeat?.apply {
+                    binding.mediaListRewatch.setText(this.toString())
+                }
+
+                if(media?.inCustomListsOf?.isEmpty() != false)
+                    binding.mediaListAddCustomList.apply {
+                        (parent as? ViewGroup)?.removeView(this)
+                    }
+
+                media?.inCustomListsOf?.forEach {
+                    SwitchMaterial(requireContext()).apply {
+                        isChecked = it.value
+                        text = it.key
+                        setOnCheckedChangeListener { _, isChecked ->
+                            media?.inCustomListsOf?.put(it.key, isChecked)
+                        }
+                        binding.mediaListCustomListContainer.addView(this)
+                    }
+                }
+
+
                 binding.mediaListSave.setOnClickListener {
                     scope.launch {
                         withContext(Dispatchers.IO) {
@@ -177,9 +203,12 @@ class MediaListDialogFragment : BottomSheetDialogFragment() {
                                         .toInt() else null,
                                     if (_binding?.mediaListScore?.text.toString() != "") (_binding?.mediaListScore?.text.toString()
                                         .toDouble() * 10).toInt() else null,
+                                    _binding?.mediaListRewatch?.text?.toString()?.toIntOrNull(),
                                     if (_binding?.mediaListStatus?.text.toString() != "") _binding?.mediaListStatus?.text.toString() else null,
+                                    media?.isListPrivate ?: false,
                                     if (start.date.year != null) start.date else null,
                                     if (end.date.year != null) end.date else null,
+                                    media?.inCustomListsOf?.mapNotNull { if (it.value) it.key else null }
                                 )
                         }
                         Refresh.all()

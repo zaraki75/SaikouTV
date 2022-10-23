@@ -2,10 +2,7 @@ package ani.saikou.parsers.anime
 
 import ani.saikou.client
 import ani.saikou.getSize
-import ani.saikou.parsers.Video
-import ani.saikou.parsers.VideoContainer
-import ani.saikou.parsers.VideoExtractor
-import ani.saikou.parsers.VideoServer
+import ani.saikou.parsers.*
 
 class Haho : Tenshi() {
     override val name: String = "H Aho"
@@ -27,7 +24,7 @@ class Haho : Tenshi() {
                 client.get(url, headers).document.select("video#player>source").forEach {
                     val uri = it.attr("src")
                     if (uri.isNotEmpty())
-                        list.add(Video(it.attr("title").replace("p","").toIntOrNull(),false,uri, getSize(uri)))
+                        list.add(Video(it.attr("title").replace("p","").toIntOrNull(),VideoType.CONTAINER,uri, getSize(uri)))
                 }
                 return VideoContainer(list)
             }

@@ -4,4 +4,8 @@
         <attr name="outlineColor" format="color" />
         <attr name="outlineWidth" format="float" />
     </declare-styleable>
+
+    <declare-styleable name="Xpandable">
+        <attr name="isExpanded" format="boolean"/>
+    </declare-styleable>
 </resources>

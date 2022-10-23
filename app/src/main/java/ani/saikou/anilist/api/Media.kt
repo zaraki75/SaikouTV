@@ -282,7 +282,7 @@ data class MediaList(
     @SerialName("hiddenFromStatusLists") var hiddenFromStatusLists: Boolean?,
 
     // Map of booleans for which custom lists the entry are in
-    // @SerialName("customLists") var customLists: Json?,
+     @SerialName("customLists") var customLists: Map<String,Boolean>?,
 
     // Map of advanced scores with name keys
     // @SerialName("advancedScores") var advancedScores: Json?,

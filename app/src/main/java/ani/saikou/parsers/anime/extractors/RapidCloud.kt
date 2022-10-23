@@ -1,85 +1,74 @@
 package ani.saikou.parsers.anime.extractors
 
-import android.net.Uri
 import android.util.Base64
-import ani.saikou.FileUrl
-import ani.saikou.client
-import ani.saikou.findBetween
-import ani.saikou.okHttpClient
+import ani.saikou.*
 import ani.saikou.parsers.*
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+import java.util.*
 import java.util.concurrent.*
+import javax.crypto.Cipher
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 @Suppress("BlockingMethodInNonBlockingContext")
 class RapidCloud(override val server: VideoServer) : VideoExtractor() {
 
     override suspend fun extract(): VideoContainer {
+        println(server.embed.url)
         val videos = mutableListOf<Video>()
         val subtitles = mutableListOf<Subtitle>()
 
-        val embed = server.embed
-
-        val soup = client.get(embed.url, embed.headers).text.replace("\n", "")
-
-        val key = soup.findBetween("var recaptchaSiteKey = '", "',")
-        val number = soup.findBetween("recaptchaNumber = '", "';")
-
         val sId = wss()
+        val decryptKey = decryptKey()
 
-        if (key != null && number != null && sId.isNotEmpty()) {
-            captcha(embed.url, key)?.apply {
+        if (sId.isNotEmpty() && decryptKey.isNotEmpty()) {
+            val jsonLink = "https://rapid-cloud.co/ajax/embed-6/getSources?id=${
+                server.embed.url.findBetween("/embed-6/", "?")!!
+            }&sId=$sId"
+            val response = client.get(jsonLink)
 
-                val jsonLink = "https://rapid-cloud.co/ajax/embed-6/getSources?id=${
-                    embed.url.findBetween("/embed-6/", "?z=")!!
-                }&_token=${this}&_number=$number&sId=$sId"
+            val sourceObject = if (response.text.contains("encrypted")) {
+                val encryptedMap = response.parsedSafe<SourceResponse.Encrypted>()
+                val sources = encryptedMap?.sources
 
-                val json = client.get(jsonLink).parsed<SourceResponse>()
-
-                json.sources?.forEach {
-                    videos.add(Video(0, true, FileUrl(it.file ?: return@forEach)))
+                if (sources == null || encryptedMap.encrypted == false)
+                    response.parsedSafe()
+                else {
+                    val decrypted = decryptMapped<List<SourceResponse.Track>>(sources, decryptKey)
+                    SourceResponse(sources = decrypted, tracks = encryptedMap.tracks)
                 }
-                json.sourcesBackup?.forEach {
-                    videos.add(Video(0, true, FileUrl(it.file ?: return@forEach), extraNote = "Backup"))
-                }
-                json.tracks?.forEach {
-                    if (it.kind == "captions" && it.label != null && it.file != null)
-                        subtitles.add(Subtitle(it.label, it.file))
-                }
+            }
+            else response.parsedSafe()
+
+            sourceObject?.sources?.forEach {
+                videos.add(Video(0, VideoType.M3U8, FileUrl(it.file ?: return@forEach)))
+            }
+            sourceObject?.sourcesBackup?.forEach {
+                videos.add(Video(0, VideoType.M3U8, FileUrl(it.file ?: return@forEach), extraNote = "Backup"))
+            }
+            sourceObject?.tracks?.forEach {
+                if (it.kind == "captions" && it.label != null && it.file != null)
+                    subtitles.add(Subtitle(it.label, it.file))
             }
         }
 
         return VideoContainer(videos, subtitles)
     }
 
-    companion object{
-        private suspend fun captcha(url: String, key: String): String? {
-            val uri = Uri.parse(url)
-            val domain = (Base64.encodeToString(
-                (uri.scheme + "://" + uri.host + ":443").encodeToByteArray(),
-                Base64.NO_PADDING
-            ) + ".").replace("\n", "")
-            val vToken =
-                client.get("https://www.google.com/recaptcha/api.js?render=$key", referer = (uri.scheme + "://" + uri.host))
-                    .text.replace("\n", "")
-                    .findBetween("/releases/", "/recaptcha") ?: return null
-            val recapToken =
-                client.get("https://www.google.com/recaptcha/api2/anchor?ar=1&hl=en&size=invisible&cb=kr60249sk&k=$key&co=$domain&v=$vToken")
-                    .document.selectFirst("#recaptcha-token")?.attr("value") ?: return null
-            return client.post(
-                "https://www.google.com/recaptcha/api2/reload?k=$key",
-                data = mutableMapOf("v" to vToken, "k" to key, "c" to recapToken, "co" to domain, "sa" to "", "reason" to "q")
-            )
-                .text.replace("\n", "").findBetween("rresp\",\"", "\",null")
+    companion object {
+        private suspend fun decryptKey(): String {
+            return client.get("https://raw.githubusercontent.com/consumet/rapidclown/main/key.txt").text
         }
 
         private suspend fun wss(): String {
-            var sId = client.get("https://api.enime.moe/tool/rapid-cloud/server-id").text
-            if(sId.isEmpty()){
+            var sId = client.get("https://api.enime.moe/tool/rapid-cloud/server-id", mapOf("User-Agent" to "Saikou")).text
+            if (sId.isEmpty()) {
                 val latch = CountDownLatch(1)
                 val listener = object : WebSocketListener() {
                     override fun onOpen(webSocket: WebSocket, response: Response) {
@@ -89,7 +78,7 @@ class RapidCloud(override val server: VideoServer) : VideoExtractor() {
                     override fun onMessage(webSocket: WebSocket, text: String) {
                         when {
                             text.startsWith("40") -> {
-                                sId = text.findBetween("40{\"sid\":\"", "\"}")?:""
+                                sId = text.findBetween("40{\"sid\":\"", "\"}") ?: ""
                                 latch.countDown()
                             }
                             text == "2"           -> webSocket.send("3")
@@ -104,23 +93,74 @@ class RapidCloud(override val server: VideoServer) : VideoExtractor() {
             }
             return sId
         }
+
+        private fun md5(input: ByteArray): ByteArray {
+            return MessageDigest.getInstance("MD5").digest(input)
+        }
+
+        private fun generateKey(salt: ByteArray, secret: ByteArray): ByteArray {
+            var key = md5(secret + salt)
+            var currentKey = key
+            while (currentKey.size < 48) {
+                key = md5(key + secret + salt)
+                currentKey += key
+            }
+            return currentKey
+        }
+
+        private fun decryptSourceUrl(decryptionKey: ByteArray, sourceUrl: String): String {
+            val cipherData = Base64.decode(sourceUrl, Base64.DEFAULT)
+            val encrypted = cipherData.copyOfRange(16, cipherData.size)
+            val aesCBC = Cipher.getInstance("AES/CBC/PKCS5Padding")
+
+            Objects.requireNonNull(aesCBC).init(
+                Cipher.DECRYPT_MODE, SecretKeySpec(
+                    decryptionKey.copyOfRange(0, 32),
+                    "AES"
+                ),
+                IvParameterSpec(decryptionKey.copyOfRange(32, decryptionKey.size))
+            )
+            val decryptedData = aesCBC!!.doFinal(encrypted)
+            return String(decryptedData, StandardCharsets.UTF_8)
+        }
+
+        private inline fun <reified T> decryptMapped(input: String, key: String): T? {
+            return Mapper.parse(decrypt(input, key))
+        }
+
+        private fun decrypt(input: String, key: String): String {
+            return decryptSourceUrl(
+                generateKey(
+                    Base64.decode(input, Base64.DEFAULT).copyOfRange(8, 16),
+                    key.toByteArray()
+                ), input
+            )
+        }
     }
-
-
 
 
     @Serializable
     private data class SourceResponse(
-        @SerialName("sources") val sources: List<Source>? = null,
-        @SerialName("sourcesBackup") val sourcesBackup: List<Source>? = null,
-        @SerialName("tracks") val tracks: List<Source>? = null
+        val encrypted: Boolean? = null,
+        val sources: List<Track>? = null,
+        val sourcesBackup: List<Track>? = null,
+        val tracks: List<Track>? = null
     ) {
+        @Serializable
+        data class Encrypted (
+            val sources: String? = null,
+            val sourcesBackup: String? = null,
+            val tracks: List<Track>? = null,
+            val encrypted: Boolean? = null,
+            val server: Long? = null
+        )
 
         @Serializable
-        data class Source(
-            @SerialName("file") val file: String? = null,
-            @SerialName("label") val label: String? = null,
-            @SerialName("kind") val kind: String? = null
+        data class Track (
+            val file: String? = null,
+            val label: String? = null,
+            val kind: String? = null,
+            val default: Boolean? = null
         )
     }
 
