@@ -1,3 +1,4 @@
-# 1.2.0.22.1
+# 1.2.0.22.2
 
-- New SP Source [TioAnime]
+- Fix AnimeLatinoHD
+- Mas traducciones
