@@ -142,7 +142,7 @@ class TVMediaPlayer: VideoSupportFragment(), VideoPlayerGlue.OnActionClickedList
                         extractor?.onVideoStopped(video)
                     }
 
-                    extractor = episode.extractors?.find { it.server.name == episode.selectedServer }
+                    extractor = episode.extractors?.find { it.server.name == episode.selectedExtractor }
                     video = extractor?.videos?.getOrNull(episode.selectedVideo)
                     subtitle = extractor?.subtitles?.find { it.language == "English" }
 

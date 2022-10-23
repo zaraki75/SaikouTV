@@ -186,7 +186,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                                 loadUserData()
                         }
 
-                        model.loadTrending()
+                        model.loadTrending(0)
                         model.loadUpdated()
                         model.loadPopular("ANIME", sort = "Popular")
                         genresModel.loadGenres(Anilist.genres?: loadData("genres_list") ?: arrayListOf()) {

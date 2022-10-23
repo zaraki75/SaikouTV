@@ -122,7 +122,7 @@ class TVSelectorFragment(): VerticalGridSupportFragment() {
             val holder = viewHolder as? UrlViewHolder
             if(server!=null && holder != null ) { //&& qualityPos != null) {
                 holder.view.setOnClickListener {
-                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedServer = server
+                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedExtractor = server
                     media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedVideo = stream.videoIndex
                     if (fromPlayer)
                         parentFragmentManager.popBackStack()

@@ -47,6 +47,7 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
     private val scope = lifecycleScope
 
     val model: AnilistSearch by viewModels()
+    lateinit var result: SearchResults
 
     lateinit var type: String
     var genre: String? = null
@@ -187,15 +188,19 @@ class TVSearchFragment: SearchFragment(), SearchSupportFragment.SearchResultProv
                         setLoadingVisibility(View.VISIBLE)
                         setEmptyListText(null)
                     }
-                    model.loadSearch(
+                    model.searchResults = SearchResults(
                         type,
-                        search,
-                        if (genre != null) arrayListOf(genre) else null,
-                        if (tag != null) arrayListOf(tag) else null,
-                        sort,
-                        adult,
-                        listOnly
+                        isAdult = adult,
+                        onList = listOnly,
+                        search = search,
+                        genres =  if (genre != null) arrayListOf(genre) else null,
+                        sort = sort,
+                        results = mutableListOf(),
+                        hasNextPage = false
                     )
+                    result = model.searchResults
+
+                    model.loadSearch(result)
                 }
             }
         }
