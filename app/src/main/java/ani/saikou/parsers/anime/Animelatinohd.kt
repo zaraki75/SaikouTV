@@ -2,6 +2,7 @@ package ani.saikou.parsers.anime
 
 import ani.saikou.*
 import android.net.Uri
+import android.util.Log
 import ani.saikou.client
 import ani.saikou.parsers.*
 import ani.saikou.parsers.anime.extractors.FPlayer
@@ -11,6 +12,7 @@ import ani.saikou.parsers.anime.extractors.StreamSB
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
+import org.json.JSONArray
 import org.json.JSONObject
 
 
@@ -38,33 +40,35 @@ class Animelatinohd : AnimeParser() {
             else -> 0
         }
         return try {
-            logger("bruh aaaa")
+            //-----   this is deprecated, i need change it   -------
             Mapper.parse<AnimeDetails>(animeJson).props!!.pageProps!!.data!!.players[lang].map {
                 val server = it.server!!.title!!
                 val embed = it.code!!
                 VideoServer(server,embed)
             }
+            //-------
         }catch (e: Exception){
-            logger("bruh bbbb")
             val props = JSONObject(animeJson)["props"]
             val pageprops = JSONObject(props.toString())["pageProps"]
             val data = JSONObject(pageprops.toString())["data"]
             val players = JSONObject(data.toString())["players"]
             return if(lang == 0) {
-                val servers = JSONObject(players.toString())["0"]
+                val servers = JSONArray(players.toString())[0]
                 Json.decodeFromString<JsonArray>(servers.toString()).map {
                     val server =
                         it.jsonObject["server"]?.jsonObject?.get("title")?.jsonPrimitive?.content.toString()
-                    val embed = it.jsonObject["code"]?.jsonPrimitive?.content.toString()
-                    VideoServer(server, embed)
+                    val embedId = it.jsonObject["id"]?.jsonPrimitive?.content.toString()
+                    val embed = client.get("https://api.animelatinohd.com/stream/$embedId", referer = hostUrl).url
+                    VideoServer(server, embed )
                 }
             }else{
-                val servers = JSONObject(players.toString())["1"]
+                val servers = JSONArray(players.toString())[1]
                 Json.decodeFromString<JsonArray>(servers.toString()).map {
                     val server =
                         it.jsonObject["server"]?.jsonObject?.get("title")?.jsonPrimitive?.content.toString()
-                    val embed = it.jsonObject["code"]?.jsonPrimitive?.content.toString()
-                    VideoServer(server, embed)
+                    val embedId = it.jsonObject["id"]?.jsonPrimitive?.content.toString()
+                    val embed = client.get("https://api.animelatinohd.com/stream/$embedId", referer = hostUrl).url
+                    VideoServer(server, embed )
                 }
             }
         }
@@ -76,8 +80,7 @@ class Animelatinohd : AnimeParser() {
             "gogo" in domain    -> GogoCDN(server)
             "goload" in domain  -> GogoCDN(server)
             "sb" in domain      -> StreamSB(server)
-            "fplayer" in domain -> FPlayer(server)
-            "fembed" in domain  -> FPlayer(server)
+            "fembed" in domain || "vanfem" in domain || "fplayer" in domain -> FPlayer(server)
             "ok" in domain      -> OK(server)
             else                -> null
         }
