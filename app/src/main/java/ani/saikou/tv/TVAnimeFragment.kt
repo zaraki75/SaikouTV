@@ -253,10 +253,10 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                 rowAdapter.add(continueRow)
                 if(recommendedAdapter.size() > 0)
                 rowAdapter.add(recommendedRow)
-                if(completedAdapter.size() > 0)
-                rowAdapter.add(completedRow)
                 if(plannedAdapter.size() > 0)
                 rowAdapter.add(plannedRow)
+                if(completedAdapter.size() > 0)
+                rowAdapter.add(completedRow)
 
                 rowAdapter.add(genresRow)
                 rowAdapter.add(trendingRow)
