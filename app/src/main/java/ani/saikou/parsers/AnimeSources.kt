@@ -20,7 +20,7 @@ object AnimeSources : WatchSources() {
         "9Anime Backup" to ::AniWatchPro,
         "AnimixPlay" to ::AnimixPlay,
         "AnimePahe" to ::AnimePahe,
-
+        "ConsumeBili" to ::ConsumeBili
     )
 }
 

@@ -2,6 +2,7 @@ package ani.saikou.manga.mangareader
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Resources
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -12,7 +13,7 @@ class Swipy @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
 
-    private var totalDragDistance = 250
+    var dragDividor : Int = 4
     var vertical = true
 
     //public, in case a different sub child needs to be considered
@@ -159,16 +160,21 @@ class Swipy @JvmOverloads constructor(
 
                     if (overscroll > 0) {
                         parent.requestDisallowInterceptTouchEvent(true)
-                        if (vertical)
+                        if (vertical){
+                            val totalDragDistance = Resources.getSystem().displayMetrics.heightPixels / dragDividor
                             if (verticalPos == VerticalPosition.Top)
                                 topBeingSwiped?.invoke(overscroll / totalDragDistance)
                             else
                                 bottomBeingSwiped?.invoke(overscroll / totalDragDistance)
-                        else
+                        }
+
+                        else {
+                            val totalDragDistance = Resources.getSystem().displayMetrics.widthPixels / dragDividor
                             if (horizontalPos == HorizontalPosition.Left)
                                 leftBeingSwiped?.invoke(overscroll / totalDragDistance)
                             else
                                 rightBeingSwiped?.invoke(overscroll / totalDragDistance)
+                        }
                     } else {
                         return false
                     }
@@ -228,17 +234,22 @@ class Swipy @JvmOverloads constructor(
     }
 
     private fun finishSpinner(overscrollDistance: Float) {
-        if (overscrollDistance > totalDragDistance) {
-            if (vertical)
-                if (verticalPos == VerticalPosition.Top)
-                    onTopSwiped?.invoke()
-                else
-                    onBottomSwiped?.invoke()
-            else
+
+            if (vertical) {
+                val totalDragDistance = Resources.getSystem().displayMetrics.heightPixels / dragDividor
+                if (overscrollDistance > totalDragDistance)
+                    if (verticalPos == VerticalPosition.Top)
+                        onTopSwiped?.invoke()
+                    else
+                        onBottomSwiped?.invoke()
+            }
+            else {
+                val totalDragDistance = Resources.getSystem().displayMetrics.widthPixels / dragDividor
+                if (overscrollDistance > totalDragDistance)
                 if (horizontalPos == HorizontalPosition.Left)
                     onLeftSwiped?.invoke()
                 else
                     onRightSwiped?.invoke()
-        }
+            }
     }
 }

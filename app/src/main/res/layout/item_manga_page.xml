@@ -257,7 +257,7 @@
             android:layout_weight="1"
             android:fontFamily="@font/poppins_bold"
             android:padding="8dp"
-            android:text="@string/popular_anime"
+            android:text="@string/popular_manga"
             android:textSize="16sp" />
 
         <androidx.appcompat.widget.SwitchCompat

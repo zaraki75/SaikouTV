@@ -10,17 +10,20 @@ import androidx.recyclerview.widget.GridLayoutManager
 import ani.saikou.databinding.FragmentListBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaAdaptor
+import ani.saikou.media.OtherDetailsViewModel
 
 class ListFragment : Fragment() {
     private var _binding: FragmentListBinding? = null
     private val binding get() = _binding!!
     private var pos: Int? = null
+    private var calendar = false
     private var grid: Boolean? = null
-    private var list: ArrayList<Media>? = null
+    private var list: MutableList<Media>? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             pos = it.getInt("list")
+            calendar = it.getBoolean("calendar")
         }
     }
 
@@ -31,7 +34,6 @@ class ListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val model: ListViewModel by activityViewModels()
         val screenWidth = resources.displayMetrics.run { widthPixels / density }
 
         fun update() {
@@ -43,23 +45,36 @@ class ListFragment : Fragment() {
             }
         }
 
-        model.getLists().observe(viewLifecycleOwner) {
-            if (it != null) {
-                list = it.values.toList().getOrNull(pos!!)
+        if (calendar) {
+            val model: OtherDetailsViewModel by activityViewModels()
+            model.getCalendar().observe(viewLifecycleOwner) {
+                if (it != null) {
+                    list = it.values.toList().getOrNull(pos!!)
+                    update()
+                }
+            }
+            grid = true
+        } else {
+            val model: ListViewModel by activityViewModels()
+            model.getLists().observe(viewLifecycleOwner) {
+                if (it != null) {
+                    list = it.values.toList().getOrNull(pos!!)
+                    update()
+                }
+            }
+            model.grid.observe(viewLifecycleOwner) {
+                grid = it
                 update()
             }
-        }
-        model.grid.observe(viewLifecycleOwner) {
-            grid = it
-            update()
         }
     }
 
     companion object {
-        fun newInstance(pos: Int): ListFragment =
+        fun newInstance(pos: Int, calendar: Boolean = false): ListFragment =
             ListFragment().apply {
                 arguments = Bundle().apply {
                     putInt("list", pos)
+                    putBoolean("calendar", calendar)
                 }
             }
     }

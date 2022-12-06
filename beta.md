@@ -1,4 +1,12 @@
-# 1.2.0.22.2
+# 1.2.0.23
 
-- Fix AnimeLatinoHD
-- Mas traducciones
+- Reworked Search, now Filtering is easier
+- Added Seasons Home Page
+- Added option to hide Listed shows
+- Added Anime Release Calendar
+- Fixed AllAnime (by @4jx)
+
+By @adolar0042
+- Add sub background & window color selection
+- Switch to new Kamyroll api
+- Better Subtitle Selection

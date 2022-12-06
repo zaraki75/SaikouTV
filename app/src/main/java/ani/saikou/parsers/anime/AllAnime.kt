@@ -20,6 +20,7 @@ class AllAnime : AnimeParser() {
     override val isDubAvailableSeparately = true
 
     private val apiHost = "https://blog.allanimenews.com/"
+    private val ytAnimeCoversHost = "https://wp.youtube-anime.com/aln.youtube-anime.com"
     private val idRegex = Regex("${hostUrl}/anime/(\\w+)")
     private val epNumRegex = Regex("/[sd]ub/(\\d+)")
 
@@ -37,9 +38,9 @@ class AllAnime : AnimeParser() {
                 val thumbnail = epInfo.thumbnails?.let {
 
                     if (it.isNotEmpty()) {
-                        var url = it[0];
+                        var url = it[0]
                         if (!url.startsWith("https")) {
-                            url = "https://wp.youtube-anime.com/aln.youtube-anime.com" + url;
+                            url = "$ytAnimeCoversHost$url"
                         }
                         FileUrl(url)
                     } else {
@@ -62,7 +63,7 @@ class AllAnime : AnimeParser() {
                 """{"showId":"$showId","translationType":"${if (selectDub) "dub" else "sub"}","episodeString":"$episodeNum"}"""
             graphqlQuery(
                 variables,
-                "29f49ce1a69320b2ab11a475fd114e5c07b03a7dc683f77dd502ca42b26df232"
+                "3933a4a68bc80c46e25b7b8b3f563df1416b7b583595e5e5bfc67c01bd791df8"
             ).data?.episode?.sourceUrls?.forEach { source ->
                 // It can be that two different actual sources share the same sourceName
                 var serverName = source.sourceName

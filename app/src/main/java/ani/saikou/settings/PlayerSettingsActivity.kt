@@ -313,7 +313,7 @@ class PlayerSettingsActivity : AppCompatActivity() {
         }
         val subtitleTypes =
             arrayOf("ASS", "VTT", "SRT")
-        val kamyrollSubTypeDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Primary Sub Color")
+        val kamyrollSubTypeDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Kamyroll Subtitle Type")
         binding.kamySubtitleType.setOnClickListener {
             kamyrollSubTypeDialog.setSingleChoiceItems(subtitleTypes, settings.kamySubType) { dialog, count ->
                 settings.kamySubType = count

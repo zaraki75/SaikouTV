@@ -45,10 +45,10 @@ class ListActivity : AppCompatActivity() {
         model.getLists().observe(this) {
             if (it != null) {
                 binding.listProgressBar.visibility = View.GONE
-                binding.listViewPager.adapter = ListViewPagerAdapter(it.size, this)
+                binding.listViewPager.adapter = ListViewPagerAdapter(it.size, false,this)
                 val keys = it.keys.toList()
                 val values = it.values.toList()
-                val savedTab = this.selectedTabIdx;
+                val savedTab = this.selectedTabIdx
                 TabLayoutMediator(binding.listTabLayout, binding.listViewPager) { tab, position ->
                     tab.text = "${keys[position]} (${values[position].size})"
                 }.attach()

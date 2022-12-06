@@ -85,8 +85,6 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
   
   - setting to change time in hrs to check for new episode/chapter/notification
 
-- Add new manga sources (toonily & comick.fun)
-
 - Add novel sources (1lib.in)?? Dk
  
 
