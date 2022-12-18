@@ -41,15 +41,15 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 
 | SITE                                      | STATUS  | DOWNLOADS |
 |:-----------------------------------------:|:-------:|:---------:|
-| [9Anime](https://9anime.pl)               | WORKING | SOME |
+| [9Anime](https://9anime.pl)               | SEMI-WORKING | SOME |
 | [Gogo](https://gogoanime.cm)              | WORKING | SOME |
-| [AllAnime](https://allanime.site)         | WORKING | SOME |
+| [AllAnime](https://allanime.site)         | SEMI-WORKING | SOME |
 | [Zoro](https://zoro.to)                   | WORKING | SOME |
 | [Tenshi](https://tenshi.moe)              | WORKING | YES  |
-| [Kamyroll](https://kamyroll.herokuapp.com)| WORKING | NO   |
+| [Kamyroll](https://github.com/kamyroll/Kamyroll-Wiki/wiki)| WORKING | NO   |
 | [AnimePahe](https://animepahe.ru)| SEMI-WORKING | NO   |
 | [AnimixPlay](https://animixplay.to)       | WORKING | NO  |
-| [9Anime Backup](https://animekisa.in)     | WORKING | NO   |
+| [ConsumeBili](https://www.bilibili.tv)     | WORKING | NO   |
 | [Haho (18+)](https://haho.moe)                  | WORKING | YES  |
 | [HentaiMama (18+)](https://hentaimama.io)       | WORKING | SOME |
 | [HentaiStream (18+)](https://hentaistream.com)  | WORKING | YES  |
@@ -64,18 +64,18 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 | [MangaBuddy](https://mangabuddy.com)    | WORKING |
 | [MangaSee](https://mangasee123.com)     | SEMI-WORKING |
 | [MangaPill](https://mangapill.com)      | WORKING |
-| [MangaDex](https://mangadex.org)        | WORKING |
+| [MangaDex](https://mangadex.org)        | SEMI-WORKING |
 | [MangaReaderTo](https://mangareader.to) | WORKING |
 | [AllAnime](https://allanime.site)       | WORKING |
 | [Comickfun](https://comick.fun)         | WORKING |
 | [MangaHub](https://mangahub.io)         | WORKING |
+| [MangaKatana](https://mangakatana.com)  | WORKING |
+| [Toonily](https://toonily.com/)         | WORKING |
 | [NHentai (18+)](https://nhentai.net)      | NOT WORKING |
-| [NineHentai (18+)](https://ninehentai.net)| NOT WORKING |
+| [NineHentai (18+)](https://ninehentai.net)| WORKING |
 | [Manwha18 (18+)](https://manhwa18.cc)   | WORKING |
 
 ## Planned Stuff
-
-- Rework Search & Anime schedule page
 
 - User Profile
 
