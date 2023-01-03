@@ -49,6 +49,8 @@
     <string name="continue_reading">Continue Reading</string>
     <string name="continue_watching">Continuar Viendo</string>
     <string name="recommended">Recomendado</string>
+    <string name="planned">Planeado</string>
+    <string name="completed">Completado</string>
 
     <string name="get_recommendations">Mira/Lee Mangas o Animes para obtener recomendaciones</string>
     <string name="empty">Todo esta vacio, cuando algo Nuevo?</string>
