@@ -57,6 +57,8 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
     lateinit var continueAdapter: ArrayObjectAdapter
     lateinit var recommendedAdapter: ArrayObjectAdapter
+    lateinit var plannedAdapter: ArrayObjectAdapter
+    lateinit var completedAdapter: ArrayObjectAdapter
     lateinit var genresAdapter: ArrayObjectAdapter
     lateinit var trendingAdapter: ArrayObjectAdapter
     lateinit var updatedAdapter: ArrayObjectAdapter
@@ -65,6 +67,8 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
     lateinit var continueRow: ListRow
     lateinit var recommendedRow: ListRow
+    lateinit var plannedRow: ListRow
+    lateinit var completedRow: ListRow
     lateinit var genresRow: ListRow
     lateinit var trendingRow: ListRow
     lateinit var updatedRow: ListRow
@@ -104,6 +108,8 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         continueAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
         recommendedAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
+        plannedAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
+        completedAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
         genresAdapter = ArrayObjectAdapter(GenresPresenter(true))
         trendingAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
         popularAdapter = ArrayObjectAdapter(AnimePresenter(0, requireActivity()))
@@ -111,6 +117,8 @@ class TVAnimeFragment: BrowseSupportFragment()  {
 
         continueRow = ListRow(HeaderItem(getString(R.string.continue_watching)), continueAdapter)
         recommendedRow = ListRow(HeaderItem(getString(R.string.recommended)), recommendedAdapter)
+        plannedRow = ListRow(HeaderItem(getString(R.string.planned)), plannedAdapter)
+        completedRow = ListRow(HeaderItem(getString(R.string.completed)), completedAdapter)
         genresRow = ListRow(HeaderItem(getString(R.string.genres)), genresAdapter)
         trendingRow = ListRow(HeaderItem(getString(R.string.trending_anime)), trendingAdapter)
         popularRow = ListRow(HeaderItem(getString(R.string.popular_anime)), popularAdapter)
@@ -171,6 +179,23 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                 checkLoadingState()
             }
         }
+
+        homeModel.getAnimeList().observe(viewLifecycleOwner) {
+            if (it != null) {
+                plannedAdapter.clear()
+                plannedAdapter.addAll(0, it.filter { it.userStatus == "PLANNING" })
+                if(plannedAdapter.size() == 0) {
+                    rowAdapter.remove(plannedRow)
+                }
+
+                completedAdapter.clear()
+                completedAdapter.addAll(0, it.filter { it.userStatus == "COMPLETED" })
+                if(completedAdapter.size() == 0) {
+                    rowAdapter.remove(completedRow)
+                }
+                checkLoadingState()
+            }
+        }
         val scope = viewLifecycleOwner.lifecycleScope
         val live = Refresh.activity.getOrPut(this.hashCode()) { MutableLiveData(false) }
         live.observe(viewLifecycleOwner) {
@@ -199,6 +224,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                         homeModel.setListImages()
                         homeModel.setAnimeContinue()
                         homeModel.setRecommendation()
+                        homeModel.setAnimeList()
                     }
                     live.postValue(false)
                 }
@@ -207,7 +233,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
     }
 
     fun checkLoadingState(){
-        if(nCallbacks == 4 && !viewLoaded) {
+        if(nCallbacks == 5 && !viewLoaded) {
             progressBarManager.hide()
             //This determines order in screen
             if (Anilist.userid == null) {
@@ -227,6 +253,10 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                 rowAdapter.add(continueRow)
                 if(recommendedAdapter.size() > 0)
                 rowAdapter.add(recommendedRow)
+                if(plannedAdapter.size() > 0)
+                rowAdapter.add(plannedRow)
+                if(completedAdapter.size() > 0)
+                rowAdapter.add(completedRow)
 
                 rowAdapter.add(genresRow)
                 rowAdapter.add(trendingRow)
