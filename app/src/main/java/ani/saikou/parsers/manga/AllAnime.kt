@@ -17,6 +17,7 @@ class AllAnime : MangaParser() {
     override val saveName = "all_anime_manga"
     override val hostUrl = "https://allanime.site"
 
+    private val ytAnimeCoversHost = "https://wp.youtube-anime.com/aln.youtube-anime.com"
     private val idRegex = Regex("${hostUrl}/manga/(\\w+)")
     private val epNumRegex = Regex("/[sd]ub/(\\d+)")
 
@@ -37,7 +38,7 @@ class AllAnime : MangaParser() {
         val episodeNum = epNumRegex.find(chapterLink)?.groupValues?.get(1)!!
         val variables = """{"mangaId":"$showId","translationType":"sub","chapterString":"$episodeNum","limit":1000000}"""
         val chapterPages =
-            graphqlQuery(variables, "fd2226907c2435bdfc0d03a9c46ef354b75ba42ec0599acb6b3346ef9c1e162d")?.data?.chapterPages?.edges
+            graphqlQuery(variables, "d877ecac37a54bd0599836d275acbb30a53d6ff50780c5da1f6c76048eebb388")?.data?.chapterPages?.edges
         // For future reference: If pictureUrlHead is null then the link provided is a relative link of the "apivtwo" variety, but it doesn't seem to contain useful images
         val chapter = chapterPages?.filter { !it.pictureUrlHead.isNullOrEmpty() }?.get(0)!!
         return chapter.pictureUrls.sortedBy { it.num }
@@ -57,7 +58,11 @@ class AllAnime : MangaParser() {
             show.englishName?.let { otherNames.add(it) }
             show.nativeName?.let { otherNames.add(it) }
             show.altNames?.forEach { otherNames.add(it) }
-            ShowResponse(show.name, link, show.thumbnail, otherNames, show.availableChapters.sub)
+            var thumbnail = show.thumbnail
+            if (thumbnail.startsWith("mcovers")) {
+                thumbnail = "$ytAnimeCoversHost/$thumbnail"
+            }
+            ShowResponse(show.name, link, thumbnail, otherNames, show.availableChapters.sub)
         }
     }
 

@@ -19,7 +19,8 @@ object AnimeSources : WatchSources() {
         "Animefenix" to ::Animefenix,
         "Jkanime" to ::Jkanime,
         "AnimeLatinoHD" to ::Animelatinohd,
-        "Animeflv" to ::TioAnime
+        "Animeflv" to ::TioAnime,
+        "ConsumeBili" to ::ConsumeBili
     )
 }
 
