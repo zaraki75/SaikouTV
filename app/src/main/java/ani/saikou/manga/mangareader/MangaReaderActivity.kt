@@ -11,6 +11,7 @@ import android.view.*
 import android.view.KeyEvent.*
 import android.view.animation.OvershootInterpolator
 import android.widget.AdapterView
+import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.math.MathUtils.clamp
@@ -28,6 +29,7 @@ import ani.saikou.manga.MangaChapter
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.others.ImageViewDialog
+import ani.saikou.others.getSerializable
 import ani.saikou.parsers.HMangaSources
 import ani.saikou.parsers.MangaImage
 import ani.saikou.parsers.MangaSources
@@ -106,7 +108,11 @@ class MangaReaderActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.mangaReaderBack.setOnClickListener {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
+        }
+
+        onBackPressedDispatcher.addCallback(this) {
+            progress { finish() }
         }
 
         settings = loadData("reader_settings", this) ?: ReaderSettings().apply { saveData("reader_settings", this) }
@@ -144,7 +150,7 @@ class MangaReaderActivity : AppCompatActivity() {
 
         media = if (model.getMedia().value == null)
             try {
-                (intent.getSerializableExtra("media") as? Media) ?: return
+                (intent.getSerializable("media",Media::class)) ?: return
             } catch (e: Exception) {
                 logError(e)
                 return
@@ -385,8 +391,8 @@ class MangaReaderActivity : AppCompatActivity() {
             binding.mangaReaderRecyclerContainer.controller.settings.isRotationEnabled = settings.default.rotation
 
             val detector = GestureDetectorCompat(this, object : GesturesListener() {
-                override fun onLongPress(e: MotionEvent?) {
-                    if (e!=null && binding.mangaReaderRecycler.findChildViewUnder(e.x, e.y).let { child ->
+                override fun onLongPress(e: MotionEvent) {
+                    if (binding.mangaReaderRecycler.findChildViewUnder(e.x, e.y).let { child ->
                             child ?: return@let false
                             val pos = binding.mangaReaderRecycler.getChildAdapterPosition(child)
                             val image = chapImages?.getOrNull(pos) ?: return@let false
@@ -401,7 +407,7 @@ class MangaReaderActivity : AppCompatActivity() {
                     super.onLongPress(e)
                 }
 
-                override fun onSingleClick(event: MotionEvent?) {
+                override fun onSingleClick(event: MotionEvent) {
                     handleController()
                 }
             })
@@ -672,9 +678,5 @@ class MangaReaderActivity : AppCompatActivity() {
             show(supportFragmentManager, "image")
         }
         return true
-    }
-
-    override fun onBackPressed() {
-        progress { super.onBackPressed() }
     }
 }

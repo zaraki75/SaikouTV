@@ -11,7 +11,7 @@ class StreamSB(override val server: VideoServer) : VideoExtractor() {
         val videos = mutableListOf<Video>()
         val id = server.embed.url.let { it.findBetween("/e/", ".html") ?: it.split("/e/")[1] }
         val jsonLink =
-            "https://streamsss.net/sources48/${bytesToHex("||$id||||streamsb".toByteArray())}/"
+            "https://streamsss.net/sources49/${bytesToHex("||$id||||streamsb".toByteArray())}/"
         val json = client.get(jsonLink, mapOf("watchsb" to "sbstream")).parsed<Response>()
         if (json.statusCode == 200) {
             videos.add(Video(null, VideoType.M3U8, json.streamData!!.file))

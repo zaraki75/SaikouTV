@@ -31,6 +31,10 @@ class AnilistHomeViewModel : ViewModel() {
     fun getAnimeFav(): LiveData<ArrayList<Media>> = animeFav
     suspend fun setAnimeFav() = animeFav.postValue(Anilist.query.favMedia(true))
 
+    private val animePlanned: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
+    fun getAnimePlanned(): LiveData<ArrayList<Media>> = animePlanned
+    suspend fun setAnimePlanned() = animePlanned.postValue(Anilist.query.continueMedia("ANIME",true))
+
     private val mangaContinue: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
     fun getMangaContinue(): LiveData<ArrayList<Media>> = mangaContinue
     suspend fun setMangaContinue() = mangaContinue.postValue(Anilist.query.continueMedia("MANGA"))
@@ -38,6 +42,10 @@ class AnilistHomeViewModel : ViewModel() {
     private val mangaFav: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
     fun getMangaFav(): LiveData<ArrayList<Media>> = mangaFav
     suspend fun setMangaFav() = mangaFav.postValue(Anilist.query.favMedia(false))
+
+    private val mangaPlanned: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
+    fun getMangaPlanned(): LiveData<ArrayList<Media>> = mangaPlanned
+    suspend fun setMangaPlanned() = mangaPlanned.postValue(Anilist.query.continueMedia("MANGA",true))
 
     private val recommendation: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
     fun getRecommendation(): LiveData<ArrayList<Media>> = recommendation

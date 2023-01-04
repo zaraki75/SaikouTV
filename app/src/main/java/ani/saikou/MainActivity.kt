@@ -10,6 +10,7 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnticipateInterpolator
+import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
@@ -45,6 +46,16 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        var doubleBackToExitPressedOnce = false
+        onBackPressedDispatcher.addCallback(this){
+            if (doubleBackToExitPressedOnce) {
+                finish()
+            }
+            doubleBackToExitPressedOnce = true
+            toastString("Please perform BACK again to Exit")
+            Handler(Looper.getMainLooper()).postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
+        }
 
         binding.root.isMotionEventSplittingEnabled = false
 
@@ -163,17 +174,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //Double Tap Back
-    private var doubleBackToExitPressedOnce = false
-    override fun onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            super.onBackPressed()
-            return
-        }
-        this.doubleBackToExitPressedOnce = true
-        toastString("Please perform BACK again to Exit")
-        Handler(Looper.getMainLooper()).postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
-    }
+
 
     //ViewPager
     private class ViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) :

@@ -32,6 +32,7 @@ import ani.saikou.anime.AnimeWatchFragment
 import ani.saikou.databinding.ActivityMediaBinding
 import ani.saikou.manga.MangaReadFragment
 import ani.saikou.others.ImageViewDialog
+import ani.saikou.others.getSerializable
 import ani.saikou.settings.UserInterfaceSettings
 import com.flaviofaria.kenburnsview.RandomTransitionGenerator
 import com.google.android.material.appbar.AppBarLayout
@@ -82,7 +83,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         binding.mediaAppBar.addOnOffsetChangedListener(this)
 
         binding.mediaClose.setOnClickListener {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
         }
 
         if (uiSettings.bannerAnimations) {
@@ -96,7 +97,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         viewPager.isUserInputEnabled = false
         viewPager.setPageTransformer(ZoomOutPageTransformer(uiSettings))
 
-        var media: Media = intent.getSerializableExtra("media") as Media
+        var media: Media = intent.getSerializable("media",Media::class) ?: return
         media.selected = model.loadSelected(media)
 
         binding.mediaCoverImage.loadImage(media.cover)
@@ -109,7 +110,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         }
         banner.loadImage(media.banner ?: media.cover, 400)
         val gestureDetector = GestureDetector(this, object : GesturesListener() {
-            override fun onDoubleClick(event: MotionEvent?) {
+            override fun onDoubleClick(event: MotionEvent) {
                 if (!uiSettings.bannerAnimations)
                     toastString("Try Enabling Banner Animations from Settings")
                 else {
@@ -118,7 +119,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
                 }
             }
 
-            override fun onLongClick(event: MotionEvent?) {
+            override fun onLongClick(event: MotionEvent) {
                 ImageViewDialog.newInstance(
                     this@MediaDetailsActivity,
                     media.userPreferredName + "[Banner]",

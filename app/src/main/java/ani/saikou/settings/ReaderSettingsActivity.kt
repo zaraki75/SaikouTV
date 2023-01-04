@@ -24,7 +24,7 @@ class ReaderSettingsActivity : AppCompatActivity() {
         val settings = loadData<ReaderSettings>(reader, toast = false) ?: ReaderSettings().apply { saveData(reader, this) }
 
         binding.readerSettingsBack.setOnClickListener {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
         }
 
         //General

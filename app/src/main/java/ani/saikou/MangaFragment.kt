@@ -187,7 +187,6 @@ class MangaFragment : Fragment() {
 
         model.getPopular().observe(viewLifecycleOwner) {
             if (it != null) {
-                println("old : $oldIncludeList & it ${it.onList ?: true}")
                 if (oldIncludeList == (it.onList != false)) {
                     val prev = model.searchResults.results.size
                     model.searchResults.results.addAll(it.results)

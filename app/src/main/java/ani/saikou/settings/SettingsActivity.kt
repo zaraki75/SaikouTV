@@ -61,7 +61,7 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
         }
 
         binding.settingsBack.setOnClickListener {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
         }
 
         binding.animeSource.setText(AnimeSources.names[loadData("settings_def_anime_source") ?: 0], false)
