@@ -15,7 +15,7 @@ import ani.saikou.*
 import ani.saikou.anime.ExoplayerView
 import ani.saikou.databinding.ActivityPlayerSettingsBinding
 import ani.saikou.media.Media
-import ani.saikou.others.getSerializable
+import ani.saikou.others.getSerialized
 import ani.saikou.parsers.Subtitle
 import ani.saikou.parsers.SubtitleType
 import com.google.android.material.snackbar.Snackbar
@@ -77,8 +77,8 @@ class PlayerSettingsActivity : AppCompatActivity() {
         }
 
         try {
-            media = intent.getSerializable("media",Media::class)
-            subtitle = intent.getSerializable("subtitle",Subtitle::class)
+            media = intent.getSerialized("media")
+            subtitle = intent.getSerialized("subtitle")
         } catch (e: Exception) {
             toast(e.toString())
         }

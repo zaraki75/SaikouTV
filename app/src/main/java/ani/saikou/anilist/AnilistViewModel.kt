@@ -75,7 +75,7 @@ class AnilistAnimeViewModel : ViewModel() {
         trending.postValue(
             Anilist.query.search(
                 type,
-                perPage = 10,
+                perPage = 12,
                 sort = "Trending",
                 season = season,
                 seasonYear = year,

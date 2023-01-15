@@ -131,7 +131,7 @@ class Kamyroll : AnimeParser() {
                     VideoType.M3U8,
                     FileUrl(
                         it.url,
-                        mapOf("accept" to "*/*", "accept-encoding" to "gzip")
+                        mapOf("accept" to "*/*", "accept-encoding" to "utf-8")
                     ),
                     null,
                     when (it.hardsubLocale){
@@ -287,9 +287,9 @@ class Kamyroll : AnimeParser() {
 
         private suspend fun newToken(): Map<String, String>{
             headers = headers ?: let {
-                val res = client.post(
+                val res = client.get(
                     "$apiUrl/auth/v1/token",
-                    data = mapOf(
+                    params = mapOf(
                         "device_id" to "com.service.data",
                         "device_type" to "ani.saikou",
                         "access_token" to "HMbQeThWmZq4t7w",

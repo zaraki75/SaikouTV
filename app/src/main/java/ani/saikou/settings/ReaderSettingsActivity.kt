@@ -149,6 +149,12 @@ class ReaderSettingsActivity : AppCompatActivity() {
             settings.default.wrapImages = isChecked
             saveData(reader, settings)
         }
+
+        binding.readerSettingsLongClickImage.isChecked = settings.default.longClickImage
+        binding.readerSettingsLongClickImage.setOnCheckedChangeListener { _,isChecked ->
+            settings.default.longClickImage = isChecked
+            saveData(reader, settings)
+        }
         
         //Update Progress
         binding.readerSettingsAskUpdateProgress.isChecked = settings.askIndividual

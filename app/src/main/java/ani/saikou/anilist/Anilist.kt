@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
 import ani.saikou.openLinkInBrowser
 import java.io.File
+import java.util.*
 
 object Anilist {
     val query: AnilistQueries = AnilistQueries()
@@ -33,7 +34,7 @@ object Anilist {
     )
 
     val seasons = listOf(
-        "SPRING", "WINTER", "SUMMER", "FALL"
+        "WINTER", "SPRING", "SUMMER", "FALL"
     )
 
     val anime_formats = listOf(
@@ -44,11 +45,33 @@ object Anilist {
         "MANGA", "NOVEL", "ONE SHOT"
     )
 
-    //Need to make a dynamic way to make this list
+    private val cal: Calendar = Calendar.getInstance()
+    private val currentYear = cal.get(Calendar.YEAR)
+    private val currentSeason: Int = when (cal.get(Calendar.MONTH)) {
+        0, 1, 2   -> 0
+        3, 4, 5   -> 1
+        6, 7, 8   -> 2
+        9, 10, 11 -> 3
+        else      -> 0
+    }
+
+    private fun getSeason(next: Boolean): Pair<String, Int> {
+        var newSeason = if (next) currentSeason + 1 else currentSeason - 1
+        var newYear = currentYear
+        if (newSeason > 3) {
+            newSeason = 0
+            newYear++
+        } else if (newSeason < 0) {
+            newSeason = 3
+            newYear--
+        }
+        return seasons[newSeason] to newYear
+    }
+
     val currentSeasons = listOf(
-        "SUMMER" to 2022,
-        "FALL" to 2022,
-        "SPRING" to 2023
+        getSeason(false),
+        seasons[currentSeason] to currentYear,
+        getSeason(true)
     )
 
     fun loginIntent(context: Context) {

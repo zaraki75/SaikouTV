@@ -32,7 +32,7 @@ import ani.saikou.anime.AnimeWatchFragment
 import ani.saikou.databinding.ActivityMediaBinding
 import ani.saikou.manga.MangaReadFragment
 import ani.saikou.others.ImageViewDialog
-import ani.saikou.others.getSerializable
+import ani.saikou.others.getSerialized
 import ani.saikou.settings.UserInterfaceSettings
 import com.flaviofaria.kenburnsview.RandomTransitionGenerator
 import com.google.android.material.appbar.AppBarLayout
@@ -97,7 +97,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         viewPager.isUserInputEnabled = false
         viewPager.setPageTransformer(ZoomOutPageTransformer(uiSettings))
 
-        var media: Media = intent.getSerializable("media",Media::class) ?: return
+        var media: Media = intent.getSerialized("media") ?: return
         media.selected = model.loadSelected(media)
 
         binding.mediaCoverImage.loadImage(media.cover)

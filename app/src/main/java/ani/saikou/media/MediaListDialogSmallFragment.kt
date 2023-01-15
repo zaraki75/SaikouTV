@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import ani.saikou.*
 import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.BottomSheetMediaListSmallBinding
+import ani.saikou.others.getSerialized
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,7 +36,7 @@ class MediaListDialogSmallFragment : BottomSheetDialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            media = it.getSerializable("media") as Media
+            media = it.getSerialized("media")!!
         }
     }
 

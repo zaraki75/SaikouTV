@@ -52,7 +52,7 @@ import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.others.AniSkip
 import ani.saikou.others.AniSkip.getType
 import ani.saikou.others.ResettableTimer
-import ani.saikou.others.getSerializable
+import ani.saikou.others.getSerialized
 import ani.saikou.parsers.*
 import ani.saikou.settings.PlayerSettings
 import ani.saikou.settings.PlayerSettingsActivity
@@ -730,7 +730,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
         //Handle Media
         try {
-            media = (intent.getSerializable("media",Media::class)) ?: return
+            media = (intent.getSerialized("media")) ?: return
         } catch (e: Exception) {
             toast(e.toString())
             return
@@ -1042,7 +1042,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             subClick()
         }
 
-        val newSub = intent.getSerializable("subtitle", Subtitle::class)
+        val newSub = intent.getSerialized<Subtitle>("subtitle")
         var sub: MediaItem.SubtitleConfiguration? = null
         if(newSub == null && subtitle != null) {
             sub = MediaItem.SubtitleConfiguration
@@ -1291,13 +1291,14 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         if (exoPlayer.duration < playbackPosition)
             exoPlayer.seekTo(0)
 
-        if (!isTimeStampsLoaded) {
+        if (!isTimeStampsLoaded && settings.timeStampsEnabled) {
             val dur = exoPlayer.duration
             lifecycleScope.launch(Dispatchers.IO) {
                 model.loadTimeStamps(
                     media.idMAL,
                     media.anime?.selectedEpisode?.trim()?.toIntOrNull(),
-                    dur / 1000
+                    dur / 1000,
+                    settings.useProxyForTimeStamps
                 )
             }
         }
@@ -1577,7 +1578,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         return if (keyMap.containsKey(event.keyCode)) {
             (event.action == ACTION_UP).also {
-                if(isInitialized) keyMap[event.keyCode]?.invoke()
+                if(isInitialized && it) keyMap[event.keyCode]?.invoke()
             }
         }
         else {

@@ -59,6 +59,7 @@ class ConsumeBili : AnimeParser() {
         return BilibiliExtractor(server)
     }
 
+    @Suppress("UNCHECKED_CAST")
     class BilibiliExtractor(override val server: VideoServer) : VideoExtractor() {
         override suspend fun extract(): VideoContainer {
             val extra = server.extraData as Map<*, *>

@@ -1,15 +1,22 @@
+@file:Suppress("UNCHECKED_CAST", "DEPRECATION")
 
 package ani.saikou.others
 
 import android.content.Intent
 import android.os.Build
+import android.os.Bundle
 import java.io.Serializable
-import kotlin.reflect.KClass
 
-@Suppress("DEPRECATION", "UNCHECKED_CAST")
-fun <T : Serializable> Intent.getSerializable(key: String, m_class: KClass<T>): T? {
+inline fun <reified T : Serializable> Bundle.getSerialized(key: String): T? {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-        this.getSerializableExtra(key, m_class.java)
+        this.getSerializable(key, T::class.java)
+    else
+        this.getSerializable(key) as? T
+}
+
+inline fun <reified T : Serializable> Intent.getSerialized(key: String): T? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        this.getSerializableExtra(key, T::class.java)
     else
         this.getSerializableExtra(key) as? T
 }

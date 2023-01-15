@@ -132,6 +132,12 @@ class ReaderSettingsDialogFragment : BottomSheetDialogFragment() {
             settings.wrapImages = isChecked
             activity.applySettings()
         }
+
+        binding.readerLongClickImage.isChecked = settings.longClickImage
+        binding.readerLongClickImage.setOnCheckedChangeListener { _,isChecked ->
+            settings.longClickImage = isChecked
+            activity.applySettings()
+        }
     }
 
     override fun onDestroy() {

@@ -839,7 +839,7 @@ fun toast(string: String?, activity: Activity? = null) {
     }
 }
 
-fun toastString(s: String?, activity: Activity? = null) {
+fun toastString(s: String?, activity: Activity? = null, clipboard: String? = null) {
     if (s != null) {
         (activity ?: currActivity())?.apply {
             runOnUiThread {
@@ -856,7 +856,7 @@ fun toastString(s: String?, activity: Activity? = null) {
                         snackBar.dismiss()
                     }
                     setOnLongClickListener {
-                        copyToClipboard(s, false)
+                        copyToClipboard(clipboard ?: s, false)
                         toast("Copied to Clipboard")
                         true
                     }

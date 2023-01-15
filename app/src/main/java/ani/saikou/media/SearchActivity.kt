@@ -59,7 +59,10 @@ class SearchActivity : AppCompatActivity() {
                 isAdult = if (Anilist.adult) intent.getBooleanExtra("hentai", false) else false,
                 onList = listOnly,
                 genres = intent.getStringExtra("genre")?.let { mutableListOf(it) },
+                tags = intent.getStringExtra("tag")?.let { mutableListOf(it) },
                 sort = intent.getStringExtra("sortBy"),
+                season = intent.getStringExtra("season"),
+                seasonYear = intent.getStringExtra("seasonYear")?.toIntOrNull(),
                 results = mutableListOf(),
                 hasNextPage = false
             )
