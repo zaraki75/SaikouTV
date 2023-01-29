@@ -139,10 +139,7 @@ fun initActivity(a: Activity) {
     val window = a.window
     WindowCompat.setDecorFitsSystemWindows(window, false)
     val uiSettings = loadData<UserInterfaceSettings>("ui_settings", toast = false) ?: UserInterfaceSettings().apply {
-        saveData(
-            "ui_settings",
-            this
-        )
+        saveData("ui_settings", this)
     }
     uiSettings.darkMode.apply {
         AppCompatDelegate.setDefaultNightMode(

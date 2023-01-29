@@ -65,6 +65,9 @@ object AppUpdater {
                         }
                     }.show()
             }
+            else{
+                if(post) toastString("No Update Found")
+            }
         }
         catch (e:Exception){
             toastString(e.toString())
