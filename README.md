@@ -48,7 +48,6 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 | [Tenshi](https://tenshi.moe)              | WORKING | YES  |
 | [Kamyroll](https://github.com/kamyroll/Kamyroll-Wiki/wiki)| WORKING | NO   |
 | [AnimePahe](https://animepahe.ru)| SEMI-WORKING | NO   |
-| [AnimixPlay](https://animixplay.to)       | WORKING | NO  |
 | [ConsumeBili](https://www.bilibili.tv)     | WORKING | NO   |
 | [Haho (18+)](https://haho.moe)                  | WORKING | YES  |
 | [HentaiMama (18+)](https://hentaimama.io)       | WORKING | SOME |

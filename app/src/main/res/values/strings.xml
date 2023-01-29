@@ -242,8 +242,10 @@
     <string-array name="home_layouts">
         <item>Continue Watching</item>
         <item>Favourite Anime</item>
+        <item>Planned Anime</item>
         <item>Continue Reading</item>
         <item>Favourite Manga</item>
+        <item>Planned Manga</item>
         <item>Recommended</item>
         <item>Planned</item>
         <item>Completed</item>
@@ -314,5 +316,8 @@
     <string name="previous_season">Previous Season</string>
     <string name="include_media_in_list">Include List</string>
     <string name="release_calendar">Calendar</string>
+    <string name="planned_anime">Planned Anime</string>
+    <string name="planned_manga">Planned Manga</string>
+    <string name="image_long_clicking">Open image by Long Clicking</string>
 
 </resources>

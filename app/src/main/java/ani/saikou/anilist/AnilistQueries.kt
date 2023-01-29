@@ -310,13 +310,14 @@ class AnilistQueries {
         return media
     }
 
-    suspend fun continueMedia(type: String): ArrayList<Media> {
+    suspend fun continueMedia(type: String,planned:Boolean=false): ArrayList<Media> {
         val returnArray = arrayListOf<Media>()
         val map = mutableMapOf<Int, Media>()
-        val statuses = arrayOf("CURRENT", "REPEATING")
+        val statuses = if(!planned) arrayOf("CURRENT", "REPEATING") else arrayOf("PLANNING")
         suspend fun repeat(status: String) {
             val response =
                 executeQuery<Query.MediaListCollection>(""" { MediaListCollection(userId: ${Anilist.userid}, type: $type, status: $status , sort: UPDATED_TIME ) { lists { entries { progress private score(format:POINT_100) status media { id idMal type isAdult status chapters episodes nextAiringEpisode {episode} meanScore isFavourite bannerImage coverImage{large} title { english romaji userPreferred } } } } } } """)
+
             response?.data?.mediaListCollection?.lists?.forEach { li ->
                 li.entries?.reversed()?.forEach {
                     val m = Media(it)

@@ -29,14 +29,14 @@ class ProgressAdapter(private val horizontal: Boolean = true, searched: Boolean)
         val progressBar = holder.binding.root
         bar = progressBar
         val doubleClickDetector = GestureDetector(progressBar.context, object : GesturesListener() {
-            override fun onDoubleClick(event: MotionEvent?) {
+            override fun onDoubleClick(event: MotionEvent) {
                 toastString("Can't Wait, huh? fine X(")
                 ObjectAnimator.ofFloat(progressBar, "translationX", progressBar.translationX, progressBar.translationX + 100f)
                     .setDuration(300).start()
             }
 
             override fun onScrollYClick(y: Float) {}
-            override fun onSingleClick(event: MotionEvent?) {}
+            override fun onSingleClick(event: MotionEvent) {}
         })
         progressBar.setOnTouchListener { v, event ->
             doubleClickDetector.onTouchEvent(event)

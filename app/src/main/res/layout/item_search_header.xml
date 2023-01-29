@@ -110,7 +110,7 @@
             android:layout_height="48dp"
             android:layout_gravity="center"
             android:padding="8dp"
-            app:cardBackgroundColor="#23808080"
+            app:cardBackgroundColor="@color/nav_bg"
             app:cardCornerRadius="16dp"
             app:contentPadding="4dp"
             app:contentPaddingLeft="8dp"

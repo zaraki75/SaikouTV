@@ -31,9 +31,9 @@ class AnilistHomeViewModel : ViewModel() {
     fun getAnimeFav(): LiveData<ArrayList<Media>> = animeFav
     suspend fun setAnimeFav() = animeFav.postValue(Anilist.query.favMedia(true))
 
-    private val animeList: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
-    fun getAnimeList(): LiveData<ArrayList<Media>> = animeList
-    suspend fun setAnimeList() = animeList.postValue(if (Anilist.userid == null) ArrayList<Media>() else Anilist.query.getMediaLists(true, Anilist.userid!!)["All"])
+    private val animePlanned: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
+    fun getAnimePlanned(): LiveData<ArrayList<Media>> = animePlanned
+    suspend fun setAnimePlanned() = animePlanned.postValue(Anilist.query.continueMedia("ANIME",true))
 
     private val mangaContinue: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
     fun getMangaContinue(): LiveData<ArrayList<Media>> = mangaContinue
@@ -42,6 +42,10 @@ class AnilistHomeViewModel : ViewModel() {
     private val mangaFav: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
     fun getMangaFav(): LiveData<ArrayList<Media>> = mangaFav
     suspend fun setMangaFav() = mangaFav.postValue(Anilist.query.favMedia(false))
+
+    private val mangaPlanned: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
+    fun getMangaPlanned(): LiveData<ArrayList<Media>> = mangaPlanned
+    suspend fun setMangaPlanned() = mangaPlanned.postValue(Anilist.query.continueMedia("MANGA",true))
 
     private val recommendation: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
     fun getRecommendation(): LiveData<ArrayList<Media>> = recommendation
@@ -71,7 +75,7 @@ class AnilistAnimeViewModel : ViewModel() {
         trending.postValue(
             Anilist.query.search(
                 type,
-                perPage = 10,
+                perPage = 12,
                 sort = "Trending",
                 season = season,
                 seasonYear = year,

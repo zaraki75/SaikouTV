@@ -11,6 +11,7 @@ import android.view.*
 import android.view.KeyEvent.*
 import android.view.animation.OvershootInterpolator
 import android.widget.AdapterView
+import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.math.MathUtils.clamp
@@ -28,14 +29,14 @@ import ani.saikou.manga.MangaChapter
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.others.ImageViewDialog
+import ani.saikou.others.getSerialized
 import ani.saikou.parsers.HMangaSources
 import ani.saikou.parsers.MangaImage
 import ani.saikou.parsers.MangaSources
 import ani.saikou.settings.CurrentReaderSettings.Companion.applyWebtoon
 import ani.saikou.settings.CurrentReaderSettings.Directions.*
 import ani.saikou.settings.CurrentReaderSettings.DualPageModes.*
-import ani.saikou.settings.CurrentReaderSettings.Layouts.CONTINUOUS_PAGED
-import ani.saikou.settings.CurrentReaderSettings.Layouts.PAGED
+import ani.saikou.settings.CurrentReaderSettings.Layouts.*
 import ani.saikou.settings.ReaderSettings
 import ani.saikou.settings.UserInterfaceSettings
 import com.alexvasilkov.gestures.views.GestureFrameLayout
@@ -106,7 +107,11 @@ class MangaReaderActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.mangaReaderBack.setOnClickListener {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
+        }
+
+        onBackPressedDispatcher.addCallback(this) {
+            progress { finish() }
         }
 
         settings = loadData("reader_settings", this) ?: ReaderSettings().apply { saveData("reader_settings", this) }
@@ -144,7 +149,7 @@ class MangaReaderActivity : AppCompatActivity() {
 
         media = if (model.getMedia().value == null)
             try {
-                (intent.getSerializableExtra("media") as? Media) ?: return
+                (intent.getSerialized("media")) ?: return
             } catch (e: Exception) {
                 logError(e)
                 return
@@ -181,10 +186,8 @@ class MangaReaderActivity : AppCompatActivity() {
                         arrayOf("Don't ask again for ${media.userPreferredName}"),
                         booleanArrayOf(false)
                     ) { _, _, isChecked ->
-                        if (isChecked) {
-                            saveData("${media.id}_progressDialog", isChecked)
-                            progressDialog = null
-                        }
+                        if (isChecked) progressDialog = null
+                        saveData("${media.id}_progressDialog", isChecked)
                         showProgressDialog = isChecked
                     }
                     setOnCancelListener { hideBars() }
@@ -348,21 +351,21 @@ class MangaReaderActivity : AppCompatActivity() {
             if (settings.default.direction == RIGHT_TO_LEFT) {
                 binding.LeftSwipeText.text = chaptersTitleArr.getOrNull(currentChapterIndex + 1) ?: "No Chapter"
                 binding.RightSwipeText.text = chaptersTitleArr.getOrNull(currentChapterIndex - 1) ?: "No Chapter"
-                binding.mangaReaderSwipy.onRightSwiped = {
-                    binding.mangaReaderPreviousChapter.performClick()
-                }
                 binding.mangaReaderSwipy.onLeftSwiped = {
                     binding.mangaReaderNextChapter.performClick()
+                }
+                binding.mangaReaderSwipy.onRightSwiped = {
+                    binding.mangaReaderPreviousChapter.performClick()
                 }
             }
             else {
-                binding.RightSwipeText.text = chaptersTitleArr.getOrNull(currentChapterIndex + 1) ?: "No Chapter"
                 binding.LeftSwipeText.text = chaptersTitleArr.getOrNull(currentChapterIndex - 1) ?: "No Chapter"
+                binding.RightSwipeText.text = chaptersTitleArr.getOrNull(currentChapterIndex + 1) ?: "No Chapter"
                 binding.mangaReaderSwipy.onLeftSwiped = {
-                    binding.mangaReaderNextChapter.performClick()
+                    binding.mangaReaderPreviousChapter.performClick()
                 }
                 binding.mangaReaderSwipy.onRightSwiped = {
-                    binding.mangaReaderPreviousChapter.performClick()
+                    binding.mangaReaderNextChapter.performClick()
                 }
             }
             binding.mangaReaderSwipy.leftBeingSwiped = { value ->
@@ -385,8 +388,8 @@ class MangaReaderActivity : AppCompatActivity() {
             binding.mangaReaderRecyclerContainer.controller.settings.isRotationEnabled = settings.default.rotation
 
             val detector = GestureDetectorCompat(this, object : GesturesListener() {
-                override fun onLongPress(e: MotionEvent?) {
-                    if (e!=null && binding.mangaReaderRecycler.findChildViewUnder(e.x, e.y).let { child ->
+                override fun onLongPress(e: MotionEvent) {
+                    if (binding.mangaReaderRecycler.findChildViewUnder(e.x, e.y).let { child ->
                             child ?: return@let false
                             val pos = binding.mangaReaderRecycler.getChildAdapterPosition(child)
                             val image = chapImages?.getOrNull(pos) ?: return@let false
@@ -401,7 +404,7 @@ class MangaReaderActivity : AppCompatActivity() {
                     super.onLongPress(e)
                 }
 
-                override fun onSingleClick(event: MotionEvent?) {
+                override fun onSingleClick(event: MotionEvent) {
                     handleController()
                 }
             })
@@ -664,6 +667,7 @@ class MangaReaderActivity : AppCompatActivity() {
     }
 
     fun onImageLongClicked(pos: Int, image: MangaImage, callback: ((ImageViewDialog) -> Unit)? = null): Boolean {
+        if (!settings.default.longClickImage) return false
         val title = "(Page ${pos + 1}) ${chaptersTitleArr.getOrNull(currentChapterIndex)?.replace(" : "," - ") ?: ""} [${media.userPreferredName}]"
 
         ImageViewDialog.newInstance(title, image.url, true).apply {
@@ -672,9 +676,5 @@ class MangaReaderActivity : AppCompatActivity() {
             show(supportFragmentManager, "image")
         }
         return true
-    }
-
-    override fun onBackPressed() {
-        progress { super.onBackPressed() }
     }
 }

@@ -13,7 +13,7 @@ class Swipy @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
 
-    var dragDividor : Int = 4
+    var dragDivider : Int = 4
     var vertical = true
 
     //public, in case a different sub child needs to be considered
@@ -161,7 +161,7 @@ class Swipy @JvmOverloads constructor(
                     if (overscroll > 0) {
                         parent.requestDisallowInterceptTouchEvent(true)
                         if (vertical){
-                            val totalDragDistance = Resources.getSystem().displayMetrics.heightPixels / dragDividor
+                            val totalDragDistance = Resources.getSystem().displayMetrics.heightPixels / dragDivider
                             if (verticalPos == VerticalPosition.Top)
                                 topBeingSwiped?.invoke(overscroll / totalDragDistance)
                             else
@@ -169,7 +169,7 @@ class Swipy @JvmOverloads constructor(
                         }
 
                         else {
-                            val totalDragDistance = Resources.getSystem().displayMetrics.widthPixels / dragDividor
+                            val totalDragDistance = Resources.getSystem().displayMetrics.widthPixels / dragDivider
                             if (horizontalPos == HorizontalPosition.Left)
                                 leftBeingSwiped?.invoke(overscroll / totalDragDistance)
                             else
@@ -236,7 +236,7 @@ class Swipy @JvmOverloads constructor(
     private fun finishSpinner(overscrollDistance: Float) {
 
             if (vertical) {
-                val totalDragDistance = Resources.getSystem().displayMetrics.heightPixels / dragDividor
+                val totalDragDistance = Resources.getSystem().displayMetrics.heightPixels / dragDivider
                 if (overscrollDistance > totalDragDistance)
                     if (verticalPos == VerticalPosition.Top)
                         onTopSwiped?.invoke()
@@ -244,7 +244,7 @@ class Swipy @JvmOverloads constructor(
                         onBottomSwiped?.invoke()
             }
             else {
-                val totalDragDistance = Resources.getSystem().displayMetrics.widthPixels / dragDividor
+                val totalDragDistance = Resources.getSystem().displayMetrics.widthPixels / dragDivider
                 if (overscrollDistance > totalDragDistance)
                 if (horizontalPos == HorizontalPosition.Left)
                     onLeftSwiped?.invoke()

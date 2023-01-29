@@ -524,28 +524,28 @@ abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
     private var timer: Timer? = null //at class level;
     private val delay: Long = 200
 
-    override fun onSingleTapUp(e: MotionEvent?): Boolean {
+    override fun onSingleTapUp(e: MotionEvent): Boolean {
         processSingleClickEvent(e)
         return super.onSingleTapUp(e)
     }
 
-    override fun onLongPress(e: MotionEvent?) {
+    override fun onLongPress(e: MotionEvent) {
         processLongClickEvent(e)
         super.onLongPress(e)
     }
 
-    override fun onDoubleTap(e: MotionEvent?): Boolean {
+    override fun onDoubleTap(e: MotionEvent): Boolean {
         processDoubleClickEvent(e)
         return super.onDoubleTap(e)
     }
 
-    override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+    override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
         onScrollYClick(distanceY)
         onScrollXClick(distanceX)
         return super.onScroll(e1, e2, distanceX, distanceY)
     }
 
-    private fun processSingleClickEvent(e: MotionEvent?) {
+    private fun processSingleClickEvent(e: MotionEvent) {
         val handler = Handler(Looper.getMainLooper())
         val mRunnable = Runnable {
             onSingleClick(e)
@@ -559,7 +559,7 @@ abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
         }
     }
 
-    private fun processDoubleClickEvent(e: MotionEvent?) {
+    private fun processDoubleClickEvent(e: MotionEvent) {
         timer?.apply {
             cancel()
             purge()
@@ -567,7 +567,7 @@ abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
         onDoubleClick(e)
     }
 
-    private fun processLongClickEvent(e: MotionEvent?) {
+    private fun processLongClickEvent(e: MotionEvent) {
         timer?.apply {
             cancel()
             purge()
@@ -575,11 +575,11 @@ abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
         onLongClick(e)
     }
 
-    open fun onSingleClick(event: MotionEvent?) {}
-    open fun onDoubleClick(event: MotionEvent?) {}
+    open fun onSingleClick(event: MotionEvent) {}
+    open fun onDoubleClick(event: MotionEvent) {}
     open fun onScrollYClick(y: Float) {}
     open fun onScrollXClick(y: Float) {}
-    open fun onLongClick(event: MotionEvent?) {}
+    open fun onLongClick(event: MotionEvent) {}
 }
 
 fun View.circularReveal(ex: Int, ey: Int, subX: Boolean, time: Long) {
@@ -838,29 +838,26 @@ fun toast(string: String?, activity: Activity? = null) {
     }
 }
 
-fun toastString(s: String?,activity: Activity?=null){
-        if(s!=null) {
-            (activity?:currActivity())?.apply{
-                if (!isOnTV(this)) {
-                    runOnUiThread {
-                        val snackBar = Snackbar.make(
-                            window.decorView.findViewById(android.R.id.content),
-                            s,
-                            Snackbar.LENGTH_LONG
-                        )
-                        snackBar.view.updateLayoutParams<FrameLayout.LayoutParams> {
-                            gravity = (Gravity.CENTER_HORIZONTAL or Gravity.BOTTOM)
-                            width = WRAP_CONTENT
-                        }
-                        snackBar.view.translationY = -(navBarHeight.dp + 32f)
-                        snackBar.view.setOnClickListener {
-                            snackBar.dismiss()
-                        }
-                        snackBar.view.setOnLongClickListener {
-                            copyToClipboard(s, false)
-                            true
-                        }
-                        snackBar.show()
+fun toastString(s: String?, activity: Activity? = null, clipboard: String? = null) {
+    if (s != null) {
+        (activity ?: currActivity())?.apply {
+            runOnUiThread {
+                val snackBar = Snackbar.make(window.decorView.findViewById(android.R.id.content), s, Snackbar.LENGTH_LONG)
+                snackBar.view.apply {
+                    updateLayoutParams<FrameLayout.LayoutParams> {
+                        gravity = (Gravity.CENTER_HORIZONTAL or Gravity.BOTTOM)
+                        width = WRAP_CONTENT
+                    }
+                    translationY = -(navBarHeight.dp + 32f)
+                    translationZ = 32f
+                    updatePadding(16f.px, right = 16f.px)
+                    setOnClickListener {
+                        snackBar.dismiss()
+                    }
+                    setOnLongClickListener {
+                        copyToClipboard(clipboard ?: s, false)
+                        toast("Copied to Clipboard")
+                        true
                     }
                 }
             }

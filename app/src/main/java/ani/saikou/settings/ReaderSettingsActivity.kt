@@ -24,7 +24,7 @@ class ReaderSettingsActivity : AppCompatActivity() {
         val settings = loadData<ReaderSettings>(reader, toast = false) ?: ReaderSettings().apply { saveData(reader, this) }
 
         binding.readerSettingsBack.setOnClickListener {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
         }
 
         //General
@@ -147,6 +147,12 @@ class ReaderSettingsActivity : AppCompatActivity() {
         binding.readerSettingsWrapImages.isChecked = settings.default.wrapImages
         binding.readerSettingsWrapImages.setOnCheckedChangeListener { _,isChecked ->
             settings.default.wrapImages = isChecked
+            saveData(reader, settings)
+        }
+
+        binding.readerSettingsLongClickImage.isChecked = settings.default.longClickImage
+        binding.readerSettingsLongClickImage.setOnCheckedChangeListener { _,isChecked ->
+            settings.default.longClickImage = isChecked
             saveData(reader, settings)
         }
         
