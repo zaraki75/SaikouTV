@@ -18,7 +18,7 @@ import okhttp3.Request
 import java.io.File
 
 object AppUpdater {
-    fun check(activity: Activity){
+    fun check(activity: Activity, post:Boolean=false){
         try{
             val version =
                 if(!BuildConfig.DEBUG)

@@ -180,7 +180,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
             }
         }
 
-        homeModel.getAnimeList().observe(viewLifecycleOwner) {
+        homeModel.getAnimePlanned().observe(viewLifecycleOwner) {
             if (it != null) {
                 plannedAdapter.clear()
                 plannedAdapter.addAll(0, it.filter { it.userStatus == "PLANNING" })
@@ -196,6 +196,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                 checkLoadingState()
             }
         }
+
         val scope = viewLifecycleOwner.lifecycleScope
         val live = Refresh.activity.getOrPut(this.hashCode()) { MutableLiveData(false) }
         live.observe(viewLifecycleOwner) {
@@ -224,7 +225,7 @@ class TVAnimeFragment: BrowseSupportFragment()  {
                         homeModel.setListImages()
                         homeModel.setAnimeContinue()
                         homeModel.setRecommendation()
-                        homeModel.setAnimeList()
+                        homeModel.setAnimePlanned()
                     }
                     live.postValue(false)
                 }

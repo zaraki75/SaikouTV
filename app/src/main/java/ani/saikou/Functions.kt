@@ -2,11 +2,14 @@ package ani.saikou
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.app.*
+import android.app.Activity
+import android.app.Application
+import android.app.DatePickerDialog
+import android.app.DownloadManager
+import android.app.UiModeManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.Context.UI_MODE_SERVICE
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources.getSystem
@@ -838,28 +841,36 @@ fun toast(string: String?, activity: Activity? = null) {
 fun toastString(s: String?, activity: Activity? = null, clipboard: String? = null) {
     if (s != null) {
         (activity ?: currActivity())?.apply {
-            runOnUiThread {
-                val snackBar = Snackbar.make(window.decorView.findViewById(android.R.id.content), s, Snackbar.LENGTH_LONG)
-                snackBar.view.apply {
-                    updateLayoutParams<FrameLayout.LayoutParams> {
-                        gravity = (Gravity.CENTER_HORIZONTAL or Gravity.BOTTOM)
-                        width = WRAP_CONTENT
+            if (!isOnTV(this)) {
+                runOnUiThread {
+                    val snackBar = Snackbar.make(
+                        window.decorView.findViewById(android.R.id.content),
+                        s,
+                        Snackbar.LENGTH_LONG
+                    )
+                    snackBar.view.apply {
+                        updateLayoutParams<FrameLayout.LayoutParams> {
+                            gravity = (Gravity.CENTER_HORIZONTAL or Gravity.BOTTOM)
+                            width = WRAP_CONTENT
+                        }
+                        translationY = -(navBarHeight.dp + 32f)
+                        translationZ = 32f
+                        updatePadding(16f.px, right = 16f.px)
+                        setOnClickListener {
+                            snackBar.dismiss()
+                        }
+                        setOnLongClickListener {
+                            copyToClipboard(clipboard ?: s, false)
+                            toast("Copied to Clipboard")
+                            true
+                        }
                     }
-                    translationY = -(navBarHeight.dp + 32f)
-                    translationZ = 32f
-                    updatePadding(16f.px, right = 16f.px)
-                    setOnClickListener {
-                        snackBar.dismiss()
-                    }
-                    setOnLongClickListener {
-                        copyToClipboard(clipboard ?: s, false)
-                        toast("Copied to Clipboard")
-                        true
-                    }
+                    snackBar.show()
                 }
             }
-            logger(s)
         }
+        logger(s)
+    }
 }
 
 open class NoPaddingArrayAdapter<T>(context: Context, layoutId: Int, items: List<T>) : ArrayAdapter<T>(context, layoutId, items) {
@@ -966,6 +977,6 @@ fun checkCountry(context: Context): Boolean {
 }
 
 fun isOnTV(activity: Activity): Boolean {
-    val uiModeManager = activity.getSystemService(UI_MODE_SERVICE) as UiModeManager
+    val uiModeManager = activity.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
     return uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
 }
