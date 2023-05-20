@@ -10,7 +10,7 @@ class ConsumeBili : AnimeParser() {
     override val name = "Consume Bili"
     override val saveName = "consume-bili"
     override val isDubAvailableSeparately = false
-    override val hostUrl = "https://kaguya.app/api"
+    override val hostUrl = "https://api-vn.kaguya.app/server"
 
     override suspend fun loadSavedShowResponse(mediaId: Int): ShowResponse {
         return ShowResponse(
@@ -19,19 +19,16 @@ class ConsumeBili : AnimeParser() {
             coverUrl = ""
         )
     }
+    
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
         val episodes = client.get("${hostUrl}/anime/episodes?id=${animeLink}&source_id=bilibili").parsed<EpisodesResponse>()
-
         if (!episodes.success) {
             return emptyList()
-        }
-
+            
         return episodes.episodes!!.map {
             val extraData =
                 mapOf("sourceEpisodeId" to it.sourceEpisodeId, "sourceMediaId" to it.sourceMediaId, "sourceId" to it.sourceId)
-
             val title = "Episode ${it.name}"
-
             Episode(
                 number = it.name,
                 title = title,
@@ -43,30 +40,21 @@ class ConsumeBili : AnimeParser() {
 
     override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
         val extraData = extra as Map<*, *>
-
         val sourceEpisodeId = extraData["sourceEpisodeId"]
         val sourceMediaId = extraData["sourceMediaId"]
         val sourceId = extraData["sourceId"]
-
         val sources =
             client.get("${hostUrl}/source?episode_id=${sourceEpisodeId}&source_media_id=${sourceMediaId}&source_id=${sourceId}")
                 .parsed<SourcesResponse>()
 
-        if (!sources.success) {
+        if (!sources.success)
             return emptyList()
-        }
 
         val modifiedSources = sources.sources.map {
             val source = it
-
-            val file = FileUrl(
-                url = source.file
-            )
-
+            val file = FileUrl(url = source.file)
             Video(null, VideoType.DASH, file, null)
-
         }
-
         val modifiedSubtiles = sources.subtitles?.map {
             Subtitle(
                 language = it.lang,
@@ -91,18 +79,14 @@ class ConsumeBili : AnimeParser() {
     class BilibiliExtractor(override val server: VideoServer) : VideoExtractor() {
         override suspend fun extract(): VideoContainer {
             val extra = server.extraData as Map<*, *>
-
-
             val subtitles = extra["subtitles"] as List<Subtitle>
             val sources = extra["sources"] as List<Video>
-
             return VideoContainer(
                 videos = sources,
                 subtitles = subtitles
             )
         }
     }
-
 
     override suspend fun search(query: String): List<ShowResponse> {
         return emptyList()
