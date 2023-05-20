@@ -30,8 +30,7 @@ class NHentai : MangaParser() {
                 coverUrl = "https://t.nhentai.net/galleries/${json.mediaId}/cover.jpg"
             ))
         } else {
-            val logjson = client.get("$hostUrl/search?q=${encode(query)}", referer = "ani.saikou")
-            val json = logjson.parsed<SearchResponse>()
+            val json = client.get("$hostUrl/search?q=${encode(query)}", referer = "ani.saikou").parsed<SearchResponse>()
             return json.result.map {
                 ShowResponse(
                     name = it.title.pretty,
