@@ -402,10 +402,10 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         exoSkipOpEd.alpha = if (settings.autoSkipOPED) 1f else 0.3f
         exoSkipOpEd.setOnClickListener {
             settings.autoSkipOPED = if (settings.autoSkipOPED) {
-                toastString("Disabled Auto Skipping OP & ED")
+                snackString("Disabled Auto Skipping OP & ED")
                 false
             } else {
-                toastString("Auto Skipping OP & ED")
+                snackString("Auto Skipping OP & ED")
                 true
             }
             saveData("player_settings", settings)
@@ -819,7 +819,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             if (currentEpisodeIndex > 0) {
                 change(currentEpisodeIndex - 1)
             } else
-                toastString("This is the 1st Episode!")
+                snackString("This is the 1st Episode!")
         }
 
         model.getEpisode().observe(this) {
@@ -855,7 +855,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                 2    -> AspectRatioFrameLayout.RESIZE_MODE_FILL
                 else -> AspectRatioFrameLayout.RESIZE_MODE_FIT
             }
-            toastString(
+            snackString(
                 when (isFullscreen) {
                     0    -> "Original"
                     1    -> "Zoom"

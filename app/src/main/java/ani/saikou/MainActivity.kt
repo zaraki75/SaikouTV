@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }
             doubleBackToExitPressedOnce = true
-            toastString("Please perform BACK again to Exit")
+            snackString("Please perform BACK again to Exit")
             Handler(Looper.getMainLooper()).postDelayed({ doubleBackToExitPressedOnce = false }, 2000)
         }
 
@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (!isOnline(this)) {
-            toastString("No Internet Connection")
+            snackString("No Internet Connection")
             startActivity(Intent(this, NoInternet::class.java))
         } else {
             val model: AnilistHomeViewModel by viewModels()
@@ -158,13 +158,13 @@ class MainActivity : AppCompatActivity() {
                                         ).putExtra("media", media as Serializable)
                                     )
                                 } else {
-                                    toastString("Seems like that wasn't found on Anilist.")
+                                    snackString("Seems like that wasn't found on Anilist.")
                                 }
                             }
                         }
                     } else {
                         binding.mainProgressBar.visibility = View.GONE
-                        //                        toastString("Error Loading Tags & Genres.")
+                        //                        snackString("Error Loading Tags & Genres.")
                     }
                 }
             }

@@ -4,12 +4,9 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import ani.saikou.client
-import ani.saikou.loadData
-import ani.saikou.logError
+import ani.saikou.*
 import ani.saikou.mal.MAL.clientId
 import ani.saikou.mal.MAL.saveResponse
-import ani.saikou.startMainActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -24,6 +21,7 @@ class Login : AppCompatActivity() {
             val code = data.getQueryParameter("code")
                 ?: throw Exception("Mal Login : Code not present in Redirected URI")
 
+            snackString("Logging in MAL")
             lifecycleScope.launch(Dispatchers.IO) {
                 val res = client.post(
                     "https://myanimelist.net/v1/oauth2/token",
@@ -35,6 +33,9 @@ class Login : AppCompatActivity() {
                     )
                 ).parsed<MAL.ResponseToken>()
                 saveResponse(res)
+                MAL.token = res.accessToken
+                snackString("Getting User Data")
+                MAL.query.getUserData()
                 launch(Dispatchers.Main) {
                     startMainActivity(this@Login)
                 }

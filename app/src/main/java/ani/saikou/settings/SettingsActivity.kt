@@ -96,7 +96,7 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
                 } else {
                     binding.settingsDownloadInSd.isChecked = false
                     saveData("sd_dl", false)
-                    toastString(getString(R.string.noSdFound))
+                    snackString(getString(R.string.noSdFound))
                 }
             } else saveData("sd_dl", false)
         }
@@ -289,7 +289,7 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
 
         binding.settingsLogo.setSafeOnClickListener {
             (binding.settingsLogo.drawable as Animatable).start()
-            toastString(array[(Math.random() * array.size).toInt()], this)
+            snackString(array[(Math.random() * array.size).toInt()], this)
         }
 
         binding.tvLogin.setOnClickListener {
@@ -321,7 +321,7 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
         binding.settingsCheckUpdate.setOnCheckedChangeListener { _, isChecked ->
             saveData("check_update", isChecked)
             if (!isChecked) {
-                toastString("You Long Click the button to check for App Update")
+                snackString("You Long Click the button to check for App Update")
             }
         }
 
@@ -367,6 +367,7 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
                     binding.settingsMALUsername.text = MAL.username
                     binding.settingsMALAvatar.loadImage(MAL.avatar)
                 } else {
+binding.settingsMALAvatar.setImageResource(R.drawable.ic_round_person_24)                
                     binding.settingsMALUsername.visibility = View.GONE
                     binding.settingsMALLogin.setText(R.string.login)
                     binding.settingsMALLogin.setOnClickListener {
@@ -374,6 +375,7 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
                     }
                 }
             } else {
+binding.settingsAnilistAvatar.setImageResource(R.drawable.ic_round_person_24)            
                 binding.settingsAnilistUsername.visibility = View.GONE
                 binding.settingsAnilistLogin.setText(R.string.login)
                 binding.settingsAnilistLogin.setOnClickListener {

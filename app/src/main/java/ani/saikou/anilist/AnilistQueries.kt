@@ -197,13 +197,13 @@ class AnilistQueries {
 
                     if (response.data?.media != null) parse()
                     else {
-                        toastString("Adult Stuff? ( ͡° ͜ʖ ͡°)")
+                        snackString("Adult Stuff? ( ͡° ͜ʖ ͡°)")
                         response = executeQuery(query, force = true, useToken = false)
                         if (response?.data?.media != null) parse()
-                        else toastString("What did you even open?")
+                        else snackString("What did you even open?")
                     }
                 } else {
-                    toastString("Error getting Data from Anilist.")
+                    snackString("Error getting Data from Anilist.")
                 }
             }
             val mal = async {
@@ -586,7 +586,7 @@ query (${"$"}page: Int = 1, ${"$"}id: Int, ${"$"}type: MediaType, ${"$"}isAdult:
                 page = pageInfo.currentPage.toString().toIntOrNull() ?: 0,
                 hasNextPage = pageInfo.hasNextPage == true,
             )
-        } else toastString("Empty Response, Does your internet perhaps suck?")
+        } else snackString("Empty Response, Does your internet perhaps suck?")
         return null
     }
 

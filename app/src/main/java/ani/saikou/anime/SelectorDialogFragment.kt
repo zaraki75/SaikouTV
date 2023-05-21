@@ -74,7 +74,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
                             dismiss()
                         }
                         fun fail() {
-                            toastString("Couldn't auto select the server, Please try again!")
+                            snackString("Couldn't auto select the server, Please try again!")
                             binding.selectorCancel.performClick()
                         }
 

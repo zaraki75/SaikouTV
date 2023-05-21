@@ -51,7 +51,7 @@ class ImageViewDialog : BottomSheetDialogFragment() {
         val (title, image) = (_title to _image)
         if (image == null || title == null) {
             dismiss()
-            toastString("Error getting Image Data")
+            snackString("Error getting Image Data")
             return
         }
         if (reload) {
@@ -96,7 +96,7 @@ class ImageViewDialog : BottomSheetDialogFragment() {
             .apply {
                 val target = object : CustomViewTarget<SubsamplingScaleImageView, File>(binding.bottomImageView) {
                     override fun onLoadFailed(errorDrawable: Drawable?) {
-                        toastString("Loading Image Failed")
+                        snackString("Loading Image Failed")
                         binding.bottomImageProgress.visibility = View.GONE
                     }
 

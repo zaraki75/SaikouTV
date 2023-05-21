@@ -168,7 +168,7 @@ class AllAnime : AnimeParser() {
                 show.nativeName?.let { otherNames.add(it) }
                 show.altNames?.forEach { otherNames.add(it) }
                 if (show.thumbnail == null) {
-                    toastString(""""Could not get thumbnail for ${show.id}""")
+                    snackString(""""Could not get thumbnail for ${show.id}""")
                     continue
                 }
                 responseArray.add(

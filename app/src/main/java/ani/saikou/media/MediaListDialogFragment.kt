@@ -225,7 +225,7 @@ class MediaListDialogFragment : BottomSheetDialogFragment() {
                             }    
                         }
                         Refresh.all()
-                        toastString("List Updated")
+                        snackString("List Updated")
                         dismissAllowingStateLoss()
                     }
                 }
@@ -234,13 +234,16 @@ class MediaListDialogFragment : BottomSheetDialogFragment() {
                     val id = media!!.userListId
                     if (id != null) {
                         scope.launch {
-                            withContext(Dispatchers.IO) { Anilist.mutation.deleteList(id) }
+                            withContext(Dispatchers.IO) {
+                                Anilist.mutation.deleteList(id)
+                                MAL.query.deleteList(media?.anime!=null,media?.idMAL)
+                            }
                             Refresh.all()
-                            toastString("Deleted from List")
+                            snackString("Deleted from List")
                             dismissAllowingStateLoss()
                         }
                     } else {
-                        toastString("No List ID found, reloading...")
+                        snackString("No List ID found, reloading...")
                         Refresh.all()
                     }
                 }

@@ -103,7 +103,7 @@ fun logError(e: Exception, post: Boolean = true, snackbar: Boolean = true) {
     val stackTrace: String = sw.toString()
     if (post) {
         if (snackbar)
-            toastString(e.localizedMessage, null, stackTrace)
+            snackString(e.localizedMessage, null, stackTrace)
         else
             toast(e.localizedMessage)
     }

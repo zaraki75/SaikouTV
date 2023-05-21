@@ -112,7 +112,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         val gestureDetector = GestureDetector(this, object : GesturesListener() {
             override fun onDoubleClick(event: MotionEvent) {
                 if (!uiSettings.bannerAnimations)
-                    toastString("Try Enabling Banner Animations from Settings")
+                    snackString("Try Enabling Banner Animations from Settings")
                 else {
                     binding.mediaBanner.restart()
                     binding.mediaBanner.performClick()
@@ -203,11 +203,11 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
                 if (Anilist.userid != null) {
                     if (supportFragmentManager.findFragmentByTag("dialog") == null)
                         MediaListDialogFragment().show(supportFragmentManager, "dialog")
-                } else toastString("Please Login with Anilist!")
+                } else snackString("Please Login with Anilist!")
             }
             binding.mediaAddToList.setOnLongClickListener {
                 saveData("${media.id}_progressDialog", true)
-                toastString("Auto Update Progress has now been Reset-ed ")
+                snackString("Auto Update Progress has now been Reset-ed ")
                 true
             }
         }

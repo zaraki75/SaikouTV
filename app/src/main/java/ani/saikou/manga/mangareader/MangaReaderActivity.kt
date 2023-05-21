@@ -224,7 +224,7 @@ class MangaReaderActivity : AppCompatActivity() {
         }
         binding.mangaReaderNextChapter.setOnClickListener {
             if (chaptersArr.size > currentChapterIndex + 1) progress { change(currentChapterIndex + 1) }
-            else toastString("Next Chapter Not Found")
+            else snackString("Next Chapter Not Found")
         }
         //Prev Chapter
         binding.mangaReaderPrevChap.setOnClickListener {
@@ -232,7 +232,7 @@ class MangaReaderActivity : AppCompatActivity() {
         }
         binding.mangaReaderPreviousChapter.setOnClickListener {
             if (currentChapterIndex > 0) change(currentChapterIndex - 1)
-            else toastString("This is the 1st Chapter!")
+            else snackString("This is the 1st Chapter!")
         }
 
         val chapterObserverRunnable = Runnable {

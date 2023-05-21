@@ -133,7 +133,7 @@ class MediaListDialogSmallFragment : BottomSheetDialogFragment() {
                     }
                 }
                 Refresh.all()
-                toastString("List Updated")
+                snackString("List Updated")
                 dismissAllowingStateLoss()
             }
         }

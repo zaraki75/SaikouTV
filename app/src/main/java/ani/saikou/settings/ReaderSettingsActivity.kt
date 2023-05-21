@@ -165,7 +165,7 @@ class ReaderSettingsActivity : AppCompatActivity() {
         binding.readerSettingsAskUpdateDoujins.isChecked = settings.updateForH
         binding.readerSettingsAskUpdateDoujins.setOnCheckedChangeListener { _, isChecked ->
             settings.updateForH = isChecked
-            if (isChecked) toastString(getString(R.string.very_bold))
+            if (isChecked) snackString(getString(R.string.very_bold))
             saveData(reader, settings)
         }
 

@@ -54,7 +54,7 @@ object AppUpdater {
                                             }
                                         }
                                     }catch (e:Exception){
-                                        toastString(e.toString())
+                                        snackString(e.toString())
                                     }
                                 }
                             }
@@ -66,11 +66,11 @@ object AppUpdater {
                     }.show()
             }
             else{
-                if(post) toastString("No Update Found")
+                if(post) snackString("No Update Found")
             }
         }
         catch (e:Exception){
-            toastString(e.toString())
+            snackString(e.toString())
         }
     }
 
@@ -152,7 +152,7 @@ object AppUpdater {
                 context.startActivity(installIntent)
             }
         }catch (e:Exception){
-            toastString(e.toString())
+            snackString(e.toString())
         }
     }
 }
