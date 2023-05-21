@@ -8,7 +8,7 @@ import ani.saikou.loadData
 import ani.saikou.mal.MAL
 import ani.saikou.media.Media
 import ani.saikou.others.AppUpdater
-import ani.saikou.snackString
+import ani.saikou.toastString
 import ani.saikou.tryWithSuspend
 
 
@@ -16,14 +16,13 @@ suspend fun getUserId(update: Runnable) {
     if (Anilist.userid == null && Anilist.token != null) {
         if (Anilist.query.getUserData()) {
             tryWithSuspend{
-                println("mal : ${MAL.token}")
-                if(MAL.token!=null && !MAL.query.getUserData())
-                    snackString("Error loading MAL User Data")
+                if(!MAL.query.getUserData())
+                    toastString("Error loading MAL User Data")
             }
             update.run()
         }
         else
-            snackString("Error loading MAL User Data")                  
+            toastString("Error loading Anilist User Data")
     } else update.run()
 }
 
