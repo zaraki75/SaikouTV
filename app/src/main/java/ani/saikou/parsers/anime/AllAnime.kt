@@ -9,7 +9,6 @@ import ani.saikou.parsers.anime.extractors.GogoCDN
 import ani.saikou.parsers.anime.extractors.StreamSB
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.text.DecimalFormat
 
@@ -19,7 +18,7 @@ class AllAnime : AnimeParser() {
     override val hostUrl = "https://allanime.to"
     override val isDubAvailableSeparately = true
 
-    private val apiHost = "https://api.allanime.co/"
+    private val apiHost = "https://api.allanime.co"
     private val ytAnimeCoversHost = "https://wp.youtube-anime.com/aln.youtube-anime.com"
     private val idRegex = Regex("${hostUrl}/anime/(\\w+)")
     private val epNumRegex = Regex("/[sd]ub/(\\d+)")
@@ -31,13 +30,11 @@ class AllAnime : AnimeParser() {
     private val videoServerHash = "1f0a5d6c9ce6cd3127ee4efd304349345b0737fbf5ec33a60bbc3d18e3bb7c61"
 
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
-        val responseArray = mutableListOf<Episode>()
-
         val showId = idRegex.find(animeLink)?.groupValues?.get(1)
         if (showId != null) {
             val episodeInfos = getEpisodeInfos(showId)
             val format = DecimalFormat("#####.#####")
-            episodeInfos?.sortedBy { it.episodeIdNum }?.forEach { epInfo ->
+            return episodeInfos?.sortedBy { it.episodeIdNum }?.map { epInfo ->
                 val link = """${hostUrl}/anime/$showId/episodes/${if (selectDub) "dub" else "sub"}/${epInfo.episodeIdNum}"""
                 val epNum = format.format(epInfo.episodeIdNum).toString()
                 val thumbnail = epInfo.thumbnails?.let {
@@ -52,10 +49,10 @@ class AllAnime : AnimeParser() {
                         null
                     }
                 }
-                responseArray.add(Episode(epNum, link = link, epInfo.notes, thumbnail))
-            }
+                Episode(epNum, link = link, epInfo.notes, thumbnail)
+            } ?: emptyList()
         }
-        return responseArray
+        return emptyList()
     }
 
     override suspend fun loadVideoServers(episodeLink: String, extra: Map<String, String>?): List<VideoServer> {
@@ -109,6 +106,51 @@ class AllAnime : AnimeParser() {
         return extractor
     }
 
+    override suspend fun search(query: String): List<ShowResponse> {
+        val variables =
+            """{"search":{"allowAdult":${Anilist.adult},"query":"$query"},"translationType":"${if (selectDub) "dub" else "sub"}"}"""
+        return graphqlQuery(variables, searchHash).data?.shows?.edges?.map { show ->
+            val link = """${hostUrl}/anime/${show.id}"""
+            val otherNames = mutableListOf<String>()
+            show.englishName?.let { otherNames.add(it) }
+            show.nativeName?.let { otherNames.add(it) }
+            show.altNames?.forEach { otherNames.add(it) }
+
+            ShowResponse(
+                show.name,
+                link,
+                show.thumbnail?: "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/default.jpg",
+                otherNames,
+                show.availableEpisodes.let { if (selectDub) it.dub else it.sub }
+            )
+        } ?: emptyList()
+    }
+
+    private suspend fun graphqlQuery(variables: String, persistHash: String): Query {
+        val extensions = """{"persistedQuery":{"version":1,"sha256Hash":"$persistHash"}}"""
+        return client.get(
+            "$apiHost/allanimeapi",
+            params = mapOf(
+                "variables" to variables,
+                "extensions" to extensions
+            )
+        ).parsed()
+    }
+
+    private suspend fun getEpisodeInfos(showId: String): List<EpisodeInfo>? {
+        val variables = """{"_id": "$showId"}"""
+        val show = graphqlQuery(variables, idHash).data?.show
+        if (show != null) {
+            val epCount = if (selectDub) show.availableEpisodes.dub else show.availableEpisodes.sub
+            val epVariables = """{"showId":"$showId","episodeNumStart":0,"episodeNumEnd":${epCount}}"""
+            return graphqlQuery(
+                epVariables,
+                episodeInfoHash
+            ).data?.episodeInfos
+        }
+        return null
+    }
+    
     private class AllAnimeExtractor(override val server: VideoServer, val direct: Boolean = false) : VideoExtractor() {
         override suspend fun extract(): VideoContainer {
             val url = "https://allanimenews.com/apivtwo${server.embed.url.substringAfter("apivtwo")}"
@@ -150,76 +192,6 @@ class AllAnime : AnimeParser() {
                 }?.flatten() ?: listOf()
                 VideoContainer(vid,sub)
             }
-        }
-    }
-
-    override suspend fun search(query: String): List<ShowResponse> {
-        val responseArray = arrayListOf<ShowResponse>()
-
-        val variables =
-            """{"search":{"allowAdult":${Anilist.adult},"query":"$query"},"translationType":"${if (selectDub) "dub" else "sub"}"}"""
-        val edges =
-            graphqlQuery(variables, searchHash).data?.shows?.edges
-        if (!edges.isNullOrEmpty()) {
-            for (show in edges) {
-                val link = """${hostUrl}/anime/${show.id}"""
-                val otherNames = mutableListOf<String>()
-                show.englishName?.let { otherNames.add(it) }
-                show.nativeName?.let { otherNames.add(it) }
-                show.altNames?.forEach { otherNames.add(it) }
-                if (show.thumbnail == null) {
-                    snackString(""""Could not get thumbnail for ${show.id}""")
-                    continue
-                }
-                responseArray.add(
-                    ShowResponse(
-                        show.name,
-                        link,
-                        show.thumbnail,
-                        otherNames,
-                        show.availableEpisodes.let { if (selectDub) it.dub else it.sub })
-                )
-            }
-
-        }
-
-        return responseArray
-    }
-
-    private suspend fun graphqlQuery(variables: String, persistHash: String): Query {
-        val extensions = """{"persistedQuery":{"version":1,"sha256Hash":"$persistHash"}}"""
-        val graphqlUrl = ("$hostUrl/allanimeapi").toHttpUrl().newBuilder()
-            .addQueryParameter("variables", variables)
-            .addQueryParameter("extensions", extensions)
-            .build().toString()
-        return client.get(
-            graphqlUrl,
-            mapOf("Host" to hostUrl.toHttpUrl().host)
-        ).parsed()
-    }
-
-    private suspend fun getEpisodeInfos(showId: String): List<EpisodeInfo>? {
-        val variables = """{"_id": "$showId"}"""
-        val show = graphqlQuery(variables, idHash).data?.show
-        if (show != null) {
-            val epCount = if (selectDub) show.availableEpisodes.dub else show.availableEpisodes.sub
-            val epVariables = """{"showId":"$showId","episodeNumStart":0,"episodeNumEnd":${epCount}}"""
-            return graphqlQuery(
-                epVariables,
-                episodeInfoHash
-            ).data?.episodeInfos
-        }
-        return null
-    }
-
-    override suspend fun loadSavedShowResponse(mediaId: Int): ShowResponse? {
-        return loadData("${saveName}_$mediaId")
-    }
-
-    override fun saveShowResponse(mediaId: Int, response: ShowResponse?, selected: Boolean) {
-        if (response != null) {
-            setUserText("${if (selected) "Selected" else "Found"} : ${response.name}")
-            saveData("${saveName}_$mediaId", response)
         }
     }
 
