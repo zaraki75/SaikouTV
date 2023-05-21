@@ -19,14 +19,14 @@ class Swipy @JvmOverloads constructor(
     //public, in case a different sub child needs to be considered
     var child: View? = getChildAt(0)
 
-    var topBeingSwiped: ((Float) -> Unit)? = null
-    var onTopSwiped: (() -> Unit)? = null
-    var onBottomSwiped: (() -> Unit)? = null
-    var bottomBeingSwiped: ((Float) -> Unit)? = null
-    var onLeftSwiped: (() -> Unit)? = null
-    var leftBeingSwiped: ((Float) -> Unit)? = null
-    var onRightSwiped: (() -> Unit)? = null
-    var rightBeingSwiped: ((Float) -> Unit)? = null
+    var topBeingSwiped: ((Float) -> Unit) = {}
+    var onTopSwiped: (() -> Unit) = {}
+    var onBottomSwiped: (() -> Unit) = {}
+    var bottomBeingSwiped: ((Float) -> Unit) = {}
+    var onLeftSwiped: (() -> Unit) = {}
+    var leftBeingSwiped: ((Float) -> Unit) = {}
+    var onRightSwiped: (() -> Unit) = {}
+    var rightBeingSwiped: ((Float) -> Unit) = {}
 
     companion object {
         private const val DRAG_RATE = .5f
@@ -163,17 +163,17 @@ class Swipy @JvmOverloads constructor(
                         if (vertical){
                             val totalDragDistance = Resources.getSystem().displayMetrics.heightPixels / dragDivider
                             if (verticalPos == VerticalPosition.Top)
-                                topBeingSwiped?.invoke(overscroll / totalDragDistance)
-                            else
-                                bottomBeingSwiped?.invoke(overscroll / totalDragDistance)
+                                topBeingSwiped.invoke(overscroll / totalDragDistance)
+                            else    
+                                bottomBeingSwiped.invoke(overscroll / totalDragDistance)
                         }
 
                         else {
                             val totalDragDistance = Resources.getSystem().displayMetrics.widthPixels / dragDivider
                             if (horizontalPos == HorizontalPosition.Left)
-                                leftBeingSwiped?.invoke(overscroll / totalDragDistance)
+                                leftBeingSwiped.invoke(overscroll / totalDragDistance)
                             else
-                                rightBeingSwiped?.invoke(overscroll / totalDragDistance)
+                                rightBeingSwiped.invoke(overscroll / totalDragDistance)
                         }
                     } else {
                         return false
@@ -191,11 +191,11 @@ class Swipy @JvmOverloads constructor(
             MotionEvent.ACTION_POINTER_UP   -> onSecondaryPointerUp(ev)
             MotionEvent.ACTION_UP           -> {
                 if (vertical) {
-                    topBeingSwiped?.invoke(0f)
-                    bottomBeingSwiped?.invoke(0f)
+                    topBeingSwiped.invoke(0f)
+                    bottomBeingSwiped.invoke(0f)
                 } else {
-                    rightBeingSwiped?.invoke(0f)
-                    leftBeingSwiped?.invoke(0f)
+                    rightBeingSwiped.invoke(0f)
+                    leftBeingSwiped.invoke(0f)
                 }
                 pointerIndex = ev.findPointerIndex(activePointerId)
                 if (pointerIndex < 0) {
@@ -239,17 +239,17 @@ class Swipy @JvmOverloads constructor(
                 val totalDragDistance = Resources.getSystem().displayMetrics.heightPixels / dragDivider
                 if (overscrollDistance > totalDragDistance)
                     if (verticalPos == VerticalPosition.Top)
-                        onTopSwiped?.invoke()
+                        onTopSwiped.invoke()
                     else
-                        onBottomSwiped?.invoke()
+                        onBottomSwiped.invoke()
             }
             else {
                 val totalDragDistance = Resources.getSystem().displayMetrics.widthPixels / dragDivider
                 if (overscrollDistance > totalDragDistance)
                 if (horizontalPos == HorizontalPosition.Left)
-                    onLeftSwiped?.invoke()
+                    onLeftSwiped.invoke()
                 else
-                    onRightSwiped?.invoke()
+                    onRightSwiped.invoke()
             }
     }
 }
