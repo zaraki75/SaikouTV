@@ -30,7 +30,7 @@ class AnimePahe : AnimeParser() {
             val url = "$hostUrl/api?m=release&id=$releaseId&sort=episode_asc&page=$i"
             client.get(url).parsed<ReleaseRouteResponse>().data!!.map { ep ->
                 val kwikEpLink = "$hostUrl/play/${releaseId}/${ep.session}"
-                Episode(number = ep.episode.toString().substringBefore(".0"), link = kwikEpLink, title = ep.title)
+                Episode(ep.episode.toString().substringBefore(".0"), kwikEpLink, ep.title, ep.snapshot)
             }
         }.flatten()
     }
