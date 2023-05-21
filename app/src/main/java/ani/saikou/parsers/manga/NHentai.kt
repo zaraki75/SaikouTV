@@ -20,17 +20,19 @@ class NHentai : MangaParser() {
     override val hostUrl = base64Decode("aHR0cHM6Ly9oZW50YWkuYmlnYml0cy5ldS5vcmc=") // pls no abuse
     override val isNSFW = true
 
+    private val referer = "ani.saikou.v1"
+
     override suspend fun search(query: String): List<ShowResponse> {
         if (query.startsWith("#") || query.isDigitsOnly()) {
             val id = query.replace("#", "")
-            val json = client.get("$hostUrl/searchid?id=$id", referer = "ani.saikou").parsed<IdResponse>()
+            val json = client.get("$hostUrl/searchid?id=$id", referer = referer).parsed<IdResponse>()
             return listOf(ShowResponse(
                 name = json.title.pretty,
                 link = id,
                 coverUrl = "https://t.nhentai.net/galleries/${json.mediaId}/cover.jpg"
             ))
         } else {
-            val json = client.get("$hostUrl/search?q=${encode(query)}", referer = "ani.saikou").parsed<SearchResponse>()
+            val json = client.get("$hostUrl/search?q=${encode(query)}", referer = referer).parsed<SearchResponse>()
             return json.result.map {
                 ShowResponse(
                     name = it.title.pretty,
@@ -42,7 +44,7 @@ class NHentai : MangaParser() {
     }
 
     override suspend fun loadChapters(mangaLink: String, extra: Map<String, String>?): List<MangaChapter> {
-        val json = client.get("$hostUrl/searchid?id=$mangaLink", referer = "ani.saikou").parsed<IdResponse>()
+        val json = client.get("$hostUrl/searchid?id=$mangaLink", referer = referer).parsed<IdResponse>()
         // There's no chapter(s) in nhentai. So we have to return here as the "first" chapter.
         return listOf(MangaChapter(
             number = "1",
@@ -52,7 +54,7 @@ class NHentai : MangaParser() {
     }
     
     override suspend fun loadImages(chapterLink: String): List<MangaImage> {
-        val json = client.get(chapterLink, referer = "ani.saikou").parsed<IdResponse>()
+        val json = client.get(chapterLink, referer = referer).parsed<IdResponse>()
         val ext = ext(json.images.pages[0].t)
         return (0 until json.images.pages.size).mapIndexed { i, _ ->
 MangaImage("https://i.nhentai.net/galleries/${json.mediaId}/${i+1}.$ext")
