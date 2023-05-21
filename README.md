@@ -19,7 +19,7 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 > 
 > Please do not attempt to upload Saikou or any of it's forks on Playstore or any other Android appstores on the internet. Doing so, may infringe their terms and conditions. This may result to legal action or immediate take-down of the app.
 
-<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-175525.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-175542.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-175551.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-175600.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-183102.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-183112.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-183120.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-182352.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-182421.png?raw=true" style="width: 23%;margin:16px;" />
+<!--<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-175525.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-175542.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-175551.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-175600.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-183102.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-183112.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-183120.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-182352.png?raw=true" style="width: 23%;margin:16px;" />&nbsp;&nbsp;<img src="https://github.com/saikou-app/saikou-app.github.io/blob/main/assets/Screenshot_20220330-182421.png?raw=true" style="width: 23%;margin:16px;" />-->
 
 
 ## APP FEATURES
@@ -47,6 +47,7 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 |                 [Marin](https://marin.moe)                 |   WORKING   |    YES    |
 |             [AnimePahe](https://animepahe.ru)              |   WORKING   |    YES    |
 |           [ConsumeBili](https://www.bilibili.tv)           |   WORKING   |    NO     |
+|          [KickAssAnime](https://www2.kickassanime.ro)      |   WORKING   |    NO     |
 |               [Haho (18+)](https://haho.moe)               |   WORKING   |    YES    |
 |         [HentaiMama (18+)](https://hentaimama.io)          |   WORKING   |   SOME    |
 |       [HentaiStream (18+)](https://hentaistream.com)       | NOT-WORKING |    YES    |
@@ -118,7 +119,7 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 
 <p align="center">
  <a href="https://discord.gg/TN5Cm94nXU">
-  <img src="https://invidget.switchblade.xyz/5TXAWTU5qr">
+  <img src="https://invidget.switchblade.xyz/TN5Cm94nXU">
  </a>
 </p>
 
