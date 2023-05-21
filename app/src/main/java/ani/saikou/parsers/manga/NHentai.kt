@@ -17,7 +17,7 @@ class NHentai : MangaParser() {
      */
     override val name = "NHentai"
     override val saveName = "n_hentai"
-    override val hostUrl = base64Decode("aHR0cHM6Ly9oZW50YWkuYmlnYml0cy5ldS5vcmc=") // pls no abuse
+    override val hostUrl = "https://nhentai.bigbits.eu.org"
     override val isNSFW = true
 
     private val referer = "ani.saikou.v1"
@@ -69,10 +69,6 @@ MangaImage("https://i.nhentai.net/galleries/${json.mediaId}/${i+1}.$ext")
             "g"  -> "gif"
             else -> "jpg" // unreachable
         }
-    }
-
-    private fun base64Decode(string: String): String {
-        return String(Base64.decode(string, Base64.DEFAULT), Charsets.ISO_8859_1)
     }
 
     @Serializable
