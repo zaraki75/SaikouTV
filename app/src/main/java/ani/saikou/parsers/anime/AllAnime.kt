@@ -111,7 +111,7 @@ class AllAnime : AnimeParser() {
 
     private class AllAnimeExtractor(override val server: VideoServer, val direct: Boolean = false) : VideoExtractor() {
         override suspend fun extract(): VideoContainer {
-            val url = server.embed.url
+            val url = "https://allanimenews.com/apivtwo${server.embed.url.substringAfter("apivtwo")}"
             return if (direct)
                 VideoContainer(listOf(Video(null, VideoType.CONTAINER, url, getSize(url))))
             else {
@@ -194,7 +194,7 @@ class AllAnime : AnimeParser() {
             .build().toString()
         return client.get(
             graphqlUrl,
-            mapOf("Host" to "allanime.site")
+            mapOf("Host" to hostUrl.toHttpUrl().host)
         ).parsed()
     }
 
