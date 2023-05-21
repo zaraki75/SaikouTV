@@ -35,7 +35,7 @@ class AnimePahe : AnimeParser() {
         }.flatten()
     }
 
-    override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
+    override suspend fun loadVideoServers(episodeLink: String, extra: Map<String,String>?): List<VideoServer> {
         val resp = client.get(episodeLink).parsed<KwikUrls>()
         return resp.data.map {
             it.entries.map { i ->

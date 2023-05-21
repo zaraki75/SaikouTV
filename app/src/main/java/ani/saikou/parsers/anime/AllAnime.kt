@@ -58,7 +58,7 @@ class AllAnime : AnimeParser() {
         return responseArray
     }
 
-    override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
+    override suspend fun loadVideoServers(episodeLink: String, extra: Map<String,String>?): List<VideoServer> {
         val showId = idRegex.find(episodeLink)?.groupValues?.get(1)
         val videoServers = mutableListOf<VideoServer>()
         val episodeNum = epNumRegex.find(episodeLink)?.groupValues?.get(1)

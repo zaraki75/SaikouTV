@@ -38,7 +38,7 @@ class ConsumeBili : AnimeParser() {
         }
     }
 
-    override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
+    override suspend fun loadVideoServers(episodeLink: String, extra: Map<String,String>?): List<VideoServer> {
         val extraData = extra as Map<*, *>
         val sourceEpisodeId = extraData["sourceEpisodeId"]
         val sourceMediaId = extraData["sourceMediaId"]

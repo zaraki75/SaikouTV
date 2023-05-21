@@ -1,11 +1,13 @@
 package ani.saikou.parsers.anime
 
 import android.net.Uri
-import ani.saikou.*
+import ani.saikou.FileUrl
+import ani.saikou.Mapper
+import ani.saikou.client
 import ani.saikou.parsers.*
 import ani.saikou.parsers.anime.extractors.*
-import java.net.URLDecoder
 import kotlinx.serialization.Serializable
+import java.net.URLDecoder
 
 class KickAssAnime : AnimeParser() {
 
@@ -76,7 +78,7 @@ class KickAssAnime : AnimeParser() {
         }
     }
 
-    override suspend fun loadVideoServers(episodeLink: String, extra: Any?): List<VideoServer> {
+    override suspend fun loadVideoServers(episodeLink: String, extra: Map<String,String>?): List<VideoServer> {
 
         val (kaastLinks, externalServers) = this.getVideoPlayerLink(episodeLink)
 
