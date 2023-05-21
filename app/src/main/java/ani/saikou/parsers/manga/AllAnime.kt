@@ -8,7 +8,6 @@ import ani.saikou.parsers.MangaParser
 import ani.saikou.parsers.ShowResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.text.DecimalFormat
 
 class AllAnime : MangaParser() {
@@ -16,6 +15,7 @@ class AllAnime : MangaParser() {
     override val saveName = "all_anime_manga"
     override val hostUrl = "https://allanime.to"
 
+    private val apiHost = "https://api.allanime.co"
     private val ytAnimeCoversHost = "https://wp.youtube-anime.com/aln.youtube-anime.com"
     private val idRegex = Regex("${hostUrl}/manga/(\\w+)")
     private val epNumRegex = Regex("/[sd]ub/(\\d+)")
@@ -71,14 +71,13 @@ class AllAnime : MangaParser() {
 
     private suspend fun graphqlQuery(variables: String, persistHash: String): Query {
         val extensions = """{"persistedQuery":{"version":1,"sha256Hash":"$persistHash"}}"""
-        val graphqlUrl = ("$hostUrl/allanimeapi").toHttpUrl().newBuilder()
-            .addQueryParameter("variables", variables)
-            .addQueryParameter("extensions", extensions)
-            .build().toString()
         return client.get(
-                graphqlUrl,
-                mapOf("Host" to hostUrl.toHttpUrl().host)
-            ).parsed()
+            "$apiHost/allanimeapi",
+            params = mapOf(
+                "variables" to variables,
+                "extensions" to extensions
+            )
+        ).parsed()
     }
 
     private suspend fun getEpisodeInfos(showId: String): List<EpisodeInfo>? {      
