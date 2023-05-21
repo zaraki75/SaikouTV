@@ -82,7 +82,7 @@ class KickAssAnime : AnimeParser() {
 
         val serverLinks = mutableListOf<VideoServer>()
         kaastLinks.forEach { pageLink ->
-            if (pageLink == null || pageLink.isEmpty()) return@forEach
+            if (pageLink == null || pageLink.isBlank()) return@forEach
 
             // These are not yet implemented
             if (pageLink.contains("mobile")) return@forEach
