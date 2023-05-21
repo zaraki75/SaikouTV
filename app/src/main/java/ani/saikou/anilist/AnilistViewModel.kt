@@ -16,7 +16,6 @@ suspend fun getUserId(update: Runnable) {
     if (Anilist.userid == null && Anilist.token != null) {
         if (Anilist.query.getUserData()) {
             tryWithSuspend{
-                println("mal : ${MAL.token}")
                 if(MAL.token!=null && !MAL.query.getUserData())
                     snackString("Error loading MAL User Data")
             }

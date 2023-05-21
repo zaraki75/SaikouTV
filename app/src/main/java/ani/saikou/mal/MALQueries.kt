@@ -61,7 +61,7 @@ class MALQueries {
                 "$apiUrl/${if (isAnime) "anime" else "manga"}/$idMAL/my_list_status",
                 authHeader ?: return@tryWithSuspend null,
                 data = data,
-            ).also { println(it) }
+            )
         }
     }
 
@@ -71,7 +71,7 @@ class MALQueries {
             client.delete(
                 "$apiUrl/${if (isAnime) "anime" else "manga"}/$idMAL/my_list_status",
                 authHeader ?: return@tryWithSuspend null
-            ).also { println(it) }
+            )
         }
     }
 

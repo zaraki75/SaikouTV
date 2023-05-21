@@ -158,6 +158,10 @@ fun <T> lazyList(vararg objects: Pair<String, KFunction<T>>): List<Lazier<T>> {
     }
 }
 
+fun <T> T.printIt(pre:String=""):T{
+    println("$pre$this")
+    return this
+}
 
 fun OkHttpClient.Builder.addGoogleDns() = (
         addGenericDns(
