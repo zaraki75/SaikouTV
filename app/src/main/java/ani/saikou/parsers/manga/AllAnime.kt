@@ -6,7 +6,6 @@ import ani.saikou.parsers.MangaChapter
 import ani.saikou.parsers.MangaImage
 import ani.saikou.parsers.MangaParser
 import ani.saikou.parsers.ShowResponse
-import ani.saikou.tryWithSuspend
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -15,7 +14,7 @@ import java.text.DecimalFormat
 class AllAnime : MangaParser() {
     override val name = "AllAnime"
     override val saveName = "all_anime_manga"
-    override val hostUrl = "https://allanime.site"
+    override val hostUrl = "https://allanime.to"
 
     private val ytAnimeCoversHost = "https://wp.youtube-anime.com/aln.youtube-anime.com"
     private val idRegex = Regex("${hostUrl}/manga/(\\w+)")
@@ -42,7 +41,7 @@ class AllAnime : MangaParser() {
         val showId = idRegex.find(chapterLink)?.groupValues?.get(1)!!
         val episodeNum = epNumRegex.find(chapterLink)?.groupValues?.get(1)!!
         val variables = """{"mangaId":"$showId","translationType":"sub","chapterString":"$episodeNum","limit":1000000}"""
-        val chapterPages = graphqlQuery(variables, chapterHash)?.data?.chapterPages?.edges
+        val chapterPages = graphqlQuery(variables, chapterHash).data?.chapterPages?.edges
         // For future reference: If pictureUrlHead is null then the link provided is a relative link of the "apivtwo" variety, but it doesn't seem to contain useful images
         val chapter = chapterPages?.filter { !it.pictureUrlHead.isNullOrEmpty() }?.get(0)!!
         return chapter.pictureUrls.sortedBy { it.num }
@@ -54,7 +53,7 @@ class AllAnime : MangaParser() {
         val variables =
             """{"search":{"isManga":true,"allowAdult":${Anilist.adult},"query":"$query"},"translationType":"sub"}"""
         val edges =
-            graphqlQuery(variables, searchHash)?.data?.mangas?.edges!!
+            graphqlQuery(variables, searchHash).data?.mangas?.edges!!
 
         return edges.map { show ->
             val link = """${hostUrl}/manga/${show.id}"""
@@ -70,27 +69,28 @@ class AllAnime : MangaParser() {
         }
     }
 
-    private suspend fun graphqlQuery(variables: String, persistHash: String): Query? {
+    private suspend fun graphqlQuery(variables: String, persistHash: String): Query {
         val extensions = """{"persistedQuery":{"version":1,"sha256Hash":"$persistHash"}}"""
-        val graphqlUrl = ("$hostUrl/allanimeapi").toHttpUrl().newBuilder().addQueryParameter("variables", variables)
-            .addQueryParameter("extensions", extensions).build()
-        val headers = mutableMapOf<String, String>()
-        headers["Host"] = "allanime.site"
-        return tryWithSuspend {
-            client.get(graphqlUrl.toString(), headers).parsed()
-        }
+        val graphqlUrl = ("$hostUrl/allanimeapi").toHttpUrl().newBuilder()
+            .addQueryParameter("variables", variables)
+            .addQueryParameter("extensions", extensions)
+            .build().toString()
+        return client.get(
+                graphqlUrl,
+                mapOf("Host" to hostUrl.toHttpUrl().host)
+            ).parsed()
     }
 
-    private suspend fun getEpisodeInfos(showId: String): List<EpisodeInfo>? {
+    private suspend fun getEpisodeInfos(showId: String): List<EpisodeInfo>? {      
         val variables = """{"_id": "$showId"}"""
-        val manga = graphqlQuery(variables, idHash)?.data?.manga
+        val manga = graphqlQuery(variables, idHash).data?.manga
         if (manga != null) {
             val epCount = manga.availableChapters.sub
             val epVariables = """{"showId":"manga@$showId","episodeNumStart":0,"episodeNumEnd":${epCount}}"""
             return graphqlQuery(
                 epVariables,
                 episodeInfoHash
-            )?.data?.episodeInfos
+            ).data?.episodeInfos
         }
         return null
     }
