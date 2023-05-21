@@ -24,10 +24,10 @@ class AllAnime : AnimeParser() {
     private val epNumRegex = Regex("/[sd]ub/(\\d+)")
 
 
-    private val idHash = "f73a8347df0e3e794f8955a18de6e85ac25dfc6b74af8ad613edf87bb446a854"
+    private val idHash = "259ae45c19ceff2f855215bb82d377fe7b0ab661f9abcd41538bda935e9cb299"
     private val episodeInfoHash = "73d998d209d6d8de325db91ed8f65716dce2a1c5f4df7d304d952fa3f223c9e8"
-    private val searchHash = "9c7a8bc1e095a34f2972699e8105f7aaf9082c6e1ccd56eab99c2f1a971152c6"
-    private val videoServerHash = "1f0a5d6c9ce6cd3127ee4efd304349345b0737fbf5ec33a60bbc3d18e3bb7c61"
+    private val searchHash = "c4305f3918591071dfecd081da12243725364f6b7dd92072df09d915e390b1b7"
+    private val videoServerHash = "919e327075ac9e249d003aa3f804a48bbdf22d7b1d107ffe659accd54283ce48"
 
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
         val showId = idRegex.find(animeLink)?.groupValues?.get(1)
@@ -128,13 +128,15 @@ class AllAnime : AnimeParser() {
 
     private suspend fun graphqlQuery(variables: String, persistHash: String): Query {
         val extensions = """{"persistedQuery":{"version":1,"sha256Hash":"$persistHash"}}"""
-        return client.get(
+        val res = client.get(
             "$apiHost/allanimeapi",
             params = mapOf(
                 "variables" to variables,
                 "extensions" to extensions
             )
-        ).parsed()
+        ).parsed<Query>()
+        if(res.data==null) throw Exception(res.errors!![0].message)
+        return res
     }
 
     private suspend fun getEpisodeInfos(showId: String): List<EpisodeInfo>? {
@@ -196,7 +198,15 @@ class AllAnime : AnimeParser() {
     }
 
     @Serializable
-    private data class Query(@SerialName("data") var data: Data?) {
+    private data class Query(
+        @SerialName("data") var data: Data?,
+        var errors : List<Error>?
+    ) {
+
+        @Serializable
+        data class Error(
+            var message: String
+        )
 
         @Serializable
         data class Data(
