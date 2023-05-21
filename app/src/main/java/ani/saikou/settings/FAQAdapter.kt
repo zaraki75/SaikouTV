@@ -25,16 +25,16 @@ class FAQAdapter(private val questions: List<Triple<Int, String, String>>, priva
     override fun onBindViewHolder(holder: FAQViewHolder, position: Int) {
         val b = holder.binding.root
         setAnimation(b.context, b, uiSettings)
-        val dev = questions[position]
-        b.text = dev.second
-        b.setCompoundDrawablesWithIntrinsicBounds(dev.first, 0, 0, 0)
+        val faq = questions[position]
+        b.text = faq.second
+        b.setCompoundDrawablesWithIntrinsicBounds(faq.first, 0, 0, 0)
         b.setOnClickListener {
             CustomBottomDialog.newInstance().apply {
-                setTitleText(dev.second)
+                setTitleText(faq.second)
                 addView(
                     TextView(b.context).apply {
                         val markWon = Markwon.builder(b.context).usePlugin(SoftBreakAddsNewLinePlugin.create()).build()
-                        markWon.setMarkdown(this, dev.third)
+                        markWon.setMarkdown(this, faq.third)
                     }
                 )
             }.show(manager, "dialog")

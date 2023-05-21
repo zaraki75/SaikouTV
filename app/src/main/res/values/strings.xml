@@ -321,5 +321,20 @@
     <string name="myanimelist">MyAnimeList</string>
     <string name="login_with_anilist">Login with Anilist!</string>
     <string name="anilist">Anilist</string>
+    <string name="account_help">How does this work\?</string>
+    <string name="full_account_help">
+        Saikou is an Anilist Based App, so for syncing with your MAL Account, It needs an Anilist account to be logged in.
+        \nOnce logged in with both Anilist and MAL accounts, the app will automatically update your MAL account whenever:
+        \n- Add a new Media
+        \n- Edit a Media
+        \n- Delete a Media
+
+        \n\nNote: The app will not sync old Media\'s from Anilist to MAL, It\'s recommended to sync them. For more information, use :
+        \n- [How to sync Anilist data with MAL](https://anilist.co/forum/thread/2654)
+        \n- [How to sync MAL data with Anilist](https://anilist.co/forum/thread/3393)
+
+        \n\n_It is not required to sync both MAL and Anilist accounts._
+    </string>
+
     
 </resources>

@@ -23,6 +23,8 @@ import ani.saikou.others.AppUpdater
 import ani.saikou.others.CustomBottomDialog
 import ani.saikou.parsers.AnimeSources
 import ani.saikou.parsers.MangaSources
+import io.noties.markwon.Markwon
+import io.noties.markwon.SoftBreakAddsNewLinePlugin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -339,6 +341,19 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
             true
         }
           
+        binding.settingsAccountHelp.setOnClickListener {
+            val title = getString(R.string.account_help)
+            val full = getString(R.string.full_account_help)
+            CustomBottomDialog.newInstance().apply {
+                setTitleText(title)
+                addView(
+                    TextView(it.context).apply {
+                        val markWon = Markwon.builder(it.context).usePlugin(SoftBreakAddsNewLinePlugin.create()).build()
+                        markWon.setMarkdown(this,full)
+                    }
+                )
+            }.show(supportFragmentManager, "dialog")
+        }
 
         fun reload(){
             if (Anilist.token != null) {
