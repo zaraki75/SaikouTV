@@ -16,7 +16,9 @@ object AnimeSources : WatchSources() {
         "Jkanime" to ::Jkanime,
         "AnimeLatinoHD" to ::Animelatinohd,
         "Animeflv" to ::TioAnime,
-        "ConsumeBili" to ::ConsumeBili
+        "ConsumeBili" to ::ConsumeBili,
+        "KickAssAnime" to ::KickAssAnime,
+//        "9Anime" to ::NineAnime,        
     )
 }
 
