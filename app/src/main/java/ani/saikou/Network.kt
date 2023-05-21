@@ -1,12 +1,15 @@
 package ani.saikou
 
 import android.content.Context
+import android.os.Build
+import androidx.fragment.app.FragmentActivity
+import ani.saikou.others.webview.CloudFlare
+import ani.saikou.others.webview.WebViewBottomDialog
 import dev.brahmkshatriya.nicehttp.Requests
 import dev.brahmkshatriya.nicehttp.ResponseParser
 import dev.brahmkshatriya.nicehttp.addGenericDns
+import kotlinx.coroutines.*
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.decodeFromString
@@ -23,7 +26,9 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 
 val defaultHeaders = mapOf(
-    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36"
+    "User-Agent" to
+            "Mozilla/5.0 (Linux; Android %s; %s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Mobile Safari/537.36"
+                .format(Build.VERSION.RELEASE, Build.MODEL)
 )
 lateinit var cache: Cache
 
@@ -154,10 +159,11 @@ fun <T> lazyList(vararg objects: Pair<String, KFunction<T>>): List<Lazier<T>> {
     }
 }
 
-fun <T> T.printIt(pre:String=""):T{
+fun <T> T.printIt(pre: String = ""): T {
     println("$pre$this")
     return this
 }
+
 
 fun OkHttpClient.Builder.addGoogleDns() = (
         addGenericDns(
@@ -188,3 +194,25 @@ fun OkHttpClient.Builder.addAdGuardDns() = (
                 "94.140.14.141",
             )
         ))
+
+@Suppress("BlockingMethodInNonBlockingContext")
+fun webViewInterface(type: String, url: FileUrl): Map<String, String>? {
+    val webViewDialog: WebViewBottomDialog? = when (type) {
+        "Cloudflare" -> CloudFlare.newInstance(url)
+        else         -> null
+    }
+    var map : Map<String,String>? = null
+    val latch = CountDownLatch(1)
+    webViewDialog?.callback = {
+        map = it
+        latch.countDown()
+    }
+    val fragmentManager = (currActivity() as FragmentActivity?)?.supportFragmentManager
+    webViewDialog?.show(fragmentManager ?: return null, "web-view")
+    latch.await(2,TimeUnit.MINUTES)
+    return map
+}
+
+fun webViewInterface(type: String, url: String): Map<String, String>? {
+    return webViewInterface(type,FileUrl(url))
+}
