@@ -91,7 +91,6 @@ class AllAnime : AnimeParser() {
     }
 
     override suspend fun getVideoExtractor(server: VideoServer): VideoExtractor? {
-        println(server)
         if (server.extraData as? String? == "player")
             return AllAnimeExtractor(server, true)
         val serverUrl = Uri.parse(server.embed.url)
@@ -194,9 +193,9 @@ class AllAnime : AnimeParser() {
             .addQueryParameter("extensions", extensions)
             .build().toString()
         return client.get(
-            graphqlUrl.also { println(it) },
+            graphqlUrl,
             mapOf("Host" to "allanime.site")
-        ).also { println(it) }.parsed()
+        ).parsed()
     }
 
     private suspend fun getEpisodeInfos(showId: String): List<EpisodeInfo>? {
