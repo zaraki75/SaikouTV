@@ -882,7 +882,6 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         exoSettings.setOnClickListener {
             saveData("${media.id}_${media.anime!!.selectedEpisode}", exoPlayer.currentPosition, this)
             val intent = Intent(this, PlayerSettingsActivity::class.java).apply {
-                putExtra("media", media)
                 putExtra("subtitle", subtitle)
             }
             finish()
@@ -1003,7 +1002,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                 }
             }
         }
-        if(subLang == "none") {
+        if(subLang == "None") {
             subtitle = ext.subtitles.let { null }
         } else {
             subtitle = ext.subtitles.let { sub ->
@@ -1021,7 +1020,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                     "zh-CN"  -> "Chinese"
                     "tr-TR"  -> "Turkish"
                     "ar-ME"  -> "Arabic"
-                    else     -> "English"
+                    else     -> null
                     }
                 }
             }
