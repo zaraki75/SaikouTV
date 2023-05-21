@@ -30,7 +30,7 @@ open class Marin : AnimeParser() {
 
     inline fun <reified T> parse(res:NiceResponse):T{
         val htmlRes = res.document.selectFirst("div#app")!!.attr("data-page")
-        return Mapper.parse(decode(htmlRes).printIt("JSON : "))
+        return Mapper.parse(decode(htmlRes))
     }
 
     override suspend fun search(query: String): List<ShowResponse> {

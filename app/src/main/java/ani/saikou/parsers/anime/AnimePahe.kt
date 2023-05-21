@@ -3,7 +3,6 @@ package ani.saikou.parsers.anime
 import ani.saikou.client
 import ani.saikou.loadData
 import ani.saikou.parsers.*
-import ani.saikou.printIt
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.math.absoluteValue
@@ -29,7 +28,7 @@ class AnimePahe : AnimeParser() {
         val releaseId = animeLink.substringAfter("&id=").substringBefore("&sort")
         return (1 until resp.lastPage + 1).map { i->
             val url = "$hostUrl/api?m=release&id=$releaseId&sort=episode_asc&page=$i"
-            client.get(url).parsed<ReleaseRouteResponse>().printIt("eps : ").data!!.map { ep ->
+            client.get(url).parsed<ReleaseRouteResponse>().data!!.map { ep ->
                 val kwikEpLink = "$hostUrl/play/${releaseId}/${ep.session}"
                 Episode(number = ep.episode.toString().substringBefore(".0"), link = kwikEpLink, title = ep.title)
             }

@@ -14,8 +14,8 @@ android {
         applicationId "ani.saikou"
         minSdk 21
         targetSdk 33
-        versionCode 20
-        versionName "1.0.17"
+        versionCode 65
+        versionName "1.2.1.0"
         signingConfig signingConfigs.debug
     }
 
