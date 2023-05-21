@@ -82,6 +82,22 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".mal.Login"
+            android:configChanges="orientation|screenSize|layoutDirection"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter android:label="Myanimelist Login for Saikou">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="mal"
+                    android:scheme="saikou" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".anilist.UrlMedia"
             android:configChanges="orientation|screenSize|layoutDirection"
             android:exported="true"

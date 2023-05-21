@@ -4,7 +4,9 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
+import ani.saikou.client
 import ani.saikou.openLinkInBrowser
+import ani.saikou.tryWithSuspend
 import java.io.File
 import java.util.*
 
@@ -111,4 +113,33 @@ object Anilist {
             File(context.filesDir, "anilistToken").delete()
         }
     }
+
+    suspend inline fun <reified T : Any> executeQuery(
+        query: String,
+        variables: String = "",
+        force: Boolean = false,
+        useToken: Boolean = true,
+        show: Boolean = false,
+        cache: Int? = null
+    ): T? {
+        return tryWithSuspend {
+            val data = mapOf(
+                "query" to query,
+                "variables" to variables
+            )
+            val headers = mutableMapOf(
+                "Content-Type" to "application/json",
+                "Accept" to "application/json"
+            )
+
+            if (token != null || force) {
+                if (token != null && useToken) headers["Authorization"] = "Bearer $token"
+
+                val json = client.post("https://graphql.anilist.co/", headers, data = data, cacheTime = cache ?: 10)
+                if (!json.text.startsWith("{")) throw Exception("Seems like Anilist is down, maybe try using a VPN or you can wait for it to comeback.")
+                if (show) println("Response : ${json.text}")
+                json.parsed()
+            } else null
+        }
+    }    
 }

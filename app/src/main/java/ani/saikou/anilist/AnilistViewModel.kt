@@ -5,17 +5,24 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ani.saikou.loadData
+import ani.saikou.mal.MAL
 import ani.saikou.media.Media
 import ani.saikou.others.AppUpdater
 import ani.saikou.toastString
+import ani.saikou.tryWithSuspend
 
 
 suspend fun getUserId(update: Runnable) {
     if (Anilist.userid == null && Anilist.token != null) {
-        if (Anilist.query.getUserData())
+        if (Anilist.query.getUserData()) {
+            tryWithSuspend{
+                if(!MAL.query.getUserData())
+                    toastString("Error loading MAL User Data")
+            }
             update.run()
+        }
         else
-            toastString("Error loading Data")
+            toastString("Error loading Anilist User Data")
     } else update.run()
 }
 
@@ -34,7 +41,7 @@ class AnilistHomeViewModel : ViewModel() {
 
     private val animePlanned: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
     fun getAnimePlanned(): LiveData<ArrayList<Media>> = animePlanned
-    suspend fun setAnimePlanned() = animePlanned.postValue(Anilist.query.continueMedia("ANIME",true))
+    suspend fun setAnimePlanned() = animePlanned.postValue(Anilist.query.continueMedia("ANIME", true))
 
     private val mangaContinue: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
     fun getMangaContinue(): LiveData<ArrayList<Media>> = mangaContinue
@@ -46,7 +53,7 @@ class AnilistHomeViewModel : ViewModel() {
 
     private val mangaPlanned: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
     fun getMangaPlanned(): LiveData<ArrayList<Media>> = mangaPlanned
-    suspend fun setMangaPlanned() = mangaPlanned.postValue(Anilist.query.continueMedia("MANGA",true))
+    suspend fun setMangaPlanned() = mangaPlanned.postValue(Anilist.query.continueMedia("MANGA", true))
 
     private val recommendation: MutableLiveData<ArrayList<Media>> = MutableLiveData<ArrayList<Media>>(null)
     fun getRecommendation(): LiveData<ArrayList<Media>> = recommendation
@@ -54,7 +61,8 @@ class AnilistHomeViewModel : ViewModel() {
 
     suspend fun loadMain(context: FragmentActivity) {
         Anilist.getSavedToken(context)
-        if(loadData<Boolean>("check_update") != false) AppUpdater.check(context)
+        MAL.getSavedToken(context)
+        if (loadData<Boolean>("check_update") != false) AppUpdater.check(context)
         genres.postValue(Anilist.query.getGenresAndTags(context))
     }
 

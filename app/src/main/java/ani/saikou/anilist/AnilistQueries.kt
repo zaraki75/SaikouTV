@@ -3,113 +3,18 @@ package ani.saikou.anilist
 import android.app.Activity
 import ani.saikou.*
 import ani.saikou.anilist.Anilist.authorRoles
+import ani.saikou.anilist.Anilist.executeQuery
 import ani.saikou.anilist.api.FuzzyDate
 import ani.saikou.anilist.api.Page
 import ani.saikou.anilist.api.Query
 import ani.saikou.media.Character
 import ani.saikou.media.Media
 import ani.saikou.media.Studio
-import ani.saikou.others.Mal
+import ani.saikou.others.MalScraper
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
-import java.io.Serializable
 import kotlin.system.measureTimeMillis
-
-suspend inline fun <reified T : Any> executeQuery(
-    query: String,
-    variables: String = "",
-    force: Boolean = false,
-    useToken: Boolean = true,
-    show: Boolean = false,
-    cache: Int? = null
-): T? {
-    return tryWithSuspend {
-        val data = mapOf(
-            "query" to query,
-            "variables" to variables
-        )
-        val headers = mutableMapOf(
-            "Content-Type" to "application/json",
-            "Accept" to "application/json"
-        )
-
-        if (Anilist.token != null || force) {
-            if (Anilist.token != null && useToken) headers["Authorization"] = "Bearer ${Anilist.token}"
-
-            val json = client.post("https://graphql.anilist.co/", headers, data = data, cacheTime = cache ?: 10)
-            if (!json.text.startsWith("{")) throw Exception("Seems like Anilist is down, maybe try using a VPN or you can wait for it to comeback.")
-            if (show) println("Response : ${json.text}")
-            json.parsed()
-        } else null
-    }
-}
-
-data class SearchResults(
-    val type: String,
-    var isAdult: Boolean,
-    var onList: Boolean? = null,
-    var perPage: Int? = null,
-    var search: String? = null,
-    var sort: String? = null,
-    var genres: MutableList<String>? = null,
-    var excludedGenres: MutableList<String>? = null,
-    var tags: MutableList<String>? = null,
-    var excludedTags: MutableList<String>? = null,
-    var format: String? = null,
-    var seasonYear: Int? = null,
-    var season: String? = null,
-    var page: Int = 1,
-    var results: MutableList<Media>,
-    var hasNextPage: Boolean,
-) : Serializable {
-    fun toChipList(): List<SearchChip> {
-        val list = mutableListOf<SearchChip>()
-        sort?.let {
-            list.add(SearchChip("SORT", "Sort : $it"))
-        }
-        format?.let {
-            list.add(SearchChip("FORMAT", "Format : $it"))
-        }
-        season?.let {
-            list.add(SearchChip("SEASON", it))
-        }
-        seasonYear?.let {
-            list.add(SearchChip("SEASON_YEAR", it.toString()))
-        }
-        genres?.forEach {
-            list.add(SearchChip("GENRE", it))
-        }
-        excludedGenres?.forEach {
-            list.add(SearchChip("EXCLUDED_GENRE", "Not $it"))
-        }
-        tags?.forEach {
-            list.add(SearchChip("TAG", it))
-        }
-        excludedTags?.forEach {
-            list.add(SearchChip("EXCLUDED_TAG", "Not $it"))
-        }
-        return list
-    }
-
-    fun removeChip(chip: SearchChip) {
-        when (chip.type) {
-            "SORT"           -> sort = null
-            "FORMAT"         -> format = null
-            "SEASON"         -> season = null
-            "SEASON_YEAR"    -> seasonYear = null
-            "GENRE"          -> genres?.remove(chip.text)
-            "EXCLUDED_GENRE" -> excludedGenres?.remove(chip.text)
-            "TAG"            -> tags?.remove(chip.text)
-            "EXCLUDED_TAG"   -> excludedTags?.remove(chip.text)
-        }
-    }
-}
-
-data class SearchChip(
-    val type: String,
-    val text: String
-)
 
 class AnilistQueries {
     suspend fun getUserData(): Boolean {
@@ -303,7 +208,7 @@ class AnilistQueries {
             }
             val mal = async {
                 if (media.idMAL != null) {
-                    Mal.loadMedia(media)
+                    MalScraper.loadMedia(media)
                 }
             }
             awaitAll(anilist, mal)

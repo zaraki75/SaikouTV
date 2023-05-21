@@ -68,7 +68,7 @@ object Mapper : ResponseParser {
 
     @OptIn(InternalSerializationApi::class)
     override fun <T : Any> parse(text: String, kClass: KClass<T>): T {
-        return json.decodeFromString(kClass.serializer(),text)
+        return json.decodeFromString(kClass.serializer(), text)
     }
 
     override fun <T : Any> parseSafe(text: String, kClass: KClass<T>): T? {
@@ -80,7 +80,7 @@ object Mapper : ResponseParser {
     }
 
     override fun writeValueAsString(obj: Any): String {
-        return json.encodeToString(serializer(),obj)
+        return json.encodeToString(serializer(), obj)
     }
 
     inline fun <reified T> parse(text: String): T {
@@ -96,30 +96,34 @@ fun <A, B> Collection<A>.asyncMapNotNull(f: suspend (A) -> B?): List<B> = runBlo
     map { async { f(it) } }.mapNotNull { it.await() }
 }
 
-fun logError(e: Exception) {
+fun logError(e: Exception, post: Boolean = true, snackbar: Boolean = true) {
     val sw = StringWriter()
     val pw = PrintWriter(sw)
     e.printStackTrace(pw)
     val stackTrace: String = sw.toString()
-
-    toastString(e.localizedMessage, null , stackTrace)
+    if (post) {
+        if (snackbar)
+            toastString(e.localizedMessage, null, stackTrace)
+        else
+            toast(e.localizedMessage)
+    }
     e.printStackTrace()
 }
 
-fun <T> tryWith(call: () -> T): T? {
+fun <T> tryWith(post: Boolean = false, snackbar: Boolean = true, call: () -> T): T? {
     return try {
         call.invoke()
     } catch (e: Exception) {
-        logError(e)
+        logError(e, post, snackbar)
         null
     }
 }
 
-suspend fun <T> tryWithSuspend(call: suspend () -> T): T? {
+suspend fun <T> tryWithSuspend(post: Boolean = false, snackbar: Boolean = true, call: suspend () -> T): T? {
     return try {
         call.invoke()
     } catch (e: Exception) {
-        logError(e)
+        logError(e, post, snackbar)
         null
     } catch (e: CancellationException) {
         null

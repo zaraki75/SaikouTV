@@ -6,7 +6,7 @@ import ani.saikou.toastString
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
 
-object Mal {
+object MalScraper {
     private val headers = mapOf(
         "accept" to " text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
         "accept-encoding" to " gzip, deflate, br",

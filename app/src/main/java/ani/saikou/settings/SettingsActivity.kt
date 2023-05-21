@@ -10,12 +10,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import ani.saikou.*
+import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.ActivitySettingsBinding
+import ani.saikou.mal.MAL
 import ani.saikou.others.AppUpdater
 import ani.saikou.others.CustomBottomDialog
 import ani.saikou.parsers.AnimeSources
@@ -25,7 +28,9 @@ import kotlinx.coroutines.launch
 
 
 class SettingsActivity : AppCompatActivity() {
-
+    private val restartMainActivity = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() = startMainActivity(this@SettingsActivity)
+    }
     lateinit var binding: ActivitySettingsBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,11 +69,13 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
             bottomMargin = navBarHeight
         }
 
+        onBackPressedDispatcher.addCallback(this,restartMainActivity)
+
         binding.settingsBack.setOnClickListener {
             onBackPressedDispatcher.onBackPressed()
         }
 
-        val animeSource = loadData<Int>("settings_def_anime_source")?.let{ if(it>=AnimeSources.names.size) 0 else it} ?: 0
+        val animeSource = loadData<Int>("settings_def_anime_source")?.let { if (it >= AnimeSources.names.size) 0 else it } ?: 0
         binding.animeSource.setText(AnimeSources.names[animeSource], false)
         binding.animeSource.setAdapter(ArrayAdapter(this, R.layout.item_dropdown, AnimeSources.names))
         binding.animeSource.setOnItemClickListener { _, _, i, _ ->
@@ -118,7 +125,7 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
             saveData("settings_prefer_dub", isChecked)
         }
 
-        val mangaSource = loadData<Int>("settings_def_manga_source")?.let{ if(it>=MangaSources.names.size) 0 else it} ?: 0
+        val mangaSource = loadData<Int>("settings_def_manga_source")?.let { if (it >= MangaSources.names.size) 0 else it } ?: 0
         binding.mangaSource.setText(MangaSources.names[mangaSource], false)
         binding.mangaSource.setAdapter(ArrayAdapter(this, R.layout.item_dropdown, MangaSources.names))
         binding.mangaSource.setOnItemClickListener { _, _, i, _ ->
@@ -331,5 +338,52 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
             }
             true
         }
+          
+
+        fun reload(){
+            if (Anilist.token != null) {
+                binding.settingsAnilistLogin.setText(R.string.logout)
+                binding.settingsAnilistLogin.setOnClickListener {
+                    Anilist.removeSavedToken(it.context)
+                    restartMainActivity.isEnabled = true
+                    reload()
+                }
+                binding.settingsAnilistUsername.visibility = View.VISIBLE
+                binding.settingsAnilistUsername.text = Anilist.username
+                binding.settingsAnilistAvatar.loadImage(Anilist.avatar)
+
+                binding.settingsMALLoginRequired.visibility = View.GONE
+                binding.settingsMALLogin.visibility = View.VISIBLE
+                binding.settingsMALUsername.visibility = View.VISIBLE
+
+                if (MAL.token != null) {
+                    binding.settingsMALLogin.setText(R.string.logout)
+                    binding.settingsMALLogin.setOnClickListener {
+                        MAL.removeSavedToken(it.context)
+                        restartMainActivity.isEnabled = true
+                        reload()
+                    }
+                    binding.settingsMALUsername.visibility = View.VISIBLE
+                    binding.settingsMALUsername.text = MAL.username
+                    binding.settingsMALAvatar.loadImage(MAL.avatar)
+                } else {
+                    binding.settingsMALUsername.visibility = View.GONE
+                    binding.settingsMALLogin.setText(R.string.login)
+                    binding.settingsMALLogin.setOnClickListener {
+                        MAL.loginIntent(this)
+                    }
+                }
+            } else {
+                binding.settingsAnilistUsername.visibility = View.GONE
+                binding.settingsAnilistLogin.setText(R.string.login)
+                binding.settingsAnilistLogin.setOnClickListener {
+                    Anilist.loginIntent(this)
+                }
+                binding.settingsMALLoginRequired.visibility = View.VISIBLE
+                binding.settingsMALLogin.visibility = View.GONE
+                binding.settingsMALUsername.visibility = View.GONE
+            }
+        }
+        reload()
     }
-}
+}    
