@@ -27,7 +27,7 @@ class KickAssAnimeV2(override val server: VideoServer) : VideoExtractor() {
             json.sources.map { source ->
                 return@map Video(
                     source.quality.removeSuffix("p").toInt(),
-                    if (source.type == "video/mp4") VideoType.CONTAINER else VideoType.M3U8,
+                    if (source.type.contains("mp4")) VideoType.CONTAINER else VideoType.M3U8,
                     source.link,
                 )
             }
