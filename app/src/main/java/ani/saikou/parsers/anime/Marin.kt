@@ -2,7 +2,7 @@ package ani.saikou.parsers.anime
 
 import ani.saikou.*
 import ani.saikou.parsers.*
-import com.lagradost.nicehttp.NiceResponse
+import dev.brahmkshatriya.nicehttp.NiceResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.net.URLDecoder.decode
@@ -28,7 +28,7 @@ open class Marin : AnimeParser() {
         return mapOf("cookie" to cookie!!,"x-xsrf-token" to token!!)
     }
 
-    inline fun <reified T> parse(res:NiceResponse):T{
+    inline fun <reified T> parse(res: NiceResponse):T{
         val htmlRes = res.document.selectFirst("div#app")!!.attr("data-page")
         return Mapper.parse(decode(htmlRes))
     }

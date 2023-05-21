@@ -72,7 +72,7 @@ import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.material.slider.Slider
-import com.lagradost.nicehttp.ignoreAllSSLErrors
+import dev.brahmkshatriya.nicehttp.ignoreAllSSLErrors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

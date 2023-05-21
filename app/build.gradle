@@ -20,6 +20,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix ".beta"
+        }
         release {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -49,8 +52,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1'
-    implementation 'com.github.Blatzar:NiceHttp:0.4.2'
+    implementation 'com.github.brahmkshatriya:NiceHttp:1.0.0'
 
 //    Glide
     implementation 'com.github.bumptech.glide:glide:4.14.2'

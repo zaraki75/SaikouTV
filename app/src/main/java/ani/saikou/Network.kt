@@ -1,9 +1,9 @@
 package ani.saikou
 
 import android.content.Context
-import com.lagradost.nicehttp.Requests
-import com.lagradost.nicehttp.ResponseParser
-import com.lagradost.nicehttp.addGenericDns
+import dev.brahmkshatriya.nicehttp.Requests
+import dev.brahmkshatriya.nicehttp.ResponseParser
+import dev.brahmkshatriya.nicehttp.addGenericDns
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -77,10 +77,6 @@ object Mapper : ResponseParser {
         } catch (e: Exception) {
             null
         }
-    }
-
-    override fun writeValueAsString(obj: Any): String {
-        return json.encodeToString(serializer(), obj)
     }
 
     inline fun <reified T> parse(text: String): T {
