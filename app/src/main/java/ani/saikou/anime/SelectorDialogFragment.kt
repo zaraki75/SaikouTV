@@ -158,6 +158,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
             stopAddingToList()
             val intent = Intent(activity, ExoplayerView::class.java)
             ExoplayerView.media = media
+            ExoplayerView.initialized = true
             startActivity(intent)
         } else {
             model.setEpisode(media.anime!!.episodes!![media.anime.selectedEpisode!!]!!, "startExo no launch")

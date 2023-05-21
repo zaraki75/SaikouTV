@@ -128,6 +128,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     private var orientationListener: OrientationEventListener? = null
 
     companion object{
+        var initialized = false
         lateinit var media : Media
     }
 
@@ -732,6 +733,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
 
         //Handle Media
+        if(!initialized) return
         model.setMedia(media)
         title = media.userPreferredName
         episodes = media.anime?.episodes ?: return
