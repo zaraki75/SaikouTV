@@ -5,9 +5,9 @@
    <a href="https://github.com/saikou-app/saikou/releases"><img src="https://img.shields.io/github/downloads/saikou-app/saikou/total?color=%233DDC84&logo=android&logoColor=%23fff&style=for-the-badge"></a>
 </p>
 
-Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [Anilist](https://anilist.co/) only client, which also lets you stream-download Anime & Manga. 
+Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [Anilist](https://anilist.co/) only client, which also lets you stream/download Anime & Manga. 
 <br><br>
-<i>Saikou (最高; Sai-kō) literally means the best in japanese. Well, we would like to say this is the best open source app for anime and manga on Android, but hey, Try it out yourself & judge!
+<i>Saikou (最高; Sai-kō) literally means the best in Japanese. Well, we would like to say this is the best open source app for anime and manga on Android, but hey, try it out yourself & judge!
 </i> 
 <br>
 <br>
@@ -24,7 +24,7 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 
 ## APP FEATURES
 
-- Easy and functional way to both, watch anime and read manga, Ad Free.
+- Easy and functional way to both, watch anime and read manga, ad-free.
 
 - A completely open source app with a nice UI & Animations :)
 
@@ -68,7 +68,7 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 | [MangaRead](https://www.mangaread.org)     |   WORKING   |
 |   [MangaKatana](https://mangakatana.com)   |   WORKING   |
 |      [Toonily](https://toonily.com/)       |   WORKING   |
-|    [NHentai (18+)](https://nhentai.net)    | NOT WORKING |
+|    [NHentai (18+)](https://nhentai.net)    | NOT-WORKING |
 | [NineHentai (18+)](https://ninehentai.net) |   WORKING   |
 |   [Manwha18 (18+)](https://manhwa18.cc)    |   WORKING   |
 
