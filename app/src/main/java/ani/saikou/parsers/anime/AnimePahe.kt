@@ -1,9 +1,11 @@
 package ani.saikou.parsers.anime
 
 import ani.saikou.client
+import ani.saikou.loadData
 import ani.saikou.parsers.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.math.absoluteValue
 import kotlin.math.pow
 
 class AnimePahe : AnimeParser() {
@@ -17,7 +19,7 @@ class AnimePahe : AnimeParser() {
         val resp = client.get("$hostUrl/api?m=search&q=${encode(query)}").parsed<SearchQuery>()
         return resp.data.map {
             val epLink = "$hostUrl/api?m=release&id=${it.session}&sort=episode_asc"
-            ShowResponse(name = it.title, link = epLink, coverUrl = it.poster)
+            ShowResponse(it.title, epLink, it.poster, extra = mapOf("t" to System.currentTimeMillis().toString())
         }
     }
 
@@ -50,6 +52,14 @@ class AnimePahe : AnimeParser() {
         }.flatten()
     }
 
+    //Responses get deprecated after a week, so we do not load them if they are half a week old
+    override suspend fun loadSavedShowResponse(mediaId: Int): ShowResponse? {
+        val loaded = loadData<ShowResponse>("${saveName}_$mediaId")
+        return if ((loaded?.extra?.get("t")?.toLongOrNull()?.minus(System.currentTimeMillis())?.absoluteValue?:0) <= 302400000)
+            loaded
+        else null
+    }
+        
     override suspend fun getVideoExtractor(server: VideoServer): VideoExtractor = AnimePaheExtractor(server)
 
     class AnimePaheExtractor(override val server: VideoServer) : VideoExtractor() {
