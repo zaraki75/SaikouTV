@@ -73,7 +73,9 @@ class KickAssAnime : AnimeParser() {
             ShowResponse(
                 name = anime.name,
                 link = hostUrl + anime.slug,
-                coverUrl = anime.image + anime.poster
+                coverUrl = FileUrl(anime.image + anime.poster, mapOf(
+                    "User-Agent" to "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) Gecko/20100101 Firefox/101.0"
+                )),
             )
         }
     }
