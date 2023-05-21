@@ -177,6 +177,7 @@ class KickAssAnime : AnimeParser() {
 
         val extractor: VideoExtractor? =
             when (server.extraData.get("id")) {
+                "sapphire-duck"  -> SapphireDuck(referralServer())
                 "pink-bird"      -> PinkBird(referralServer())
                 "streamsb"       -> StreamSB(referralServer())
                 "maverickki"     -> Maverickki(server)

@@ -77,7 +77,7 @@ class SapphireDuck(override val server: VideoServer) : VideoExtractor() {
                         else -> VideoType.CONTAINER
                     },
                     size = getSize(stream.url),
-                    extraNote = if (stream.audioLang == "ja-JP  " && stream.audioLang != stream.hardsubLang) {
+                    extraNote = if (stream.audioLang == "ja-JP" && stream.audioLang != stream.hardsubLang) {
                         if (subs.isNotEmpty()) "Softsubbed ${subtitleStr(
                             stream.hardsubLang.ifEmpty { stream.audioLang }
                         )}"
