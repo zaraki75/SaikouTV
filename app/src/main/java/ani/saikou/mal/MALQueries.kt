@@ -52,10 +52,10 @@ class MALQueries {
             data["score"] = score.div(10).toString()
         if(rewatch!=null)
             data[if(isAnime) "num_times_rewatched" else "num_times_reread"] = rewatch.toString()
-        if(start!=null)
-            data["start_date"] = start.toISOString()
-        if(end!=null)
-            data["finish_date"] = end.toISOString()      
+//        if(start!=null)
+//            data["start_date"] = start.toISOString()
+//        if(end!=null)
+//            data["finish_date"] = end.toISOString()      
         tryWithSuspend {
             client.put(
                 "$apiUrl/${if (isAnime) "anime" else "manga"}/$idMAL/my_list_status",
