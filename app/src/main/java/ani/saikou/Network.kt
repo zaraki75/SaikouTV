@@ -34,7 +34,7 @@ fun initializeNetwork(context: Context) {
     val dns = loadData<Int>("settings_dns", context)
     cache = Cache(
         File(context.cacheDir, "http_cache"),
-        50L * 1024L * 1024L // 50 MiB
+        5 * 1024L * 1024L // 5 MiB
     )
     okHttpClient = OkHttpClient.Builder()
         .followRedirects(true)
