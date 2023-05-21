@@ -113,7 +113,7 @@ class MediaDetailsViewModel : ViewModel() {
             val list = mutableListOf<VideoExtractor>()
             ep.extractors = list
             watchSources?.get(i)?.apply {
-                if (!post && post == allowsPreloading) return@apply
+                if (!post && !allowsPreloading) return@apply
                 loadByVideoServers(link, ep.extra) {
                     if (it.videos.isNotEmpty()) {
                         list.add(it)
@@ -121,7 +121,8 @@ class MediaDetailsViewModel : ViewModel() {
                     }
                 }
                 ep.extractorCallback = null
-                ep.allStreams = true
+                if(list.isNotEmpty())
+                    ep.allStreams = true
             }
         }
 
