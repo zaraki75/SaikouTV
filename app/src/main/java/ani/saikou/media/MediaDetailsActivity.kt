@@ -2,7 +2,6 @@ package ani.saikou.media
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.text.SpannableStringBuilder
@@ -142,29 +141,29 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         binding.mediaStatus.text = media.status ?: ""
 
         //Fav Button
-        if (Anilist.userid != null) {
+        val favButton = if (Anilist.userid != null) {
             if (media.isFav) binding.mediaFav.setImageDrawable(
                 AppCompatResources.getDrawable(
                     this,
                     R.drawable.ic_round_favorite_24
                 )
             )
-            val favButton = PopImageButton(
+            PopImageButton(
                 scope,
-                this,
                 binding.mediaFav,
-                media,
                 R.drawable.ic_round_favorite_24,
                 R.drawable.ic_round_favorite_border_24,
                 R.color.nav_tab,
                 R.color.fav,
-                true
-            )
-            binding.mediaFav.setOnClickListener {
-                favButton.clicked()
+                media.isFav
+            ) {
+                media.isFav = it
+                Anilist.mutation.toggleFav(media.anime != null, media.id)
+                Refresh.all()
             }
         } else {
             binding.mediaFav.visibility = View.GONE
+            null
         }
 
         fun total() {
@@ -213,16 +212,13 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         }
         progress()
 
-        //Share Button
         model.getMedia().observe(this) {
             if (it != null) {
                 media = it
-                if (it.notify) binding.mediaNotify.setImageDrawable(
-                    AppCompatResources.getDrawable(
-                        this,
-                        R.drawable.ic_round_share_24
-                    )
-                )
+                scope.launch {
+                    if(media.isFav!=favButton?.clicked) favButton?.clicked()
+                }
+
                 binding.mediaNotify.setOnClickListener {
                     val i = Intent(Intent.ACTION_SEND)
                     i.type = "text/plain"
@@ -289,7 +285,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
 
     private fun selectFromID(id: Int) {
         when (id) {
-            R.id.info -> {
+            R.id.info             -> {
                 selected = 0
             }
             R.id.watch, R.id.read -> {
@@ -375,61 +371,62 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         if (percentage == 0 && model.scrolledToTop.value != true) model.scrolledToTop.postValue(true)
     }
 
-    inner class PopImageButton(
+    class PopImageButton(
         private val scope: CoroutineScope,
-        private val activity: Activity,
         private val image: ImageView,
-        private val media: Media,
         private val d1: Int,
         private val d2: Int,
         private val c1: Int,
         private val c2: Int,
-        private val fav_or_not: Boolean? = null
+        var clicked: Boolean,
+        callback: suspend (Boolean) -> (Unit)
     ) {
+        private val context = image.context
         private var pressable = true
-        private var clicked = false
-        fun clicked() {
-            if (pressable) {
-                pressable = false
-                if (fav_or_not != null) {
-                    if (fav_or_not) {
-                        media.isFav = !media.isFav
-                        clicked = media.isFav
-                        scope.launch(Dispatchers.IO) {
-                            Anilist.mutation.toggleFav(media.anime != null, media.id)
-                            Refresh.all()
+
+        init {
+            scope.launch {
+                clicked()
+            }
+            image.setOnClickListener {
+                if (pressable) {
+                    pressable = false
+                    clicked = !clicked
+                    scope.launch {
+                        launch(Dispatchers.IO) {
+                            callback.invoke(clicked)
                         }
+                        clicked()
+                        pressable = true
                     }
-                } else clicked = !clicked
-                ObjectAnimator.ofFloat(image, "scaleX", 1f, 0f).setDuration(69).start()
-                ObjectAnimator.ofFloat(image, "scaleY", 1f, 0f).setDuration(100).start()
-                scope.launch {
-                    delay(100)
-                    if (clicked) {
-                        ObjectAnimator.ofArgb(
-                            image,
-                            "ColorFilter",
-                            ContextCompat.getColor(activity, c1),
-                            ContextCompat.getColor(activity, c2)
-                        ).setDuration(120).start()
-                        image.setImageDrawable(AppCompatResources.getDrawable(activity, d1))
-                    } else image.setImageDrawable(AppCompatResources.getDrawable(activity, d2))
-                    ObjectAnimator.ofFloat(image, "scaleX", 0f, 1.5f).setDuration(120).start()
-                    ObjectAnimator.ofFloat(image, "scaleY", 0f, 1.5f).setDuration(100).start()
-                    delay(120)
-                    ObjectAnimator.ofFloat(image, "scaleX", 1.5f, 1f).setDuration(100).start()
-                    ObjectAnimator.ofFloat(image, "scaleY", 1.5f, 1f).setDuration(100).start()
-                    delay(200)
-                    if (clicked) ObjectAnimator.ofArgb(
-                        image,
-                        "ColorFilter",
-                        ContextCompat.getColor(activity, c2),
-                        ContextCompat.getColor(activity, c1)
-                    ).setDuration(200).start()
-                    pressable = true
                 }
             }
         }
+
+        suspend fun clicked() {
+            ObjectAnimator.ofFloat(image, "scaleX", 1f, 0f).setDuration(69).start()
+            ObjectAnimator.ofFloat(image, "scaleY", 1f, 0f).setDuration(100).start()
+            delay(100)
+            if (clicked) {
+                ObjectAnimator.ofArgb(image,
+                    "ColorFilter",
+                    ContextCompat.getColor(context, c1),
+                    ContextCompat.getColor(context, c2)
+                ).setDuration(120).start()
+                image.setImageDrawable(AppCompatResources.getDrawable(context, d1))
+            } else image.setImageDrawable(AppCompatResources.getDrawable(context, d2))
+            ObjectAnimator.ofFloat(image, "scaleX", 0f, 1.5f).setDuration(120).start()
+            ObjectAnimator.ofFloat(image, "scaleY", 0f, 1.5f).setDuration(100).start()
+            delay(120)
+            ObjectAnimator.ofFloat(image, "scaleX", 1.5f, 1f).setDuration(100).start()
+            ObjectAnimator.ofFloat(image, "scaleY", 1.5f, 1f).setDuration(100).start()
+            delay(200)
+            if (clicked) ObjectAnimator.ofArgb(
+                image,
+                "ColorFilter",
+                ContextCompat.getColor(context, c2),
+                ContextCompat.getColor(context, c1)
+            ).setDuration(200).start()
+        }        
     }
 }
-

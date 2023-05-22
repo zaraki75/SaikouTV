@@ -25,7 +25,7 @@ import java.io.File
 class MediaDetailsViewModel : ViewModel() {
     val scrolledToTop = MutableLiveData(true)
 
-    fun saveSelected(id: Int, data: Selected, activity: Activity) {
+    fun saveSelected(id: Int, data: Selected, activity: Activity? = null) {
         saveData("$id-select", data, activity)
     }
 
@@ -36,6 +36,7 @@ class MediaDetailsViewModel : ViewModel() {
                 else -> loadData("settings_def_manga_source") ?: 0
             }
             it.preferDub = loadData("settings_prefer_dub") ?: false
+            saveSelected(media.id, it)
             it
         }
     }
@@ -121,7 +122,7 @@ class MediaDetailsViewModel : ViewModel() {
                     }
                 }
                 ep.extractorCallback = null
-                if(list.isNotEmpty())
+                if (list.isNotEmpty())
                     ep.allStreams = true
             }
         }
@@ -136,8 +137,8 @@ class MediaDetailsViewModel : ViewModel() {
     }
 
     val timeStamps = MutableLiveData<List<AniSkip.Stamp>?>()
-    private val timeStampsMap : MutableMap<Int, List<AniSkip.Stamp>?> = mutableMapOf()
-    suspend fun loadTimeStamps(malId:Int?, episodeNum: Int?, duration:Long, useProxyForTimeStamps:Boolean){
+    private val timeStampsMap: MutableMap<Int, List<AniSkip.Stamp>?> = mutableMapOf()
+    suspend fun loadTimeStamps(malId: Int?, episodeNum: Int?, duration: Long, useProxyForTimeStamps: Boolean) {
         malId ?: return
         episodeNum ?: return
         if (timeStampsMap.containsKey(episodeNum))
@@ -154,7 +155,7 @@ class MediaDetailsViewModel : ViewModel() {
             val link = ep.link ?: return false
 
             ep.extractors = mutableListOf(watchSources?.get(selected.source)?.let {
-                if (!post && post == it.allowsPreloading) null
+                if (!post && !it.allowsPreloading) null
                 else it.loadSingleVideoServer(server, link, ep.extra)
             } ?: return false)
             ep.allStreams = false

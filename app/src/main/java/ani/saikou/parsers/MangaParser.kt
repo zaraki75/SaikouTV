@@ -14,6 +14,18 @@ abstract class MangaParser : BaseParser() {
     abstract suspend fun loadChapters(mangaLink: String, extra: Map<String, String>?): List<MangaChapter>
 
     /**
+     * Takes ShowResponse.link, ShowResponse.extra & the Last Largest Chapter Number known by app as arguments
+     *
+     * Returns the latest chapter (If overriding, Make sure the chapter is actually the latest chapter)
+     * Returns null, if no latest chapter is found.
+     * **/
+    open suspend fun getLatestChapter(mangaLink: String, extra: Map<String, String>?, latest: Float): MangaChapter? {
+        return loadChapters(mangaLink, extra)
+            .maxByOrNull { it.number.toFloatOrNull() ?: 0f }
+            ?.takeIf { latest < (it.number.toFloatOrNull() ?: 0.001f) }
+    }
+
+    /**
      * Takes MangaChapter.link as an argument & returns a list of MangaImages with their Url (with headers & transformations, if needed)
      * **/
     abstract suspend fun loadImages(chapterLink: String): List<MangaImage>

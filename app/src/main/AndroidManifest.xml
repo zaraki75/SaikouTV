@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -46,10 +48,16 @@
         <activity android:name=".settings.ReaderSettingsActivity" />
         <activity android:name=".settings.UserInterfaceSettingsActivity" />
         <activity android:name=".settings.PlayerSettingsActivity" />
-        <activity android:name=".settings.SettingsActivity" />
-        <activity android:name=".media.SearchActivity" />
+        <activity
+            android:name=".settings.SettingsActivity"
+            android:parentActivityName=".MainActivity"/>
+        <activity
+            android:name=".media.SearchActivity"
+            android:parentActivityName=".MainActivity" />
         <activity android:name=".media.StudioActivity" />
-        <activity android:name=".media.CalendarActivity" />
+        <activity
+            android:name=".media.CalendarActivity"
+            android:parentActivityName=".MainActivity"/>
         <activity android:name=".user.ListActivity" />
         <activity
             android:name=".manga.mangareader.MangaReaderActivity"
@@ -61,6 +69,7 @@
         <activity android:name=".GenreActivity" />
         <activity
             android:name=".media.MediaDetailsActivity"
+            android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.Saikou.NeverCutout" />
         <activity android:name=".media.CharacterDetailsActivity" />
         <activity android:name=".NoInternet" />
@@ -77,7 +86,8 @@
             android:name=".anilist.Login"
             android:configChanges="orientation|screenSize|layoutDirection"
             android:exported="true"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:excludeFromRecents="true">
             <intent-filter android:label="Anilist Login for Saikou">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -93,7 +103,8 @@
             android:name=".mal.Login"
             android:configChanges="orientation|screenSize|layoutDirection"
             android:exported="true"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:excludeFromRecents="true">
             <intent-filter android:label="Myanimelist Login for Saikou">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -105,11 +116,13 @@
                     android:scheme="saikou" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".anilist.UrlMedia"
             android:configChanges="orientation|screenSize|layoutDirection"
             android:exported="true"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:excludeFromRecents="true">
             <intent-filter android:label="Read on Saikou">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -147,8 +160,10 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".settings.TVConnectionActivity"
+        <activity 
+            android:name=".settings.TVConnectionActivity"
             android:exported="true" />
+        </activity>
 
         <activity
             android:name="ani.saikou.tv.TVMainActivity"
@@ -159,10 +174,21 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name="ani.saikou.tv.TVDetailActivity"
             android:theme="@style/Theme.SaikouTV"
             android:exported="true" />
+        </activity>
+
+        <receiver
+            android:name=".others.AutoStartServiceOnBoot"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

@@ -9,12 +9,16 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.*
 import ani.saikou.databinding.ItemAnimeWatchBinding
 import ani.saikou.databinding.ItemChipBinding
 import ani.saikou.media.Media
+import ani.saikou.media.MediaDetailsActivity
 import ani.saikou.media.SourceSearchDialogFragment
+import ani.saikou.others.SubscriptionHelper
+import ani.saikou.others.SubscriptionWorker
 import ani.saikou.parsers.WatchSources
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.MainScope
@@ -48,13 +52,13 @@ class AnimeWatchAdapter(
         }
 
         binding.animeSourceDubbed.isChecked = media.selected!!.preferDub
-        binding.animeSourceDubbedText.text = if(media.selected!!.preferDub) "Dubbed" else "Subbed"
+        binding.animeSourceDubbedText.text = if (media.selected!!.preferDub) "Dubbed" else "Subbed"
 
         //PreferDub
         var changing = false
         binding.animeSourceDubbed.setOnCheckedChangeListener { _, isChecked ->
-            binding.animeSourceDubbedText.text = if(isChecked) "Dubbed" else "Subbed"
-            if(!changing) fragment.onDubClicked(isChecked)
+            binding.animeSourceDubbedText.text = if (isChecked) "Dubbed" else "Subbed"
+            if (!changing) fragment.onDubClicked(isChecked)
         }
 
         //Wrong Title
@@ -63,13 +67,13 @@ class AnimeWatchAdapter(
         }
 
         //Source Selection
-        val source = media.selected!!.source.let { if(it>=watchSources.names.size) 0 else it }
+        val source = media.selected!!.source.let { if (it >= watchSources.names.size) 0 else it }
         binding.animeSource.setText(watchSources.names[source])
         watchSources[source].apply {
             this.selectDub = media.selected!!.preferDub
             binding.animeSourceTitle.text = showUserText
             showUserTextListener = { MainScope().launch { binding.animeSourceTitle.text = it } }
-            binding.animeSourceDubbedCont.visibility = if(isDubAvailableSeparately) View.VISIBLE else View.GONE
+            binding.animeSourceDubbedCont.visibility = if (isDubAvailableSeparately) View.VISIBLE else View.GONE
         }
 
         binding.animeSource.setAdapter(ArrayAdapter(fragment.requireContext(), R.layout.item_dropdown, watchSources.names))
@@ -78,12 +82,42 @@ class AnimeWatchAdapter(
             fragment.onSourceChange(i).apply {
                 binding.animeSourceTitle.text = showUserText
                 showUserTextListener = { MainScope().launch { binding.animeSourceTitle.text = it } }
-                changing=true
+                changing = true
                 binding.animeSourceDubbed.isChecked = selectDub
-                changing=false
-                binding.animeSourceDubbedCont.visibility = if(isDubAvailableSeparately) View.VISIBLE else View.GONE
+                changing = false
+                binding.animeSourceDubbedCont.visibility = if (isDubAvailableSeparately) View.VISIBLE else View.GONE
             }
             fragment.loadEpisodes(i)
+        }
+
+        //Subscription
+        MediaDetailsActivity.PopImageButton(
+            fragment.lifecycleScope,
+            binding.animeSourceSubscribe,
+            R.drawable.ic_round_notifications_active_24,
+            R.drawable.ic_round_notifications_none_24,
+            R.color.bg_opp,
+            R.color.violet_400,
+            media.selected!!.subscribed
+        ) {
+            fragment.onNotificationPressed(it, binding.animeSource.text.toString())
+        }
+
+        binding.animeSourceSubscribe.setOnLongClickListener {
+            fragment.lifecycleScope.launch {
+                SubscriptionWorker.createNotification(
+                    it.context,
+                    SubscriptionHelper.Companion.SubscribeMedia(
+                        true,
+                        media.isAdult,
+                        media.id,
+                        media.userPreferredName,
+                        media.cover
+                    ),
+                    "Test"
+                )
+            }
+            true
         }
 
         //Icons
@@ -171,10 +205,10 @@ class AnimeWatchAdapter(
             if (media.anime?.episodes != null) {
                 val episodes = media.anime.episodes!!.keys.toTypedArray()
 
-                val anilistEp = (media.userProgress?:0).plus(1)
+                val anilistEp = (media.userProgress ?: 0).plus(1
                 val appEp = loadData<String>("${media.id}_current_ep")?.toIntOrNull() ?: 1
 
-                var continueEp = (if(anilistEp>appEp) anilistEp else appEp).toString()
+                var continueEp = (if (anilistEp > appEp) anilistEp else appEp).toString()
                 if (episodes.contains(continueEp)) {
                     binding.animeSourceContinue.visibility = View.VISIBLE
                     handleProgress(
@@ -198,7 +232,7 @@ class AnimeWatchAdapter(
                         }
                     }
                     val ep = media.anime.episodes!![continueEp]!!
-                    binding.itemEpisodeImage.loadImage(ep.thumb?:FileUrl[media.banner?:media.cover],0)
+                    binding.itemEpisodeImage.loadImage(ep.thumb ?: FileUrl[media.banner ?: media.cover], 0)
                     if (ep.filler) binding.itemEpisodeFillerView.visibility = View.VISIBLE
                     binding.animeSourceContinueText.text =
                         "Continue : Episode ${ep.number}${if (ep.filler) " - Filler" else ""}${if (ep.title != null) "\n${ep.title}" else ""}"
@@ -211,8 +245,7 @@ class AnimeWatchAdapter(
                             fragment.continueEp = false
                         }
                     }
-                }
-                else{
+                } else {
                     binding.animeSourceContinue.visibility = View.GONE
                 }
                 binding.animeSourceProgressBar.visibility = View.GONE

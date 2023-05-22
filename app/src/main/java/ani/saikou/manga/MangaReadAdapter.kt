@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import ani.saikou.R
 import ani.saikou.anime.handleProgress
@@ -15,6 +16,7 @@ import ani.saikou.databinding.ItemChipBinding
 import ani.saikou.loadData
 import ani.saikou.loadImage
 import ani.saikou.media.Media
+import ani.saikou.media.MediaDetailsActivity
 import ani.saikou.media.SourceSearchDialogFragment
 import ani.saikou.parsers.MangaReadSources
 import ani.saikou.px
@@ -64,6 +66,20 @@ class MangaReadAdapter(
 
         //Title
         binding.sourceTitle.setText(R.string.chaps)
+
+        //Subscription
+        MediaDetailsActivity.PopImageButton(
+            fragment.lifecycleScope,
+            binding.animeSourceSubscribe,
+            R.drawable.ic_round_notifications_active_24,
+            R.drawable.ic_round_notifications_none_24,
+            R.color.bg_opp,
+            R.color.violet_400,
+            media.selected!!.subscribed
+        ) {
+            fragment.onNotificationPressed(it,binding.animeSource.text.toString())
+        }
+
 
         //Icons
         binding.animeSourceGrid.visibility = View.GONE

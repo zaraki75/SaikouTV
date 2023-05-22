@@ -11,13 +11,17 @@ import ani.saikou.startMainActivity
 class UrlMedia : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val data: Uri? = intent?.data
-        if (data?.host != "anilist.co") loadIsMAL = true
-        try {
-            if (data?.pathSegments?.get(1) != null) loadMedia = data.pathSegments?.get(1)?.toIntOrNull()
-        } catch (e: Exception) {
-            logError(e)
+        val id = intent?.extras?.getInt("media") ?: 0
+        if(id==0){
+            val data: Uri? = intent?.data
+            if (data?.host != "anilist.co") loadIsMAL = true
+            try {
+                if (data?.pathSegments?.get(1) != null) loadMedia = data.pathSegments?.get(1)?.toIntOrNull()
+            } catch (e: Exception) {
+                logError(e)
+            }
         }
+        else loadMedia = id
         startMainActivity(this)
     }
 }
