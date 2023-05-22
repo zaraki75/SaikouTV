@@ -24,10 +24,10 @@ class AllAnime : AnimeParser() {
     private val epNumRegex = Regex("/[sd]ub/(\\d+)")
 
 
-    private val idHash = "259ae45c19ceff2f855215bb82d377fe7b0ab661f9abcd41538bda935e9cb299"
-    private val episodeInfoHash = "73d998d209d6d8de325db91ed8f65716dce2a1c5f4df7d304d952fa3f223c9e8"
-    private val searchHash = "c4305f3918591071dfecd081da12243725364f6b7dd92072df09d915e390b1b7"
-    private val videoServerHash = "919e327075ac9e249d003aa3f804a48bbdf22d7b1d107ffe659accd54283ce48"
+    private val idHash = "d6069285a58a25defe4a217b82140c6da891605c20e510d4683ae73190831ab0"
+    private val episodeInfoHash = "31cf94e101217bab1f65be244e37c2a925d6a335ca596972bbc34b4be1b21548"
+    private val searchHash = "b645a686b1988327795e1203867ed24f27c6338b41e5e3412fc1478a8ab6774e"
+    private val videoServerHash = "0ac09728ee9d556967c1a60bbcf55a9f58b4112006d09a258356aeafe1c33889"
 
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
         val showId = idRegex.find(animeLink)?.groupValues?.get(1)
@@ -138,7 +138,7 @@ class AllAnime : AnimeParser() {
                 "extensions" to extensions
             )
         ).parsed<Query>()
-        if (res.data == null) throw Exception(res.errors!![0].message)
+        if (res.data == null) throw Exception("Var : $variables\nError : ${res.errors!![0].message}")
         return res
     }
 
