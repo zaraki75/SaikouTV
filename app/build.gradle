@@ -14,7 +14,7 @@ android {
         applicationId "ani.saikou"
         minSdk 21
         targetSdk 33
-        versionCode 65
+        versionCode System.currentTimeMillis().toInteger().abs()
         versionName "1.2.1.0"
         signingConfig signingConfigs.debug
     }
@@ -66,12 +66,13 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
 //    Exoplayer
-    implementation 'com.google.android.exoplayer:exoplayer-core:2.18.3'
-    implementation 'com.google.android.exoplayer:exoplayer-ui:2.18.3'
-    implementation 'com.google.android.exoplayer:exoplayer-hls:2.18.3'
-    implementation 'com.google.android.exoplayer:exoplayer-dash:2.18.3'
-    implementation 'com.google.android.exoplayer:extension-okhttp:2.18.3'
-    implementation 'com.google.android.exoplayer:extension-mediasession:2.18.3'
+    ext.exo_version = '2.18.4'
+    implementation "com.google.android.exoplayer:exoplayer-core:$exo_version"
+    implementation "com.google.android.exoplayer:exoplayer-ui:$exo_version"
+    implementation "com.google.android.exoplayer:exoplayer-hls:$exo_version"
+    implementation "com.google.android.exoplayer:exoplayer-dash:$exo_version"
+    implementation "com.google.android.exoplayer:extension-okhttp:$exo_version"
+    implementation "com.google.android.exoplayer:extension-mediasession:$exo_version"
 
 //    UI
     implementation 'com.google.android.material:material:1.8.0'
