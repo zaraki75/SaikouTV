@@ -179,7 +179,7 @@
     <string name="height">Height</string>
     <string name="width">Width</string>
     <string name="default_quality_info">Automatically uses the closest quality provided by default, ONLY applied for \"Multi Quality\" Servers. Auto changes upon playing a video.</string>
-    <string name="default_playback_speed">Default Playback Speed - %1$s</string>
+    <string name="default_playback_speed">Default Playback Speed\n%1$s</string>
     <string name="cursed_speeds">Cursed Speeds</string>
     <string name="resize_mode_button">Default Resize Mode</string>
     <string name="subtitles">Subtitles</string>
@@ -298,7 +298,7 @@
     <string name="total_repeats">TOTAL REPEATS</string>
     <string name="custom_lists">Custom Lists</string>
     <string name="donate_desc">Want to support Saikou\'s Creator?\nConsider Donating</string>
-    <string name="donate_goal">(We reached a donation of $500!)</string>
+    <string name="donate_goal">(Let\'s reach to $1000!)</string>
     <string name="filter">Filter</string>
     <string name="year">Year</string>
     <string name="apply">Apply</string>
@@ -339,6 +339,11 @@
 
         \n\n_It is not required to sync both MAL and Anilist accounts._
     </string>
+    <string name="notification_for_checking_subscriptions">Show notification for Checking Subscriptions</string>
+    <string name="checking_subscriptions">Notification for Checking Subscriptions</string>
+    <string name="subscriptions_checking_time_s">Subscriptions Update Frequency\n%1$s</string>
+    <string name="subscriptions_checking_time">Subscriptions Update Frequency</string>
+    <string name="subscriptions_info">Amount of time for Saikou to periodically check for new Episodes/Chapters\n(Less time will cause more battery consumption)</string>
 
     
 </resources>

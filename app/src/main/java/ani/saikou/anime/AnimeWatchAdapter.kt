@@ -17,8 +17,8 @@ import ani.saikou.databinding.ItemChipBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsActivity
 import ani.saikou.media.SourceSearchDialogFragment
-import ani.saikou.others.SubscriptionHelper
-import ani.saikou.others.SubscriptionWorker
+import ani.saikou.others.Notifications.Companion.openSettings
+import ani.saikou.others.SubscriptionWorker.Companion.getChannelId
 import ani.saikou.parsers.WatchSources
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.MainScope
@@ -104,20 +104,7 @@ class AnimeWatchAdapter(
         }
 
         binding.animeSourceSubscribe.setOnLongClickListener {
-            fragment.lifecycleScope.launch {
-                SubscriptionWorker.createNotification(
-                    it.context,
-                    SubscriptionHelper.Companion.SubscribeMedia(
-                        true,
-                        media.isAdult,
-                        media.id,
-                        media.userPreferredName,
-                        media.cover
-                    ),
-                    "Test"
-                )
-            }
-            true
+openSettings(fragment.requireContext(),getChannelId(true,media.id))
         }
 
         //Icons

@@ -18,6 +18,8 @@ import ani.saikou.loadImage
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsActivity
 import ani.saikou.media.SourceSearchDialogFragment
+import ani.saikou.others.Notifications.Companion.openSettings
+import ani.saikou.others.SubscriptionWorker.Companion.getChannelId
 import ani.saikou.parsers.MangaReadSources
 import ani.saikou.px
 import com.google.android.material.chip.Chip
@@ -43,7 +45,7 @@ class MangaReadAdapter(
         _binding = binding
 
         //Source Selection
-        val source = media.selected!!.source.let { if(it>=mangaReadSources.names.size) 0 else it }
+        val source = media.selected!!.source.let { if (it >= mangaReadSources.names.size) 0 else it }
         binding.animeSource.setText(mangaReadSources.names[source])
         mangaReadSources[source].apply {
             binding.animeSourceTitle.text = showUserText
@@ -77,9 +79,12 @@ class MangaReadAdapter(
             R.color.violet_400,
             media.selected!!.subscribed
         ) {
-            fragment.onNotificationPressed(it,binding.animeSource.text.toString())
+            fragment.onNotificationPressed(it, binding.animeSource.text.toString())
         }
 
+        binding.animeSourceSubscribe.setOnLongClickListener {
+            openSettings(fragment.requireContext(), getChannelId(true, media.id))
+        }
 
         //Icons
         binding.animeSourceGrid.visibility = View.GONE
@@ -92,8 +97,8 @@ class MangaReadAdapter(
             fragment.onIconPressed(style, reversed)
         }
         var selected = when (style) {
-            0 -> binding.animeSourceList
-            1 -> binding.animeSourceCompact
+            0    -> binding.animeSourceList
+            1    -> binding.animeSourceCompact
             else -> binding.animeSourceList
         }
         selected.alpha = 1f
@@ -160,9 +165,9 @@ class MangaReadAdapter(
         if (binding != null) {
             if (media.manga?.chapters != null) {
                 val chapters = media.manga.chapters!!.keys.toTypedArray()
-                val anilistEp = (media.userProgress?:0).plus(1)
+                val anilistEp = (media.userProgress ?: 0).plus(1)
                 val appEp = loadData<String>("${media.id}_current_chp")?.toIntOrNull() ?: 1
-                var continueEp = (if(anilistEp>appEp) anilistEp else appEp).toString()
+                var continueEp = (if (anilistEp > appEp) anilistEp else appEp).toString()
                 if (chapters.contains(continueEp)) {
                     binding.animeSourceContinue.visibility = View.VISIBLE
                     handleProgress(
@@ -192,8 +197,7 @@ class MangaReadAdapter(
                         }
 
                     }
-                }
-                else{
+                } else {
                     binding.animeSourceContinue.visibility = View.GONE
                 }
                 binding.animeSourceProgressBar.visibility = View.GONE

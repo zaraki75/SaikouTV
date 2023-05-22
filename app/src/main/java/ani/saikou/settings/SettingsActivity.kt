@@ -22,6 +22,11 @@ import ani.saikou.databinding.ActivitySettingsBinding
 import ani.saikou.mal.MAL
 import ani.saikou.others.AppUpdater
 import ani.saikou.others.CustomBottomDialog
+import ani.saikou.others.Notifications
+import ani.saikou.others.Notifications.Companion.openSettings
+import ani.saikou.others.SubscriptionWorker.Companion.defaultTime
+import ani.saikou.others.SubscriptionWorker.Companion.enqueue
+import ani.saikou.others.SubscriptionWorker.Companion.timeMinutes
 import ani.saikou.parsers.AnimeSources
 import ani.saikou.parsers.MangaSources
 import io.noties.markwon.Markwon
@@ -72,7 +77,7 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
             bottomMargin = navBarHeight
         }
 
-        onBackPressedDispatcher.addCallback(this,restartMainActivity)
+        onBackPressedDispatcher.addCallback(this, restartMainActivity)
 
         binding.settingsBack.setOnClickListener {
             onBackPressedDispatcher.onBackPressed()
@@ -331,6 +336,49 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
             }
         }
 
+        var curTime = loadData<Int>("subscriptions_time") ?: defaultTime
+        val timeNames = timeMinutes.map {
+            val mins = it % 60
+            val hours = it / 60
+            "${if (hours > 0) "$hours hrs " else ""}${if (mins > 0) "$mins mins" else ""}"
+        }.toTypedArray()
+        binding.settingsSubscriptionsTime.text = getString(R.string.subscriptions_checking_time_s, timeNames[curTime])
+        val speedDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle(R.string.subscriptions_checking_time)
+        binding.settingsSubscriptionsTime.setOnClickListener {
+            speedDialog.setSingleChoiceItems(timeNames, curTime) { dialog, i ->
+                curTime = i
+                binding.settingsSubscriptionsTime.text = getString(R.string.subscriptions_checking_time_s, timeNames[i])
+                saveData("subscriptions_time", curTime)
+                dialog.dismiss()
+                enqueue(applicationContext, true)
+            }.show()
+        }
+
+        binding.settingsSubscriptionsTime.setOnLongClickListener {
+            enqueue(applicationContext, true)
+            true
+        }
+
+        binding.settingsNotificationsCheckingSubscriptions.isChecked = loadData("subscription_checking_notifications") ?: false
+        binding.settingsNotificationsCheckingSubscriptions.setOnCheckedChangeListener { _, isChecked ->
+            saveData("subscription_checking_notifications", isChecked)
+            if (isChecked)
+                Notifications.createChannel(
+                    this,
+                    null,
+                    "subscription_checking",
+                    getString(R.string.checking_subscriptions),
+                    false
+                )
+            else
+                Notifications.deleteChannel(this, "subscription_checking")
+        }
+
+        binding.settingsNotificationsCheckingSubscriptions.setOnLongClickListener {
+            openSettings(this, null)
+        }
+
+
         binding.settingsCheckUpdate.isChecked = loadData("check_update") ?: true
         binding.settingsCheckUpdate.setOnCheckedChangeListener { _, isChecked ->
             saveData("check_update", isChecked)
@@ -361,13 +409,13 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
                 addView(
                     TextView(it.context).apply {
                         val markWon = Markwon.builder(it.context).usePlugin(SoftBreakAddsNewLinePlugin.create()).build()
-                        markWon.setMarkdown(this,full)
+                        markWon.setMarkdown(this, full)
                     }
                 )
             }.show(supportFragmentManager, "dialog")
         }
 
-        fun reload(){
+        fun reload() {
             if (Anilist.token != null) {
                 binding.settingsAnilistLogin.setText(R.string.logout)
                 binding.settingsAnilistLogin.setOnClickListener {

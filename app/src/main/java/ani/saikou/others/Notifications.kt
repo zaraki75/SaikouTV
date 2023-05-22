@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import ani.saikou.FileUrl
 import ani.saikou.R
@@ -26,6 +27,20 @@ class Notifications {
 
     companion object {
 
+        fun openSettings(context: Context, channelId: String?): Boolean {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val intent = Intent(
+                    if (channelId != null) Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS
+                    else Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                ).apply {
+                    putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                    putExtra(Settings.EXTRA_CHANNEL_ID, channelId)
+                }
+                context.startActivity(intent)
+                true
+            } else false
+        }
+
         fun getIntent(context: Context, mediaId: Int): PendingIntent {
             val notifyIntent = Intent(context, UrlMedia::class.java)
                 .putExtra("media", mediaId)
@@ -42,15 +57,17 @@ class Notifications {
             )
         }
 
-        private fun createChannel(context: Context, group: Group, id: String, name: String) {
+        fun createChannel(context: Context, group: Group?, id: String, name: String, silent: Boolean = false) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val importance = NotificationManager.IMPORTANCE_HIGH
+                val importance = if (!silent) NotificationManager.IMPORTANCE_HIGH else NotificationManager.IMPORTANCE_DEFAULT
                 val mChannel = NotificationChannel(id, name, importance)
 
                 val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
-                notificationManager.createNotificationChannelGroup(NotificationChannelGroup(group.name, group.title))
-                mChannel.group = group.name
+                if (group != null) {
+                    notificationManager.createNotificationChannelGroup(NotificationChannelGroup(group.name, group.title))
+                    mChannel.group = group.name
+                }
 
                 notificationManager.createNotificationChannel(mChannel)
             }
@@ -65,29 +82,32 @@ class Notifications {
 
         fun getNotification(
             context: Context,
-            group: Group,
+            group: Group?,
             channelId: String,
-            title: String,
+            text: String?,
+            silent: Boolean = false
             text: String
         ): NotificationCompat.Builder {
-            createChannel(context, group, channelId, title)
+            createChannel(context, group, channelId, title, silent)
             return NotificationCompat.Builder(context, channelId)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setSmallIcon(group.icon)
+                .setSmallIcon(group?.icon ?: R.drawable.monochrome)
                 .setContentTitle(title)
                 .setContentText(text)
         }
 
         suspend fun getNotification(
             context: Context,
-            group: Group,
+            group: Group?,
             channelId: String,
             title: String,
             text: String,
-            img: FileUrl?
+            img: FileUrl?,
+            silent: Boolean = false,
+            largeImg: FileUrl?
         ): NotificationCompat.Builder {
-            val builder = getNotification(context, group, channelId, title, text)
-            return if(img!=null) {
+            val builder = getNotification(context, group, channelId, title, text, silent)
+            return if (img != null) {
                 val bitmap = withContext(Dispatchers.IO) {
                     Glide.with(context)
                         .asBitmap()
@@ -95,19 +115,45 @@ class Notifications {
                         .submit()
                         .get()
                 }
+                val largeBitmap = if (largeImg != null) withContext(Dispatchers.IO) {
+                    Glide.with(context)
+                        .asBitmap()
+                        .load(GlideUrl(largeImg.url) { largeImg.headers })
+                        .submit()
+                        .get()
+                } else null
+
+                if(largeBitmap!=null) builder.setStyle(
+                        NotificationCompat
+                            .BigPictureStyle()
+                            .bigPicture(largeBitmap)
+                            .bigLargeIcon(bitmap)
+                    )
+
                 builder.setLargeIcon(bitmap)
             } else builder
         }
 
         suspend fun getNotification(
             context: Context,
-            group: Group,
+            group: Group?,
             channelId: String,
             title: String,
             text: String,
-            img: String? = null
+            img: String? = null,
+            silent: Boolean = false,
+            largeImg: FileUrl? = null
         ): NotificationCompat.Builder {
-            return getNotification(context, group, channelId, title, text, if(img!=null) FileUrl(img) else null)
+            return getNotification(
+                context,
+                group,
+                channelId,
+                title,
+                text,
+                if (img != null) FileUrl(img) else null,
+                silent,
+                largeImg
+            )
         }
     }
 }

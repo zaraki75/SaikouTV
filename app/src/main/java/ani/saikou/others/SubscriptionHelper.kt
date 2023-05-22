@@ -20,26 +20,47 @@ class SubscriptionHelper {
             }
         }
 
-        suspend fun getEpisode(isAdult: Boolean, id: Int): Episode? {
-            return tryWithSuspend {
-                val sources = if (isAdult) HAnimeSources else AnimeSources
-                val selected = loadSelected(id, isAdult, true)
-                val parser = sources[selected.source]
-                parser.selectDub = selected.preferDub
+        private fun saveSelected(mediaId: Int, data: Selected) {
+            saveData("$mediaId-select", data)
+        }
 
+        fun getAnimeParser(isAdult: Boolean, id: Int): AnimeParser {
+            val sources = if (isAdult) HAnimeSources else AnimeSources
+            val selected = loadSelected(id, isAdult, true)
+            val parser = sources[selected.source]
+            parser.selectDub = selected.preferDub
+            return parser
+        }
+
+        suspend fun getEpisode(parser: AnimeParser, id: Int, isAdult: Boolean): Episode? {
+            return tryWithSuspend {
+                val selected = loadSelected(id, isAdult, true)
                 val show = parser.loadSavedShowResponse(id) ?: throw Exception("Failed to load saved data of $id")
-                parser.getLatestEpisode(show.link, show.extra, selected.latest)
+                val ep = parser.getLatestEpisode(show.link, show.extra, selected.latest)
+                if (ep != null) {
+                    selected.latest = ep.number.toFloat()
+                    saveSelected(id, selected)
+                }
+                ep
             }
         }
 
-        suspend fun getChapter(isAdult: Boolean, id: Int): MangaChapter? {
-            return tryWithSuspend {
-                val sources = if (isAdult) HMangaSources else MangaSources
-                val selected = loadSelected(id, isAdult, false)
-                val parser = sources[selected.source]
+        fun getMangaParser(isAdult: Boolean, id: Int): MangaParser {
+            val sources = if (isAdult) HMangaSources else MangaSources
+            val selected = loadSelected(id, isAdult, false)
+            return sources[selected.source]
+        }
 
+        suspend fun getChapter(parser: MangaParser, id: Int, isAdult: Boolean): MangaChapter? {
+            return tryWithSuspend {
+                val selected = loadSelected(id, isAdult, false)
                 val show = parser.loadSavedShowResponse(id) ?: throw Exception("Failed to load saved data of $id")
-                parser.getLatestChapter(show.link, show.extra, selected.latest)
+                val ep = parser.getLatestChapter(show.link, show.extra, selected.latest)
+                if (ep != null) {
+                    selected.latest = ep.number.toFloat()
+                    saveSelected(id, selected)
+                }
+                ep
             }
         }
 

@@ -18,6 +18,7 @@ import ani.saikou.databinding.FragmentAnimeWatchBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.others.Notifications
+import ani.saikou.others.Notifications.Group.ANIME_GROUP
 import ani.saikou.others.SubscriptionHelper.Companion.saveSubscription
 import ani.saikou.others.SubscriptionWorker.Companion.getChannelId
 import ani.saikou.parsers.AnimeParser
@@ -243,7 +244,15 @@ class AnimeWatchFragment : Fragment() {
         media.selected!!.subscribed = subscribed
         model.saveSelected(media.id, media.selected!!, requireActivity())
         saveSubscription(media, subscribed)
-        if (!subscribed) Notifications.deleteChannel(requireContext(), getChannelId(true, media.id))
+                if (!subscribed)
+            Notifications.deleteChannel(requireContext(), getChannelId(true, media.id))
+        else
+            Notifications.createChannel(
+                requireContext(),
+                ANIME_GROUP,
+                getChannelId(true, media.id),
+                media.userPreferredName
+            )
         snackString(
             if (subscribed) "Subscribed! Receiving notifications, when new episodes are released on $source."
             else "Unsubscribed, you will not receive any notifications."
