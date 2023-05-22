@@ -20,6 +20,14 @@
     <uses-feature android:name="android.hardware.touchscreen"
         android:required="false" />
 
+    <queries>
+        <package android:name="idm.internet.download.manager.plus"/>
+        <package android:name="idm.internet.download.manager"/>
+        <package android:name="idm.internet.download.manager.adm.lite"/>
+        <package android:name="com.dv.adm"/>
+    </queries>
+
+
     <application
         android:name=".App"
         android:allowBackup="true"

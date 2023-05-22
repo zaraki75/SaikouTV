@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.app.DatePickerDialog
-import android.app.DownloadManager
 import android.app.UiModeManager
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -29,9 +28,7 @@ import android.view.*
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.animation.*
 import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.content.ContextCompat.getExternalFilesDirs
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.FileProvider
 import androidx.core.math.MathUtils.clamp
@@ -50,6 +47,9 @@ import ani.saikou.anime.Episode
 import ani.saikou.databinding.ItemCountDownBinding
 import ani.saikou.media.Media
 import ani.saikou.others.DisabledReports
+import ani.saikou.others.Download.adm
+import ani.saikou.others.Download.defaultDownload
+import ani.saikou.others.Download.onedm
 import ani.saikou.parsers.ShowResponse
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.tv.TVMainActivity
@@ -600,46 +600,11 @@ fun openLinkInBrowser(link: String?) {
 }
 
 fun download(activity: Activity, episode: Episode, animeTitle: String) {
-    val manager = activity.getSystemService(AppCompatActivity.DOWNLOAD_SERVICE) as DownloadManager
-    val extractor = episode.extractors?.find { it.server.name == episode.selectedExtractor } ?: return
-    val video =
-        if (extractor.videos.size > episode.selectedVideo) extractor.videos[episode.selectedVideo] else return
-    val regex = "[\\\\/:*?\"<>|]".toRegex()
-    val aTitle = animeTitle.replace(regex, "")
-    val request: DownloadManager.Request = DownloadManager.Request(Uri.parse(video.url.url))
-
-    video.url.headers.forEach {
-        request.addRequestHeader(it.key, it.value)
-    }
-
-    val title = "Episode ${episode.number}${if (episode.title != null) " - ${episode.title}" else ""}".replace(regex, "")
-    val name = "$title${if (video.size != null) "(${video.size}p)" else ""}.mp4"
-    CoroutineScope(Dispatchers.IO).launch {
-        try {
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-
-            val arrayOfFiles = getExternalFilesDirs(activity, null)
-            if (loadData<Boolean>("sd_dl") == true && arrayOfFiles.size > 1 && arrayOfFiles[0] != null && arrayOfFiles[1] != null) {
-                val parentDirectory = arrayOfFiles[1].toString() + "/Anime/${aTitle}/"
-                val direct = File(parentDirectory)
-                if (!direct.exists()) direct.mkdirs()
-                request.setDestinationUri(Uri.fromFile(File("$parentDirectory$name")))
-            } else {
-                val direct = File(Environment.DIRECTORY_DOWNLOADS + "/Saikou/Anime/${aTitle}/")
-                if (!direct.exists()) direct.mkdirs()
-                request.setDestinationInExternalPublicDir(
-                    Environment.DIRECTORY_DOWNLOADS,
-                    "/Saikou/Anime/${aTitle}/$name"
-                )
-            }
-            request.setTitle("$title:$aTitle")
-            manager.enqueue(request)
-            toast("Started Downloading\n$title : $aTitle")
-        } catch (e: SecurityException) {
-            toast("Please give permission to access Files & Folders from Settings, & Try again.")
-        } catch (e: Exception) {
-            toast(e.toString())
-        }
+    toast("Downloading...")
+    when(loadData<Int>("settings_download_manager", activity, false) ?: 0) {
+        1 -> onedm(activity, episode, animeTitle)
+        2 -> adm(activity, episode, animeTitle)
+        else -> defaultDownload(activity, episode, animeTitle)
     }
 }
 

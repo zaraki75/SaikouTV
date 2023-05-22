@@ -1,5 +1,6 @@
 package ani.saikou.settings
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.drawable.Animatable
 import android.net.Uri
@@ -87,6 +88,17 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
 
         binding.settingsPlayer.setOnClickListener {
             startActivity(Intent(this, PlayerSettingsActivity::class.java))
+        }
+
+        val managers = arrayOf("Default", "1DM", "ADM")
+        val downloadManagerDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle("Download Manager")
+        var downloadManager = loadData<Int>("settings_download_manager") ?: 0
+        binding.settingsDownloadManager.setOnClickListener {
+            downloadManagerDialog.setSingleChoiceItems(managers, downloadManager) { dialog, count ->
+                downloadManager = count
+                saveData("settings_download_manager", downloadManager)
+                dialog.dismiss()
+            }.show()
         }
 
         binding.settingsDownloadInSd.isChecked = loadData("sd_dl") ?: false

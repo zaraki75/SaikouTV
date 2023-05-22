@@ -216,26 +216,28 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
             binding.urlQuality.text = if(video.quality!=null) "${video.quality}p" else "Default Quality"
             binding.urlNote.text = video.extraNote ?: ""
             binding.urlNote.visibility = if (video.extraNote != null) View.VISIBLE else View.GONE
+            binding.urlDownload.visibility = View.VISIBLE
+            binding.urlDownload.setSafeOnClickListener {
+                media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedExtractor = extractor.server.name
+                media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedVideo = position
+                binding.urlDownload.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                download(
+                    requireActivity(),
+                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!,
+                    media!!.userPreferredName
+                )
+                dismiss()
+            }
             if (video.format == VideoType.CONTAINER) {
                 binding.urlSize.visibility = if (video.size != null) View.VISIBLE else View.GONE
                 binding.urlSize.text =
                     (if (video.extraNote != null) " : " else "") + DecimalFormat("#.##").format(video.size ?: 0).toString() + " MB"
-                binding.urlDownload.visibility = View.VISIBLE
-                binding.urlDownload.setSafeOnClickListener {
-                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedExtractor = extractor.server.name
-                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!.selectedVideo = position
-                    binding.urlDownload.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                    download(
-                        requireActivity(),
-                        media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]!!,
-                        media!!.userPreferredName
-                    )
-                    dismiss()
-                }
             }
             else {
                 binding.urlQuality.text = "Multi Quality"
-                binding.urlDownload.visibility = View.GONE
+                if ((loadData<Int>("settings_download_manager") ?: 0) == 0) {
+                    binding.urlDownload.visibility = View.GONE
+                }
             }
         }
 

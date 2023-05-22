@@ -130,6 +130,7 @@
     <string name="settings">Settings</string>
     <string name="player_settings">Player Settings</string>
     <string name="recentlyListOnly">Only show My Shows in Recently Updated</string>
+    <string name="download_manager_select">Download Manager</string>
     <string name="downloadInSd">Download in SD card</string>
     <string name="noSdFound">No SD card was Found.</string>
     <string name="reader_settings">Reader Settings</string>
