@@ -1,6 +1,6 @@
 # **Saikou**
 <p align="center">
-   <a href="https://discord.gg/TN5Cm94nXU"><img src="https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white"></a>
+   <a href="https://discord.gg/2T7TunuwFZ"><img src="https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white"></a>
    <a href="https://telegram.me/saikou_app" ><img src="https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white"></a> 
    <a href="https://github.com/saikou-app/saikou/releases"><img src="https://img.shields.io/github/downloads/saikou-app/saikou/total?color=%233DDC84&logo=android&logoColor=%23fff&style=for-the-badge"></a>
 </p>
@@ -116,9 +116,13 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 
 ### Official Discord Server
 
+> **Warning**
+> 
+> THE OLD SERVER WAS HACKED, PLEASE LEAVE
+New Server : 
 <p align="center">
- <a href="https://discord.gg/TN5Cm94nXU">
-  <img src="https://invidget.switchblade.xyz/TN5Cm94nXU">
+ <a href="https://discord.gg/2T7TunuwFZ">
+  <img src="https://invidget.switchblade.xyz/2T7TunuwFZ">
  </a>
 </p>
 
