@@ -39,10 +39,10 @@ class ConsumeBili : AnimeParser() {
     }
 
     override suspend fun loadVideoServers(episodeLink: String, extra: Map<String, String>?): List<VideoServer> {
-        val extraData = extra as Map<*, *>
-        val sourceEpisodeId = extraData["sourceEpisodeId"]
-        val sourceMediaId = extraData["sourceMediaId"]
-        val sourceId = extraData["sourceId"]
+        extra?: return listOf()
+        val sourceEpisodeId = extra["sourceEpisodeId"]
+        val sourceMediaId = extra["sourceMediaId"]
+        val sourceId = extra["sourceId"]
         val sources =
             client.get("${hostUrl}/source?episode_id=${sourceEpisodeId}&source_media_id=${sourceMediaId}&source_id=${sourceId}")
                 .parsed<SourcesResponse>()
