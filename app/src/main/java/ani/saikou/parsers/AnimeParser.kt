@@ -64,10 +64,10 @@ abstract class AnimeParser : BaseParser() {
      * Doesn't need to be overridden, if the parser is following the norm.
      * **/
     open suspend fun loadByVideoServers(episodeUrl: String, extra: Map<String,String>?, callback: (VideoExtractor) -> Unit) {
-        tryWithSuspend {
+        tryWithSuspend(true) {
             loadVideoServers(episodeUrl, extra).asyncMap {
                 getVideoExtractor(it)?.apply {
-                    tryWithSuspend {
+                    tryWithSuspend(true) {
                         load()
                     }
                     callback.invoke(this)
@@ -82,7 +82,7 @@ abstract class AnimeParser : BaseParser() {
      * Doesn't need to be overridden, if the parser is following the norm.
      * **/
     open suspend fun loadSingleVideoServer(serverName: String, episodeUrl: String, extra: Map<String,String>?): VideoExtractor? {
-        return tryWithSuspend {
+        tryWithSuspend(true) {
             loadVideoServers(episodeUrl, extra).apply {
                 find { it.name == serverName }?.also {
                     return@tryWithSuspend getVideoExtractor(it)?.apply {
