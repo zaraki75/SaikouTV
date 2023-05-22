@@ -8,10 +8,10 @@ import kotlinx.serialization.Serializable
 
 class SapphireDuck(override val server: VideoServer) : VideoExtractor() {
     override suspend fun extract(): VideoContainer {
-        val res = client.get(server.embed.url.replace("player.php", "config.php")).body.string();
+        val res = client.get(server.embed.url.replace("player.php", "config.php")).text
         val decoder = { s: String -> Base64.decode(s, Base64.NO_WRAP).decodeToString() }
         var parsed = decoder(res)
-        var json: SapphireDuckJson? = null;
+        var json: SapphireDuckJson? = null
 
         while (json == null) {
             if (parsed[0] != '{') {
@@ -20,12 +20,12 @@ class SapphireDuck(override val server: VideoServer) : VideoExtractor() {
                 parsed = decoder(parsed)
             } else {
                 json = try {
-                    Mapper.parse(parsed);
+                    Mapper.parse(parsed)
                 } catch(_: Exception) {null}
             }
         }
 
-        val subs = json?.subtitles?.map { sub ->
+        val subs = json.subtitles.map { sub ->
             Subtitle(
                 language = sub.language,
                 url = sub.url,
@@ -35,7 +35,7 @@ class SapphireDuck(override val server: VideoServer) : VideoExtractor() {
                     else -> SubtitleType.VTT
                 }
             )
-        } ?: listOf()
+        }
 
         val subtitleStr = { str: String ->
             when (str) {
@@ -62,7 +62,7 @@ class SapphireDuck(override val server: VideoServer) : VideoExtractor() {
             }
         }
 
-        val videos = json?.streams?.mapNotNull { stream ->
+        val videos = json.streams.mapNotNull { stream ->
             try {
                 // It seems sometimes there are null entries.
                 // We shouldn't give the user a prompt if there is not
@@ -85,7 +85,7 @@ class SapphireDuck(override val server: VideoServer) : VideoExtractor() {
                     } else "Dubbed ${subtitleStr(stream.audioLang)}"
                 )
             } catch (e: Exception) { return@mapNotNull null }
-        }?.sortedBy { it.extraNote } ?: listOf()
+        }.sortedBy { it.extraNote }
 
         return VideoContainer(videos, subs)
     }
