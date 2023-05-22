@@ -97,7 +97,7 @@ fun <A, B> Collection<A>.asyncMapNotNull(f: suspend (A) -> B?): List<B> = runBlo
     map { async { f(it) } }.mapNotNull { it.await() }
 }
 
-fun logError(e: Exception, post: Boolean = true, snackbar: Boolean = true) {
+fun logError(e: Throwable, post: Boolean = true, snackbar: Boolean = true) {
     val sw = StringWriter()
     val pw = PrintWriter(sw)
     e.printStackTrace(pw)
@@ -114,7 +114,7 @@ fun logError(e: Exception, post: Boolean = true, snackbar: Boolean = true) {
 fun <T> tryWith(post: Boolean = false, snackbar: Boolean = true, call: () -> T): T? {
     return try {
         call.invoke()
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
         logError(e, post, snackbar)
         null
     }
@@ -123,7 +123,7 @@ fun <T> tryWith(post: Boolean = false, snackbar: Boolean = true, call: () -> T):
 suspend fun <T> tryWithSuspend(post: Boolean = false, snackbar: Boolean = true, call: suspend () -> T): T? {
     return try {
         call.invoke()
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
         logError(e, post, snackbar)
         null
     } catch (e: CancellationException) {
