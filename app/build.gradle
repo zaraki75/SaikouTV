@@ -15,7 +15,7 @@ android {
         minSdk 21
         targetSdk 33
         versionCode ((System.currentTimeMillis() / 60000).toInteger())
-        versionName "1.2.1.0"
+        versionName "1.2.1.1"
         signingConfig signingConfigs.debug
     }
 
@@ -45,7 +45,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.browser:browser:1.5.0'
     implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.fragment:fragment-ktx:1.5.5'
+    implementation 'androidx.fragment:fragment-ktx:1.5.6'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.multidex:multidex:2.0.1'
@@ -66,7 +66,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
 //    Exoplayer
-    ext.exo_version = '2.18.4'
+    ext.exo_version = '2.18.5'
     implementation "com.google.android.exoplayer:exoplayer-core:$exo_version"
     implementation "com.google.android.exoplayer:exoplayer-ui:$exo_version"
     implementation "com.google.android.exoplayer:exoplayer-hls:$exo_version"

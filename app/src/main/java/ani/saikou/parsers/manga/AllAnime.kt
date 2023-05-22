@@ -20,10 +20,10 @@ class AllAnime : MangaParser() {
     private val idRegex = Regex("${hostUrl}/manga/(\\w+)")
     private val epNumRegex = Regex("/[sd]ub/(\\d+)")
 
-    private val idHash = "9ec91a05ed451b8ad3b379c3aa510c82dadd644abcea52aecd2ac87227bfb9ef"
-    private val episodeInfoHash = "ef2dc81d2370dc8c80b200840bc79464854a7e6a1bb0b6c60af1d90c61f550c4"
-    private val searchHash = "523a882834b6c1e5cb67c15222aa6ff2b85fb0383b9abd9e3417e1aeaa0e1b74"
-    private val chapterHash = "a8479ae2a936cfc1242d6c9242ef4fac474e66b630e5185cb61b0702dda3662f"
+        private val idHash = "debd1b866dcfde6e648b5da50b8b1363f1d11c9b6bf3b4d5ce80f1ee7e58da08"
+    private val episodeInfoHash = "3dced4c4c5c44b3737c3eeb8a5cd268bb0e4963f03de11703bfc6bbe760393cf"
+    private val searchHash = "edbe1fb23e711aa2bf493874a2d656a5438fe9b0b3a549c4b8a831cc2e929bae"
+    private val chapterHash = "42b6dd56556f98a565de67b8bb7b321b86ff97e920f915f03e47adb3901e40a8"
 
     override suspend fun loadChapters(mangaLink: String, extra: Map<String, String>?): List<MangaChapter> {
         val showId = idRegex.find(mangaLink)?.groupValues?.get(1)!!

@@ -41,13 +41,12 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 
 |                            SITE                            |   STATUS    | DOWNLOADS |
 |:----------------------------------------------------------:|:-----------:|:---------:|
-|             [AllAnime](https://allanime.site)              | NOT-WORKING |   SOME    |
+|             [AllAnime](https://allanime.site)              |   WORKING   |   SOME    |
 |                [Gogo](https://gogoanime.cm)                |   WORKING   |   SOME    |
 |                  [Zoro](https://zoro.to)                   |   WORKING   |    NO     |
 |                 [Marin](https://marin.moe)                 |   WORKING   |    YES    |
 |             [AnimePahe](https://animepahe.ru)              |   WORKING   |    YES    |
 |           [ConsumeBili](https://www.bilibili.tv)           |   WORKING   |    NO     |
-|          [KickAssAnime](https://www2.kickassanime.ro)      |   WORKING   |    NO     |
 |               [Haho (18+)](https://haho.moe)               |   WORKING   |    YES    |
 |         [HentaiMama (18+)](https://hentaimama.io)          |   WORKING   |   SOME    |
 |       [HentaiStream (18+)](https://hentaistream.com)       | NOT-WORKING |    YES    |
@@ -63,12 +62,12 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 |     [MangaPill](https://mangapill.com)     |   WORKING   |
 |      [MangaDex](https://mangadex.org)      |   WORKING   |
 |  [MangaReaderTo](https://mangareader.to)   |   WORKING   |
-|     [AllAnime](https://allanime.site)      | NOT-WORKING |
+|     [AllAnime](https://allanime.site)      |   WORKING   |
 |      [Comickfun](https://comick.fun)       | NOT-WORKING |
 | [Manga4Life](https://manga4life.com/)      |   WORKING   |
-| [MangaRead](https://www.mangaread.org)     |   WORKING   |
+|   [MangaRead](https://www.mangaread.org)   |   WORKING   |
 |   [MangaKatana](https://mangakatana.com)   |   WORKING   |
-|      [Toonily](https://toonily.com/)       |   WORKING   |
+|      [Toonily](https://toonily.com/)       | NOT-WORKING |
 |    [NHentai (18+)](https://nhentai.net)    | NOT-WORKING |
 | [NineHentai (18+)](https://ninehentai.net) |   WORKING   |
 |   [Manwha18 (18+)](https://manhwa18.cc)    |   WORKING   |

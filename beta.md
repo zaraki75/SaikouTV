@@ -1,12 +1,12 @@
-# 1.2.1.0
+# 1.2.1.1
 
-- Added MyAnimeList syncing!
-- Fixed nHentai by @scrazzz
-- Fixed Tenshi (Switched to Marin)
-- Fix Animepahe, Gogo
-- Fixed Allanime by @tobybridle & @brahmkshatriya
-- Fixed One Piece Crashing (Large Media crash)
-- Fixed image caching? (needs testing)
-- Fixed fading edges on Home Page
-- A lot of Backend Changes
-- Kamyroll removed (Source got DMCA-ed)
+- Added Monet Icon support
+- Download Manager Integration (1DM) by @adolar0042
+- Fix AllAnime
+- Thumbnail support in AnimePahe
+- Fix stuff with MAL Integration
+- Fix StreamSB not working for external apps
+- Artifacts now dont require uninstalling
+- Fix ComicFun Pagination by @tobybridle
+- Video Errors now get Toasted
+- Zoro : Allow preloading links for next episode

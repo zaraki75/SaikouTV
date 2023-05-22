@@ -196,23 +196,30 @@ fun OkHttpClient.Builder.addAdGuardDns() = (
         ))
 
 @Suppress("BlockingMethodInNonBlockingContext")
-fun webViewInterface(type: String, url: FileUrl): Map<String, String>? {
-    val webViewDialog: WebViewBottomDialog? = when (type) {
-        "Cloudflare" -> CloudFlare.newInstance(url)
-        else         -> null
-    }
+suspend fun webViewInterface(webViewDialog: WebViewBottomDialog): Map<String, String>? {
     var map : Map<String,String>? = null
+
     val latch = CountDownLatch(1)
-    webViewDialog?.callback = {
+    webViewDialog.callback = {
         map = it
         latch.countDown()
     }
-    val fragmentManager = (currActivity() as FragmentActivity?)?.supportFragmentManager
-    webViewDialog?.show(fragmentManager ?: return null, "web-view")
+    val fragmentManager = (currActivity() as FragmentActivity?)?.supportFragmentManager ?: return null
+    webViewDialog.show(fragmentManager, "web-view")
+    delay(0)
     latch.await(2,TimeUnit.MINUTES)
     return map
 }
 
-fun webViewInterface(type: String, url: String): Map<String, String>? {
+@Suppress("BlockingMethodInNonBlockingContext")
+suspend fun webViewInterface(type: String, url: FileUrl): Map<String, String>? {
+    val webViewDialog: WebViewBottomDialog = when (type) {
+        "Cloudflare" -> CloudFlare.newInstance(url)
+        else         -> return null
+    }
+    return webViewInterface(webViewDialog)
+}
+
+suspend fun webViewInterface(type: String, url: String): Map<String, String>? {
     return webViewInterface(type,FileUrl(url))
 }
