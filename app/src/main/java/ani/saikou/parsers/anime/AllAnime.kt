@@ -49,7 +49,10 @@ class AllAnime : AnimeParser() {
                         null
                     }
                 }
-                Episode(epNum, link = link, epInfo.notes, thumbnail)
+                val title = epInfo.notes?.substringBefore("<note-split>")
+                var desc = epInfo.notes?.substringAfter("<note-split>","")
+                desc = if(desc?.isEmpty() == true) null else desc
+                Episode(epNum, link = link, title, thumbnail, desc)
             } ?: emptyList()
         }
         return emptyList()
@@ -76,7 +79,7 @@ class AllAnime : AnimeParser() {
                 }
 
                 if (source.sourceUrl.toHttpUrlOrNull() == null) {
-                    val jsonUrl = """${apiHost}${source.sourceUrl.replace("clock", "clock.json").substring(1)}"""
+                    val jsonUrl = """https://allanimenews.com/${source.sourceUrl.replace("clock", "clock.json").substring(1)}"""
                     videoServers.add(VideoServer(serverName, jsonUrl, source.type))
                 } else {
                     videoServers.add(VideoServer(serverName, source.sourceUrl, source.type))
@@ -155,7 +158,7 @@ class AllAnime : AnimeParser() {
     
     private class AllAnimeExtractor(override val server: VideoServer, val direct: Boolean = false) : VideoExtractor() {
         override suspend fun extract(): VideoContainer {
-            val url = "https://allanimenews.com/apivtwo${server.embed.url.substringAfter("apivtwo")}"
+            val url = server.embed.url
             return if (direct)
                 VideoContainer(listOf(Video(null, VideoType.CONTAINER, url, getSize(url))))
             else {
