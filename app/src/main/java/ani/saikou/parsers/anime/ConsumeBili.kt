@@ -38,7 +38,7 @@ class ConsumeBili : AnimeParser() {
         }
     }
 
-    override suspend fun loadVideoServers(episodeLink: String, extra: Map<String,String>?): List<VideoServer> {
+    override suspend fun loadVideoServers(episodeLink: String, extra: Map<String, String>?): List<VideoServer> {
         val extraData = extra as Map<*, *>
         val sourceEpisodeId = extraData["sourceEpisodeId"]
         val sourceMediaId = extraData["sourceMediaId"]
@@ -50,24 +50,18 @@ class ConsumeBili : AnimeParser() {
         if (!sources.success)
             return emptyList()
 
-        val modifiedSources = sources.sources.map {
-            val source = it
-            val file = FileUrl(url = source.file)
-            Video(null, VideoType.DASH, file, null)
+        val modifiedSources = sources.sources.joinToString(",") {
+            it.file
         }
-        val modifiedSubtitles = sources.subtitles?.map {
-            Subtitle(
-                language = it.lang,
-                url = it.file,
-                type = SubtitleType.VTT
-            )
-        } ?: listOf()
+         val modifiedSubtitles = sources.subtitles?.joinToString(",") {
+            it.lang + ";" + it.file
+        } ?: ""
 
         return listOf(
             VideoServer(
                 name = "Server",
                 embed = FileUrl(url = ""),
-                extraData = VideoContainer(modifiedSources,modifiedSubtitles)
+                extraData = mapOf("videos" to modifiedSources, "subs" to modifiedSubtitles)
             )
         )
     }
@@ -78,7 +72,14 @@ class ConsumeBili : AnimeParser() {
 
     class BilibiliExtractor(override val server: VideoServer) : VideoExtractor() {
         override suspend fun extract(): VideoContainer {
-            return server.extraData as VideoContainer
+            val videos = server.extraData?.get("videos")!!.split(",").map {
+                Video(null, VideoType.DASH, it)
+            }
+            val subs = server.extraData["subs"]!!.split(",").map {
+                val a = it.split(";")
+                Subtitle(a[0], a[1])
+            }
+            return VideoContainer(videos,subs)
         }
     }
 

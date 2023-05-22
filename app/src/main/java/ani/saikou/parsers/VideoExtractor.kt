@@ -56,9 +56,9 @@ abstract class VideoExtractor : Serializable {
 data class VideoServer(
     val name: String,
     val embed: FileUrl,
-    val extraData : Any?=null,
+    val extraData : Map<String,String>?=null,
 ) : Serializable {
-    constructor(name: String, embedUrl: String,extraData: Any?=null)
+    constructor(name: String, embedUrl: String,extraData: Map<String,String>?=null)
             : this(name, FileUrl(embedUrl),extraData)
 }
 

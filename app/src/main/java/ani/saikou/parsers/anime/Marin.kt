@@ -76,7 +76,7 @@ open class Marin : AnimeParser() {
             VideoServer(
                 "${it.title} : ${it.source?.name} - [${if(it.audio?.code=="jp") "Sub" else "Dub"}]",
                 FileUrl(episodeLink, getCookieHeaders()),
-                it.slug!!
+                mapOf("video" to it.slug!!)
             )
         }
     }
@@ -92,7 +92,7 @@ open class Marin : AnimeParser() {
                 server.embed.url,
                 server.embed.headers,
                 server.embed.url,
-                data = mapOf("video" to server.extraData as String)
+                data = server.extraData
             )).props?.video?.data?.mirror?.map {
                 val file = FileUrl(it.code!!.file!!,server.embed.headers)                
                 Video(

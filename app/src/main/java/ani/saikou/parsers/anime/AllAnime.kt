@@ -50,8 +50,8 @@ class AllAnime : AnimeParser() {
                     }
                 }
                 val title = epInfo.notes?.substringBefore("<note-split>")
-                var desc = epInfo.notes?.substringAfter("<note-split>","")
-                desc = if(desc?.isEmpty() == true) null else desc
+                var desc = epInfo.notes?.substringAfter("<note-split>", "")
+                desc = if (desc?.isEmpty() == true) null else desc
                 Episode(epNum, link = link, title, thumbnail, desc)
             } ?: emptyList()
         }
@@ -80,9 +80,9 @@ class AllAnime : AnimeParser() {
 
                 if (source.sourceUrl.toHttpUrlOrNull() == null) {
                     val jsonUrl = """https://allanimenews.com/${source.sourceUrl.replace("clock", "clock.json").substring(1)}"""
-                    videoServers.add(VideoServer(serverName, jsonUrl, source.type))
+                    videoServers.add(VideoServer(serverName, jsonUrl, mapOf("type" to source.type)))
                 } else {
-                    videoServers.add(VideoServer(serverName, source.sourceUrl, source.type))
+                    videoServers.add(VideoServer(serverName, source.sourceUrl, mapOf("type" to source.type)))
                 }
             }
 
@@ -91,7 +91,7 @@ class AllAnime : AnimeParser() {
     }
 
     override suspend fun getVideoExtractor(server: VideoServer): VideoExtractor? {
-        if (server.extraData as? String? == "player")
+        if (server.extraData?.get("type") == "player")
             return AllAnimeExtractor(server, true)
         val serverUrl = Uri.parse(server.embed.url)
         val domain = serverUrl.host ?: return null
@@ -122,7 +122,7 @@ class AllAnime : AnimeParser() {
             ShowResponse(
                 show.name,
                 link,
-                show.thumbnail?: "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/default.jpg",
+                show.thumbnail ?: "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/default.jpg",
                 otherNames,
                 show.availableEpisodes.let { if (selectDub) it.dub else it.sub }
             )
@@ -138,7 +138,7 @@ class AllAnime : AnimeParser() {
                 "extensions" to extensions
             )
         ).parsed<Query>()
-        if(res.data==null) throw Exception(res.errors!![0].message)
+        if (res.data == null) throw Exception(res.errors!![0].message)
         return res
     }
 
@@ -195,7 +195,7 @@ class AllAnime : AnimeParser() {
                         else               -> null
                     }
                 }?.flatten() ?: listOf()
-                VideoContainer(vid,sub)
+                VideoContainer(vid, sub)
             }
         }
     }
@@ -203,7 +203,7 @@ class AllAnime : AnimeParser() {
     @Serializable
     private data class Query(
         @SerialName("data") var data: Data?,
-        var errors : List<Error>?
+        var errors: List<Error>?
     ) {
 
         @Serializable
