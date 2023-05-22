@@ -104,7 +104,6 @@ object Download {
             val title = "Episode ${episode.number}${if (episode.title != null) " - ${episode.title}" else ""}".replace(regex, "")
             val name = "$title${if (video.size != null) "(${video.size}p)" else ""}"
             val aTitle = animeTitle.replace(regex, "")
-            toast(video.url.headers.toString())
             val bundle = Bundle()
             video.url.headers.forEach { a -> bundle.putString(a.key, a.value)}
             // documentation: https://www.apps2sd.info/idmp/faq?id=35
