@@ -1,6 +1,8 @@
 package ani.saikou.parsers.anime.extractors
 
+import ani.saikou.FileUrl
 import ani.saikou.client
+import ani.saikou.defaultHeaders
 import ani.saikou.findBetween
 import ani.saikou.parsers.*
 import kotlinx.serialization.SerialName
@@ -15,7 +17,7 @@ class StreamSB(override val server: VideoServer) : VideoExtractor() {
             "$source/${bytesToHex("||$id||||streamsb".toByteArray())}/"
         val json = client.get(jsonLink, mapOf("watchsb" to "sbstream")).parsed<Response>()
         if (json.statusCode == 200) {
-            videos.add(Video(null, VideoType.M3U8, json.streamData!!.file))
+            videos.add(Video(null, VideoType.M3U8, FileUrl(json.streamData!!.file, defaultHeaders)))
         }
         return VideoContainer(videos)
     }
