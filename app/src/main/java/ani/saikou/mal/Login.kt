@@ -23,21 +23,23 @@ class Login : AppCompatActivity() {
 
             snackString("Logging in MAL")
             lifecycleScope.launch(Dispatchers.IO) {
-                val res = client.post(
-                    "https://myanimelist.net/v1/oauth2/token",
-                    data = mapOf(
-                        "client_id" to clientId,
-                        "code" to code,
-                        "code_verifier" to codeChallenge,
-                        "grant_type" to "authorization_code"
-                    )
-                ).parsed<MAL.ResponseToken>()
-                saveResponse(res)
-                MAL.token = res.accessToken
-                snackString("Getting User Data")
-                MAL.query.getUserData()
-                launch(Dispatchers.Main) {
-                    startMainActivity(this@Login)
+                tryWithSuspend(true) {
+                    val res = client.post(
+                        "https://myanimelist.net/v1/oauth2/token",
+                        data = mapOf(
+                            "client_id" to clientId,
+                            "code" to code,
+                            "code_verifier" to codeChallenge,
+                            "grant_type" to "authorization_code"
+                        )
+                    ).parsed<MAL.ResponseToken>()
+                    saveResponse(res)
+                    MAL.token = res.accessToken
+                    snackString("Getting User Data")
+                    MAL.query.getUserData()
+                    launch(Dispatchers.Main) {
+                        startMainActivity(this@Login)
+                    }
                 }
             }
         }

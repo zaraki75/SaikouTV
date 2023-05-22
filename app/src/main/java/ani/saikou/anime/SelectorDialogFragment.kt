@@ -71,7 +71,9 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
                         binding.selectorCancel.setOnClickListener {
                             media!!.selected!!.server = null
                             model.saveSelected(media!!.id, media!!.selected!!, requireActivity())
-                            dismiss()
+                            tryWith {
+                                dismiss()
+                            }
                         }
                         fun fail() {
                             snackString("Couldn't auto select the server, Please try again!")
@@ -246,14 +248,16 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
         private inner class UrlViewHolder(val binding: ItemUrlBinding) : RecyclerView.ViewHolder(binding.root) {
             init {
                 itemView.setSafeOnClickListener {
-                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedExtractor = extractor.server.name
-                    media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedVideo = bindingAdapterPosition
-                    if (makeDefault) {
-                        media!!.selected!!.server = extractor.server.name
-                        media!!.selected!!.video = bindingAdapterPosition
-                        model.saveSelected(media!!.id, media!!.selected!!, requireActivity())
+                    tryWith(true) {
+                        media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedExtractor = extractor.server.name
+                        media!!.anime!!.episodes!![media!!.anime!!.selectedEpisode!!]?.selectedVideo = bindingAdapterPosition
+                        if (makeDefault) {
+                            media!!.selected!!.server = extractor.server.name
+                            media!!.selected!!.video = bindingAdapterPosition
+                            model.saveSelected(media!!.id, media!!.selected!!, requireActivity())
+                        }
+                        startExoplayer(media!!)
                     }
-                    startExoplayer(media!!)
                 }
                 itemView.setOnLongClickListener {
                     val video = extractor.videos[bindingAdapterPosition]

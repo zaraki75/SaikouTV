@@ -651,7 +651,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
             exoBrightness.addOnChangeListener { _, value, _ ->
                 val lp = window.attributes
-                lp.screenBrightness = brightnessConverter(value / 10, false)
+                lp.screenBrightness = brightnessConverter((value.takeIf { !it.isNaN() }?:0f) / 10, false)
                 window.attributes = lp
                 brightnessHide()
             }
@@ -674,7 +674,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                 volumeTimer.schedule(timerTask, 3000)
             }
             exoVolume.addOnChangeListener { _, value, _ ->
-                val volume = (value / 10 * volumeMax).roundToInt()
+                val volume = ((value.takeIf { !it.isNaN() }?:0f) / 10 * volumeMax).roundToInt()
                 audioManager.setStreamVolume(STREAM_MUSIC, volume, 0)
                 volumeHide()
             }
@@ -733,10 +733,10 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
 
         //Handle Media
-        if(!initialized) return
+        if(!initialized) return startMainActivity(this)
         model.setMedia(media)
         title = media.userPreferredName
-        episodes = media.anime?.episodes ?: return
+        episodes = media.anime?.episodes ?: return startMainActivity(this)
 
         videoName = playerView.findViewById(R.id.exo_video_name)
         videoInfo = playerView.findViewById(R.id.exo_video_info)
@@ -751,7 +751,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
 
         model.watchSources = if (media.isAdult) HAnimeSources else AnimeSources
-        serverInfo.text = model.watchSources!!.names[media.selected!!.source]
+        serverInfo.text = model.watchSources!!.names.getOrNull(media.selected!!.source) ?: model.watchSources!!.names[0]
 
         model.epChanged.observe(this) {
             epChanging = !it
@@ -992,39 +992,18 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         extractor = ext
         video = ext.videos.getOrNull(episode.selectedVideo) ?: return
 
-        val subLang: String? = loadData("subLang_${media.id}", this)
-        if(subLang == null) {
-            subtitle = ext.subtitles.let { sub ->
-                when (episode.selectedSubtitle) {
-                    null -> null
-                    -1   -> sub.find { it.language == "English" || it.language == "en-US" }
-                    else -> sub.getOrNull(episode.selectedSubtitle!!)
-                }
-            }
-        }
-        if(subLang == "None") {
-            subtitle = ext.subtitles.let { null }
-        } else {
-            subtitle = ext.subtitles.let { sub ->
-                sub.find { it.language == subLang || it.language == when(subLang){
-                    "ja-JP"  -> "Japanese"
-                    "en-US"  -> "English"
-                    "de-DE"  -> "German"
-                    "es-ES"  -> "Spanish"
-                    "es-419" -> "Spanish"
-                    "fr-FR"  -> "French"
-                    "it-IT"  -> "Italian"
-                    "pt-BR"  -> "Portuguese (Brazil)"
-                    "pt-PT"  -> "Portuguese (Portugal)"
-                    "ru-RU"  -> "Russian"
-                    "zh-CN"  -> "Chinese"
-                    "tr-TR"  -> "Turkish"
-                    "ar-ME"  -> "Arabic"
-                    else     -> null
+        subtitle = intent.getSerialized("subtitle")
+            ?: when (val subLang: String? = loadData("subLang_${media.id}", this)) {
+                null   -> {
+                    when (episode.selectedSubtitle) {
+                        null -> null
+                        -1   -> ext.subtitles.find { it.language.trim().printIt("sub : ") == "English" || it.language == "en-US" }
+                        else -> ext.subtitles.getOrNull(episode.selectedSubtitle!!)
                     }
                 }
+                "None" -> ext.subtitles.let { null }
+                else   -> ext.subtitles.find { it.language == subLang }
             }
-        }
 
         //Subtitles
         exoSubtitle.visibility = if (ext.subtitles.isNotEmpty()) View.VISIBLE else View.GONE
@@ -1032,33 +1011,20 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             subClick()
         }
 
-        val newSub = intent.getSerialized<Subtitle>("subtitle")
         var sub: MediaItem.SubtitleConfiguration? = null
-        if(newSub == null && subtitle != null) {
+        if (subtitle != null) {
             sub = MediaItem.SubtitleConfiguration
-                    .Builder(Uri.parse(subtitle!!.url.url))
-                    .setSelectionFlags(C.SELECTION_FLAG_FORCED)
-                    .setMimeType(
-                        when (subtitle?.type) {
-                            SubtitleType.VTT -> MimeTypes.TEXT_VTT
-                            SubtitleType.ASS -> MimeTypes.TEXT_SSA
-                            SubtitleType.SRT -> MimeTypes.APPLICATION_SUBRIP
-                            else             -> MimeTypes.TEXT_UNKNOWN
-                        }
-                    )
-                    .build()
-        }
-        if(newSub != null){
-            sub = MediaItem.SubtitleConfiguration
-                    .Builder(Uri.parse(newSub.url.url))
-                    .setSelectionFlags(C.SELECTION_FLAG_FORCED)
-                    .setMimeType(when (newSub.type) {
+                .Builder(Uri.parse(subtitle!!.url.url))
+                .setSelectionFlags(C.SELECTION_FLAG_FORCED)
+                .setMimeType(
+                    when (subtitle?.type) {
                         SubtitleType.VTT -> MimeTypes.TEXT_VTT
                         SubtitleType.ASS -> MimeTypes.TEXT_SSA
                         SubtitleType.SRT -> MimeTypes.APPLICATION_SUBRIP
-                        }
-                    )
-                    .build()
+                         else             -> MimeTypes.TEXT_UNKNOWN
+                    }
+                )
+                .build()
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -1066,7 +1032,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
 
         val but = playerView.findViewById<ImageButton>(R.id.exo_download)
-        if (video?.format == VideoType.CONTAINER || (loadData<Int>("settings_download_manager") ?: 0) != 0){
+        if (video?.format == VideoType.CONTAINER || (loadData<Int>("settings_download_manager") ?: 0) != 0) {
             but.visibility = View.VISIBLE
             but.setOnClickListener {
                 download(this, episode, animeTitle.text.toString())

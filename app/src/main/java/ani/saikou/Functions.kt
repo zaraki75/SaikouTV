@@ -540,9 +540,12 @@ abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
         return super.onDoubleTap(e)
     }
 
+    @Suppress("USELESS_ELVIS")
     override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
         onScrollYClick(distanceY)
         onScrollXClick(distanceX)
+        e1 ?: return false
+        e2 ?: return false
         return super.onScroll(e1, e2, distanceX, distanceY)
     }
 

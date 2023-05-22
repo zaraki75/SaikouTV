@@ -20,8 +20,8 @@ import ani.saikou.saveData
 
 class SearchAdapter(private val activity: SearchActivity) : RecyclerView.Adapter<SearchAdapter.SearchHeaderViewHolder>() {
     private val itemViewType = 6969
-    lateinit var search: Runnable
-    lateinit var requestFocus: Runnable
+    var search: Runnable? = null
+    var requestFocus: Runnable? = null
     private var textWatcher: TextWatcher? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchHeaderViewHolder {
