@@ -12,7 +12,7 @@ class Consumet9Anime : AnimeParser() {
     override val name = "Consumet 9Anime"
     override val saveName = "consumet_9anime"
     override val hostUrl = "https://api.consumet.org/anime/9anime"
-    override val isDubAvailableSeparately = false
+    override val isDubAvailableSeparately = true
 
     override suspend fun search(query: String): List<ShowResponse> {
         return client.get("$hostUrl/$query").parsed<SearchResponse>().results.map {
