@@ -24,8 +24,23 @@ class ComickFun : MangaParser() {
     }
 
     override suspend fun loadChapters(mangaLink: String, extra: Map<String, String>?): List<MangaChapter> {
-        val resp = client.get(mangaLink).parsed<MangaChapterData>()
-        return resp.chapters.reversed().map {
+        val initialRes = client.get(mangaLink).parsed<MangaChapterData>()
+        val responses = mutableListOf(initialRes.chapters)
+        var parsedChapters = initialRes.chapters.count()
+        var pageNum = 1
+
+        while (parsedChapters < initialRes.totalChapters.toIntOrNull() ?: 0) {
+            try {
+                val res = client.get(mangaLink + "&page=${++pageNum}").parsed<MangaChapterData>()
+                responses += res.chapters
+                parsedChapters += res.chapters.count()
+            } catch (e: Exception) {
+                break
+            }
+        }
+
+        return responses.flatten().reversed().mapNotNull {
+            if ((it.chap ?: "").isBlank()) return@mapNotNull null
             val chapterLink = "$hostUrl/chapter/${it.hid}?tachiyomi=true"
             MangaChapter(number = it.chap.toString(), link = chapterLink, title = it.title)
         }
@@ -52,7 +67,8 @@ class ComickFun : MangaParser() {
 
     @Serializable
     private data class MangaChapterData(
-        @SerialName("chapters") val chapters: List<Chap>
+        @SerialName("chapters") val chapters: List<Chap>,
+        @SerialName("total") val totalChapters: String
     )
 
     @Serializable
