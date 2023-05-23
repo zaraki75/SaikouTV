@@ -1017,7 +1017,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         var sub: MediaItem.SubtitleConfiguration? = null
         if (subtitle != null) {
             sub = MediaItem.SubtitleConfiguration
-                .Builder(Uri.parse(subtitle!!.url.url))
+                .Builder(Uri.parse(subtitle!!.file.url))
                 .setSelectionFlags(C.SELECTION_FLAG_FORCED)
                 .setMimeType(
                     when (subtitle?.type) {
@@ -1450,7 +1450,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         val shareVideo = Intent(Intent.ACTION_VIEW)
         shareVideo.setDataAndType(Uri.parse(videoURL), "video/*")
         shareVideo.setPackage("com.instantbits.cast.webvideo")
-        if (subtitle != null) shareVideo.putExtra("subtitle", subtitle!!.url.url)
+        if (subtitle != null) shareVideo.putExtra("subtitle", subtitle!!.file.url)
         shareVideo.putExtra("title", media.userPreferredName + " : Ep " + episodeTitleArr[currentEpisodeIndex])
         shareVideo.putExtra("poster", episode.thumb?.url ?: media.cover)
         val headers = Bundle()

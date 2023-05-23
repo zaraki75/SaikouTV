@@ -138,7 +138,7 @@ data class Subtitle(
     /**
      * The direct url to the Subtitle
      * **/
-    val url: FileUrl,
+    val file: FileUrl,
 
     /**
      * format of the Subtitle
