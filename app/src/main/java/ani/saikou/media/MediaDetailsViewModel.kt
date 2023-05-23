@@ -217,15 +217,17 @@ class MediaDetailsViewModel : ViewModel() {
         mangaChapters.postValue(mangaLoaded)
     }
 
-    private val mangaChapter = MutableLiveData<MangaChapter?>(null)
+    val mangaChapter = MutableLiveData<MangaChapter?>(null)
     fun getMangaChapter(): LiveData<MangaChapter?> = mangaChapter
-    suspend fun loadMangaChapterImages(chapter: MangaChapter, selected: Selected, post: Boolean = true) {
-        tryWithSuspend {
+    suspend fun loadMangaChapterImages(chapter: MangaChapter, selected: Selected, post: Boolean = true):Boolean {
+        return tryWithSuspend {
             if (chapter.images == null) {
-                chapter.images = mangaReadSources?.get(selected.source)?.loadImages(chapter.link) ?: return@tryWithSuspend
+                chapter.images = mangaReadSources?.get(selected.source)?.loadImages(chapter.link)
+                    ?: return@tryWithSuspend false
             }
-        }
-        if (post) mangaChapter.postValue(chapter)
+            if (post) mangaChapter.postValue(chapter)
+            true
+        } ?: false
     }
 
     fun loadTransformation(mangaImage: MangaImage, source: Int): Transformation<File>? {

@@ -197,10 +197,9 @@ class MangaReaderActivity : AppCompatActivity() {
         //Chapter Change
         fun change(index: Int) {
             saveData("${media.id}_${chaptersArr[currentChapterIndex]}", currentChapterPage, this)
-            maxChapterPage = 0
             media.manga!!.selectedChapter = chaptersArr[index]
             model.setMedia(media)
-            scope.launch(Dispatchers.IO) { model.loadMangaChapterImages(chapters[chaptersArr[index]]!!, media.selected!!) }
+ChapterLoaderDialog.newInstance(chapter).show(supportFragmentManager,"dialog")
         }
 
         //ChapterSelector
@@ -235,22 +234,18 @@ class MangaReaderActivity : AppCompatActivity() {
             else snackString("This is the 1st Chapter!")
         }
 
-        val chapterObserverRunnable = Runnable {
-            model.getMangaChapter().observe(this) {
-                if (it != null) {
-                    chapter = it
-                    media.selected = model.loadSelected(media)
-                    saveData("${media.id}_current_chp", it.number, this)
-                    currentChapterIndex = chaptersArr.indexOf(it.number)
-                    binding.mangaReaderChapterSelect.setSelection(currentChapterIndex)
-                    binding.mangaReaderNextChap.text = chaptersTitleArr.getOrNull(currentChapterIndex + 1) ?: ""
-                    binding.mangaReaderPrevChap.text = chaptersTitleArr.getOrNull(currentChapterIndex - 1) ?: ""
-
-                    applySettings()
-                }
+        model.getMangaChapter().observe(this) {
+            if (it != null) {
+                chapter = it
+                media.selected = model.loadSelected(media)
+                saveData("${media.id}_current_chp", it.number, this)
+                currentChapterIndex = chaptersArr.indexOf(it.number)
+                binding.mangaReaderChapterSelect.setSelection(currentChapterIndex)
+                binding.mangaReaderNextChap.text = chaptersTitleArr.getOrNull(currentChapterIndex + 1) ?: ""
+                binding.mangaReaderPrevChap.text = chaptersTitleArr.getOrNull(currentChapterIndex - 1) ?: ""
+                applySettings()
             }
         }
-        chapterObserverRunnable.run()
 
         scope.launch(Dispatchers.IO) { model.loadMangaChapterImages(chapter, media.selected!!) }
     }
@@ -271,6 +266,7 @@ class MangaReaderActivity : AppCompatActivity() {
 
     @SuppressLint("ClickableViewAccessibility")
     fun applySettings() {
+
         saveData("${media.id}_current_settings", settings.default)
         hideBars()
 
@@ -290,6 +286,7 @@ class MangaReaderActivity : AppCompatActivity() {
 
         val chapImages = chapter.images
 
+        maxChapterPage = 0
         if (!chapImages.isNullOrEmpty()) {
             maxChapterPage = chapImages.size.toLong()
             saveData("${media.id}_${chapter.number}_max", maxChapterPage)
@@ -627,8 +624,8 @@ class MangaReaderActivity : AppCompatActivity() {
                 value = clamp(currentChapterPage.toFloat(), 1f, valueTo)
             }
         }
-        if (maxChapterPage - currentChapterPage <= 1) scope.launch(Dispatchers.IO) {
-            model.loadMangaChapterImages(
+        if (maxChapterPage - currentChapterPage <= 1)
+            scope.launch(Dispatchers.IO) { model.loadMangaChapterImages(
                 chapters[chaptersArr.getOrNull(currentChapterIndex + 1) ?: return@launch]!!,
                 media.selected!!,
                 false
