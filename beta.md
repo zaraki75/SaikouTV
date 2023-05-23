@@ -1,13 +1,12 @@
-# 1.2.2.0
+# 1.2.2.1
 
-- Added Source Subscription! (Vigorously tested by me, please lemme know your experience)
-<br>Receive notifications of your fav anime & manga whenever they release a new ep/chap
-- Added Advanced List Filter in Search
-- Fix app freezing when closing Studio Activity (silly mistake by me)
-- Added loading chapter dialog, in manga reader
-- Added Grid view in Search Tag & Genres
-- Added support for allowing opening links of anilist & mal from Saikou
-- Shift to Jikan for Episode Filler Data
-- Fix ComicFun
-- Add support for 9anime Dub & Sub
-- More misc ui stuff & countless improvements
+- Fixed image scaling issues in Larger Devices (A lot of brains were harmed fixing this)
+- Added Crop Borders for Manga (thanks ChatGPT)
+- Added ColoredManga as a source by @scrazzz
+- Added MangaKomi as a source by @justchokingaround
+- Added Sort By Release Date in Anime List
+- Fixed MAL not updating Start/End Dates
+- Fixed weird characters in Total Episodes/Total Chapters & other places by @scrazzz
+- Fixed Video getting played in PiP mode
+- Switch to Media3 (updated exoplayer)
+- Added safeguard for notifications being stuck, hopefully they wont get stuck anymore
