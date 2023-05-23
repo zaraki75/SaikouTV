@@ -3,13 +3,16 @@ package ani.saikou
 import android.animation.ObjectAnimator
 import android.content.Intent
 import android.graphics.drawable.Animatable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnticipateInterpolator
+import android.widget.TextView
 import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -26,7 +29,10 @@ import ani.saikou.anilist.AnilistHomeViewModel
 import ani.saikou.databinding.ActivityMainBinding
 import ani.saikou.databinding.SplashScreenBinding
 import ani.saikou.media.MediaDetailsActivity
+import ani.saikou.others.CustomBottomDialog
 import ani.saikou.settings.UserInterfaceSettings
+import io.noties.markwon.Markwon
+import io.noties.markwon.SoftBreakAddsNewLinePlugin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -168,10 +174,37 @@ class MainActivity : AppCompatActivity() {
                 }
                 load = true
             }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if(loadData<Boolean>("allow_opening_links").printIt("Suh : ") != true) {
+                    CustomBottomDialog.newInstance().apply {
+                        title = "Allow Saikou to automatically open Anilist & MAL Links?"
+                        val md = "Open settings & click +Add Links & select Anilist & Mal urls"
+                        addView(TextView(this@MainActivity).apply {
+                            val markWon =
+                                Markwon.builder(this@MainActivity).usePlugin(SoftBreakAddsNewLinePlugin.create()).build()
+                            markWon.setMarkdown(this, md)
+                        })
+
+                        setNegativeButton("No") {
+                            saveData("allow_opening_links", true, this@MainActivity)
+                            dismiss()
+                        }
+
+                        setPositiveButton("Yes") {
+                            saveData("allow_opening_links", true, this@MainActivity)
+                            tryWith(true){
+                                startActivity(
+                                    Intent(Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS)
+                                        .setData(Uri.parse("package:$packageName"))
+                                )
+                            }
+                        }
+                    }.show(supportFragmentManager, "dialog")
+                }
+            }
         }
     }
-
-
 
     //ViewPager
     private class ViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) :
