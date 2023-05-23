@@ -16,11 +16,10 @@ import ani.saikou.others.AniSkip
 import ani.saikou.others.Jikan
 import ani.saikou.others.Kitsu
 import ani.saikou.parsers.*
-import com.bumptech.glide.load.Transformation
+import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import java.io.File
 
 class MediaDetailsViewModel : ViewModel() {
     val scrolledToTop = MutableLiveData(true)
@@ -219,18 +218,17 @@ class MediaDetailsViewModel : ViewModel() {
 
     val mangaChapter = MutableLiveData<MangaChapter?>(null)
     fun getMangaChapter(): LiveData<MangaChapter?> = mangaChapter
-    suspend fun loadMangaChapterImages(chapter: MangaChapter, selected: Selected, post: Boolean = true):Boolean {
-        return tryWithSuspend {
-            if (chapter.images == null) {
-                chapter.images = mangaReadSources?.get(selected.source)?.loadImages(chapter.link)
-                    ?: return@tryWithSuspend false
-            }
+    suspend fun loadMangaChapterImages(chapter: MangaChapter, selected: Selected, post: Boolean = true): Boolean {
+        return tryWithSuspend(true) {
+            chapter.addImages(
+                mangaReadSources?.get(selected.source)?.loadImages(chapter.link) ?: return@tryWithSuspend false
+            )
             if (post) mangaChapter.postValue(chapter)
             true
         } ?: false
     }
 
-    fun loadTransformation(mangaImage: MangaImage, source: Int): Transformation<File>? {
+        fun loadTransformation(mangaImage: MangaImage, source: Int): BitmapTransformation? {
         return if (mangaImage.useTransformation) mangaReadSources?.get(source)?.getTransformation() else null
     }
 }

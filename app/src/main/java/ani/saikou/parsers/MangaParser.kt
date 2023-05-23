@@ -2,8 +2,7 @@ package ani.saikou.parsers
 
 import ani.saikou.FileUrl
 import ani.saikou.media.Media
-import com.bumptech.glide.load.Transformation
-import java.io.File
+import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
 import java.io.Serializable
 
 abstract class MangaParser : BaseParser() {
@@ -47,7 +46,7 @@ abstract class MangaParser : BaseParser() {
         return response
     }
 
-    open fun getTransformation():Transformation<File>? = null
+    open fun getTransformation(): BitmapTransformation? = null
 }
 
 data class MangaChapter(

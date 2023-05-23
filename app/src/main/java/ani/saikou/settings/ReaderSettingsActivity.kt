@@ -53,7 +53,7 @@ class ReaderSettingsActivity : AppCompatActivity() {
             binding.readerSettingsContinuous
         )
 
-        binding.readerSettingsLayoutText.text = settings.default.layout.toString()
+        binding.readerSettingsLayoutText.text = settings.default.layout.string
         var selectedLayout = layoutList[settings.default.layout.ordinal]
         selectedLayout.alpha = 1f
 
@@ -63,16 +63,16 @@ class ReaderSettingsActivity : AppCompatActivity() {
                 selectedLayout = imageButton
                 selectedLayout.alpha = 1f
                 settings.default.layout = CurrentReaderSettings.Layouts[index]?:CurrentReaderSettings.Layouts.CONTINUOUS
-                binding.readerSettingsLayoutText.text = settings.default.layout.toString()
+                binding.readerSettingsLayoutText.text = settings.default.layout.string
                 saveData(reader, settings)
             }
         }
 
-        binding.readerSettingsDirectionText.text = settings.default.direction.toString()
+        binding.readerSettingsDirectionText.text = settings.default.direction.string
         binding.readerSettingsDirection.rotation = 90f * (settings.default.direction.ordinal)
         binding.readerSettingsDirection.setOnClickListener {
             settings.default.direction = CurrentReaderSettings.Directions[settings.default.direction.ordinal + 1] ?: CurrentReaderSettings.Directions.TOP_TO_BOTTOM
-            binding.readerSettingsDirectionText.text = settings.default.direction.toString()
+            binding.readerSettingsDirectionText.text = settings.default.direction.string
             binding.readerSettingsDirection.rotation = 90f * (settings.default.direction.ordinal)
             saveData(reader, settings)
         }

@@ -40,11 +40,10 @@ import ani.saikou.settings.CurrentReaderSettings.Layouts.*
 import ani.saikou.settings.ReaderSettings
 import ani.saikou.settings.UserInterfaceSettings
 import com.alexvasilkov.gestures.views.GestureFrameLayout
-import com.bumptech.glide.load.Transformation
+import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File
 import java.util.*
 import kotlin.math.min
 import kotlin.properties.Delegates
@@ -199,9 +198,9 @@ class MangaReaderActivity : AppCompatActivity() {
             saveData("${media.id}_${chaptersArr[currentChapterIndex]}", currentChapterPage, this)
             media.manga!!.selectedChapter = chaptersArr[index]
             model.setMedia(media)
-ChapterLoaderDialog.newInstance(chapter).show(supportFragmentManager,"dialog")
+            ChapterLoaderDialog.newInstance(chapter).show(supportFragmentManager, "dialog")        }
         }
-
+        
         //ChapterSelector
         binding.mangaReaderChapterSelect.adapter = NoPaddingArrayAdapter(this, R.layout.item_dropdown, chaptersTitleArr)
         binding.mangaReaderChapterSelect.setSelection(currentChapterIndex)
@@ -252,7 +251,7 @@ ChapterLoaderDialog.newInstance(chapter).show(supportFragmentManager,"dialog")
 
     private val snapHelper = PagerSnapHelper()
 
-    private fun <T> dualPage(callback: () -> T): T? {
+    fun <T> dualPage(callback: () -> T): T? {
         return when (settings.default.dualPageMode) {
             No        -> null
             Automatic -> {
@@ -284,10 +283,10 @@ ChapterLoaderDialog.newInstance(chapter).show(supportFragmentManager,"dialog")
 
         currentChapterPage = loadData("${media.id}_${chapter.number}", this) ?: 1
 
-        val chapImages = chapter.images
+        val chapImages = chapter.images()
 
         maxChapterPage = 0
-        if (!chapImages.isNullOrEmpty()) {
+        if (chapImages.isNotEmpty()) {
             maxChapterPage = chapImages.size.toLong()
             saveData("${media.id}_${chapter.number}_max", maxChapterPage)
 
@@ -342,8 +341,7 @@ ChapterLoaderDialog.newInstance(chapter).show(supportFragmentManager,"dialog")
                     translationY = height.dp * (1 - min(value, 1f))
                 }
             }
-        }
-        else {
+        } else {
             binding.mangaReaderSwipy.vertical = false
             if (settings.default.direction == RIGHT_TO_LEFT) {
                 binding.LeftSwipeText.text = chaptersTitleArr.getOrNull(currentChapterIndex + 1) ?: "No Chapter"
@@ -354,8 +352,7 @@ ChapterLoaderDialog.newInstance(chapter).show(supportFragmentManager,"dialog")
                 binding.mangaReaderSwipy.onRightSwiped = {
                     binding.mangaReaderPreviousChapter.performClick()
                 }
-            }
-            else {
+            } else {
                 binding.LeftSwipeText.text = chaptersTitleArr.getOrNull(currentChapterIndex - 1) ?: "No Chapter"
                 binding.RightSwipeText.text = chaptersTitleArr.getOrNull(currentChapterIndex + 1) ?: "No Chapter"
                 binding.mangaReaderSwipy.onLeftSwiped = {
@@ -389,13 +386,20 @@ ChapterLoaderDialog.newInstance(chapter).show(supportFragmentManager,"dialog")
                     if (binding.mangaReaderRecycler.findChildViewUnder(e.x, e.y).let { child ->
                             child ?: return@let false
                             val pos = binding.mangaReaderRecycler.getChildAdapterPosition(child)
-                            val image = chapImages?.getOrNull(pos) ?: return@let false
-
-                            onImageLongClicked(pos, image) { dialog ->
-                                imageAdapter?.loadImage(pos, child as GestureFrameLayout)
+                            val callback: (ImageViewDialog) -> Unit = { dialog ->
+                                lifecycleScope.launch { imageAdapter?.loadImage(pos, child as GestureFrameLayout) }
                                 binding.mangaReaderRecycler.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                                 dialog.dismiss()
                             }
+                            dualPage {
+                                val page = chapter.dualPages()[pos]
+                                val nextPage = page.second
+                                if (settings.default.direction != LEFT_TO_RIGHT && nextPage != null)
+                                    onImageLongClicked(pos * 2, nextPage, page.first, callback)
+                                else
+                                    onImageLongClicked(pos * 2, page.first, nextPage, callback)
+
+                            } ?: onImageLongClicked(pos, chapImages[pos], null, callback)
                         }
                     ) binding.mangaReaderRecycler.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                     super.onLongPress(e)
@@ -424,7 +428,7 @@ ChapterLoaderDialog.newInstance(chapter).show(supportFragmentManager,"dialog")
                 adapter = imageAdapter
                 layoutManager = manager
                 setOnTouchListener { _, event ->
-                    if(event!=null) detector.onTouchEvent(event) else false
+                    if (event != null) detector.onTouchEvent(event) else false
                 }
 
                 addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -468,10 +472,9 @@ ChapterLoaderDialog.newInstance(chapter).show(supportFragmentManager,"dialog")
                         smoothScrollBy(500, 0)
                 }
 
-                scrollToPosition(currentPage - 1)
+                scrollToPosition(currentPage / (dualPage { 2 } ?: 1) - 1)
             }
-        }
-        else {
+        } else {
             binding.mangaReaderRecyclerContainer.visibility = View.GONE
             binding.mangaReaderPager.apply {
                 binding.mangaReaderSwipy.child = this
@@ -488,7 +491,7 @@ ChapterLoaderDialog.newInstance(chapter).show(supportFragmentManager,"dialog")
                 registerOnPageChangeCallback(pageChangeCallback)
                 offscreenPageLimit = 5
 
-                setCurrentItem(currentPage - 1, false)
+                setCurrentItem(currentPage / (dualPage { 2 } ?: 1) - 1, false)
             }
             onVolumeUp = {
                 binding.mangaReaderPager.currentItem -= 1
@@ -625,12 +628,13 @@ ChapterLoaderDialog.newInstance(chapter).show(supportFragmentManager,"dialog")
             }
         }
         if (maxChapterPage - currentChapterPage <= 1)
-            scope.launch(Dispatchers.IO) { model.loadMangaChapterImages(
-                chapters[chaptersArr.getOrNull(currentChapterIndex + 1) ?: return@launch]!!,
-                media.selected!!,
-                false
-            )
-        }
+            scope.launch(Dispatchers.IO) {
+                model.loadMangaChapterImages(
+                    chapters[chaptersArr.getOrNull(currentChapterIndex + 1) ?: return@launch]!!,
+                    media.selected!!,
+                    false
+                )
+            }
     }
 
     private fun progress(runnable: Runnable) {
@@ -659,16 +663,41 @@ ChapterLoaderDialog.newInstance(chapter).show(supportFragmentManager,"dialog")
         }
     }
 
-    fun getTransformation(mangaImage: MangaImage): Transformation<File>? {
+    fun getTransformation(mangaImage: MangaImage): BitmapTransformation? {
         return model.loadTransformation(mangaImage, media.selected!!.source)
     }
 
-    fun onImageLongClicked(pos: Int, image: MangaImage, callback: ((ImageViewDialog) -> Unit)? = null): Boolean {
+    fun onImageLongClicked(
+        pos: Int,
+        img1: MangaImage,
+        img2: MangaImage?,
+        callback: ((ImageViewDialog) -> Unit)? = null
+    ): Boolean {
         if (!settings.default.longClickImage) return false
-        val title = "(Page ${pos + 1}) ${chaptersTitleArr.getOrNull(currentChapterIndex)?.replace(" : "," - ") ?: ""} [${media.userPreferredName}]"
+        val title = "(Page ${pos + 1}${if (img2 != null) "-${pos + 2}" else ""}) ${
+            chaptersTitleArr.getOrNull(currentChapterIndex)?.replace(" : ", " - ") ?: ""
+        } [${media.userPreferredName}]"
 
-        ImageViewDialog.newInstance(title, image.url, true).apply {
-            trans = getTransformation(image)
+        ImageViewDialog.newInstance(title, img1.url, true, img2?.url).apply {
+            val transforms1 = mutableListOf<BitmapTransformation>()
+            val parserTransformation1 = getTransformation(img1)
+            if (parserTransformation1 != null) transforms1.add(parserTransformation1)
+            val transforms2 = mutableListOf<BitmapTransformation>()
+            if (img2 != null) {
+                val parserTransformation2 = getTransformation(img2)
+                if (parserTransformation2 != null) transforms2.add(parserTransformation2)
+            }
+            val threshold = settings.default.cropBorderThreshold
+            if (settings.default.cropBorders) {
+                transforms1.add(RemoveBordersTransformation(true, threshold))
+                transforms1.add(RemoveBordersTransformation(false, threshold))
+                if (img2 != null) {
+                    transforms2.add(RemoveBordersTransformation(true, threshold))
+                    transforms2.add(RemoveBordersTransformation(false, threshold))
+                }
+            }
+            trans1 = transforms1.ifEmpty { null }
+            trans2 = transforms2.ifEmpty { null }
             onReloadPressed = callback
             show(supportFragmentManager, "image")
         }

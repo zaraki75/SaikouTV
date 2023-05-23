@@ -61,7 +61,6 @@
         <activity android:name=".user.ListActivity" />
         <activity
             android:name=".manga.mangareader.MangaReaderActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation"
             android:excludeFromRecents="true"
             android:exported="true"
             android:label="@string/manga"
