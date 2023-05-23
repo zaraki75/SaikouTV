@@ -381,15 +381,17 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
         var clicked: Boolean,
         callback: suspend (Boolean) -> (Unit)
     ) {
+        private var disabled = false
         private val context = image.context
         private var pressable = true
 
         init {
+            enabled(true)
             scope.launch {
                 clicked()
             }
             image.setOnClickListener {
-                if (pressable) {
+                if (pressable && !disabled) {
                     pressable = false
                     clicked = !clicked
                     scope.launch {
@@ -427,6 +429,11 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
                 ContextCompat.getColor(context, c2),
                 ContextCompat.getColor(context, c1)
             ).setDuration(200).start()
+        }
+
+        fun enabled(enabled: Boolean) {
+            disabled = !enabled
+            image.alpha = if(disabled)  0.33f else 1f
         }        
     }
 }

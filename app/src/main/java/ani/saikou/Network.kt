@@ -36,7 +36,7 @@ lateinit var okHttpClient: OkHttpClient
 lateinit var client: Requests
 
 fun initializeNetwork(context: Context) {
-    val dns = loadData<Int>("settings_dns", context)
+    val dns = loadData<Int>("settings_dns")
     cache = Cache(
         File(context.cacheDir, "http_cache"),
         5 * 1024L * 1024L // 5 MiB
@@ -204,7 +204,7 @@ suspend fun webViewInterface(webViewDialog: WebViewBottomDialog): Map<String, St
         map = it
         latch.countDown()
     }
-    val fragmentManager = (currActivity() as FragmentActivity?)?.supportFragmentManager ?: return null
+    val fragmentManager = (currContext() as FragmentActivity?)?.supportFragmentManager ?: return null
     webViewDialog.show(fragmentManager, "web-view")
     delay(0)
     latch.await(2,TimeUnit.MINUTES)

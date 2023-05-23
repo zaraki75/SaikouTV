@@ -22,13 +22,13 @@ import ani.saikou.databinding.ActivitySettingsBinding
 import ani.saikou.mal.MAL
 import ani.saikou.others.AppUpdater
 import ani.saikou.others.CustomBottomDialog
-import ani.saikou.others.Notifications
-import ani.saikou.others.Notifications.Companion.openSettings
-import ani.saikou.others.SubscriptionWorker.Companion.defaultTime
-import ani.saikou.others.SubscriptionWorker.Companion.enqueue
-import ani.saikou.others.SubscriptionWorker.Companion.timeMinutes
 import ani.saikou.parsers.AnimeSources
 import ani.saikou.parsers.MangaSources
+import ani.saikou.subcriptions.Notifications
+import ani.saikou.subcriptions.Notifications.Companion.openSettings
+import ani.saikou.subcriptions.Subscriptions.Companion.defaultTime
+import ani.saikou.subcriptions.Subscriptions.Companion.startSubscription
+import ani.saikou.subcriptions.Subscriptions.Companion.timeMinutes
 import io.noties.markwon.Markwon
 import io.noties.markwon.SoftBreakAddsNewLinePlugin
 import kotlinx.coroutines.Dispatchers
@@ -340,7 +340,8 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
         val timeNames = timeMinutes.map {
             val mins = it % 60
             val hours = it / 60
-            "${if (hours > 0) "$hours hrs " else ""}${if (mins > 0) "$mins mins" else ""}"
+            if(it>0) "${if (hours > 0) "$hours hrs " else ""}${if (mins > 0) "$mins mins" else ""}"
+            else getString(R.string.do_not_update)
         }.toTypedArray()
         binding.settingsSubscriptionsTime.text = getString(R.string.subscriptions_checking_time_s, timeNames[curTime])
         val speedDialog = AlertDialog.Builder(this, R.style.DialogTheme).setTitle(R.string.subscriptions_checking_time)
@@ -350,12 +351,12 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
                 binding.settingsSubscriptionsTime.text = getString(R.string.subscriptions_checking_time_s, timeNames[i])
                 saveData("subscriptions_time", curTime)
                 dialog.dismiss()
-                enqueue(applicationContext, true)
+                startSubscription(true)
             }.show()
         }
 
         binding.settingsSubscriptionsTime.setOnLongClickListener {
-            enqueue(applicationContext, true)
+            startSubscription(true)
             true
         }
 

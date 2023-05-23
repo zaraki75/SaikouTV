@@ -17,15 +17,16 @@ import ani.saikou.*
 import ani.saikou.databinding.FragmentAnimeWatchBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
-import ani.saikou.others.Notifications
-import ani.saikou.others.Notifications.Group.ANIME_GROUP
-import ani.saikou.others.SubscriptionHelper.Companion.saveSubscription
-import ani.saikou.others.SubscriptionWorker.Companion.getChannelId
 import ani.saikou.parsers.AnimeParser
 import ani.saikou.parsers.AnimeSources
 import ani.saikou.parsers.HAnimeSources
 import ani.saikou.settings.PlayerSettings
 import ani.saikou.settings.UserInterfaceSettings
+import ani.saikou.subcriptions.Notifications
+import ani.saikou.subcriptions.Notifications.Group.ANIME_GROUP
+import ani.saikou.subcriptions.SubscriptionHelper
+import ani.saikou.subcriptions.SubscriptionHelper.Companion.saveSubscription
+import ani.saikou.subcriptions.Subscriptions.Companion.getChannelId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -109,6 +110,8 @@ class AnimeWatchFragment : Fragment() {
                 media = it
                 media.selected = model.loadSelected(media)
 
+                subscribed = SubscriptionHelper.getSubscriptions(requireContext()).containsKey(media.id)
+                
                 style = media.selected!!.recyclerStyle
                 reverse = media.selected!!.recyclerReversed
 
@@ -182,6 +185,8 @@ class AnimeWatchFragment : Fragment() {
                             position
                         )
                     }
+                                        
+                    headerAdapter.subscribeButton(true)
                     reload()
                 }
             }
@@ -240,10 +245,10 @@ class AnimeWatchFragment : Fragment() {
         reload()
     }
 
+    var subscribed = false
     fun onNotificationPressed(subscribed: Boolean, source: String) {
-        media.selected!!.subscribed = subscribed
-        model.saveSelected(media.id, media.selected!!, requireActivity())
-        saveSubscription(media, subscribed)
+        this.subscribed = subscribed
+        saveSubscription(requireContext(), media, subscribed)
                 if (!subscribed)
             Notifications.deleteChannel(requireContext(), getChannelId(true, media.id))
         else
@@ -268,8 +273,9 @@ class AnimeWatchFragment : Fragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun reload() {
         val selected = model.loadSelected(media)
+
         //Find latest episode for subscription
-        if (selected.subscribed)
+        if (subscribed)
             selected.latest = media.anime?.episodes?.values?.maxOfOrNull { it.number.toFloatOrNull() ?: 0f } ?: 0f
         model.saveSelected(media.id, selected, requireActivity())
         headerAdapter.handleEpisodes()

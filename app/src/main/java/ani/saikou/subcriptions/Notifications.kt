@@ -1,4 +1,4 @@
-package ani.saikou.others
+package ani.saikou.subcriptions
 
 import android.app.NotificationChannel
 import android.app.NotificationChannelGroup
@@ -44,15 +44,16 @@ class Notifications {
         fun getIntent(context: Context, mediaId: Int): PendingIntent {
             val notifyIntent = Intent(context, UrlMedia::class.java)
                 .putExtra("media", mediaId)
+                .setAction(mediaId.toString())
                 .apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 }
             return PendingIntent.getActivity(
                 context, 0, notifyIntent,
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
                 } else {
-                    PendingIntent.FLAG_UPDATE_CURRENT
+                    PendingIntent.FLAG_ONE_SHOT
                 }
             )
         }
@@ -94,6 +95,7 @@ class Notifications {
                 .setSmallIcon(group?.icon ?: R.drawable.monochrome)
                 .setContentTitle(title)
                 .setContentText(text)
+                .setAutoCancel(true)
         }
 
         suspend fun getNotification(

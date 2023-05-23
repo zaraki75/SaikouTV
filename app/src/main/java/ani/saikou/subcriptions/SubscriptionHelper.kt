@@ -1,5 +1,6 @@
-package ani.saikou.others
+package ani.saikou.subcriptions
 
+import android.content.Context
 import ani.saikou.loadData
 import ani.saikou.media.Media
 import ani.saikou.media.Selected
@@ -9,56 +10,56 @@ import ani.saikou.tryWithSuspend
 
 class SubscriptionHelper {
     companion object {
-        private fun loadSelected(mediaId: Int, isAdult: Boolean, isAnime: Boolean): Selected {
-            return loadData<Selected>("${mediaId}-select") ?: Selected().let {
+        private fun loadSelected(context: Context,mediaId: Int, isAdult: Boolean, isAnime: Boolean): Selected {
+            return loadData<Selected>("${mediaId}-select", context) ?: Selected().let {
                 it.source =
                     if (isAdult) 0
-                    else if (isAnime) loadData("settings_def_anime_source") ?: 0
-                    else loadData("settings_def_manga_source") ?: 0
+                    else if (isAnime) loadData("settings_def_anime_source",context) ?: 0
+                    else loadData("settings_def_manga_source",context) ?: 0
                 it.preferDub = loadData("settings_prefer_dub") ?: false
                 it
             }
         }
 
-        private fun saveSelected(mediaId: Int, data: Selected) {
-            saveData("$mediaId-select", data)
+        private fun saveSelected(context: Context,mediaId: Int, data: Selected) {
+            saveData("$mediaId-select", data, context)
         }
 
-        fun getAnimeParser(isAdult: Boolean, id: Int): AnimeParser {
+        fun getAnimeParser(context:Context, isAdult: Boolean, id: Int): AnimeParser {
             val sources = if (isAdult) HAnimeSources else AnimeSources
-            val selected = loadSelected(id, isAdult, true)
+            val selected = loadSelected(context, id, isAdult, true)
             val parser = sources[selected.source]
             parser.selectDub = selected.preferDub
             return parser
         }
 
-        suspend fun getEpisode(parser: AnimeParser, id: Int, isAdult: Boolean): Episode? {
+        suspend fun getEpisode(context:Context, parser: AnimeParser, id: Int, isAdult: Boolean): Episode? {
             return tryWithSuspend {
-                val selected = loadSelected(id, isAdult, true)
+                val selected = loadSelected(context,id, isAdult, true)
                 val show = parser.loadSavedShowResponse(id) ?: throw Exception("Failed to load saved data of $id")
                 val ep = parser.getLatestEpisode(show.link, show.extra, selected.latest)
                 if (ep != null) {
                     selected.latest = ep.number.toFloat()
-                    saveSelected(id, selected)
+                    saveSelected(context, id, selected)
                 }
                 ep
             }
         }
 
-        fun getMangaParser(isAdult: Boolean, id: Int): MangaParser {
+        fun getMangaParser(context: Context,isAdult: Boolean, id: Int): MangaParser {
             val sources = if (isAdult) HMangaSources else MangaSources
-            val selected = loadSelected(id, isAdult, false)
+            val selected = loadSelected(context,id, isAdult, false)
             return sources[selected.source]
         }
 
-        suspend fun getChapter(parser: MangaParser, id: Int, isAdult: Boolean): MangaChapter? {
+        suspend fun getChapter(context: Context,parser: MangaParser, id: Int, isAdult: Boolean): MangaChapter? {
             return tryWithSuspend {
-                val selected = loadSelected(id, isAdult, false)
+                val selected = loadSelected(context,id, isAdult, false)
                 val show = parser.loadSavedShowResponse(id) ?: throw Exception("Failed to load saved data of $id")
                 val ep = parser.getLatestChapter(show.link, show.extra, selected.latest)
                 if (ep != null) {
                     selected.latest = ep.number.toFloat()
-                    saveSelected(id, selected)
+                    saveSelected(context,id, selected)
                 }
                 ep
             }
@@ -73,11 +74,11 @@ class SubscriptionHelper {
         ) : java.io.Serializable
 
         private const val subscriptions = "subscriptions"
-        fun getSubscriptions(): Map<Int, SubscribeMedia> = loadData(subscriptions)
-            ?: mapOf<Int, SubscribeMedia>().also { saveData(subscriptions, it) }
+        fun getSubscriptions(context: Context): Map<Int, SubscribeMedia> = loadData(subscriptions, context)
+            ?: mapOf<Int, SubscribeMedia>().also { saveData(subscriptions, it, context) }
 
-        fun saveSubscription(media: Media, subscribed: Boolean) {
-            val data = loadData<Map<Int, SubscribeMedia>>(subscriptions)!!.toMutableMap()
+        fun saveSubscription(context: Context,media: Media, subscribed: Boolean) {
+            val data = loadData<Map<Int, SubscribeMedia>>(subscriptions, context)!!.toMutableMap()
             if (subscribed) {
                 if (!data.containsKey(media.id)) {
                     val new = SubscribeMedia(
@@ -92,7 +93,7 @@ class SubscriptionHelper {
             } else {
                 data.remove(media.id)
             }
-            saveData(subscriptions, data)
+            saveData(subscriptions, data, context)
         }
     }
 }

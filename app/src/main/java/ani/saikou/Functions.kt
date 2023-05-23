@@ -3,7 +3,6 @@ package ani.saikou
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.Application
 import android.app.DatePickerDialog
 import android.app.UiModeManager
 import android.content.ClipData
@@ -36,8 +35,6 @@ import androidx.core.view.*
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
-import androidx.multidex.MultiDex
-import androidx.multidex.MultiDexApplication
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import ani.saikou.anilist.Anilist
@@ -47,11 +44,9 @@ import ani.saikou.anime.Episode
 import ani.saikou.databinding.ItemCountDownBinding
 import ani.saikou.mal.MAL
 import ani.saikou.media.Media
-import ani.saikou.others.DisabledReports
 import ani.saikou.others.Download.adm
 import ani.saikou.others.Download.defaultDownload
 import ani.saikou.others.Download.onedm
-import ani.saikou.others.SubscriptionWorker
 import ani.saikou.parsers.ShowResponse
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.tv.TVMainActivity
@@ -65,10 +60,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.internal.ViewUtils
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.crashlytics.ktx.crashlytics
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import nl.joery.animatedbottombar.AnimatedBottomBar
 import java.io.*
@@ -95,7 +89,11 @@ object Refresh {
     val activity = mutableMapOf<Int, MutableLiveData<Boolean>>()
 }
 
-fun currActivity(): Activity? {
+fun currContext(): Context? {
+    return App.currentContext()
+}
+
+fun currActivity() : Activity?{
     return App.currentActivity()
 }
 
@@ -107,9 +105,9 @@ fun logger(e: Any?, print: Boolean = true) {
         println(e)
 }
 
-fun saveData(fileName: String, data: Any?, activity: Context? = null) {
+fun saveData(fileName: String, data: Any?, context: Context? = null) {
     tryWith {
-        val a = activity ?: currActivity()
+        val a = context ?: currContext()
         if (a != null) {
             val fos: FileOutputStream = a.openFileOutput(fileName, Context.MODE_PRIVATE)
             val os = ObjectOutputStream(fos)
@@ -121,8 +119,8 @@ fun saveData(fileName: String, data: Any?, activity: Context? = null) {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T> loadData(fileName: String, activity: Context? = null, toast: Boolean = true): T? {
-    val a = activity ?: currActivity()
+fun <T> loadData(fileName: String, context: Context? = null, toast: Boolean = true): T? {
+    val a = context ?: currContext()
     try {
         if (a?.fileList() != null)
             if (fileName in a.fileList()) {
@@ -234,13 +232,16 @@ fun isOnline(context: Context): Boolean {
     } ?: false
 }
 
-fun startMainActivity(activity: Activity) {
+fun startMainActivity(activity: Activity, bundle: Bundle? = null) {
     activity.finishAffinity()
     activity.startActivity(
         Intent(
             activity,
             if (isOnTV(activity)) TVMainActivity::class.java else MainActivity::class.java
-        ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+        ).apply {
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+            if(bundle!=null) putExtras(bundle)
+        }
     )
 }
 
@@ -457,54 +458,6 @@ suspend fun getSize(file: String): Double? {
     return getSize(FileUrl(file))
 }
 
-
-class App : MultiDexApplication() {
-    override fun attachBaseContext(base: Context?) {
-        super.attachBaseContext(base)
-        MultiDex.install(this)
-    }
-
-    init {
-        instance = this
-    }
-
-    val mFTActivityLifecycleCallbacks = FTActivityLifecycleCallbacks()
-
-    override fun onCreate() {
-        super.onCreate()
-        registerActivityLifecycleCallbacks(mFTActivityLifecycleCallbacks)
-
-        Firebase.crashlytics.setCrashlyticsCollectionEnabled(!DisabledReports)
-        initializeNetwork(baseContext)
-
-        SubscriptionWorker.enqueue(baseContext)
-    }
-
-    companion object {
-        private var instance: App? = null
-        fun currentActivity(): Activity? {
-            return instance?.mFTActivityLifecycleCallbacks?.currentActivity
-        }
-    }
-}
-
-class FTActivityLifecycleCallbacks : Application.ActivityLifecycleCallbacks {
-    var currentActivity: Activity? = null
-    override fun onActivityCreated(p0: Activity, p1: Bundle?) {}
-    override fun onActivityStarted(p0: Activity) {
-        currentActivity = p0
-    }
-
-    override fun onActivityResumed(p0: Activity) {
-        currentActivity = p0
-    }
-
-    override fun onActivityPaused(p0: Activity) {}
-    override fun onActivityStopped(p0: Activity) {}
-    override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) {}
-    override fun onActivityDestroyed(p0: Activity) {}
-}
-
 @SuppressLint("ViewConstructor")
 class ExtendedTimeBar(
     context: Context,
@@ -601,7 +554,7 @@ fun View.circularReveal(ex: Int, ey: Int, subX: Boolean, time: Long) {
 fun openLinkInBrowser(link: String?) {
     tryWith {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
-        currActivity()?.startActivity(intent)
+        currContext()?.startActivity(intent)
     }
 }
 
@@ -647,7 +600,7 @@ fun saveImage(image: Bitmap, path: String, imageFileName: String): File? {
         val fOut: OutputStream = FileOutputStream(imageFile)
         image.compress(Bitmap.CompressFormat.PNG, 0, fOut)
         fOut.close()
-        scanFile(imageFile.absolutePath, currActivity()!!)
+        scanFile(imageFile.absolutePath, currContext()!!)
         toast("Saved to:\n$path")
         imageFile
     }
@@ -709,7 +662,7 @@ class NoGestureSubsamplingImageView(context: Context?, attr: AttributeSet?) :
 }
 
 fun copyToClipboard(string: String, toast: Boolean = true) {
-    val activity = currActivity() ?: return
+     val activity = currContext() ?: return
     val clipboard = getSystemService(activity, ClipboardManager::class.java)
     val clip = ClipData.newPlainText("label", string)
     clipboard?.setPrimaryClip(clip)
@@ -804,13 +757,10 @@ class EmptyAdapter(private val count: Int) : RecyclerView.Adapter<RecyclerView.V
     inner class EmptyViewHolder(view: View) : RecyclerView.ViewHolder(view)
 }
 
-fun toast(string: String?, activity: Activity? = null) {
+fun toast(string: String?, activity: Context? = null) {
     if (string != null) {
-        (activity ?: currActivity())?.apply {
-            runOnUiThread {
-                Toast.makeText(this, string, Toast.LENGTH_SHORT).show()
-            }
-        }
+        MainScope().launch {
+            Toast.makeText(activity, string, Toast.LENGTH_SHORT).show()
         logger(string)
     }
 }

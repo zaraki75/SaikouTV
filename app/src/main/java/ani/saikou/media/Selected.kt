@@ -11,6 +11,5 @@ data class Selected(
     var preferDub: Boolean = false,
     var server: String? = null,
     var video: Int = 0,
-    var subscribed: Boolean = false,
     var latest: Float = 0f,
 ) : Serializable

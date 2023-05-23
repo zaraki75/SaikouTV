@@ -18,10 +18,10 @@ import ani.saikou.loadImage
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsActivity
 import ani.saikou.media.SourceSearchDialogFragment
-import ani.saikou.others.Notifications.Companion.openSettings
-import ani.saikou.others.SubscriptionWorker.Companion.getChannelId
 import ani.saikou.parsers.MangaReadSources
 import ani.saikou.px
+import ani.saikou.subcriptions.Notifications.Companion.openSettings
+import ani.saikou.subcriptions.Subscriptions.Companion.getChannelId
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -77,7 +77,7 @@ class MangaReadAdapter(
             R.drawable.ic_round_notifications_none_24,
             R.color.bg_opp,
             R.color.violet_400,
-            media.selected!!.subscribed
+            fragment.subscribed
         ) {
             fragment.onNotificationPressed(it, binding.animeSource.text.toString())
         }

@@ -17,9 +17,9 @@ import ani.saikou.databinding.ItemChipBinding
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsActivity
 import ani.saikou.media.SourceSearchDialogFragment
-import ani.saikou.others.Notifications.Companion.openSettings
-import ani.saikou.others.SubscriptionWorker.Companion.getChannelId
 import ani.saikou.parsers.WatchSources
+import ani.saikou.subcriptions.Notifications.Companion.openSettings
+import ani.saikou.subcriptions.Subscriptions.Companion.getChannelId
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -30,6 +30,7 @@ class AnimeWatchAdapter(
     private val watchSources: WatchSources
 ) : RecyclerView.Adapter<AnimeWatchAdapter.ViewHolder>() {
 
+    var subscribe: MediaDetailsActivity.PopImageButton? = null
     private var _binding: ItemAnimeWatchBinding? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -87,18 +88,19 @@ class AnimeWatchAdapter(
                 changing = false
                 binding.animeSourceDubbedCont.visibility = if (isDubAvailableSeparately) View.VISIBLE else View.GONE
             }
+            subscribeButton(false)
             fragment.loadEpisodes(i)
         }
 
         //Subscription
-        MediaDetailsActivity.PopImageButton(
+        subscribe =  MediaDetailsActivity.PopImageButton(
             fragment.lifecycleScope,
             binding.animeSourceSubscribe,
             R.drawable.ic_round_notifications_active_24,
             R.drawable.ic_round_notifications_none_24,
             R.color.bg_opp,
             R.color.violet_400,
-            media.selected!!.subscribed
+            fragment.subscribed
         ) {
             fragment.onNotificationPressed(it, binding.animeSource.text.toString())
         }
@@ -146,6 +148,10 @@ openSettings(fragment.requireContext(),getChannelId(true,media.id))
 
         //Episode Handling
         handleEpisodes()
+    }
+
+    fun subscribeButton(enabled : Boolean) {
+        subscribe?.enabled(enabled)
     }
 
     //Chips

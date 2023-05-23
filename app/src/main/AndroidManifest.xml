@@ -23,10 +23,10 @@
         android:required="false" />
 
     <queries>
-        <package android:name="idm.internet.download.manager.plus"/>
-        <package android:name="idm.internet.download.manager"/>
-        <package android:name="idm.internet.download.manager.adm.lite"/>
-        <package android:name="com.dv.adm"/>
+        <package android:name="idm.internet.download.manager.plus" />
+        <package android:name="idm.internet.download.manager" />
+        <package android:name="idm.internet.download.manager.adm.lite" />
+        <package android:name="com.dv.adm" />
     </queries>
 
 
@@ -50,14 +50,14 @@
         <activity android:name=".settings.PlayerSettingsActivity" />
         <activity
             android:name=".settings.SettingsActivity"
-            android:parentActivityName=".MainActivity"/>
+            android:parentActivityName=".MainActivity" />
         <activity
             android:name=".media.SearchActivity"
             android:parentActivityName=".MainActivity" />
         <activity android:name=".media.StudioActivity" />
         <activity
             android:name=".media.CalendarActivity"
-            android:parentActivityName=".MainActivity"/>
+            android:parentActivityName=".MainActivity" />
         <activity android:name=".user.ListActivity" />
         <activity
             android:name=".manga.mangareader.MangaReaderActivity"
@@ -85,9 +85,9 @@
         <activity
             android:name=".anilist.Login"
             android:configChanges="orientation|screenSize|layoutDirection"
+            android:excludeFromRecents="true"
             android:exported="true"
-            android:launchMode="singleTask"
-            android:excludeFromRecents="true">
+            android:launchMode="singleTask">
             <intent-filter android:label="Anilist Login for Saikou">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -102,9 +102,9 @@
         <activity
             android:name=".mal.Login"
             android:configChanges="orientation|screenSize|layoutDirection"
+            android:excludeFromRecents="true"
             android:exported="true"
-            android:launchMode="singleTask"
-            android:excludeFromRecents="true">
+            android:launchMode="singleTask">
             <intent-filter android:label="Myanimelist Login for Saikou">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -120,8 +120,9 @@
         <activity
             android:name=".anilist.UrlMedia"
             android:configChanges="orientation|screenSize|layoutDirection"
+            android:excludeFromRecents="true"
             android:exported="true"
-            android:launchMode="singleTask"
+            android:launchMode="singleTask">
             android:excludeFromRecents="true">
             <intent-filter android:label="Read on Saikou">
                 <action android:name="android.intent.action.VIEW" />
@@ -182,10 +183,11 @@
         </activity>
 
         <receiver
-            android:name=".others.AutoStartServiceOnBoot"
+            android:name=".subcriptions.AlarmReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="Aani.saikou.ACTION_ALARM"/>
             </intent-filter>
         </receiver>
 

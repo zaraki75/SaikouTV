@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         var doubleBackToExitPressedOnce = false
-        onBackPressedDispatcher.addCallback(this){
+        onBackPressedDispatcher.addCallback(this) {
             if (doubleBackToExitPressedOnce) {
                 finish()
             }
@@ -142,12 +142,14 @@ class MainActivity : AppCompatActivity() {
                         navbar.selectTabAt(selectedOption)
                         mainViewPager.post { mainViewPager.setCurrentItem(selectedOption, false) }
 
-                        if (loadMedia != null) {
+                        val id = intent.extras?.getInt("media")
+                        val isMAL = intent.extras?.getBoolean("mal") ?: false
+                        if (id != null) {
                             scope.launch {
                                 val media = withContext(Dispatchers.IO) {
                                     Anilist.query.getMedia(
-                                        loadMedia!!,
-                                        loadIsMAL
+                                        id,
+                                        isMAL
                                     )
                                 }
                                 if (media != null) {
@@ -177,7 +179,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
 
 
 
