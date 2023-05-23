@@ -792,9 +792,8 @@ Page(page:$page,perPage:50) {
         var page = 0
         while (hasNextPage) {
             page++
-            executeQuery<Query.Studio>(query(page), force = true)?.data?.studio?.media?.apply {
-                hasNextPage = pageInfo?.hasNextPage == true
-                edges?.forEach { i ->
+            hasNextPage = executeQuery<Query.Studio>(query(page), force = true)?.data?.studio?.media?.let {
+                it.edges?.forEach { i ->
                     i.node?.apply {
                         val status = status.toString()
                         val year = startDate?.year?.toString() ?: "TBA"
@@ -804,7 +803,8 @@ Page(page:$page,perPage:50) {
                         yearMedia[title]?.add(Media(this))
                     }
                 }
-            }
+                it.pageInfo?.hasNextPage == true
+            } ?: false
         }
 
         if (yearMedia.contains("CANCELLED")) {

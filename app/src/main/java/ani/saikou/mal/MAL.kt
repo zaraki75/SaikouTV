@@ -64,7 +64,7 @@ object MAL {
     suspend fun getSavedToken(context: FragmentActivity): Boolean {
         return tryWithSuspend(false) {
             var res: ResponseToken = loadData(MAL_TOKEN, context)
-                ?: throw Exception("Mal Token not found")
+                ?: return@tryWithSuspend false
             if (System.currentTimeMillis() > res.expiresIn)
                 res = refreshToken()
                     ?: throw Exception("Refreshing Token Failed")
