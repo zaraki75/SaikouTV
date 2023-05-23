@@ -27,7 +27,7 @@ import ani.saikou.subcriptions.Notifications
 import ani.saikou.subcriptions.Notifications.Group.MANGA_GROUP
 import ani.saikou.subcriptions.SubscriptionHelper
 import ani.saikou.subcriptions.SubscriptionHelper.Companion.saveSubscription
-import ani.saikou.subcriptions.Subscriptions.Companion.getChannelId
+import ani.saikou.subcriptions.Subscription.Companion.getChannelId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.ceil

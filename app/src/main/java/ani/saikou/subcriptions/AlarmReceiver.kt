@@ -7,9 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import ani.saikou.*
-import ani.saikou.subcriptions.Subscriptions.Companion.defaultTime
-import ani.saikou.subcriptions.Subscriptions.Companion.startSubscription
-import ani.saikou.subcriptions.Subscriptions.Companion.timeMinutes
+import ani.saikou.subcriptions.Subscription.Companion.defaultTime
+import ani.saikou.subcriptions.Subscription.Companion.startSubscription
+import ani.saikou.subcriptions.Subscription.Companion.timeMinutes
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -24,7 +24,7 @@ class AlarmReceiver : BroadcastReceiver() {
         runBlocking {
             launch {
                 val con = context?: currContext() ?: return@launch
-                if(isOnline(con)) Subscriptions.perform(con)
+                if(isOnline(con)) Subscription.perform(con)
             }
         }
     }
@@ -45,12 +45,15 @@ class AlarmReceiver : BroadcastReceiver() {
             )
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val curTime = loadData<Int>("subscriptions_time", context) ?: defaultTime
-            alarmManager.setRepeating(
-                AlarmManager.RTC_WAKEUP,
-                System.currentTimeMillis(),
-                (timeMinutes[curTime] * 60 * 1000),
-                pendingIntent
-            )
+
+            if(timeMinutes[curTime]>0)
+                alarmManager.setRepeating(
+                    AlarmManager.RTC_WAKEUP,
+                    System.currentTimeMillis(),
+                    (timeMinutes[curTime] * 60 * 1000),
+                    pendingIntent
+                )
+            else alarmManager.cancel(pendingIntent)
         }
 
     }

@@ -3,14 +3,14 @@ package ani.saikou.subcriptions
 import android.content.Context
 import androidx.work.*
 import ani.saikou.loadData
-import ani.saikou.subcriptions.Subscriptions.Companion.defaultTime
-import ani.saikou.subcriptions.Subscriptions.Companion.timeMinutes
+import ani.saikou.subcriptions.Subscription.Companion.defaultTime
+import ani.saikou.subcriptions.Subscription.Companion.timeMinutes
 import java.util.concurrent.*
 
 class SubscriptionWorker(val context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        Subscriptions.perform(context)
+        Subscription.perform(context)
         return Result.success()
     }
 

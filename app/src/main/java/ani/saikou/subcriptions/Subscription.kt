@@ -13,7 +13,7 @@ import ani.saikou.tryWithSuspend
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class Subscriptions {
+class Subscription {
     companion object{
         const val defaultTime = 8
         val timeMinutes = arrayOf(0L, 5, 10, 15, 30, 45, 60, 90, 120, 180, 240, 360, 480, 720, 1440)
@@ -32,7 +32,7 @@ class Subscriptions {
             tryWithSuspend {
 //                App.context = context
 
-                val subscriptions = SubscriptionHelper.getSubscriptions(context).printIt("Subs : ")
+                val subscriptions = SubscriptionHelper.getSubscriptions(context)
                 var i = 0
                 val index = subscriptions.map { i++; it.key to i }.toMap()
                 val notificationManager = NotificationManagerCompat.from(context)

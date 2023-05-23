@@ -26,9 +26,9 @@ import ani.saikou.parsers.AnimeSources
 import ani.saikou.parsers.MangaSources
 import ani.saikou.subcriptions.Notifications
 import ani.saikou.subcriptions.Notifications.Companion.openSettings
-import ani.saikou.subcriptions.Subscriptions.Companion.defaultTime
-import ani.saikou.subcriptions.Subscriptions.Companion.startSubscription
-import ani.saikou.subcriptions.Subscriptions.Companion.timeMinutes
+import ani.saikou.subcriptions.Subscription.Companion.defaultTime
+import ani.saikou.subcriptions.Subscription.Companion.startSubscription
+import ani.saikou.subcriptions.Subscription.Companion.timeMinutes
 import io.noties.markwon.Markwon
 import io.noties.markwon.SoftBreakAddsNewLinePlugin
 import kotlinx.coroutines.Dispatchers

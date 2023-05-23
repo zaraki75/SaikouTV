@@ -19,7 +19,7 @@ import ani.saikou.media.MediaDetailsActivity
 import ani.saikou.media.SourceSearchDialogFragment
 import ani.saikou.parsers.WatchSources
 import ani.saikou.subcriptions.Notifications.Companion.openSettings
-import ani.saikou.subcriptions.Subscriptions.Companion.getChannelId
+import ani.saikou.subcriptions.Subscription.Companion.getChannelId
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
