@@ -25,9 +25,9 @@ import ani.saikou.parsers.MangaSources
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.subcriptions.Notifications
 import ani.saikou.subcriptions.Notifications.Group.MANGA_GROUP
+import ani.saikou.subcriptions.Subscription.Companion.getChannelId
 import ani.saikou.subcriptions.SubscriptionHelper
 import ani.saikou.subcriptions.SubscriptionHelper.Companion.saveSubscription
-import ani.saikou.subcriptions.Subscription.Companion.getChannelId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
@@ -238,8 +238,10 @@ open class MangaReadFragment : Fragment() {
     private fun reload() {
         val selected = model.loadSelected(media)
         //Find latest episode for subscription
-        if (subscribed)
+        if (subscribed) {
             selected.latest = media.manga?.chapters?.values?.maxOfOrNull { it.number.toFloatOrNull() ?: 0f } ?: 0f
+            selected.latest = media.userProgress?.toFloat()?.takeIf { selected.latest < it } ?: selected.latest
+        }
         model.saveSelected(media.id, selected, requireActivity())
         headerAdapter.handleChapters()
         chapterAdapter.notifyItemRangeRemoved(0, chapterAdapter.arr.size)

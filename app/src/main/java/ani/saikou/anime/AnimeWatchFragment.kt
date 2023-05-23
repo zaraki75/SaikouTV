@@ -24,9 +24,9 @@ import ani.saikou.settings.PlayerSettings
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.subcriptions.Notifications
 import ani.saikou.subcriptions.Notifications.Group.ANIME_GROUP
+import ani.saikou.subcriptions.Subscription.Companion.getChannelId
 import ani.saikou.subcriptions.SubscriptionHelper
 import ani.saikou.subcriptions.SubscriptionHelper.Companion.saveSubscription
-import ani.saikou.subcriptions.Subscription.Companion.getChannelId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -275,8 +275,10 @@ class AnimeWatchFragment : Fragment() {
         val selected = model.loadSelected(media)
 
         //Find latest episode for subscription
-        if (subscribed)
+        if (subscribed) {
             selected.latest = media.anime?.episodes?.values?.maxOfOrNull { it.number.toFloatOrNull() ?: 0f } ?: 0f
+            selected.latest = media.userProgress?.toFloat()?.takeIf { selected.latest < it } ?: selected.latest
+        }
         model.saveSelected(media.id, selected, requireActivity())
         headerAdapter.handleEpisodes()
         episodeAdapter.notifyItemRangeRemoved(0, episodeAdapter.arr.size)
