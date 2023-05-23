@@ -1,5 +1,6 @@
 # 1.2.2.1
 
+- (Fix apk not updating because I forgor to update gradle version)
 - Fixed image scaling issues in Larger Devices (A lot of brains were harmed fixing this)
 - Added Crop Borders for Manga (thanks ChatGPT)
 - Added ColoredManga as a source by @scrazzz
