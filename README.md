@@ -30,19 +30,21 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 
 - The most Efficient scraping for anime and manga from multiple sources. (_Spoiler Alert : No web-views were harmed_)
 
-- Synchronize anime and manga real-time with AniList. Easily categorise anime and manga based on your current status. (Powered by AniList)
+- Synchronize anime and manga real-time with AniList and MyAnimeList. Easily categorise anime and manga based on your current status. (Powered by AniList)
 
 - Find all shows using thoroughly and frequently updated list of all trending, popular and ongoing anime based on scores.
 
 - View extensive details about anime shows, movies and manga titles. It also features ability to countdown to the next episode of airing anime. (Powered by AniList & MyAnimeList)
 
 
+- Get notified when new episodes/chapters are released!
+
 * **Available Anime sources:-**
 
 |                            SITE                            |   STATUS    | DOWNLOADS |
 |:----------------------------------------------------------:|:-----------:|:---------:|
 |             [AllAnime](https://allanime.site)              |   WORKING   |   SOME    |
-|                [Gogo](https://gogoanime.cm)                |   WORKING   |   SOME    |
+|                [Gogo](https://gogoanime.cl)                |   WORKING   |   SOME    |
 |                  [Zoro](https://zoro.to)                   |   WORKING   |    NO     |
 |                 [Marin](https://marin.moe)                 |   WORKING   |    YES    |
 |             [AnimePahe](https://animepahe.ru)              |   WORKING   |    YES    |
@@ -67,8 +69,10 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 | [Manga4Life](https://manga4life.com/)      |   WORKING   |
 |   [MangaRead](https://www.mangaread.org)   |   WORKING   |
 |   [MangaKatana](https://mangakatana.com)   |   WORKING   |
-|      [Toonily](https://toonily.com/)       | NOT-WORKING |
-|    [NHentai (18+)](https://nhentai.net)    | NOT-WORKING |
+|  [ColoredManga](https://coloredmanga.com/) |   WORKING   |
+|  [MangaKomi](https://mangakomi.io/manga/)  |   WORKING   |
+|      [Toonily](https://toonily.com/)       |   WORKING   |
+|    [NHentai (18+)](https://nhentai.net)    |   WORKING   |
 | [NineHentai (18+)](https://ninehentai.net) |   WORKING   |
 |   [Manwha18 (18+)](https://manhwa18.cc)    |   WORKING   |
 
