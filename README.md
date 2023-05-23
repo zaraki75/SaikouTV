@@ -78,10 +78,6 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 
 - Offline Video Player & Reader
 
-- Source Subscribe (will notify when new chapter/ep is released)
-  
-  - setting to change time in hrs to check for new episode/chapter/notification
-
 - Add novel sources (1lib.in)?? Dk
  
 
@@ -90,9 +86,7 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 - Sources of any language except English
 
 - News Section in the App
-   
-- More Search Options
-   
+
 - Comment Section
 
 - Accent Color Change (Hot Pink Supremacy.)
@@ -102,7 +96,7 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 
 - TV support
   
-- Multi Quality Download
+- Multi Quality Download (M3U8 & DASH videos)
 
 - Bulk Download
 
@@ -116,10 +110,6 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 
 ### Official Discord Server
 
-> **Warning**
-> 
-> THE OLD SERVER WAS HACKED, PLEASE LEAVE
-New Server : 
 <p align="center">
  <a href="https://discord.gg/2T7TunuwFZ">
   <img src="https://invidget.switchblade.xyz/2T7TunuwFZ">
