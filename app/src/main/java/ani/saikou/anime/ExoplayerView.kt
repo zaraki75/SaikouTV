@@ -1473,6 +1473,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     @Suppress("DEPRECATION")
     @RequiresApi(Build.VERSION_CODES.N)
     private fun enterPipMode() {
+        wasPlaying = isPlayerPlaying
         if (!pipEnabled) return
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -1483,7 +1484,6 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                         .build()
                 )
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-
                 enterPictureInPictureMode()
             }
         } catch (e: Exception) {
@@ -1501,7 +1501,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
         if (isInitialized) {
             saveData("${media.id}_${episode.number}", exoPlayer.currentPosition, this)
-            exoPlayer.play()
+            if(wasPlaying) exoPlayer.play()
         }
     }
 
