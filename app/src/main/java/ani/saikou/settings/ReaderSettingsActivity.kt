@@ -103,6 +103,12 @@ class ReaderSettingsActivity : AppCompatActivity() {
             saveData(reader, settings)
         }
 
+        binding.readerSettingsCropBorders.isChecked = settings.default.cropBorders
+        binding.readerSettingsCropBorders.setOnCheckedChangeListener { _, isChecked ->
+            settings.default.cropBorders = isChecked
+            saveData(reader, settings)
+        }
+
         binding.readerSettingsImageRotation.isChecked = settings.default.rotation
         binding.readerSettingsImageRotation.setOnCheckedChangeListener { _, isChecked ->
             settings.default.rotation = isChecked

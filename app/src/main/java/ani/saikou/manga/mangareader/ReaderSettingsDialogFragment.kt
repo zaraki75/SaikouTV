@@ -49,6 +49,12 @@ class ReaderSettingsDialogFragment : BottomSheetDialogFragment() {
             activity.applySettings()
         }
 
+         binding.readerCropBorders.isChecked = settings.cropBorders
+        binding.readerCropBorders.setOnCheckedChangeListener { _,isChecked ->
+            settings.cropBorders = isChecked
+            activity.applySettings()
+        }
+
         binding.readerLayoutText.text = settings.layout.string
         var selected = list[settings.layout.ordinal]
         selected.alpha = 1f
