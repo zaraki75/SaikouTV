@@ -11,17 +11,20 @@ class ConsumeBili : AnimeParser() {
     override val saveName = "consume-bili"
     override val isDubAvailableSeparately = false
     override val hostUrl = "https://api-vn.kaguya.app/server"
+    private val headers = mapOf("referer" to "https://kaguya.app")
 
     override suspend fun loadSavedShowResponse(mediaId: Int): ShowResponse {
         return ShowResponse(
             link = mediaId.toString(),
-            name = "",
+            name = "Automatic",
             coverUrl = ""
         )
     }
     
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
-        val episodes = client.get("${hostUrl}/anime/episodes?id=${animeLink}&source_id=bilibili").parsed<EpisodesResponse>()
+        val episodes = client
+            .get("${hostUrl}/anime/episodes?id=${animeLink}&source_id=bilibili", headers)
+            .parsed<EpisodesResponse>()
         if (!episodes.success) {
             return emptyList()
             
@@ -43,9 +46,10 @@ class ConsumeBili : AnimeParser() {
         val sourceEpisodeId = extra["sourceEpisodeId"]
         val sourceMediaId = extra["sourceMediaId"]
         val sourceId = extra["sourceId"]
-        val sources =
-            client.get("${hostUrl}/source?episode_id=${sourceEpisodeId}&source_media_id=${sourceMediaId}&source_id=${sourceId}")
-                .parsed<SourcesResponse>()
+        val sources = client.get(
+            "${hostUrl}/source?episode_id=${sourceEpisodeId}&source_media_id=${sourceMediaId}&source_id=${sourceId}",
+            headers
+        ).parsed<SourcesResponse>()
 
         if (!sources.success)
             return emptyList()

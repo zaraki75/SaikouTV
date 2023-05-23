@@ -24,10 +24,10 @@ class AllAnime : AnimeParser() {
     private val epNumRegex = Regex("/[sd]ub/(\\d+)")
 
 
-    private val idHash = "d6069285a58a25defe4a217b82140c6da891605c20e510d4683ae73190831ab0"
-    private val episodeInfoHash = "31cf94e101217bab1f65be244e37c2a925d6a335ca596972bbc34b4be1b21548"
-    private val searchHash = "b645a686b1988327795e1203867ed24f27c6338b41e5e3412fc1478a8ab6774e"
-    private val videoServerHash = "0ac09728ee9d556967c1a60bbcf55a9f58b4112006d09a258356aeafe1c33889"
+    private val idHash = "9d7439c90f203e534ca778c4901f9aa2d3ad42c06243ab2c5e6b79612af32028"
+    private val episodeInfoHash = "c8f3ac51f598e630a1d09d7f7fb6924cff23277f354a23e473b962a367880f7d"
+    private val searchHash = "06327bc10dd682e1ee7e07b6db9c16e9ad2fd56c1b769e47513128cd5c9fc77a"
+    private val videoServerHash = "5f1a64b73793cc2234a389cf3a8f93ad82de7043017dd551f38f65b89daa65e0"
 
     override suspend fun loadEpisodes(animeLink: String, extra: Map<String, String>?): List<Episode> {
         val showId = idRegex.find(animeLink)?.groupValues?.get(1)
