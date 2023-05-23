@@ -44,8 +44,8 @@ dependencies {
 //    Core
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.browser:browser:1.5.0'
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.fragment:fragment-ktx:1.5.6'
+    implementation 'androidx.core:core-ktx:1.10.0'
+    implementation 'androidx.fragment:fragment-ktx:1.5.7'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.multidex:multidex:2.0.1'
@@ -67,7 +67,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
 //    Exoplayer
-    ext.exo_version = '1.0.0'
+    ext.exo_version = '1.0.1'
     implementation "androidx.media3:media3-exoplayer:$exo_version"
     implementation "androidx.media3:media3-ui:$exo_version"
     implementation "androidx.media3:media3-exoplayer-hls:$exo_version"
