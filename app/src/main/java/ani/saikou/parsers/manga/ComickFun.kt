@@ -13,13 +13,15 @@ class ComickFun : MangaParser() {
 
     override val name = "ComickFun"
     override val saveName = "comick_fun"
-    override val hostUrl = "https://api.comick.fun"
+    override val hostUrl = "https://api.comick.app"
+    private val imgUrl = "https://meo.comick.pictures/"
 
     override suspend fun search(query: String): List<ShowResponse> {
-        val resp = Mapper.parse<List<SearchData>>(client.get("$hostUrl/search?q=${encode(query)}&tachiyomi=true").text)
+        val resp = Mapper.parse<List<SearchDatum>>(client.get("$hostUrl/search?q=${encode(query)}&tachiyomi=true").text)
         return resp.map { manga ->
-            val mangaLink = "$hostUrl/comic/${manga.id}/chapter?lang=en"
-            ShowResponse(manga.title,mangaLink, manga.cover_url,manga.md_titles.map { it.title })
+            val mangaLink = "$hostUrl/comic/${manga.hid}/chapters?lang=en&chap-order=1"
+            val coverLink = "$imgUrl${manga.mdCovers[0].b2Key}"
+            ShowResponse(manga.title,mangaLink, coverLink)
         }
     }
 
@@ -29,7 +31,7 @@ class ComickFun : MangaParser() {
         var parsedChapters = initialRes.chapters.count()
         var pageNum = 1
 
-        while (parsedChapters < initialRes.totalChapters.toIntOrNull() ?: 0) {
+        while (parsedChapters < (initialRes.totalChapters.toIntOrNull() ?: 0)) {
             try {
                 val res = client.get(mangaLink + "&page=${++pageNum}").parsed<MangaChapterData>()
                 responses += res.chapters
@@ -52,16 +54,16 @@ class ComickFun : MangaParser() {
     }
 
     @Serializable
-    private data class SearchData(
-        @SerialName("title") val title: String,
-        @SerialName("id") val id: Int,
-        @SerialName("slug") val slug: String,
-        @SerialName("md_titles") val md_titles: List<MdTitles>, // other titles
-        @SerialName("cover_url") val cover_url: String,
+    data class SearchDatum (
+        val title: String,
+        val hid: String,
+        @SerialName("md_covers")
+        val mdCovers: List<MdCover>,
     ) {
         @Serializable
-        data class MdTitles(
-            @SerialName("title") val title: String,
+        data class MdCover(
+            @SerialName("b2key")
+            val b2Key: String? = null
         )
     }
 

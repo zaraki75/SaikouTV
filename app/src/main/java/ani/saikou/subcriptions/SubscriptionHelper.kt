@@ -7,9 +7,7 @@ import ani.saikou.media.Selected
 import ani.saikou.parsers.*
 import ani.saikou.saveData
 import ani.saikou.tryWithSuspend
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import java.util.concurrent.*
+import kotlinx.coroutines.withTimeoutOrNull
 
 class SubscriptionHelper {
     companion object {
@@ -39,18 +37,11 @@ class SubscriptionHelper {
         suspend fun getEpisode(context: Context, parser: AnimeParser, id: Int, isAdult: Boolean): Episode? {
 
             val selected = loadSelected(context, id, isAdult, true)
-            val latch = CountDownLatch(0)
-            var ep: Episode? = null
-            runBlocking {
-                launch {
-                    tryWithSuspend {
-                        val show = parser.loadSavedShowResponse(id) ?: throw Exception("Failed to load saved data of $id")
-                        ep = parser.getLatestEpisode(show.link, show.extra, selected.latest)
-                        latch.countDown()
-                    }
+            val ep = withTimeoutOrNull(10 * 1000) {
+                tryWithSuspend {
+                    val show = parser.loadSavedShowResponse(id) ?: throw Exception("Failed to load saved data of $id")
+                    parser.getLatestEpisode(show.link, show.extra, selected.latest)
                 }
-                @Suppress("BlockingMethodInNonBlockingContext")
-                latch.await(10, TimeUnit.SECONDS)
             }
 
             return ep?.apply {
@@ -67,21 +58,14 @@ class SubscriptionHelper {
 
         suspend fun getChapter(context: Context, parser: MangaParser, id: Int, isAdult: Boolean): MangaChapter? {
             val selected = loadSelected(context, id, isAdult, true)
-            val latch = CountDownLatch(0)
-            var ep: MangaChapter? = null
-            runBlocking {
-                launch {
-                    tryWithSuspend {
-                        val show = parser.loadSavedShowResponse(id) ?: throw Exception("Failed to load saved data of $id")
-                        ep = parser.getLatestChapter(show.link, show.extra, selected.latest)
-                        latch.countDown()
-                    }
+            val chp = withTimeoutOrNull(10 * 1000) {
+                tryWithSuspend {
+                    val show = parser.loadSavedShowResponse(id) ?: throw Exception("Failed to load saved data of $id")
+                    parser.getLatestChapter(show.link, show.extra, selected.latest)
                 }
-                @Suppress("BlockingMethodInNonBlockingContext")
-                latch.await(10, TimeUnit.SECONDS)
             }
 
-            return ep?.apply {
+            return chp?.apply {
                 selected.latest = number.toFloat()
                 saveSelected(context, id, selected)
             }

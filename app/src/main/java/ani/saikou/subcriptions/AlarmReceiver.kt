@@ -10,6 +10,7 @@ import ani.saikou.*
 import ani.saikou.subcriptions.Subscription.Companion.defaultTime
 import ani.saikou.subcriptions.Subscription.Companion.startSubscription
 import ani.saikou.subcriptions.Subscription.Companion.timeMinutes
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -22,7 +23,7 @@ class AlarmReceiver : BroadcastReceiver() {
             }
         }
         runBlocking {
-            launch {
+            launch(Dispatchers.IO) 
                 val con = context?: currContext() ?: return@launch
                 if(isOnline(con)) Subscription.perform(con)
             }
@@ -47,7 +48,7 @@ class AlarmReceiver : BroadcastReceiver() {
             val curTime = loadData<Int>("subscriptions_time", context) ?: defaultTime
 
             if(timeMinutes[curTime]>0)
-                alarmManager.setInexactRepeating(
+                alarmManager.setRepeating(
                     AlarmManager.RTC,
                     System.currentTimeMillis(),
                     (timeMinutes[curTime] * 60 * 1000),

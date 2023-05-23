@@ -272,12 +272,22 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
         }
 
         binding.settingBuyMeCoffee.setOnClickListener {
+            lifecycleScope.launch {
+                it.pop()
+            }            
             openLinkInBrowser("https://www.buymeacoffee.com/brahmkshatriya")
         }
-
+        lifecycleScope.launch {
+            binding.settingBuyMeCoffee.pop()
+        }
         binding.settingUPI.visibility = if (checkCountry(this)) View.VISIBLE else View.GONE
-
+        lifecycleScope.launch {
+            binding.settingUPI.pop()
+        }
         binding.settingUPI.setOnClickListener {
+            lifecycleScope.launch {
+                it.pop()
+            }
             val upi = "upi://pay?pa=brahmkshatriya@apl&pn=Saikou"
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.parse(upi)

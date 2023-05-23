@@ -31,6 +31,7 @@ import ani.saikou.databinding.SplashScreenBinding
 import ani.saikou.media.MediaDetailsActivity
 import ani.saikou.others.CustomBottomDialog
 import ani.saikou.settings.UserInterfaceSettings
+import ani.saikou.subcriptions.Subscription.Companion.startSubscription
 import io.noties.markwon.Markwon
 import io.noties.markwon.SoftBreakAddsNewLinePlugin
 import kotlinx.coroutines.Dispatchers
@@ -171,6 +172,7 @@ class MainActivity : AppCompatActivity() {
                             snackString("Seems like that wasn't found on Anilist.")
                         }
                     }
+                    startSubscription()
                 }
                 load = true
             }

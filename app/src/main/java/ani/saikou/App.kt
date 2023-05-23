@@ -7,7 +7,6 @@ import android.os.Bundle
 import androidx.multidex.MultiDex
 import androidx.multidex.MultiDexApplication
 import ani.saikou.others.DisabledReports
-import ani.saikou.subcriptions.Subscription.Companion.startSubscription
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
 
@@ -31,7 +30,6 @@ class App : MultiDexApplication() {
         Firebase.crashlytics.setCrashlyticsCollectionEnabled(!DisabledReports)
         initializeNetwork(baseContext)
 
-        baseContext.startSubscription()
     }
 
     inner class FTActivityLifecycleCallbacks : ActivityLifecycleCallbacks {

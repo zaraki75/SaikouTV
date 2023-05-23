@@ -63,7 +63,7 @@ Saikou is crafted based on simplistic yet state-of-the-art elegance. It is an [A
 |      [MangaDex](https://mangadex.org)      |   WORKING   |
 |  [MangaReaderTo](https://mangareader.to)   |   WORKING   |
 |     [AllAnime](https://allanime.site)      |   WORKING   |
-|      [Comickfun](https://comick.fun)       | NOT-WORKING |
+|      [Comickfun](https://comick.fun)       |   WORKING   |
 | [Manga4Life](https://manga4life.com/)      |   WORKING   |
 |   [MangaRead](https://www.mangaread.org)   |   WORKING   |
 |   [MangaKatana](https://mangakatana.com)   |   WORKING   |

@@ -5,12 +5,16 @@ import androidx.work.*
 import ani.saikou.loadData
 import ani.saikou.subcriptions.Subscription.Companion.defaultTime
 import ani.saikou.subcriptions.Subscription.Companion.timeMinutes
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.concurrent.*
 
 class SubscriptionWorker(val context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        Subscription.perform(context)
+        withContext(Dispatchers.IO){
+            Subscription.perform(context)
+        }
         return Result.success()
     }
 
