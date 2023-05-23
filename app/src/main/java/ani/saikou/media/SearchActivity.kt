@@ -155,9 +155,8 @@ class SearchActivity : AppCompatActivity() {
     fun search() {
         val size = model.searchResults.results.size
         model.searchResults.results.clear()
-        tryWith {
-            mediaAdaptor.notifyItemRangeRemoved(0, size)
-        }
+        mediaAdaptor.notifyItemRangeRemoved(0, size)
+
         progressAdapter.bar?.visibility = View.VISIBLE
 
         searchTimer.cancel()

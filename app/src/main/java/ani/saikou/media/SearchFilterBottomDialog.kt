@@ -76,10 +76,7 @@ class SearchFilterBottomDialog(
             )
         )
 
-        if(activity.result.type=="MANGA"){
-            binding.searchSeason.visibility = GONE
-            binding.searchYear.visibility = GONE
-        }
+        if(activity.result.type=="MANGA") binding.searchSeasonYearCont.visibility = GONE
         else{
             binding.searchSeason.setText(activity.result.season)
             binding.searchSeason.setAdapter(

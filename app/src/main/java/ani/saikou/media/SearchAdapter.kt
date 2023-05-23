@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -16,6 +17,7 @@ import ani.saikou.anilist.Anilist
 import ani.saikou.databinding.ItemChipBinding
 import ani.saikou.databinding.ItemSearchHeaderBinding
 import ani.saikou.saveData
+import com.google.android.material.checkbox.MaterialCheckBox.*
 
 
 class SearchAdapter(private val activity: SearchActivity) : RecyclerView.Adapter<SearchAdapter.SearchHeaderViewHolder>() {
@@ -29,6 +31,7 @@ class SearchAdapter(private val activity: SearchActivity) : RecyclerView.Adapter
         return SearchHeaderViewHolder(binding)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(holder: SearchHeaderViewHolder, position: Int) {
         val binding = holder.binding
 
@@ -62,7 +65,7 @@ class SearchAdapter(private val activity: SearchActivity) : RecyclerView.Adapter
         binding.searchChipRecycler.layoutManager = LinearLayoutManager(binding.root.context, HORIZONTAL, false)
 
         binding.searchFilter.setOnClickListener {
-            SearchFilterBottomDialog.newInstance(activity).show(activity.supportFragmentManager,"dialog")
+            SearchFilterBottomDialog.newInstance(activity).show(activity.supportFragmentManager, "dialog")
         }
 
         fun searchTitle() {
@@ -120,13 +123,29 @@ class SearchAdapter(private val activity: SearchActivity) : RecyclerView.Adapter
                 adult = b
                 searchTitle()
             }
-        } else {
-            binding.searchAdultCheck.visibility = View.GONE
-        }
+        } else binding.searchAdultCheck.visibility = View.GONE
+        binding.searchList.apply {
+            if(Anilist.userid!=null) {
+                visibility = View.VISIBLE
+                checkedState = if(listOnly==null) STATE_INDETERMINATE else STATE_CHECKED
 
-        binding.searchList.setOnCheckedChangeListener { _, b ->
-            listOnly = if (b) true else null
-            searchTitle()
+                addOnCheckedStateChangedListener { _, state ->
+                    listOnly = when (state) {
+                        STATE_CHECKED       -> true
+                        STATE_UNCHECKED     -> false
+                        STATE_INDETERMINATE -> null
+                        else                -> null
+                    }
+                }
+
+                setOnTouchListener { _, event ->
+                    (event.actionMasked == MotionEvent.ACTION_DOWN).also {
+                        if(it) checkedState = (checkedState + 1) % 3
+                        searchTitle()
+                    }
+                }
+            }
+            else visibility = View.GONE
         }
 
         search = Runnable { searchTitle() }
@@ -145,6 +164,7 @@ class SearchAdapter(private val activity: SearchActivity) : RecyclerView.Adapter
 
     class SearchChipAdapter(val activity: SearchActivity) : RecyclerView.Adapter<SearchChipAdapter.SearchChipViewHolder>() {
         private var chips = activity.result.toChipList()
+        
         inner class SearchChipViewHolder(val binding: ItemChipBinding) : RecyclerView.ViewHolder(binding.root)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchChipViewHolder {
@@ -166,7 +186,7 @@ class SearchAdapter(private val activity: SearchActivity) : RecyclerView.Adapter
         }
 
         @SuppressLint("NotifyDataSetChanged")
-        fun update(){
+        fun update() {
             chips = activity.result.toChipList()
             notifyDataSetChanged()
         }
