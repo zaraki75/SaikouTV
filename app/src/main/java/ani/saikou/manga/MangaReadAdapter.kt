@@ -32,6 +32,7 @@ class MangaReadAdapter(
     private val mangaReadSources: MangaReadSources
 ) : RecyclerView.Adapter<MangaReadAdapter.ViewHolder>() {
 
+    var subscribe: MediaDetailsActivity.PopImageButton? = null
     private var _binding: ItemAnimeWatchBinding? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -43,6 +44,12 @@ class MangaReadAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val binding = holder.binding
         _binding = binding
+        binding.sourceTitle.setText(R.string.chaps)
+
+        //Wrong Title
+        binding.animeSourceSearch.setOnClickListener {
+            SourceSearchDialogFragment().show(fragment.requireActivity().supportFragmentManager, null)
+        }
 
         //Source Selection
         val source = media.selected!!.source.let { if (it >= mangaReadSources.names.size) 0 else it }
@@ -58,19 +65,12 @@ class MangaReadAdapter(
                 binding.animeSourceTitle.text = showUserText
                 showUserTextListener = { MainScope().launch { binding.animeSourceTitle.text = it } }
             }
+            subscribeButton(false)
             fragment.loadChapters(i)
         }
 
-        //Wrong Title
-        binding.animeSourceSearch.setOnClickListener {
-            SourceSearchDialogFragment().show(fragment.requireActivity().supportFragmentManager, null)
-        }
-
-        //Title
-        binding.sourceTitle.setText(R.string.chaps)
-
         //Subscription
-        MediaDetailsActivity.PopImageButton(
+        subscribe = MediaDetailsActivity.PopImageButton(
             fragment.lifecycleScope,
             binding.animeSourceSubscribe,
             R.drawable.ic_round_notifications_active_24,
@@ -81,6 +81,8 @@ class MangaReadAdapter(
         ) {
             fragment.onNotificationPressed(it, binding.animeSource.text.toString())
         }
+
+        subscribeButton(false)
 
         binding.animeSourceSubscribe.setOnLongClickListener {
             openSettings(fragment.requireContext(), getChannelId(true, media.id))
@@ -120,6 +122,10 @@ class MangaReadAdapter(
 
         //Chapter Handling
         handleChapters()
+    }
+
+    fun subscribeButton(enabled: Boolean) {
+        subscribe?.enabled(enabled)
     }
 
     //Chips

@@ -166,6 +166,8 @@ open class MangaReadFragment : Fragment() {
                             position
                         )
                     }
+
+                    headerAdapter.subscribeButton(true)
                     reload()
                 }
             }
@@ -237,11 +239,11 @@ open class MangaReadFragment : Fragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun reload() {
         val selected = model.loadSelected(media)
-        //Find latest episode for subscription
-        if (subscribed) {
-            selected.latest = media.manga?.chapters?.values?.maxOfOrNull { it.number.toFloatOrNull() ?: 0f } ?: 0f
-            selected.latest = media.userProgress?.toFloat()?.takeIf { selected.latest < it } ?: selected.latest
-        }
+
+        //Find latest chapter for subscription
+        selected.latest = media.manga?.chapters?.values?.maxOfOrNull { it.number.toFloatOrNull() ?: 0f } ?: 0f
+        selected.latest = media.userProgress?.toFloat()?.takeIf { selected.latest < it } ?: selected.latest
+
         model.saveSelected(media.id, selected, requireActivity())
         headerAdapter.handleChapters()
         chapterAdapter.notifyItemRangeRemoved(0, chapterAdapter.arr.size)

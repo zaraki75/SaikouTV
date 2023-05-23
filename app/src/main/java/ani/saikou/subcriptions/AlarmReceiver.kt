@@ -47,8 +47,8 @@ class AlarmReceiver : BroadcastReceiver() {
             val curTime = loadData<Int>("subscriptions_time", context) ?: defaultTime
 
             if(timeMinutes[curTime]>0)
-                alarmManager.setRepeating(
-                    AlarmManager.RTC_WAKEUP,
+                alarmManager.setInexactRepeating(
+                    AlarmManager.RTC,
                     System.currentTimeMillis(),
                     (timeMinutes[curTime] * 60 * 1000),
                     pendingIntent

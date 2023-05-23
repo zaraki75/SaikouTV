@@ -7,25 +7,28 @@ import ani.saikou.media.Selected
 import ani.saikou.parsers.*
 import ani.saikou.saveData
 import ani.saikou.tryWithSuspend
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.util.concurrent.*
 
 class SubscriptionHelper {
     companion object {
-        private fun loadSelected(context: Context,mediaId: Int, isAdult: Boolean, isAnime: Boolean): Selected {
+        private fun loadSelected(context: Context, mediaId: Int, isAdult: Boolean, isAnime: Boolean): Selected {
             return loadData<Selected>("${mediaId}-select", context) ?: Selected().let {
                 it.source =
                     if (isAdult) 0
-                    else if (isAnime) loadData("settings_def_anime_source",context) ?: 0
-                    else loadData("settings_def_manga_source",context) ?: 0
-                it.preferDub = loadData("settings_prefer_dub") ?: false
+                    else if (isAnime) loadData("settings_def_anime_source", context) ?: 0
+                    else loadData("settings_def_manga_source", context) ?: 0
+                it.preferDub = loadData("settings_prefer_dub", context) ?: false
                 it
             }
         }
 
-        private fun saveSelected(context: Context,mediaId: Int, data: Selected) {
+        private fun saveSelected(context: Context, mediaId: Int, data: Selected) {
             saveData("$mediaId-select", data, context)
         }
 
-        fun getAnimeParser(context:Context, isAdult: Boolean, id: Int): AnimeParser {
+        fun getAnimeParser(context: Context, isAdult: Boolean, id: Int): AnimeParser {
             val sources = if (isAdult) HAnimeSources else AnimeSources
             val selected = loadSelected(context, id, isAdult, true)
             val parser = sources[selected.source]
@@ -33,35 +36,54 @@ class SubscriptionHelper {
             return parser
         }
 
-        suspend fun getEpisode(context:Context, parser: AnimeParser, id: Int, isAdult: Boolean): Episode? {
-            return tryWithSuspend {
-                val selected = loadSelected(context,id, isAdult, true)
-                val show = parser.loadSavedShowResponse(id) ?: throw Exception("Failed to load saved data of $id")
-                val ep = parser.getLatestEpisode(show.link, show.extra, selected.latest)
-                if (ep != null) {
-                    selected.latest = ep.number.toFloat()
-                    saveSelected(context, id, selected)
+        suspend fun getEpisode(context: Context, parser: AnimeParser, id: Int, isAdult: Boolean): Episode? {
+
+            val selected = loadSelected(context, id, isAdult, true)
+            val latch = CountDownLatch(0)
+            var ep: Episode? = null
+            runBlocking {
+                launch {
+                    tryWithSuspend {
+                        val show = parser.loadSavedShowResponse(id) ?: throw Exception("Failed to load saved data of $id")
+                        ep = parser.getLatestEpisode(show.link, show.extra, selected.latest)
+                        latch.countDown()
+                    }
                 }
-                ep
+                @Suppress("BlockingMethodInNonBlockingContext")
+                latch.await(10, TimeUnit.SECONDS)
+            }
+
+            return ep?.apply {
+                selected.latest = number.toFloat()
+                saveSelected(context, id, selected)
             }
         }
 
-        fun getMangaParser(context: Context,isAdult: Boolean, id: Int): MangaParser {
+        fun getMangaParser(context: Context, isAdult: Boolean, id: Int): MangaParser {
             val sources = if (isAdult) HMangaSources else MangaSources
-            val selected = loadSelected(context,id, isAdult, false)
+            val selected = loadSelected(context, id, isAdult, false)
             return sources[selected.source]
         }
 
-        suspend fun getChapter(context: Context,parser: MangaParser, id: Int, isAdult: Boolean): MangaChapter? {
-            return tryWithSuspend {
-                val selected = loadSelected(context,id, isAdult, false)
-                val show = parser.loadSavedShowResponse(id) ?: throw Exception("Failed to load saved data of $id")
-                val ep = parser.getLatestChapter(show.link, show.extra, selected.latest)
-                if (ep != null) {
-                    selected.latest = ep.number.toFloat()
-                    saveSelected(context,id, selected)
+        suspend fun getChapter(context: Context, parser: MangaParser, id: Int, isAdult: Boolean): MangaChapter? {
+            val selected = loadSelected(context, id, isAdult, true)
+            val latch = CountDownLatch(0)
+            var ep: MangaChapter? = null
+            runBlocking {
+                launch {
+                    tryWithSuspend {
+                        val show = parser.loadSavedShowResponse(id) ?: throw Exception("Failed to load saved data of $id")
+                        ep = parser.getLatestChapter(show.link, show.extra, selected.latest)
+                        latch.countDown()
+                    }
                 }
-                ep
+                @Suppress("BlockingMethodInNonBlockingContext")
+                latch.await(10, TimeUnit.SECONDS)
+            }
+
+            return ep?.apply {
+                selected.latest = number.toFloat()
+                saveSelected(context, id, selected)
             }
         }
 
@@ -77,7 +99,7 @@ class SubscriptionHelper {
         fun getSubscriptions(context: Context): Map<Int, SubscribeMedia> = loadData(subscriptions, context)
             ?: mapOf<Int, SubscribeMedia>().also { saveData(subscriptions, it, context) }
 
-        fun saveSubscription(context: Context,media: Media, subscribed: Boolean) {
+        fun saveSubscription(context: Context, media: Media, subscribed: Boolean) {
             val data = loadData<Map<Int, SubscribeMedia>>(subscriptions, context)!!.toMutableMap()
             if (subscribed) {
                 if (!data.containsKey(media.id)) {

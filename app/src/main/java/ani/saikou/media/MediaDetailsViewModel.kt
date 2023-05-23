@@ -156,7 +156,7 @@ class MediaDetailsViewModel : ViewModel() {
 
             ep.extractors = mutableListOf(watchSources?.get(selected.source)?.let {
                 if (!post && !it.allowsPreloading) null
-                else it.loadSingleVideoServer(server, link, ep.extra)
+                else it.loadSingleVideoServer(server, link, ep.extra, post)
             } ?: return false)
             ep.allStreams = false
         }

@@ -46,7 +46,7 @@ import ani.saikou.mal.MAL
 import ani.saikou.media.Media
 import ani.saikou.others.Download.adm
 import ani.saikou.others.Download.defaultDownload
-import ani.saikou.others.Download.onedm
+import ani.saikou.others.Download.oneDM
 import ani.saikou.parsers.ShowResponse
 import ani.saikou.settings.UserInterfaceSettings
 import ani.saikou.tv.TVMainActivity
@@ -93,7 +93,7 @@ fun currContext(): Context? {
     return App.currentContext()
 }
 
-fun currActivity() : Activity?{
+fun currActivity(): Activity? {
     return App.currentActivity()
 }
 
@@ -240,7 +240,7 @@ fun startMainActivity(activity: Activity, bundle: Bundle? = null) {
             if (isOnTV(activity)) TVMainActivity::class.java else MainActivity::class.java
         ).apply {
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-            if(bundle!=null) putExtras(bundle)
+            if (bundle != null) putExtras(bundle)
         }
     )
 }
@@ -560,9 +560,9 @@ fun openLinkInBrowser(link: String?) {
 
 fun download(activity: Activity, episode: Episode, animeTitle: String) {
     toast("Downloading...")
-    when(loadData<Int>("settings_download_manager", activity, false) ?: 0) {
-        1 -> onedm(activity, episode, animeTitle)
-        2 -> adm(activity, episode, animeTitle)
+    when (loadData<Int>("settings_download_manager", activity, false) ?: 0) {
+        1    -> oneDM(activity, episode, animeTitle)
+        2    -> adm(activity, episode, animeTitle)
         else -> defaultDownload(activity, episode, animeTitle)
     }
 }
@@ -624,8 +624,8 @@ fun updateAnilistProgress(media: Media, number: String) {
                 )
                 MAL.query.editList(
                     media.idMAL,
-                    media.anime!=null,
-                    a,  null,
+                    media.anime != null,
+                    a, null,
                     if (media.userStatus == "REPEATING") media.userStatus!! else "CURRENT"
                 )
                 toast("Setting progress to $a")
@@ -757,11 +757,12 @@ class EmptyAdapter(private val count: Int) : RecyclerView.Adapter<RecyclerView.V
     inner class EmptyViewHolder(view: View) : RecyclerView.ViewHolder(view)
 }
 
-fun toast(string: String?, activity: Context? = null) {
+fun toast(string: String?) {
     if (string != null) {
-        MainScope().launch {
-            Toast.makeText(activity, string, Toast.LENGTH_SHORT).show()
         logger(string)
+        MainScope().launch {
+            Toast.makeText(currActivity()?.application ?: return@launch, string, Toast.LENGTH_SHORT).show()
+        }
     }
 }
 

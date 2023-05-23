@@ -60,7 +60,7 @@ class Notifications {
 
         fun createChannel(context: Context, group: Group?, id: String, name: String, silent: Boolean = false) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val importance = if (!silent) NotificationManager.IMPORTANCE_HIGH else NotificationManager.IMPORTANCE_DEFAULT
+                val importance = if (!silent) NotificationManager.IMPORTANCE_HIGH else NotificationManager.IMPORTANCE_LOW
                 val mChannel = NotificationChannel(id, name, importance)
 
                 val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager

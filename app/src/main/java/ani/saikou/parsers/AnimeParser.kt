@@ -93,8 +93,8 @@ abstract class AnimeParser : BaseParser() {
      *
      * Doesn't need to be overridden, if the parser is following the norm.
      * **/
-    open suspend fun loadSingleVideoServer(serverName: String, episodeUrl: String, extra: Map<String,String>?): VideoExtractor? {
-        tryWithSuspend(true) {
+    open suspend fun loadSingleVideoServer(serverName: String, episodeUrl: String, extra: Map<String,String>?, post: Boolean): VideoExtractor? {
+        return tryWithSuspend(post) {
             loadVideoServers(episodeUrl, extra).apply {
                 find { it.name == serverName }?.also {
                     return@tryWithSuspend getVideoExtractor(it)?.apply {

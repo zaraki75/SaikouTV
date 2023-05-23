@@ -4,12 +4,9 @@ import android.app.Notification
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import ani.saikou.FileUrl
-import ani.saikou.loadData
+import ani.saikou.*
 import ani.saikou.parsers.Episode
 import ani.saikou.parsers.MangaChapter
-import ani.saikou.printIt
-import ani.saikou.tryWithSuspend
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -25,19 +22,21 @@ class Subscription {
                 SubscriptionWorker.enqueue(this)
                 AlarmReceiver.alarm(this)
             }
-            else println("Service already created")
+            else logger("Already Subscribed")
         }
 
+        private var currentlyPerforming = false
         suspend fun perform(context: Context){
-            tryWithSuspend {
-//                App.context = context
+            if(!currentlyPerforming) tryWithSuspend {
+                currentlyPerforming = true
+                App.context = context
 
                 val subscriptions = SubscriptionHelper.getSubscriptions(context)
                 var i = 0
                 val index = subscriptions.map { i++; it.key to i }.toMap()
                 val notificationManager = NotificationManagerCompat.from(context)
 
-                val progressEnabled = loadData("subscription_checking_notifications", context) ?: false
+                val progressEnabled = loadData("subscription_checking_notifications", context) ?: true
                 val progressNotification = if (progressEnabled) getProgressNotification(
                     context,
                     subscriptions.size
@@ -85,6 +84,7 @@ class Subscription {
                 }
 
                 if (progressNotification != null) notificationManager.cancel(progressNotificationId)
+                currentlyPerforming = false
             }
         }
 
@@ -119,7 +119,7 @@ class Subscription {
                 "Checking Subscriptions",
                 null,
                 true
-            ).setOngoing(true).setProgress(size, 0, false)
+            ).setOngoing(true).setProgress(size, 0, false).setAutoCancel(false)
         }
     }
 }

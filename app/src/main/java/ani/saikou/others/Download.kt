@@ -86,7 +86,7 @@ object Download {
             }
         }
     }
-    fun onedm (activity: Activity, episode: Episode, animeTitle: String) {
+    fun oneDM (activity: Activity, episode: Episode, animeTitle: String) {
         val appName = if (isPackageInstalled("idm.internet.download.manager.plus", activity.packageManager)) {
             "idm.internet.download.manager.plus"
         } else if (isPackageInstalled("idm.internet.download.manager", activity.packageManager)) {
@@ -105,13 +105,13 @@ object Download {
             val name = "$title${if (video.size != null) "(${video.size}p)" else ""}"
             val aTitle = animeTitle.replace(regex, "")
             val bundle = Bundle()
+            defaultHeaders.forEach { a -> bundle.putString(a.key, a.value)}
             video.url.headers.forEach { a -> bundle.putString(a.key, a.value)}
             // documentation: https://www.apps2sd.info/idmp/faq?id=35
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 component = ComponentName(appName, "idm.internet.download.manager.Downloader")
                 data = Uri.parse(video.url.url)
                 putExtra("extra_headers", bundle)
-                putExtra("extra_useragent", defaultHeaders["User-Agent"])
                 putExtra("extra_filename", "$aTitle - $name")
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
@@ -139,8 +139,8 @@ object Download {
             val title = "Episode ${episode.number}${if (episode.title != null) " - ${episode.title}" else ""}".replace(regex, "")
             val name = "$title${if (video.size != null) "(${video.size}p)" else ""}"
             val bundle = Bundle()
+            defaultHeaders.forEach { a -> bundle.putString(a.key, a.value)}
             video.url.headers.forEach { a -> bundle.putString(a.key, a.value)}
-            bundle.putString("User-Agent", defaultHeaders["User-Agent"])
             // unofficial documentation: https://pastebin.com/ScDNr2if (there is no official documentation)
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 component = ComponentName("com.dv.adm", "com.dv.adm.AEditor")

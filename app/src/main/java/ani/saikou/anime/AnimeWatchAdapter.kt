@@ -105,6 +105,8 @@ class AnimeWatchAdapter(
             fragment.onNotificationPressed(it, binding.animeSource.text.toString())
         }
 
+        subscribeButton(false)
+
         binding.animeSourceSubscribe.setOnLongClickListener {
 openSettings(fragment.requireContext(),getChannelId(true,media.id))
         }

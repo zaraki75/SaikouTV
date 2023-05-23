@@ -275,10 +275,9 @@ class AnimeWatchFragment : Fragment() {
         val selected = model.loadSelected(media)
 
         //Find latest episode for subscription
-        if (subscribed) {
-            selected.latest = media.anime?.episodes?.values?.maxOfOrNull { it.number.toFloatOrNull() ?: 0f } ?: 0f
-            selected.latest = media.userProgress?.toFloat()?.takeIf { selected.latest < it } ?: selected.latest
-        }
+        selected.latest = media.anime?.episodes?.values?.maxOfOrNull { it.number.toFloatOrNull() ?: 0f } ?: 0f
+        selected.latest = media.userProgress?.toFloat()?.takeIf { selected.latest < it } ?: selected.latest
+
         model.saveSelected(media.id, selected, requireActivity())
         headerAdapter.handleEpisodes()
         episodeAdapter.notifyItemRangeRemoved(0, episodeAdapter.arr.size)

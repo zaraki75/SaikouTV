@@ -141,32 +141,8 @@ class MainActivity : AppCompatActivity() {
                         })
                         navbar.selectTabAt(selectedOption)
                         mainViewPager.post { mainViewPager.setCurrentItem(selectedOption, false) }
-
-                        val id = intent.extras?.getInt("media")
-                        val isMAL = intent.extras?.getBoolean("mal") ?: false
-                        if (id != null) {
-                            scope.launch {
-                                val media = withContext(Dispatchers.IO) {
-                                    Anilist.query.getMedia(
-                                        id,
-                                        isMAL
-                                    )
-                                }
-                                if (media != null) {
-                                    startActivity(
-                                        Intent(
-                                            this@MainActivity,
-                                            MediaDetailsActivity::class.java
-                                        ).putExtra("media", media as Serializable)
-                                    )
-                                } else {
-                                    snackString("Seems like that wasn't found on Anilist.")
-                                }
-                            }
-                        }
                     } else {
                         binding.mainProgressBar.visibility = View.GONE
-                        //                        snackString("Error Loading Tags & Genres.")
                     }
                 }
             }
@@ -174,6 +150,21 @@ class MainActivity : AppCompatActivity() {
             if (!load) {
                 scope.launch(Dispatchers.IO) {
                     model.loadMain(this@MainActivity)
+                    val id = intent.extras?.getInt("mediaId", 0)
+                    val isMAL = intent.extras?.getBoolean("mal") ?: false
+                    if (id != null && id != 0) {
+                        val media = withContext(Dispatchers.IO) {
+                            Anilist.query.getMedia(id, isMAL)
+                        }
+                        if (media != null) {
+                            startActivity(
+                                Intent(this@MainActivity, MediaDetailsActivity::class.java)
+                                    .putExtra("media", media as Serializable)
+                            )
+                        } else {
+                            snackString("Seems like that wasn't found on Anilist.")
+                        }
+                    }
                 }
                 load = true
             }

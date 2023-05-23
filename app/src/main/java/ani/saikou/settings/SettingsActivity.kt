@@ -360,7 +360,7 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
             true
         }
 
-        binding.settingsNotificationsCheckingSubscriptions.isChecked = loadData("subscription_checking_notifications") ?: false
+        binding.settingsNotificationsCheckingSubscriptions.isChecked = loadData("subscription_checking_notifications") ?: true
         binding.settingsNotificationsCheckingSubscriptions.setOnCheckedChangeListener { _, isChecked ->
             saveData("subscription_checking_notifications", isChecked)
             if (isChecked)
