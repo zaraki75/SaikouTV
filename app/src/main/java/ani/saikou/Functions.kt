@@ -35,6 +35,7 @@ import androidx.core.view.*
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
+import androidx.multidex.BuildConfig
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import ani.saikou.anilist.Anilist
@@ -54,7 +55,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
-import com.google.android.exoplayer2.ui.DefaultTimeBar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -456,23 +456,6 @@ suspend fun getSize(file: String): Double? {
     return getSize(FileUrl(file))
 }
 
-@SuppressLint("ViewConstructor")
-class ExtendedTimeBar(
-    context: Context,
-    attrs: AttributeSet?
-) : DefaultTimeBar(context, attrs) {
-    private var enabled = false
-    private var forceDisabled = false
-    override fun setEnabled(enabled: Boolean) {
-        this.enabled = enabled
-        super.setEnabled(!forceDisabled && this.enabled)
-    }
-
-    fun setForceDisabled(forceDisabled: Boolean) {
-        this.forceDisabled = forceDisabled
-        isEnabled = enabled
-    }
-}
 
 abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
     private var timer: Timer? = null //at class level;
@@ -493,12 +476,9 @@ abstract class GesturesListener : GestureDetector.SimpleOnGestureListener() {
         return super.onDoubleTap(e)
     }
 
-    @Suppress("USELESS_ELVIS")
     override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
         onScrollYClick(distanceY)
         onScrollXClick(distanceX)
-        e1 ?: return false
-        e2 ?: return false
         return super.onScroll(e1, e2, distanceX, distanceY)
     }
 

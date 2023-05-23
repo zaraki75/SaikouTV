@@ -7,7 +7,7 @@ import android.app.Dialog
 import android.app.PictureInPictureParams
 import android.app.PictureInPictureUiState
 import android.content.ActivityNotFoundException
-import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
@@ -23,7 +23,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings.System
-import android.support.v4.media.session.MediaSessionCompat
+import android.util.AttributeSet
 import android.util.Rational
 import android.util.TypedValue
 import android.view.*
@@ -42,7 +42,20 @@ import androidx.core.math.MathUtils.clamp
 import androidx.core.view.WindowCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
-import androidx.media.session.MediaButtonReceiver
+import androidx.media3.common.*
+import androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE
+import androidx.media3.common.C.TRACK_TYPE_VIDEO
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.HttpDataSource
+import androidx.media3.datasource.cache.CacheDataSource
+import androidx.media3.datasource.okhttp.OkHttpDataSource
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
+import androidx.media3.session.MediaSession
+import androidx.media3.ui.*
+import androidx.media3.ui.CaptionStyleCompat.*
 import ani.saikou.*
 import ani.saikou.R
 import ani.saikou.anilist.Anilist
@@ -58,21 +71,9 @@ import ani.saikou.settings.PlayerSettings
 import ani.saikou.settings.PlayerSettingsActivity
 import ani.saikou.settings.UserInterfaceSettings
 import com.bumptech.glide.Glide
-import com.google.android.exoplayer2.*
-import com.google.android.exoplayer2.C.AUDIO_CONTENT_TYPE_MOVIE
-import com.google.android.exoplayer2.C.TRACK_TYPE_VIDEO
-import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
-import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource
-import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
-import com.google.android.exoplayer2.ui.*
-import com.google.android.exoplayer2.ui.CaptionStyleCompat.*
-import com.google.android.exoplayer2.upstream.DataSource
-import com.google.android.exoplayer2.upstream.HttpDataSource
-import com.google.android.exoplayer2.upstream.cache.CacheDataSource
-import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.material.slider.Slider
 import dev.brahmkshatriya.nicehttp.ignoreAllSSLErrors
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -82,6 +83,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
+@UnstableApi
 @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
 class ExoplayerView : AppCompatActivity(), Player.Listener {
 
@@ -95,9 +97,10 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     private lateinit var cacheFactory: CacheDataSource.Factory
     private lateinit var playbackParameters: PlaybackParameters
     private lateinit var mediaItem: MediaItem
+    private var mediaSession: MediaSession? = null
 
     private lateinit var binding: ActivityExoplayerBinding
-    private lateinit var playerView: StyledPlayerView
+    private lateinit var playerView: PlayerView
     private lateinit var exoPlay: ImageButton
     private lateinit var exoSource: ImageButton
     private lateinit var exoSettings: ImageButton
@@ -127,9 +130,9 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
     private var orientationListener: OrientationEventListener? = null
 
-    companion object{
+    companion object {
         var initialized = false
-        lateinit var media : Media
+        lateinit var media: Media
     }
 
     private lateinit var episode: Episode
@@ -205,7 +208,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
     }
 
-    private fun setupSubFormatting(playerView: StyledPlayerView, settings: PlayerSettings) {
+    private fun setupSubFormatting(playerView: PlayerView, settings: PlayerSettings) {
         val primaryColor = when (settings.primaryColor) {
             0    -> Color.BLACK
             1    -> Color.DKGRAY
@@ -301,7 +304,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         hideSystemBars()
 
-        onBackPressedDispatcher.addCallback(this){
+        onBackPressedDispatcher.addCallback(this) {
             finishAndRemoveTask()
         }
 
@@ -525,7 +528,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                     checkNotch()
                 }
         }
-        playerView.setControllerVisibilityListener(StyledPlayerView.ControllerVisibilityListener { visibility ->
+        playerView.setControllerVisibilityListener(PlayerView.ControllerVisibilityListener { visibility ->
             if (visibility == View.GONE) {
                 hideSystemBars()
                 brightnessRunnable.run()
@@ -651,7 +654,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
             exoBrightness.addOnChangeListener { _, value, _ ->
                 val lp = window.attributes
-                lp.screenBrightness = brightnessConverter((value.takeIf { !it.isNaN() }?:0f) / 10, false)
+                lp.screenBrightness = brightnessConverter((value.takeIf { !it.isNaN() } ?: 0f) / 10, false)
                 window.attributes = lp
                 brightnessHide()
             }
@@ -674,7 +677,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                 volumeTimer.schedule(timerTask, 3000)
             }
             exoVolume.addOnChangeListener { _, value, _ ->
-                val volume = ((value.takeIf { !it.isNaN() }?:0f) / 10 * volumeMax).roundToInt()
+                val volume = ((value.takeIf { !it.isNaN() } ?: 0f) / 10 * volumeMax).roundToInt()
                 audioManager.setStreamVolume(STREAM_MUSIC, volume, 0)
                 volumeHide()
             }
@@ -733,7 +736,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         }
 
         //Handle Media
-        if(!initialized) return startMainActivity(this)
+        if (!initialized) return startMainActivity(this)
         model.setMedia(media)
         title = media.userPreferredName
         episodes = media.anime?.episodes ?: return startMainActivity(this)
@@ -1134,12 +1137,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         playerView.player = exoPlayer
 
         try {
-            val mediaButtonReceiver = ComponentName(this, MediaButtonReceiver::class.java)
-            MediaSessionCompat(this, "Player", mediaButtonReceiver, null).let { media ->
-                val mediaSessionConnector = MediaSessionConnector(media)
-                mediaSessionConnector.setPlayer(exoPlayer)
-                media.isActive = true
-            }
+            mediaSession = MediaSession.Builder(this, exoPlayer).build()
         } catch (e: Exception) {
             toast(e.toString())
         }
@@ -1153,6 +1151,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         playbackPosition = exoPlayer.currentPosition
         exoPlayer.release()
         VideoCache.release()
+        mediaSession?.release()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -1394,7 +1393,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     override fun onDestroy() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
-        lifecycleScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             extractor?.onVideoStopped(video)
         }
 
@@ -1525,7 +1524,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
     }
 
-    private val keyMap: MutableMap<Int,(() -> Unit)?> = mutableMapOf(
+    private val keyMap: MutableMap<Int, (() -> Unit)?> = mutableMapOf(
         KEYCODE_DPAD_RIGHT to null,
         KEYCODE_DPAD_LEFT to null,
         KEYCODE_SPACE to { exoPlay.performClick() },
@@ -1536,11 +1535,28 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         return if (keyMap.containsKey(event.keyCode)) {
             (event.action == ACTION_UP).also {
-                if(isInitialized && it) keyMap[event.keyCode]?.invoke()
+                if (isInitialized && it) keyMap[event.keyCode]?.invoke()
             }
-        }
-        else {
+        } else {
             super.dispatchKeyEvent(event)
+        }
+    }
+
+    @SuppressLint("ViewConstructor")
+    class ExtendedTimeBar(
+        context: Context,
+        attrs: AttributeSet?
+    ) : DefaultTimeBar(context, attrs) {
+        private var enabled = false
+        private var forceDisabled = false
+        override fun setEnabled(enabled: Boolean) {
+            this.enabled = enabled
+            super.setEnabled(!forceDisabled && this.enabled)
+        }
+
+        fun setForceDisabled(forceDisabled: Boolean) {
+            this.forceDisabled = forceDisabled
+            isEnabled = enabled
         }
     }
 }

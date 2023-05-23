@@ -67,13 +67,13 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
 //    Exoplayer
-    ext.exo_version = '2.18.5'
-    implementation "com.google.android.exoplayer:exoplayer-core:$exo_version"
-    implementation "com.google.android.exoplayer:exoplayer-ui:$exo_version"
-    implementation "com.google.android.exoplayer:exoplayer-hls:$exo_version"
-    implementation "com.google.android.exoplayer:exoplayer-dash:$exo_version"
-    implementation "com.google.android.exoplayer:extension-okhttp:$exo_version"
-    implementation "com.google.android.exoplayer:extension-mediasession:$exo_version"
+    ext.exo_version = '1.0.0'
+    implementation "androidx.media3:media3-exoplayer:$exo_version"
+    implementation "androidx.media3:media3-ui:$exo_version"
+    implementation "androidx.media3:media3-exoplayer-hls:$exo_version"
+    implementation "androidx.media3:media3-exoplayer-dash:$exo_version"
+    implementation "androidx.media3:media3-datasource-okhttp:$exo_version"
+    implementation "androidx.media3:media3-session:$exo_version"
 
 //    UI
     implementation 'com.google.android.material:material:1.8.0'
