@@ -88,6 +88,8 @@ data class Media(
         userScore = apiMedia.mediaListEntry?.score?.toInt() ?: 0,
         userStatus = apiMedia.mediaListEntry?.status?.toString(),
         meanScore = apiMedia.meanScore,
+        startDate = apiMedia.startDate,
+        endDate = apiMedia.endDate,
         anime = if (apiMedia.type == MediaType.ANIME) Anime(
             totalEpisodes = apiMedia.episodes,
             nextAiringEpisode = apiMedia.nextAiringEpisode?.episode?.minus(1)

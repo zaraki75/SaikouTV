@@ -252,7 +252,7 @@ class AnilistQueries {
 
         suspend fun getNextPage(page:Int): List<Media> {
             val response =
-                executeQuery<Query.User>("""{User(id:${Anilist.userid}){id favourites{${if (anime) "anime" else "manga"}(page:$page){pageInfo{hasNextPage}edges{favouriteOrder node{id idMal isAdult mediaListEntry{ progress private score(format:POINT_100) status } chapters isFavourite episodes nextAiringEpisode{episode}meanScore isFavourite title{english romaji userPreferred}type status(version:2)bannerImage coverImage{large}}}}}}}""")
+                executeQuery<Query.User>("""{User(id:${Anilist.userid}){id favourites{${if (anime) "anime" else "manga"}(page:$page){pageInfo{hasNextPage}edges{favouriteOrder node{id idMal isAdult mediaListEntry{ progress private score(format:POINT_100) status } chapters isFavourite episodes nextAiringEpisode{episode}meanScore isFavourite startDate{year month day} title{english romaji userPreferred}type status(version:2)bannerImage coverImage{large}}}}}}}""")
             val favourites = response?.data?.user?.favourites
             val apiMediaList = if (anime) favourites?.anime else favourites?.manga
             hasNextPage = apiMediaList?.pageInfo?.hasNextPage ?: false
@@ -338,7 +338,7 @@ class AnilistQueries {
 
     suspend fun getMediaLists(anime: Boolean, userId: Int, sortOrder: String? = null): MutableMap<String, ArrayList<Media>> {
         val response =
-            executeQuery<Query.MediaListCollection>("""{ MediaListCollection(userId: $userId, type: ${if (anime) "ANIME" else "MANGA"}) { lists { name isCustomList entries { status progress private score(format:POINT_100) updatedAt media { id idMal isAdult type status chapters episodes nextAiringEpisode {episode} bannerImage meanScore isFavourite coverImage{large} title {english romaji userPreferred } } } } user { id mediaListOptions { rowOrder animeList { sectionOrder } mangaList { sectionOrder } } } } }""")
+            executeQuery<Query.MediaListCollection>("""{ MediaListCollection(userId: $userId, type: ${if (anime) "ANIME" else "MANGA"}) { lists { name isCustomList entries { status progress private score(format:POINT_100) updatedAt media { id idMal isAdult type status chapters episodes nextAiringEpisode {episode} bannerImage meanScore isFavourite coverImage{large} startDate{year month day} title {english romaji userPreferred } } } } user { id mediaListOptions { rowOrder animeList { sectionOrder } mangaList { sectionOrder } } } } }""")
         val sorted = mutableMapOf<String, ArrayList<Media>>()
         val unsorted = mutableMapOf<String, ArrayList<Media>>()
         val all = arrayListOf<Media>()
@@ -377,6 +377,7 @@ class AnilistQueries {
                 "score"     -> sorted[i]?.sortWith { b, a -> compareValuesBy(a, b, { it.userScore }, { it.meanScore }) }
                 "title"     -> sorted[i]?.sortWith(compareBy { it.userPreferredName })
                 "updatedAt" -> sorted[i]?.sortWith(compareByDescending { it.userUpdatedAt })
+                "release"   -> sorted[i]?.sortWith(compareByDescending { it.startDate })
                 "id"        -> sorted[i]?.sortWith(compareBy { it.id })
             }
         }

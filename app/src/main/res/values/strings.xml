@@ -347,4 +347,5 @@
     <string name="do_not_update">Don\'t Update</string>
     <string name="loading_next_chap">Loading Next Chapter</string>
     <string name="grid">Grid</string>
+    <string name="sort_by_release_date">Sort by Release Date</string>
 </resources>
