@@ -117,13 +117,13 @@ class Notifications {
                         .submit()
                         .get()
                 }
-                val largeBitmap = if (largeImg != null) withContext(Dispatchers.IO) {
-                    Glide.with(context)
+                @Suppress("BlockingMethodInNonBlockingContext")
+                val largeBitmap = if (largeImg != null) Glide.with(context)
                         .asBitmap()
                         .load(GlideUrl(largeImg.url) { largeImg.headers })
                         .submit()
                         .get()
-                } else null
+                else null
 
                 if(largeBitmap!=null) builder.setStyle(
                         NotificationCompat

@@ -1,12 +1,13 @@
-# 1.2.1.2
+# 1.2.2.0
 
-- Add 9anime, thanks to folks at Consumet
-- Fix Sub selection in Zoro
-- Fix Openings & Endings Songs not being shown.
-- Fix Manga Buddy
-- Fix some more crashes
-- Update FAQs 
-
-### Old Discord Server got hacked ([more info here](https://discord.com/channels/1091762044946092105/1091762852584505455/1091808020087967854)), please join new one!
-
-## [https://discord.gg/saikou-app](https://discord.gg/saikou-app)
+- Added Source Subscription! (Vigorously tested by me, please lemme know your experience)
+<br>Receive notifications of your fav anime & manga whenever they release a new ep/chap
+- Added Advanced List Filter in Search
+- Fix app freezing when closing Studio Activity (silly mistake by me)
+- Added loading chapter dialog, in manga reader
+- Added Grid view in Search Tag & Genres
+- Added support for allowing opening links of anilist & mal from Saikou
+- Shift to Jikan for Episode Filler Data
+- Fix ComicFun
+- Add support for 9anime Dub & Sub
+- More misc ui stuff & countless improvements

@@ -159,11 +159,13 @@ class MainActivity : AppCompatActivity() {
                     model.loadMain(this@MainActivity)
                     val id = intent.extras?.getInt("mediaId", 0)
                     val isMAL = intent.extras?.getBoolean("mal") ?: false
+                    val cont = intent.extras?.getBoolean("continue") ?: false
                     if (id != null && id != 0) {
                         val media = withContext(Dispatchers.IO) {
                             Anilist.query.getMedia(id, isMAL)
                         }
                         if (media != null) {
+                            media.cameFromContinue = cont
                             startActivity(
                                 Intent(this@MainActivity, MediaDetailsActivity::class.java)
                                     .putExtra("media", media as Serializable)
@@ -172,13 +174,14 @@ class MainActivity : AppCompatActivity() {
                             snackString("Seems like that wasn't found on Anilist.")
                         }
                     }
+                    delay(500)
                     startSubscription()
                 }
                 load = true
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if(loadData<Boolean>("allow_opening_links", this).printIt("Suh : ") != true) {
+                if (loadData<Boolean>("allow_opening_links", this) != true) {
                     CustomBottomDialog.newInstance().apply {
                         title = "Allow Saikou to automatically open Anilist & MAL Links?"
                         val md = "Open settings & click +Add Links & select Anilist & Mal urls"
@@ -195,7 +198,7 @@ class MainActivity : AppCompatActivity() {
 
                         setPositiveButton("Yes") {
                             saveData("allow_opening_links", true, this@MainActivity)
-                            tryWith(true){
+                            tryWith(true) {
                                 startActivity(
                                     Intent(Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS)
                                         .setData(Uri.parse("package:$packageName"))

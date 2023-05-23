@@ -10,9 +10,9 @@ import ani.saikou.*
 import ani.saikou.subcriptions.Subscription.Companion.defaultTime
 import ani.saikou.subcriptions.Subscription.Companion.startSubscription
 import ani.saikou.subcriptions.Subscription.Companion.timeMinutes
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -22,15 +22,14 @@ class AlarmReceiver : BroadcastReceiver() {
                 context?.startSubscription()
             }
         }
-        runBlocking {
-            launch(Dispatchers.IO) 
-                val con = context?: currContext() ?: return@launch
-                if(isOnline(con)) Subscription.perform(con)
-            }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val con = context ?: currContext() ?: return@launch
+            if (isOnline(con)) Subscription.perform(con)
         }
     }
 
-    companion object{
+    companion object {
 
         fun alarm(context: Context) {
             val alarmIntent = Intent(context, AlarmReceiver::class.java)
@@ -47,7 +46,7 @@ class AlarmReceiver : BroadcastReceiver() {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val curTime = loadData<Int>("subscriptions_time", context) ?: defaultTime
 
-            if(timeMinutes[curTime]>0)
+            if (timeMinutes[curTime] > 0)
                 alarmManager.setRepeating(
                     AlarmManager.RTC,
                     System.currentTimeMillis(),

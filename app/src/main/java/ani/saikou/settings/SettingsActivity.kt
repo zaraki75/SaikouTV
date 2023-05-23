@@ -1,5 +1,6 @@
 package ani.saikou.settings
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.drawable.Animatable
@@ -32,7 +33,9 @@ import ani.saikou.subcriptions.Subscription.Companion.timeMinutes
 import io.noties.markwon.Markwon
 import io.noties.markwon.SoftBreakAddsNewLinePlugin
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 
 class SettingsActivity : AppCompatActivity() {
@@ -40,6 +43,8 @@ class SettingsActivity : AppCompatActivity() {
         override fun handleOnBackPressed() = startMainActivity(this@SettingsActivity)
     }
     lateinit var binding: ActivitySettingsBinding
+
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
@@ -350,7 +355,7 @@ OS Version: $CODENAME $RELEASE ($SDK_INT)
         val timeNames = timeMinutes.map {
             val mins = it % 60
             val hours = it / 60
-            if(it>0) "${if (hours > 0) "$hours hrs " else ""}${if (mins > 0) "$mins mins" else ""}"
+            if (it > 0) "${if (hours > 0) "$hours hrs " else ""}${if (mins > 0) "$mins mins" else ""}"
             else getString(R.string.do_not_update)
         }.toTypedArray()
         binding.settingsSubscriptionsTime.text = getString(R.string.subscriptions_checking_time_s, timeNames[curTime])
@@ -473,5 +478,32 @@ binding.settingsAnilistAvatar.setImageResource(R.drawable.ic_round_person_24)
             }
         }
         reload()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            delay(2000)
+            runOnUiThread {
+                if (Random.nextInt(0, 100) > 69) {
+                    CustomBottomDialog.newInstance().apply {
+                        title = "Enjoying the App?"
+                        addView(TextView(this@SettingsActivity).apply {
+                            text =
+                                "Consider donating!\nOnce we reach the goal of $1000 (60%+ already reached!), Get ready to get an Offline Player & Manga Downloads!"
+                        })
+
+                        setNegativeButton("no moners :(") {
+                            snackString("That's alright, you'll be a rich man soon :prayge:")
+                            dismiss()
+                        }
+
+                        setPositiveButton("denote :)") {
+                            if (binding.settingUPI.visibility == View.VISIBLE) binding.settingUPI.performClick()
+                            else binding.settingBuyMeCoffee.performClick()
+                            dismiss()
+                        }
+                        show(supportFragmentManager, "dialog")
+                    }
+                }
+            }
+        }
     }
 }    

@@ -125,27 +125,30 @@ class SearchAdapter(private val activity: SearchActivity) : RecyclerView.Adapter
             }
         } else binding.searchAdultCheck.visibility = View.GONE
         binding.searchList.apply {
-            if(Anilist.userid!=null) {
+            if (Anilist.userid != null) {
                 visibility = View.VISIBLE
-                checkedState = if(listOnly==null) STATE_INDETERMINATE else STATE_CHECKED
+                checkedState = when(listOnly){
+                    null -> STATE_UNCHECKED
+                    true -> STATE_CHECKED
+                    false -> STATE_INDETERMINATE
+                }
 
                 addOnCheckedStateChangedListener { _, state ->
                     listOnly = when (state) {
                         STATE_CHECKED       -> true
-                        STATE_UNCHECKED     -> false
-                        STATE_INDETERMINATE -> null
+                        STATE_INDETERMINATE -> false
+                        STATE_UNCHECKED     -> null
                         else                -> null
                     }
                 }
 
                 setOnTouchListener { _, event ->
                     (event.actionMasked == MotionEvent.ACTION_DOWN).also {
-                        if(it) checkedState = (checkedState + 1) % 3
+                        if (it) checkedState = (checkedState + 1) % 3
                         searchTitle()
                     }
                 }
-            }
-            else visibility = View.GONE
+            } else visibility = View.GONE
         }
 
         search = Runnable { searchTitle() }

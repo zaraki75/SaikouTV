@@ -41,7 +41,7 @@ class ComickFun : MangaParser() {
             }
         }
 
-        return responses.flatten().reversed().mapNotNull {
+       return responses.flatten().mapNotNull {
             if ((it.chap ?: "").isBlank()) return@mapNotNull null
             val chapterLink = "$hostUrl/chapter/${it.hid}?tachiyomi=true"
             MangaChapter(number = it.chap.toString(), link = chapterLink, title = it.title)
