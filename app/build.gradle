@@ -44,7 +44,7 @@ dependencies {
 //    Core
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.browser:browser:1.5.0'
-    implementation 'androidx.core:core-ktx:1.10.0'
+    implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.fragment:fragment-ktx:1.5.7'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
@@ -56,18 +56,18 @@ dependencies {
     implementation 'com.github.brahmkshatriya:NiceHttp:1.1.0'
 
 //    Glide
-    implementation 'com.github.bumptech.glide:glide:4.14.2'
-    kapt 'com.github.bumptech.glide:compiler:4.14.2'
-    implementation 'com.github.bumptech.glide:okhttp3-integration:4.14.2'
+    implementation 'com.github.bumptech.glide:glide:4.15.1'
+    kapt 'com.github.bumptech.glide:compiler:4.15.1'
+    implementation 'com.github.bumptech.glide:okhttp3-integration:4.15.1'
     implementation 'jp.wasabeef:glide-transformations:4.3.0'
 
 //    FireBase
-    implementation platform('com.google.firebase:firebase-bom:31.1.1')
-    implementation 'com.google.firebase:firebase-analytics-ktx'
-    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation platform('com.google.firebase:firebase-bom:32.0.0')
+    implementation 'com.google.firebase:firebase-analytics-ktx:21.2.2'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx:18.3.7'
 
 //    Exoplayer
-    ext.exo_version = '1.0.1'
+    ext.exo_version = '1.0.2'
     implementation "androidx.media3:media3-exoplayer:$exo_version"
     implementation "androidx.media3:media3-ui:$exo_version"
     implementation "androidx.media3:media3-exoplayer-hls:$exo_version"
@@ -76,7 +76,7 @@ dependencies {
     implementation "androidx.media3:media3-session:$exo_version"
 
 //    UI
-    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'com.google.android.material:material:1.9.0'
     implementation 'nl.joery.animatedbottombar:library:1.1.0'
     implementation 'io.noties.markwon:core:4.6.2'
     implementation 'com.flaviofaria:kenburnsview:1.0.7'
