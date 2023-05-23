@@ -15,6 +15,7 @@ object MangaSources : MangaReadSources() {
         "Toonily" to ::Toonily,
 //        "MangaHub" to ::MangaHub,
         "MangaKatana" to ::MangaKatana,
+        "MangaKomi" to ::MangaKomi,
         "Manga4Life" to ::Manga4Life,
         "MangaRead" to ::MangaRead,
         "ComickFun" to ::ComickFun,
