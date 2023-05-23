@@ -176,7 +176,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if(loadData<Boolean>("allow_opening_links").printIt("Suh : ") != true) {
+                if(loadData<Boolean>("allow_opening_links", this).printIt("Suh : ") != true) {
                     CustomBottomDialog.newInstance().apply {
                         title = "Allow Saikou to automatically open Anilist & MAL Links?"
                         val md = "Open settings & click +Add Links & select Anilist & Mal urls"

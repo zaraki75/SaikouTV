@@ -13,7 +13,7 @@ import ani.saikou.anime.Episode
 import ani.saikou.anime.SelectorDialogFragment
 import ani.saikou.manga.MangaChapter
 import ani.saikou.others.AniSkip
-import ani.saikou.others.AnimeFillerList
+import ani.saikou.others.Jikan
 import ani.saikou.others.Kitsu
 import ani.saikou.parsers.*
 import com.bumptech.glide.load.Transformation
@@ -75,7 +75,7 @@ class MediaDetailsViewModel : ViewModel() {
     suspend fun loadFillerEpisodes(s: Media) {
         tryWithSuspend {
             if (fillerEpisodes.value == null) fillerEpisodes.postValue(
-                AnimeFillerList.getFillers(
+                Jikan.getEpisodes(
                     s.idMAL ?: return@tryWithSuspend
                 )
             )
