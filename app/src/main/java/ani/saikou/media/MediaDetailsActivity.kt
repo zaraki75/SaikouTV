@@ -25,14 +25,27 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import ani.saikou.*
+import ani.saikou.CustomBottomNavBar
+import ani.saikou.GesturesListener
+import ani.saikou.R
+import ani.saikou.Refresh
+import ani.saikou.ZoomOutPageTransformer
 import ani.saikou.anilist.Anilist
 import ani.saikou.anime.AnimeWatchFragment
+import ani.saikou.copyToClipboard
 import ani.saikou.databinding.ActivityMediaBinding
+import ani.saikou.initActivity
+import ani.saikou.loadData
+import ani.saikou.loadImage
 import ani.saikou.manga.MangaReadFragment
+import ani.saikou.navBarHeight
+import ani.saikou.openLinkInBrowser
 import ani.saikou.others.ImageViewDialog
 import ani.saikou.others.getSerialized
+import ani.saikou.saveData
 import ani.saikou.settings.UserInterfaceSettings
+import ani.saikou.snackString
+import ani.saikou.statusBarHeight
 import com.flaviofaria.kenburnsview.RandomTransitionGenerator
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.navigation.NavigationBarView
@@ -172,7 +185,7 @@ class MediaDetailsActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedLi
                 if (media.userStatus != null) {
                     append(if (media.anime != null) "Watched " else "Read ")
                     val typedValue = TypedValue()
-                    theme.resolveAttribute(R.attr.colorSecondary, typedValue, true)
+                    theme.resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true)
                     bold { color(typedValue.data) { append("${media.userProgress}") } }
                     append(" out of ")
                 } else {

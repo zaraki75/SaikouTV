@@ -197,7 +197,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
                     marginEnd = 0
                 }
             }
-            playerView.findViewById<View>(R.id.exo_buffering).translationY =
+            playerView.findViewById<View>(androidx.media3.ui.R.id.exo_buffering).translationY =
                 (if (orientation == Configuration.ORIENTATION_LANDSCAPE) 0 else (notchHeight + 8f.px)).dp
             exoBrightnessCont.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 marginEnd = if (orientation == Configuration.ORIENTATION_LANDSCAPE) notchHeight else 0
@@ -313,13 +313,13 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
         playerView = findViewById(R.id.player_view)
         exoQuality = playerView.findViewById(R.id.exo_quality)
-        exoPlay = playerView.findViewById(R.id.exo_play)
+        exoPlay = playerView.findViewById(androidx.media3.ui.R.id.exo_play)
         exoSource = playerView.findViewById(R.id.exo_source)
         exoSettings = playerView.findViewById(R.id.exo_settings)
         exoSubtitle = playerView.findViewById(R.id.exo_sub)
-        exoSubtitleView = playerView.findViewById(R.id.exo_subtitles)
+        exoSubtitleView = playerView.findViewById(androidx.media3.ui.R.id.exo_subtitles)
         exoRotate = playerView.findViewById(R.id.exo_rotate)
-        exoSpeed = playerView.findViewById(R.id.exo_playback_speed)
+        exoSpeed = playerView.findViewById(androidx.media3.ui.R.id.exo_playback_speed)
         exoScreen = playerView.findViewById(R.id.exo_screen)
         exoBrightness = playerView.findViewById(R.id.exo_brightness)
         exoVolume = playerView.findViewById(R.id.exo_volume)
@@ -448,7 +448,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         val container = playerView.findViewById<View>(R.id.exo_controller_cont)
         val screen = playerView.findViewById<View>(R.id.exo_black_screen)
         val lockButton = playerView.findViewById<ImageButton>(R.id.exo_unlock)
-        val timeline = playerView.findViewById<ExtendedTimeBar>(R.id.exo_progress)
+        val timeline = playerView.findViewById<ExtendedTimeBar>(androidx.media3.ui.R.id.exo_progress)
         playerView.findViewById<ImageButton>(R.id.exo_lock).setOnClickListener {
             locked = true
             screen.visibility = View.GONE
