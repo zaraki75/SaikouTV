@@ -152,6 +152,7 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
     }
 
+    @SuppressLint("UnsafeOptInUsageError")
     fun startExoplayer(media: Media) {
         prevEpisode = null
 
@@ -262,9 +263,9 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
                 itemView.setOnLongClickListener {
                     val video = extractor.videos[bindingAdapterPosition]
                     val intent= Intent(Intent.ACTION_VIEW).apply {
-                        setDataAndType(Uri.parse(video.url.url),"video/*")
+                        setDataAndType(Uri.parse(video.file.url),"video/*")
                     }
-                    copyToClipboard(video.url.url,true)
+                    copyToClipboard(video.file.url,true)
                     dismiss()
                     startActivity(Intent.createChooser(intent,"Open Video in :"))
                     true
@@ -288,7 +289,6 @@ class SelectorDialogFragment : BottomSheetDialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         if (launch == false) {
-            @Suppress("DEPRECATION")
             activity?.hideSystemBars()
             model.epChanged.postValue(true)
             if (prevEpisode != null) {

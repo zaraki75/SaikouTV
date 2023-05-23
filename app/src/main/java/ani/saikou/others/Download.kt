@@ -50,9 +50,9 @@ object Download {
             if (extractor.videos.size > episode.selectedVideo) extractor.videos[episode.selectedVideo] else return
         val regex = "[\\\\/:*?\"<>|]".toRegex()
         val aTitle = animeTitle.replace(regex, "")
-        val request: DownloadManager.Request = DownloadManager.Request(Uri.parse(video.url.url))
+        val request: DownloadManager.Request = DownloadManager.Request(Uri.parse(video.file.url))
 
-        video.url.headers.forEach {
+        video.file.headers.forEach {
             request.addRequestHeader(it.key, it.value)
         }
 
@@ -106,11 +106,11 @@ object Download {
             val aTitle = animeTitle.replace(regex, "")
             val bundle = Bundle()
             defaultHeaders.forEach { a -> bundle.putString(a.key, a.value)}
-            video.url.headers.forEach { a -> bundle.putString(a.key, a.value)}
+            video.file.headers.forEach { a -> bundle.putString(a.key, a.value)}
             // documentation: https://www.apps2sd.info/idmp/faq?id=35
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 component = ComponentName(appName, "idm.internet.download.manager.Downloader")
-                data = Uri.parse(video.url.url)
+                data = Uri.parse(video.file.url)
                 putExtra("extra_headers", bundle)
                 putExtra("extra_filename", "$aTitle - $name")
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -140,11 +140,11 @@ object Download {
             val name = "$title${if (video.size != null) "(${video.size}p)" else ""}"
             val bundle = Bundle()
             defaultHeaders.forEach { a -> bundle.putString(a.key, a.value)}
-            video.url.headers.forEach { a -> bundle.putString(a.key, a.value)}
+            video.file.headers.forEach { a -> bundle.putString(a.key, a.value)}
             // unofficial documentation: https://pastebin.com/ScDNr2if (there is no official documentation)
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 component = ComponentName("com.dv.adm", "com.dv.adm.AEditor")
-                putExtra("com.dv.get.ACTION_LIST_ADD", "${video.url.url}<info>$name.mp4")
+                putExtra("com.dv.get.ACTION_LIST_ADD", "${video.file.url}<info>$name.mp4")
                 putExtra("com.dv.get.ACTION_LIST_PATH", "${getDownloadDir(activity)}/Anime/${aTitle}/")
                 putExtra("android.media.intent.extra.HTTP_HEADERS", bundle)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK

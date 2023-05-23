@@ -1055,7 +1055,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             defaultHeaders.forEach {
                 dataSource.setRequestProperty(it.key, it.value)
             }
-            video?.url?.headers?.forEach {
+            video?.file?.headers?.forEach {
                 dataSource.setRequestProperty(it.key, it.value)
             }
             dataSource
@@ -1071,7 +1071,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
             else           -> MimeTypes.APPLICATION_MP4
         }
 
-        val builder = MediaItem.Builder().setUri(video!!.url.url).setMimeType(mimeType)
+        val builder = MediaItem.Builder().setUri(video!!.file.url).setMimeType(mimeType)
 
         if (sub != null) builder.setSubtitleConfigurations(mutableListOf(sub))
         mediaItem = builder.build()
@@ -1446,7 +1446,7 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
 
     // Cast
     private fun cast() {
-        val videoURL = video?.url?.url ?: return
+        val videoURL = video?.file?.url ?: return
         val shareVideo = Intent(Intent.ACTION_VIEW)
         shareVideo.setDataAndType(Uri.parse(videoURL), "video/*")
         shareVideo.setPackage("com.instantbits.cast.webvideo")
@@ -1454,7 +1454,10 @@ class ExoplayerView : AppCompatActivity(), Player.Listener {
         shareVideo.putExtra("title", media.userPreferredName + " : Ep " + episodeTitleArr[currentEpisodeIndex])
         shareVideo.putExtra("poster", episode.thumb?.url ?: media.cover)
         val headers = Bundle()
-        video?.url?.headers?.forEach {
+        defaultHeaders.forEach {
+            headers.putString(it.key, it.value)
+        }
+        video?.file?.headers?.forEach {
             headers.putString(it.key, it.value)
         }
         shareVideo.putExtra("android.media.intent.extra.HTTP_HEADERS", headers)

@@ -96,7 +96,7 @@ data class Video(
      *
      * Supports mp4, mkv, dash & m3u8, afaik
      * **/
-    val url: FileUrl,
+    val file: FileUrl,
 
     /**
      * use getSize(url) to get this size,
