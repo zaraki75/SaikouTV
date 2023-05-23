@@ -7,6 +7,10 @@ import androidx.core.app.NotificationManagerCompat
 import ani.saikou.*
 import ani.saikou.parsers.Episode
 import ani.saikou.parsers.MangaChapter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class Subscription {
     companion object {
@@ -40,6 +44,12 @@ class Subscription {
                 ) else null
                 if (progressNotification != null) {
                     notificationManager.notify(progressNotificationId, progressNotification.build())
+                    //Seems like if the parent coroutine scope gets cancelled, the notification stays
+                    //So adding this as a safeguard? dk if this will be useful
+                    CoroutineScope(Dispatchers.Default).launch {
+                        delay(5 * subscriptions.size * 1000L)
+                        notificationManager.cancel(progressNotificationId)
+                    }
                 }
 
                 fun progress(progress: Int, parser: String, media: String) {
