@@ -196,9 +196,7 @@ class MangaReaderActivity : AppCompatActivity() {
         //Chapter Change
         fun change(index: Int) {
             saveData("${media.id}_${chaptersArr[currentChapterIndex]}", currentChapterPage, this)
-            media.manga!!.selectedChapter = chaptersArr[index]
-            model.setMedia(media)
-            ChapterLoaderDialog.newInstance(chapter).show(supportFragmentManager, "dialog")        }
+            ChapterLoaderDialog.newInstance(chapters[chaptersArr[index]]!!).show(supportFragmentManager, "dialog")
         }
         
         //ChapterSelector
@@ -236,6 +234,7 @@ class MangaReaderActivity : AppCompatActivity() {
         model.getMangaChapter().observe(this) {
             if (it != null) {
                 chapter = it
+                media.manga!!.selectedChapter = chapter.number
                 media.selected = model.loadSelected(media)
                 saveData("${media.id}_current_chp", it.number, this)
                 currentChapterIndex = chaptersArr.indexOf(it.number)
@@ -392,14 +391,13 @@ class MangaReaderActivity : AppCompatActivity() {
                                 dialog.dismiss()
                             }
                             dualPage {
-                                val page = chapter.dualPages()[pos]
+                                val page = chapter.dualPages().getOrNull(pos) ?: return@dualPage false
                                 val nextPage = page.second
                                 if (settings.default.direction != LEFT_TO_RIGHT && nextPage != null)
                                     onImageLongClicked(pos * 2, nextPage, page.first, callback)
                                 else
                                     onImageLongClicked(pos * 2, page.first, nextPage, callback)
-
-                            } ?: onImageLongClicked(pos, chapImages[pos], null, callback)
+                            } ?: onImageLongClicked(pos, chapImages.getOrNull(pos) ?: return@let false, null, callback)
                         }
                     ) binding.mangaReaderRecycler.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                     super.onLongPress(e)
@@ -428,7 +426,9 @@ class MangaReaderActivity : AppCompatActivity() {
                 adapter = imageAdapter
                 layoutManager = manager
                 setOnTouchListener { _, event ->
-                    if (event != null) detector.onTouchEvent(event) else false
+                    if (event != null)
+                        tryWith { detector.onTouchEvent(event) } ?: false
+                    else false
                 }
 
                 addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -617,6 +617,7 @@ class MangaReaderActivity : AppCompatActivity() {
         }
     }
 
+    var loading = false
     fun updatePageNumber(page: Long) {
         if (currentChapterPage != page) {
             currentChapterPage = page
@@ -627,13 +628,15 @@ class MangaReaderActivity : AppCompatActivity() {
                 value = clamp(currentChapterPage.toFloat(), 1f, valueTo)
             }
         }
-        if (maxChapterPage - currentChapterPage <= 1)
+        if (maxChapterPage - currentChapterPage <= 1 && !loading)
             scope.launch(Dispatchers.IO) {
+                loading = true
                 model.loadMangaChapterImages(
                     chapters[chaptersArr.getOrNull(currentChapterIndex + 1) ?: return@launch]!!,
                     media.selected!!,
                     false
                 )
+                loading = false
             }
     }
 

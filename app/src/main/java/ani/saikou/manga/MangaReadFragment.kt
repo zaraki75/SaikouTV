@@ -1,7 +1,6 @@
 package ani.saikou.manga
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -16,7 +15,7 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
 import ani.saikou.*
 import ani.saikou.databinding.FragmentAnimeWatchBinding
-import ani.saikou.manga.mangareader.MangaReaderActivity
+import ani.saikou.manga.mangareader.ChapterLoaderDialog
 import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
 import ani.saikou.parsers.HMangaSources
@@ -228,11 +227,10 @@ open class MangaReadFragment : Fragment() {
 
     fun onMangaChapterClick(i: String) {
         model.continueMedia = false
-        if (media.manga?.chapters?.get(i) != null) {
+        media.manga?.chapters?.get(i)?.let {
             media.manga?.selectedChapter = i
             model.saveSelected(media.id, media.selected!!, requireActivity())
-            val intent = Intent(activity, MangaReaderActivity::class.java).apply { putExtra("media", media) }
-            startActivity(intent)
+            ChapterLoaderDialog.newInstance(it, true).show(requireActivity().supportFragmentManager, "dialog")
         }
     }
 

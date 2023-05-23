@@ -66,6 +66,8 @@ class ImageViewDialog : BottomSheetDialogFragment() {
         }
 
         lifecycleScope.launch {
+            val binding = _binding ?: return@launch
+
             var bitmap = requireContext().loadBitmap(image, trans1 ?: listOf())
             val bitmap2 = if (image2 != null) requireContext().loadBitmap(image2, trans2 ?: listOf()) else null
         

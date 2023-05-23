@@ -1,6 +1,7 @@
 package ani.saikou.manga.mangareader
 
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,18 +14,22 @@ import ani.saikou.R
 import ani.saikou.databinding.BottomSheetSelectorBinding
 import ani.saikou.hideSystemBars
 import ani.saikou.manga.MangaChapter
-import ani.saikou.media.Media
 import ani.saikou.media.MediaDetailsViewModel
+import ani.saikou.others.getSerialized
+import ani.saikou.tryWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.Serializable
 
 class ChapterLoaderDialog : BottomSheetDialogFragment() {
     private var _binding: BottomSheetSelectorBinding? = null
     private val binding get() = _binding!!
 
     val model: MediaDetailsViewModel by activityViewModels()
-    var chapter: MangaChapter? = null
-    var media: Media? = null
+
+    private val launch : Boolean by lazy { arguments?.getBoolean("launch", false) ?: false }
+    private val chp : MangaChapter by lazy { arguments?.getSerialized("next")!! }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         var loaded = false
         binding.selectorAutoListContainer.visibility = View.VISIBLE
@@ -36,14 +41,17 @@ class ChapterLoaderDialog : BottomSheetDialogFragment() {
         }
 
         model.getMedia().observe(viewLifecycleOwner) { m ->
-            media = m
-            if (media != null && !loaded) {
+            if (m != null && !loaded) {
                 loaded = true
-                binding.selectorAutoText.text = media!!.manga!!.selectedChapter
+                binding.selectorAutoText.text = chp.title
                 lifecycleScope.launch(Dispatchers.IO) {
-                    val chp = media!!.manga!!.chapters!![media!!.manga!!.selectedChapter]!!
-                    if(model.loadMangaChapterImages(chp, media!!.selected!!, false)) chapter = chp
-                    dismiss()
+                    if(model.loadMangaChapterImages(chp, m.selected!!)) {
+                        tryWith { dismiss() }
+                        if(launch) {
+                            val intent = Intent(requireContext(), MangaReaderActivity::class.java).apply { putExtra("media", m) }
+                            startActivity(intent)
+                        }
+                    }
                 }
             }
         }
@@ -56,7 +64,6 @@ class ChapterLoaderDialog : BottomSheetDialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         activity?.hideSystemBars()
-        model.mangaChapter.postValue(chapter)
         super.onDismiss(dialog)
     }
 
@@ -66,8 +73,8 @@ class ChapterLoaderDialog : BottomSheetDialogFragment() {
     }
 
     companion object {
-        fun newInstance(prev: MangaChapter) = ChapterLoaderDialog().apply {
-            arguments = bundleOf("prev" to prev)
+        fun newInstance(next: MangaChapter, launch: Boolean = false) = ChapterLoaderDialog().apply {
+            arguments = bundleOf("next" to next as Serializable, "launch" to launch)
         }
     }
 }

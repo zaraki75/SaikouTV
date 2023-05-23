@@ -31,7 +31,7 @@ open class ImageAdapter(
     inner class ImageViewHolder(binding: ItemImageBinding) : RecyclerView.ViewHolder(binding.root)
 
     open suspend fun loadBitmap(position: Int, parent: View) : Bitmap? {
-        val link = images[position].url
+        val link = images.getOrNull(position)?.url ?: return null
         if (link.url.isEmpty()) return null
 
         val transforms = mutableListOf<BitmapTransformation>()
